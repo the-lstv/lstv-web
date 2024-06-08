@@ -22,3 +22,8 @@ route (/favicon) {
 route (/static/sign-up) {
     to: /static/login.html;
 }
+
+
+alias {
+    /login: /sign-up;
+}
