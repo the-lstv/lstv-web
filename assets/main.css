@@ -1,0 +1,365 @@
+
+/* Part: Main */
+:root {
+    --font: Rubik, sans-serif;
+}
+
+html, body {
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+#app {
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+#viewport {
+    width: 100%;
+    height: 100%;
+    flex: 1;
+    overflow: hidden;
+}
+
+
+/* Part: Header */
+#header {
+    background: var(--ui);
+    padding: 8px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+#headerButtons button {
+    margin: 0;
+    margin-left: .4rem;
+    font-size: .9rem;
+    overflow: hidden;
+}
+
+#headerButtons button.open {
+    background: rgb(var(--accent-raw), 25%);
+    outline: 2px solid var(--transparent-overlay);
+}
+
+#accountsButton {
+    padding-right: 45px;
+}
+
+#profilePicturePreview {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    background: rgb(var(--accent-raw), 10%);
+    width: 36px;
+    border-radius: 20px;
+    --load-width: calc(2 / 16 * 1em);
+    --load-size: 1em;
+}
+
+#profilePicturePreview[load] * {
+    display: none;
+}
+
+#header_link {
+    font-size: 1.2rem;
+}
+
+#toolbars {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 10px;
+    width: 300px;
+    background: var(--ui-bg-1);
+    outline: 1px solid var(--transparent-overlay);
+    border-radius: 20px;
+    box-shadow: 0 10px 20px 0 #0002;
+    overflow: hidden;
+    min-height: 20rem;
+    max-height: 32rem;
+    -webkit-user-select: none;
+    user-select: none;
+    --font: Poppins, Rubik, sans-serif;
+    font-family: Poppins, Rubik, sans-serif;
+    z-index: 1000;
+}
+
+#toolbars > div {
+    text-align: center;
+    height: 20rem;
+}
+
+.buttons :is(button, a) {
+    width: 100%;
+}
+
+.buttons button {
+    margin: 0;
+}
+
+button.solid {
+    position: relative;
+}
+
+button.solid::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: var(--br);
+    background: var(--background);
+    z-index: -1;
+}
+
+.buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 20px;
+    gap: .6em;
+}
+
+#loginPopupOverlay {
+    backdrop-filter: blur(18px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 5;
+    position: relative;
+    padding: 1em 24px;
+    height: 100%;
+}
+
+#loginPopupOverlay span {
+    color: gray;
+}
+
+#toolbarLogin {
+    background: url(https://cdn.extragon.cloud/file/24b53516c3e924d063fe9e48d5462e7d.svg);
+    background-size: 130%;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+#toolbarApps > div {
+    background: var(--ui-bg-0);
+    height: calc(100% - 22px - 1em);
+    border-radius: 1.5em 1.5em 0 0;
+}
+
+
+/* Mobile */
+@media only screen and (max-width: 600px) {
+    #toolbars {
+        left: 10px;
+        width: unset;
+    }
+}
+
+@media only screen and (max-width: 350px) {
+    #headerButtons .label {
+        display: none;
+    }
+}
+
+@media only screen and (max-width: 300px) {
+    #appsButton {
+        display: none !important;
+    }
+}
+
+[ls] button.small {
+    padding: 2px 20px;
+    --br: 10px;
+    --br-lg: 10px;
+}
+
+#profileWrap {
+    background: var(--ui-bg-0);
+    border-radius: 20px 20px 0 0;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+#profileListWrap {
+    opacity: 0;
+    transition-duration: .2s;
+    display: flex;
+    flex-direction: column;
+}
+
+#profileWrap .pfpWrap {
+    transform: translateY(-50%);
+    margin: auto;
+    margin-bottom: -2.5em;
+    padding: .4em;
+    transition-duration: .2s;
+}
+
+.pfpWrap {
+    background: var(--elevate-1);
+    border-radius: 50%;
+    min-width: var(--pfp-size, 5em);
+    min-height: var(--pfp-size, 5em);
+    width: var(--pfp-size, 5em);
+    height: var(--pfp-size, 5em);
+    overflow: hidden;
+}
+
+.profilePicture {
+    width: 100%;
+    height: 100%;
+    min-width: 100%;
+    min-height: 100%;
+    display: flex;
+    border-radius: 50%;
+    background: var(--elevate-2);
+    overflow: hidden;
+    justify-content: center;
+    align-items: center;
+    font-size: calc(var(--pfp-size, 5em) / 2);
+}
+
+#profileUsername {
+    color: gray;
+    font-size: 1rem;
+}
+
+#toolbarAccount {
+    background: var(--background);
+    min-height: 23em;
+}
+
+#returnButton::before {
+    inset: 1px;
+    border-radius: 9px;
+}
+
+#returnButton {
+    position: absolute;
+    margin: 0;
+    top: 0;
+    left: 2em;
+    transform: translateY(-50%);
+    opacity: 0;
+    transition-duration: .2s;
+}
+
+#toolbarAccount.selecting #returnButton {
+    opacity: 1;
+}
+
+#toolbarAccount.selecting #profileWrap {
+    border-radius: 15px 15px 0 0;
+    bottom: -70%;
+}
+
+#toolbarAccount.selecting .pfpWrap {
+    --pfp-size: 3em;
+    margin-right: 1em;
+    margin-bottom: -1em;
+    padding: .3rem;
+}
+
+#toolbarAccount.selecting #profileListWrap {
+    opacity: 1;
+}
+
+#profileWrap :is(h1, h2, h3) {
+    margin: 0;
+}
+
+.page {
+    display: none;
+    height: 100%;
+    width: 100%;
+    overflow: auto;
+}
+
+.headerText {
+    font-weight: 300;
+}
+
+#page_error {
+    align-items: center;
+    justify-content: center;
+}
+
+#app.expired {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 5em;
+    text-align: center;
+}
+
+.hButtonGroup {
+    display: flex;
+    flex-direction: column;
+    margin: 0 20px;
+}
+
+.hButtonGroup :is(a, button, .ls-button) {
+    border-radius: 5px !important;
+    margin: 3px 0;
+    width: 100%;
+}
+
+.hButtonGroup > :is(a, button, .ls-button):first-child, .userListItem:first-child {
+    border-radius: 15px 15px 5px 5px !important;
+}
+
+.hButtonGroup > :is(a, button, .ls-button):last-child, .userListItem:last-child {
+    border-radius: 5px 5px 15px 15px !important;
+}
+
+.hButtonGroup > :is(a, button, .ls-button):only-child, .userListItem:only-child {
+    border-radius: 15px !important;
+}
+
+.accountList {
+    display: flex;
+    flex-direction: column;
+    gap: .5em;
+}
+
+.accountList button.userListItem {
+    width: 100%;
+    /* background: var(--elevate-1); */
+    display: flex;
+    cursor: pointer;
+    padding: .8em 1.2em;
+    --pfp-size: 2.5em;
+    border-radius: 5px;
+    gap: .8em;
+    line-height: 1em;
+    align-items: center;
+    margin: 0;
+    text-align: left;
+}
+
+.userEmail {
+    font-size: .9em;
+    color: var(--elevate-4);
+}

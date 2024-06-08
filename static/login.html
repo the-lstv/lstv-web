@@ -1,0 +1,660 @@
+@no-init ();
+
+<ls-manifest title="Create account" hidden module="login" alias="login,sign-up"></ls-manifest>
+
+<div class="wrapper">
+    <ls-tabs>
+        <ls-tab>
+            Loading accounts...
+        </ls-tab>
+        <ls-tab tab-id="list">
+            <ls-modal class="loginForm">
+                <ls-modal-body>
+                    <span style="text-align: center">
+                        <h1>Continue as</h1>
+                        <span style="display: block">You are logged in to the following accounts:</span>
+                    </span> <br>
+                    <div .accountList>
+                        <button class="userListItem pill elevated" ls-accent="auto" style="justify-content: center; background: var(--ui-bg-1)" onclick='LS.Tabs("login").setActive("login")'>
+                            Add account
+                        </button>
+                    </div>
+                </ls-modal-body>
+            </ls-modal>
+        </ls-tab>
+        <ls-tab tab-id="login">
+            <ls-modal class="loginForm">
+                <ls-modal-body>
+
+                    <span style="text-align: center">
+                        <h1>Log in</h1>
+                        <span style="display: block">Log in to your <span style=color:#40C0E7>LSTV</span> account!</span>
+                    </span> <br>
+
+                    <form name="loginForm" onsubmit="return false">
+                        <label for=loginUsername>Email or Username</label>
+                        <input %loginUsername required type="text" placeholder="Your username/email">
+
+                        <label for=loginPassword>Password</label>
+                        <input %loginPassword required type="password" placeholder="Your password"> <br>
+
+                        <hr style="margin: 2em 0">
+
+                        <div .loginButtonWrapper %loginButton>
+                            <button type="submit">
+                                <span .text>Login</span>
+                                <span .buttonDots>
+                                    <div .buttonDot></div>
+                                    <div .buttonDot style="animation-delay: 50ms; opacity: .6"></div>
+                                    <div .buttonDot style="animation-delay: 100ms; opacity: .4"></div>
+                                </span>
+                            </button>
+                        </div>
+                    </form>
+
+                </ls-modal-body>
+            </ls-modal>
+
+            <span class="switchPages">
+                New here?
+                <a href="#" onclick='event.preventDefault(); LS.Tabs("login").setActive("signup")'>Create account</a>
+            </span>
+        </ls-tab>
+        <ls-tab tab-id="signup">
+            <ls-modal class="loginForm">
+                <ls-modal-body>
+
+                    <ls-tabs %createAccountSteps>
+                        <ls-tab tab-id="signUp">
+                            <span style="text-align: center">
+                                <h1>Create your account</h1>
+                                <span style="display: block">Create a <span style=color:#40C0E7>LSTV</span> account to begin a new <span style=color:#ED6C30>journey</span>!<br>First off, let's set up some identification:</span>
+                            </span> <br>
+
+                            <form name=signupForm onsubmit="return false">
+                                <label for=signupEmail>Email</label>
+                                <input %signupEmail required type="email" placeholder="Your email address">
+        
+                                <label for=signupUsername>Username</label>
+                                <input %signupUsername required type="text" placeholder="username">
+
+                                <div %signup_username_error .inputError></div>
+        
+                                <label for=signupPassword>Password</label>
+                                <ls-group join>
+                                    <input %signupPassword required type="password" placeholder="********"> <br>
+                                    <button %generatePassword type="button" style="width: unset"><i class="bi-dice-5-fill"></i></button>
+                                </ls-group>
+        
+                                <div %signup_password_error .inputError></div>
+                                
+                                <br>
+        
+                                <hr style="margin: 2em 0">
+        
+                                <div .loginButtonWrapper %signupButton>
+                                    <button type="submit">
+                                        <span .text>Continue</span>
+                                        <span .buttonDots>
+                                            <div .buttonDot></div>
+                                            <div .buttonDot style="animation-delay: 50ms; opacity: .6"></div>
+                                            <div .buttonDot style="animation-delay: 100ms; opacity: .4"></div>
+                                        </span>
+                                    </button>
+                                </div>
+                            </form>
+                        </ls-tab>
+                        <ls-tab tab-id="profile">
+                            <form name=profileForm onsubmit="return false">
+                                <span style="text-align: center">
+                                    <h1>Finish your account</h1>
+                                    <span style="display: block">You can change this and <span style=color:#40C0E7>much more</span> later in your account settings!</span>
+                                </span> <br>
+
+                                <hr style="margin: 2em 0">
+
+                                <label for=profileName>Display name</label>
+                                <input %profileName type="text" placeholder="Display name" pattern="(?![0-9])[a-zA-Z0-9_.\-]{2,60}">
+
+                                <br><br>
+
+                                <label .ls-checkbox>
+                                    Agree to our <a href="/tos" target="_blank">Terms Of Service</a>
+                                    <input %tosAgreement type="checkbox">
+                                    <span></span>
+                                </label>
+
+                                <label .ls-checkbox>
+                                    Agree to our <a href="/pp" target="_blank">Privacy Policy</a>
+                                    <input %ppAgreement type="checkbox">
+                                    <span></span>
+                                </label>
+
+                                <div %signup_tos_error .inputError></div>
+
+                                <hr style="margin: 2em 0">
+        
+                                <div .loginButtonWrapper %completeSignupButton>
+                                    <button type="submit">
+                                        <span .text>Finish!</span>
+                                        <span .buttonDots>
+                                            <div .buttonDot></div>
+                                            <div .buttonDot style="animation-delay: 50ms; opacity: .6"></div>
+                                            <div .buttonDot style="animation-delay: 100ms; opacity: .4"></div>
+                                        </span>
+                                    </button>
+                                </div>
+                            </form>
+                        </ls-tab>
+                    </ls-tabs>
+
+                </ls-modal-body>
+            </ls-modal>
+
+            <span class="switchPages">
+                Already got one?
+                <a href="#" onclick='LS.Tabs("login").setActive("login")'>Log-in</a>
+            </span>
+        </ls-tab>
+    </ls-tabs>
+</div>
+
+<style>
+    label {
+        margin: 4px 0;
+        display: block;
+    }
+
+    .loginForm {
+        width: 64vw;
+        max-width: 32em;
+        margin: auto;
+        margin-top: 2em;
+        --font: Poppins;
+        font-family: var(--font);
+        -webkit-user-select: none;
+        user-select: none;
+        text-align: left;
+        margin-bottom: 0;
+    }
+
+    .loginForm :is(button, input) {
+        width: 100%;
+        margin: .4em 0;
+    }
+
+    .loginButtonWrapper button {
+        margin: 0 !important;
+    }
+
+    .loginButtonWrapper {
+        position: relative;
+        padding: 3px;
+        border-radius: 12px;
+        overflow: hidden;
+        z-index: 0;
+    }
+
+    .loginButtonWrapper::before {
+        content: '';
+		position: absolute;
+		z-index: -2;
+        inset: 0;
+        background-color: var(--accent-dark);
+    }
+
+    .loginButtonWrapper.loading::before {
+        inset: unset;
+		left: -50%;
+		top: -450%;
+		width: 200%;
+		height: 1000%;
+		background-repeat: no-repeat;
+		background-image: conic-gradient(#ed6c30 0,#ed6c30 33%,#fcc21b 33%,#fcc21b 66%,#40c0e7 66%,#40c0e7 100%);
+		animation: rotate 4s linear infinite;
+    }
+
+    .switchPages {
+        display: block;
+        margin-top: 3em;
+        margin-bottom: 2em;
+    }
+
+    .loginButtonWrapper.loading button {
+        background: #111;
+    }
+
+    .loginButtonWrapper.loading .text {
+        display: none;
+    }
+
+    .loginButtonWrapper.loading .buttonDots {
+        display: inline-block;
+    }
+
+    .buttonDots {
+        position: relative;
+        display: none;
+    }
+
+    .buttonDot {
+        visibility: hidden;
+        width: .5em;
+        height: .5em;
+        background-color: #eee;
+        border-radius: 50%;
+        animation: moveLeftRight 1.5s ease-in-out infinite;
+        position: absolute;
+        top: -.5em;
+    }
+
+    .wrapper {
+        text-align: center;
+        padding: 0 1em;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+    }
+
+    .loginForm ls-modal-body {
+        white-space: normal
+    }
+
+    ls-group {
+        --br: var(--br-lg);
+    }
+
+    .loginForm ls-group[join] button {
+        padding: 0 1em;
+    }
+
+    ls-tabs {
+        width: 100%;
+    }
+
+    @media only screen and (max-height: 600px) {
+        .switchPages {
+            display: block;
+            margin-top: 2em;
+            margin-bottom: 1em;
+        }
+    }
+
+    @keyframes moveLeftRight {
+        0%, 100% {
+            visibility: visible;
+            transform: translateX(-800%);
+        }
+        50% {
+            transform: translateX(600%);
+        }
+    }
+
+    @keyframes rotate {
+        100% {
+            transform: rotate(1turn);
+        }
+    }
+
+    @media only screen and (max-width: 600px) {
+        .loginForm {
+            width: unset;
+            margin-top: 1em;
+        }
+
+        .wrapper {
+            justify-content: flex-start;
+        }
+
+        .accountList button.userListItem {
+            padding: .8em 1em;
+            --pfp-size: 2em;
+            gap: .5em;
+        }
+    }
+
+    .inputError {
+        color: #ed3d30;
+    }
+</style>
+
+<script>
+    app.module("login", (app, source, container) => {
+
+        // Create tabs
+
+        let userList = app.user.list(),
+            initialized = [],
+            tabs = LS.Tabs("login", container.get("ls-tabs"), {
+                list: false
+            })
+        ;
+
+
+        // The first time a tab is open, initialize it
+
+        tabs.on("tab_changed", (id, tab) => {
+            if(initialized.includes(tab)) return;
+
+            initialized.push(tab);
+
+            switch(tab){
+                case "list":
+
+
+                    // Account list (inicialization)
+
+
+                    app.once("users-available", ()=>{
+
+                        let usersContainer = container.get(".accountList");
+
+                        for(let user of userList){
+                            let fragment = app.user.fragments[user];
+                            console.log(fragment);
+
+                            usersContainer.prepend(N("button", {
+                                class: "userListItem pill elevated",
+                                attr: {"ls-accent": "auto"},
+                                inner: [
+                                    app.user.getProfilePictureView(user),
+                                    N({
+                                        inner: [
+                                            N("span", {inner: [
+                                                N("span", {innerText: fragment.displayname || fragment.username}),
+                                                user == app.user.current? N("ls-box", {inner: "ACTIVE", class: "inline", style: "border-radius:.5em;font-size:.8em"}) : ""
+                                            ], class: "userName"}),
+                                            "<br>",
+                                            N("span", {innerText: fragment.email, class: "userEmail"})
+                                        ]
+                                    }),
+                                    user == app.user.current? N("i", {class: "bi-check-lg", style: "margin-left:auto"}) : ""
+                                ],
+
+                                onclick(){
+                                    app.user.switch(user)
+                                }
+                            }))
+                        }
+                    })
+                break;
+                case "signup":
+                 
+                    // Create account (initialization)
+
+                    let steps = LS.Tabs(M.GlobalID, O("#createAccountSteps"), {
+                        list: false
+                    })
+
+                    window.steps = steps
+                    
+                    let currentRandomPassword = "", randomPasswordDialog = LS.Modal.build({
+                        content: `<div style=text-align:center>Your new password is:\n\n<h2 style=user-select:text><span></span></h2>\nMake sure you don't loose it and never share it with anyone.</div>`,
+                        buttons: [
+                            {text: "<i class=bi-arrow-clockwise></i> New", color: "blue", keep: true, onclick(){
+                                O("#generatePassword").click()
+                            }},
+                            {text: "<i class=bi-clipboard-fill></i> Copy", color: "green", keep: true, onclick(){
+                                LS.Util.copy(currentRandomPassword)
+                            }},
+                            {text: "OK", color: "auto"}
+                        ]
+                    })
+            
+                    O("#generatePassword").on("click", async ()=>{
+                        currentRandomPassword = generatePassword(15)
+            
+                        randomPasswordDialog.element.get("span").set(currentRandomPassword);
+                        O("#signupPassword").value = currentRandomPassword
+            
+                        randomPasswordDialog.show()
+                    })
+
+                    async function signup(){
+                        let result, json, started = Date.now();
+
+                        let user = {
+                            username: O("#signupUsername").value,
+                            password: O("#signupPassword").value,
+                            email: O("#signupEmail").value,
+                            profile: {
+                                displayname: O("#profileName").value,
+                            }
+                        }
+
+                        Q('[name="profileForm"] > :is(input, ls-group, label)').all().delAttr("ls-accent")
+                        Q('.inputError').all().clear()
+
+                        if(!O("#tosAgreement").checked){
+                            O(O("#tosAgreement").parentElement).attr("ls-accent", "red")
+                            O("#signup_tos_error").set("<br>You must agree to our Terms Of Service.")
+                            return
+                        }
+
+                        if(!O("#ppAgreement").checked){
+                            O(O("#ppAgreement").parentElement).attr("ls-accent", "red")
+                            O("#signup_tos_error").set("<br>You must agree to our Privacy Policy.")
+                            return
+                        }
+
+                        user.generateToken = true;
+
+                        try{
+                            result = await fetch(app.api + "/v2/auth/create", {
+                                method: "POST",
+                                body: JSON.stringify(user)
+                            })
+            
+                            if(result) json = await result.json()
+                        } catch (e) {
+                            console.log("Error, ", e);
+                        }
+
+                        if(!result || !result.ok || typeof json !== "object" || !json){
+                            LS.Modal.build({
+                                content: "Error: Failed to connect with our server. Make sure you are connected to the internet and try again later. If this persists, please contact us!",
+                                buttons: [ { text: "OK", color: "auto" } ]
+                            }, {
+                                keep: false
+                            }).show();
+
+                            return
+                        }
+            
+                        if(json.success){
+                            if(Date.now() - started < 1400){
+                                console.log("[misc] Request was too fast, delaying for a bit ("+ (Date.now() - started) +")", 1400 - (Date.now() - started));
+            
+                                await new Promise(resolve => setTimeout(resolve, 1400 - (Date.now() - started)))
+
+                                if(json.token){
+                                    app.user.add(json)
+                                    app.user.use(json.id)
+
+                                    let query = LS.Util.params()
+
+                                    if(query.continue) return location.replace(query.continue);
+
+                                    app.navigate("/", {reload: true, replace: true})
+                                } else {
+
+                                    tabs.setActive(2)
+
+                                    LS.Modal.build({
+                                        content: "Warning: Account was created successfully, but we couldn't log you in automatically.<br>Please procceed to login via the login screen as usual.<br>We are sorry for the inconvenience.",
+                                        buttons: [ { text: "OK", color: "auto" } ]
+                                    }, {
+                                        keep: false
+                                    }).show();
+                                }
+                            }
+                        } else {
+                            let modal = {
+                                content: json.error,
+                                buttons: [ { text: "OK", color: "auto" } ]
+                            };
+            
+                            if(typeof json.error == "object") {
+                                console.error(json.error);
+                                modal.content = "Internal database error - please try again, if this persists, please notify us about this issue!"
+                            }
+            
+                            if(json.code) switch(json.code){
+                                case 2:
+                                    modal.content = "Internal API error, please contact us!"
+                                break;
+                                case 46:
+                                    modal.content = "Please enter a valid email address."
+                                break;
+                                case 47:
+                                    modal.content = "Username can only contain letters, numbers, periods (.), underscores (_), and dashes (-).<br>An username can only be 2 to 60 characters long."
+                                break;
+                            }
+
+                            if(!json.code || json.code < 48) steps.previous()
+            
+                            let dialog = LS.Modal.build(modal, {
+                                keep: false
+                            }).show();
+                        }
+            
+                    }
+                    
+                    O('[name="signupForm"]').on("submit", () => {
+                        let user = {
+                            username: O("#signupUsername").value,
+                            password: O("#signupPassword").value,
+                            email: O("#signupEmail").value
+                        }
+
+                        Q('[name="signupForm"] > :is(input, ls-group)').all().delAttr("ls-accent")
+                        Q('.inputError').all().clear()
+
+                        if(!/^(?![0-9])[a-z0-9_.\-]{2,60}$/.test(user.username)){
+                            O("#signupUsername").attr("ls-accent", "red")
+                            O("#signup_username_error").set("Username can only contain letters, numbers, periods (.), underscores (_), and dashes (-).<br>An username can only be 2 to 40 characters long.")
+                            return
+                        }
+
+                        if(!/^(?=.*[^a-zA-Z]).{8,}$/.test(user.password)){
+                            O("#signupPassword").parentElement.attr("ls-accent", "red")
+                            O("#signup_password_error").set("Password must be at least 7 characters long and must not only be letters.")
+                            return
+                        }
+
+                        // Next step
+
+                        O("#profileName").value = user.username
+
+                        steps.next()
+                    })
+
+                    O('[name="profileForm"]').on("submit", async ()=>{
+                        O("#completeSignupButton").class('loading');
+                        await signup()
+                        O("#completeSignupButton").class('loading', 0);
+                    })
+                break;
+                case "login":
+                    
+                    
+                    // Login (initialization)
+                    
+                    
+                    O('[name="loginForm"]').on("submit", async ()=>{
+                        let result, json, started = Date.now();
+            
+                        O("#loginButton").class('loading');
+                        
+                        try{
+                            result = await fetch(app.api + "/v2/auth/login/token", {
+                                method: "POST",
+                                body: JSON.stringify({
+                                    username: O("#loginUsername").value,
+                                    password: O("#loginPassword").value
+                                })
+                            })
+            
+                            if(result) json = await result.json()
+                        } catch (e) {
+                            console.log("Error, ", e);
+                        }
+            
+                        if(!result || !result.ok || typeof json !== "object" || !json){
+                            console.log("Error, not OK");
+                            LS.Modal.build({
+                                content: "Error: Failed to connect with our API server. Make sure you are connected to the internet and try again later. If this persists, please contact us!",
+                                buttons: [ { text: "OK", color: "auto" } ]
+                            }, {
+                                keep: false
+                            }).show();
+            
+                            O("#loginButton").class('loading', 0);
+                            return
+                        }
+            
+                        if(json.success && json.token){
+                            if(Date.now() - started < 1400){
+                                console.log("[misc] Request was too fast, delaying for a bit ("+ (Date.now() - started) +")", 1400 - (Date.now() - started));
+            
+                                await new Promise(resolve => setTimeout(resolve, 1400 - (Date.now() - started)))
+                            }
+            
+                            console.log("Login success!");
+            
+                            let query = LS.Util.params();
+
+                            app.user.add(json)
+                            app.user.use(json.id)
+
+                            if(query.continue) return location.replace(query.continue);
+
+                            app.navigate("/", {reload: true, replace: true})
+                        } else {
+                            let modal = {
+                                content: json.error,
+                                buttons: [ { text: "OK", color: "auto" } ]
+                            };
+            
+                            if(typeof json.error == "object") {
+                                console.error(json.error);
+                                modal.content = "Internal database error - please try again, if this persists, please notify us about this issue!"
+                            }
+            
+                            if(json.code) switch(json.code){
+                                case 11:
+                                    modal.title = "Invalid login details"
+                                    modal.content = "The password you entered is not correct."
+                                break;
+                                case 6:
+                                    modal.title = "Invalid login details"
+                                    modal.content = "The username or email you entered is not correct."
+                                break;
+                            }
+            
+                            let dialog = LS.Modal.build(modal, {
+                                keep: false
+                            }).show();
+                        }
+            
+                        O("#loginButton").class('loading', 0);
+                    })
+                break;
+            }
+        })
+
+        // If the user is already logged in, show the user list instead of a login page
+        tabs.setActive(userList.length < 1? "login" : "list");
+
+        function generatePassword(length = 25) {
+            const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789%=-.,!)+$_/&@';
+
+            return (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues)
+                ? Array.from(crypto.getRandomValues(new Uint32Array(length))).map((x) => charset[x % charset.length]).join('')
+                : Math.random().toString(36).slice(-10)
+            ;
+        }
+    })
+</script>

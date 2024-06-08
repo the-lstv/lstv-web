@@ -1,0 +1,400 @@
+<ls-manifest title="LSTV CDN" hidden module="cdnUploader"></ls-manifest>
+
+<div .top ls-accent="teal">
+    <style>
+        .top {
+            position: relative;
+            min-height: 250px;
+            padding: 30px 0;
+            text-align: center;
+        }
+
+        .top::after {
+            background: var(--accent);
+            content: '';
+            position: absolute;
+            left: 16px;
+            right: 16px;
+            height: 100px;
+            top: -45px;
+            filter: blur(69px);
+            border-radius: 50%;
+            z-index: -1;
+        }
+        
+        .panel {
+            padding: 20px;
+            border-radius: var(--br-lg);
+            background: var(--ui);
+
+            width: 100%;
+            flex: 1;
+        }
+
+        #statusPanel {
+            font-family: "JetBrains Mono";
+            white-space: pre-wrap;
+            background: var(--ui-bg-0);
+        }
+
+        .mainContent {
+            display: flex;
+            flex-direction: column;
+            gap: 1em;
+            margin: 0 5em;
+            align-items: center;
+        }
+
+        .result {
+            background: var(--ui-bg-1);
+            padding: 10px 20px;
+            border-radius: var(--br-lg);
+        }
+
+        #fileList {
+            min-height: 100px;
+            max-height: 300px;
+            overflow: auto;
+            background: var(--elevate-0);
+        }
+
+        #fileList .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--transparent-overlay-dark-strong);
+            padding: 4px 12px;
+            background: var(--transparent-overlay-dark);
+        }
+
+        .noFiles {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 145px;
+            font-size: large;
+            flex-direction: column;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .noFiles h3 {
+            margin: 0;
+        }
+
+        #uploadPanel {
+            background: var(--elevate-1);
+            border-radius: var(--br-lg);
+            overflow: hidden;
+            width: 620px;
+        }
+
+        .uploadPanelButtons {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 10px;
+        }
+
+        @media screen and (max-width: 800px) {
+            #uploadPanel {
+                width: 100%;
+            }
+        }
+
+        @media screen and (max-width: 500px) {
+            .mainContent {
+                margin: 0 1em;
+            }
+        }
+    </style>
+
+    <h1 style="color: var(--accent)"><b style="color: var(--accent-light)">ExtraGon</b> CDN</h1>
+</div>
+
+
+<!-- <div .panel %uploadPanel>
+</div> -->
+
+<div .mainContent>
+    <div %uploadPanel>
+        <input type="file" hidden multiple %fileInput>
+
+        <div %fileList>
+
+        </div>
+
+        <div .uploadPanelButtons>
+            <button onclick="O('#fileInput').click()"><i class="bi-folder-fill"></i> Select files</button>
+            
+            <ls-group join>
+                <button %clearButton ls-accent="orange" ls-tooltip="Clear all items" onclick="O('#fileInput').value = null; cdn_uploadPanel_updateItems()"><i class="bi-trash-fill"></i></button>
+                <button %uploadButton ls-accent="green"><i class="bi-upload"></i> Upload</button>
+            </ls-group>
+        </div>
+    </div>
+
+    <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 1em">
+        
+        <div>
+            <h3>Results:</h3>
+            <div .panel %resultPanel></div>
+        </div>
+
+        <div>
+            <h3>Status:</h3>
+            <div .panel %statusPanel></div>
+        </div>
+        
+    </div>
+</div>
+
+
+
+<script>
+
+app.module("cdnUploader", async (app, source, container) => {
+
+    let url = app.cdn, input = O("#fileInput"), skipFiles = [];
+
+    function updateItems(){
+        const files = Array.from(input.files);
+        const fileList = O("#fileList");
+
+        fileList.clear();
+        skipFiles = [];
+
+        if(files.length < 1){
+            return fileList.set(N({
+                class: "noFiles",
+                inner: [
+                    N("i", {class: "bi-cloud-plus-fill", style: "font-size: 2em;"}),
+                    N("h3", "Add some files to upload!")
+                ]
+            }))
+        }
+        
+        let i = -1;
+        for(let file of files){
+            i++;
+
+            let element = N({
+                class: "file-item",
+                inner: [
+                    N("span", {
+                        textContent: file.name
+                    }),
+                    N("button", {
+                        inner: N("i", {class: "bi-trash-fill"}),
+                        class: "elevated circle",
+                        onclick(){
+                            skipFiles.push(i)
+                            element.remove()
+
+                            if(skipFiles.length == files.length){
+                                input.value = null
+                                updateItems()
+                            }
+                        }
+                    })
+                ]
+            });
+
+            fileList.add(element);
+        }
+    }
+
+    window.cdn_uploadPanel_updateItems = updateItems;
+
+    input.on("change", updateItems)
+
+    updateItems()
+
+    await M.Script("https://cdnjs.cloudflare.com/ajax/libs/q.js/1.4.1/q.min.js")
+    await M.Script("https://cdnjs.cloudflare.com/ajax/libs/spark-md5/2.0.2/spark-md5.min.js")
+
+    setTimeout(()=>{
+        if(Q.defer){
+            window.Quantum = Q
+            Q = LS.Tiny.Q
+        }
+    }, 100)
+
+    async function chceckHash(hash){
+        let result = await app.get(url + "/file/check/" + hash).json()
+
+        if(result && !result.error){
+            return result
+        }
+        return false
+    }
+
+
+    function calculateMD5Hash(file, bufferSize) {
+        var def = Quantum.defer();
+    
+        let fileReader = new FileReader(),
+            fileSlicer = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice,
+            hashAlgorithm = new SparkMD5(),
+            totalParts = Math.ceil(file.size / bufferSize),
+            currentPart = 0,
+            startTime = new Date().getTime()
+        ;
+    
+        fileReader.onload = function (e) {
+            currentPart += 1;
+    
+            def.notify({
+                currentPart: currentPart,
+                totalParts: totalParts
+            });
+    
+            let buffer = e.target.result;
+            hashAlgorithm.appendBinary(buffer);
+    
+            if (currentPart < totalParts) {
+                processNextPart();
+                return;
+            }
+    
+            def.resolve({
+                hashResult: hashAlgorithm.end(),
+                duration: new Date().getTime() - startTime
+            });
+        };
+    
+        fileReader.onerror = function (e) {
+            def.reject(e);
+        };
+    
+        function processNextPart() {
+            var start = currentPart * bufferSize;
+            var end = Math.min(start + bufferSize, file.size);
+            fileReader.readAsBinaryString(fileSlicer.call(file, start, end));
+        }
+    
+        processNextPart();
+        return def.promise;
+    }
+
+    let working = false;
+
+    O("#uploadButton").on("click", async () => {
+        if (!input.files.length) {
+            LS.Toast.show("Add at least one file.", {
+                accent: "bright-red",
+                icon: "bi-exclamation-octagon-fill",
+                timeout: 2000
+            })
+            return;
+        }
+
+        if(working) {
+            LS.Toast.show("An upload job is already in progress, please wait.", {
+                accent: "bright-red",
+                icon: "bi-exclamation-octagon-fill",
+                timeout: 2000
+            })
+            return
+        }
+
+        working = true;
+
+        let log = O("#statusPanel");
+        log.clear();
+    
+        let resultPanel = O("#resultPanel");
+        resultPanel.clear();
+
+        let bufferSize = Math.pow(1024, 2) * 10;
+        const files = Array.from(input.files);
+
+        let i = -1;
+        for(let file of files){
+            i++;
+
+            console.log(file);
+
+            if(skipFiles.includes(i)) {console.warn("Skipping file", file); continue};
+
+            log.add(`Preparing file <span style=color:aqua>${file.name}</span>\n`);
+    
+            let hash = await new Promise(resolve => {
+                calculateMD5Hash(file, bufferSize).then(
+                    function (result) {
+                        resolve(result);
+                    },
+            
+                    function (err) {
+                    },
+            
+                    function (progress) {
+                        log.add(`Calculating part <span style=color:#f74343>${progress.currentPart}</span> of <span style=color:#f74343>${progress.totalParts}</span>, <span style=color:#dc43f7>${progress.currentPart * bufferSize}</span> bytes out of <span style=color:#dc43f7>${progress.totalParts * bufferSize}</span> bytes\n`);
+                    }
+                );
+            })
+    
+            if(!hash || !hash.hashResult){
+                // ...
+            }
+
+            log.add(`Hash result is <span style=color:#f78e43>${hash.hashResult}</span>, took ${hash.duration}ms\n`);
+            log.add(`Chcecking if this file is already on our servers.\n`);
+
+            let status = await chceckHash(hash.hashResult);
+    
+            
+            if(!status){
+                // error
+                return
+            }
+
+            let results;
+            
+            if(status.exists){
+                // already there
+                log.add(`<span style=color:#43f785>This file already has an entry, upload will be skipped!</span>\n`);
+
+                resultPanel.add(N({
+                    class: "result",
+                    inner: [
+                        `Original filename: <span style=color:#f78e43>${file.name}</span><br>URL: <a href="${url + "/file/" + hash.hashResult}">${url + "/file/" + hash.hashResult}</a><br>Hash: ${hash.hashResult}`
+                    ]
+                }))
+            } else {
+                log.add("Uploading file " + file.name);
+        
+                const form = new FormData();
+                form.append('file', input.files[0]);
+        
+                results = await app.post(url + "/upload?checkNSFW", null, {body: form}).json();
+        
+                if(!results || results.error || !Array.isArray(results)){
+                    // todo; handle error
+                    return
+                }
+
+                for(let result of results){
+                    resultPanel.add(N({
+                        class: "result",
+                        inner: [
+                            `Original filename: <span style=color:#f78e43>${result.originalName}</span><br>URL: <a href="${result.url}">${result.url}</a><br>Mimetype: ${result.mimeType}<br>Hash: ${result.hash}`
+                        ]
+                    }))
+                }
+            }
+    
+        }
+
+        LS.Toast.show("Upload finished!", {
+            accent: "green",
+            icon: "bi-check"
+        })
+
+        input.value = null;
+        updateItems()
+
+        working = false
+    })
+})
+
+</script>

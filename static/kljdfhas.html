@@ -1,0 +1,193 @@
+@no-init ();
+
+<ls-manifest title="PTK" hidden></ls-manifest>
+
+<div %vp>
+    <h1 %tet>.</h1>
+    <h3 %tot>.</h3>
+    <ls-box ls-accent="deep-orange" class="color" %pause>
+        Pozastaveno
+    </ls-box>
+</div>
+
+
+<script>
+
+let time = localStorage.time || 0, isBanned = localStorage.isBanned || false, text = O("#tet"), pause = O("#pause"), total = O("#tot"), running = false;
+time = +time;
+
+
+let prevRunningState = null;
+
+updateTime()
+
+function millisecondsToTimeString(milliseconds) {
+    // Calculate hours, minutes, and seconds
+    const hours = Math.floor(milliseconds / (1000 * 60 * 60));
+    milliseconds %= 1000 * 60 * 60;
+    const minutes = Math.floor(milliseconds / (1000 * 60));
+    milliseconds %= 1000 * 60;
+    const seconds = Math.floor(milliseconds / 1000);
+
+    // Construct the time string
+    let timeString = '';
+    if (hours > 0) {
+        timeString += "\n" + hours + ' hodina' //+ (hours > 1 ? 's' : '') + '; ';
+    }
+    if (minutes > 0) {
+        timeString += "\n" + minutes + ' minut'// + (minutes > 1 ? 's' : '') + '; ';
+    }
+    if (seconds > 0 || timeString === '') {
+        timeString += "\n" + seconds + ' sekund'// + (seconds > 1 ? 's' : '');
+    }
+
+    return timeString.trim();
+}
+
+function updateTime(){
+    text.set(millisecondsToTimeString(time))
+    localStorage.time = time
+}
+
+if(localStorage.running){
+    running = localStorage.running == "true"
+    runningChanged()
+}
+
+function interval(){
+    if(running){
+        if(!localStorage.startTime || !localStorage.initialTime) return;
+
+        time = (+localStorage.initialTime) - (Date.now() - (+localStorage.startTime))
+
+        if(time < 1) {
+            running = false;
+            pause.set("KONEC")
+            pause.attr("ls-accent", "red")
+            pause.applyStyle({
+                border: ".5em solid var(--accent-light)"
+            })
+            time = 0
+
+            if(!isBanned){
+                fetch("https://api.extragon.cloud/v2/say", {
+                    method: "POST",
+                    body: "ban LukasSTV4382"
+                })
+
+                isBanned = localStorage.isBanned = true
+            }
+        }
+        updateTime()
+    }
+}
+
+setInterval(interval, 500)
+
+function runningChanged(){
+    if(running === prevRunningState) return;
+
+    pause.applyStyle({
+        border: ""
+    })
+
+    
+    if(running){
+        pause.set("Běží")
+        pause.attr("ls-accent", "teal")
+        total.set("Z celkově " + millisecondsToTimeString(time).replaceAll("\n", " "))
+
+        if(isBanned){
+            fetch("https://api.extragon.cloud/v2/say", {
+                method: "POST",
+                body: "unban LukasSTV4382"
+            })
+
+            isBanned = localStorage.isBanned = false
+        }
+    }else{
+        pause.attr("ls-accent", "deep-orange")
+        pause.set("Pozastaveno")
+    }
+
+    prevRunningState = running;
+}
+
+interval()
+
+M.on("keypress", event => {
+    let wasRunning = running;
+    running = false;
+    runningChanged()
+
+    switch(event.key) {
+        case " ":
+            running = !wasRunning;
+            localStorage.running = running
+
+            if(running){
+                localStorage.startTime = Date.now()
+                localStorage.initialTime = time
+            }
+
+            runningChanged()
+            return
+        break;
+        case "a":
+            time += 2000
+        break;
+        case "s":
+            time += 60000
+        break;
+        case "d":
+            time += 60000 * 10
+        break;
+        case "y":
+            time -= 2000
+        break;
+        case "x":
+            time -= 60000
+        break;
+        case "c":
+            time -= 60000 * 10
+        break;
+        case "q":
+            time = 0
+        break;
+    }
+
+    // if(time < 1) time = 0;
+
+    updateTime()
+
+})
+</script>
+
+<style>
+    #vp {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+        flex-direction: column;
+    }
+
+    h1 {
+        font-size: 8vw;
+        font-weight: 900;
+        white-space: pre-wrap;
+    }
+
+    h3 {
+        font-size: 2vw;
+        white-space: pre-wrap;
+        margin: 0;
+    }
+
+    ls-box {
+        font-size: 3vw;
+        border-radius: 5em;
+        font-weight: 500;
+    }
+</style>

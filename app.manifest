@@ -1,0 +1,24 @@
+config { version: 0.1 }
+
+server {
+    domains: lstv.space, lstv.store, lstv.test, beta.lstv.space;
+    redirect_https
+}
+
+route (/) {
+    # App router
+
+    files: html;
+    notStrict;
+
+    not: /assets, /dynamic, /static, /favicon;
+    to: app.html;
+}
+
+route (/favicon) {
+    to: /assets/favicon.ico;
+}
+
+route (/static/sign-up) {
+    to: /static/login.html;
+}

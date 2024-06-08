@@ -1,0 +1,277 @@
+<head>
+
+    @resources {
+        ls-js: tiny, select, tooltips, modal, tabs, color, toast;
+        ls-css: base, ls-flat, tooltips, loader, modal, tabs, toast;
+
+        bootstrap-icons;
+
+        fonts: Rubik, Poppins;
+
+        css: assets/main.css;
+        js: assets/app.js;
+
+        defer-css;
+        defer-js;
+    }
+
+    @manifest {
+        title: "LSTV";
+        lang: "en";
+
+        style: "flat";
+        theme: "dark";
+        accent: "blue";
+    }
+
+    <script async>
+
+        /*
+        
+            What is the point of this script?
+            This script allows the page to render right after the initial HTML request is made, as it defers anything else.
+            Thanks to this, people with slower internet won't get a flashbang but instead a loading content message, that also informs them if something loads wrong, which helps detect broken websites in the future.
+
+            Is it worth-it the larger size, big overhead and non-standard beahvior? Not really..
+
+            It HAS to be async to race stupid extensions that execute insanely huge JS code right after load, which slows down loading.
+            Seriously - it saves 600ms on average on mid-range equipment. That's noticeable.
+
+        */
+
+        var windowLoaded = false;
+        (async()=>{
+            let appJS;
+            function Load(url, callback){
+                // This is a PLACEHOLDER until LS is loaded so the M.Style method can be used - sadly this happens after we already need the files.
+
+                if(!appJS && url.startsWith("js:assets/app.js")) {appJS = url; return};
+
+                let type = url.split(":");
+                url = type.slice(1).join(":")
+                type = type[0]
+
+                return new Promise((resolve, reject) => {
+                    let link;
+                    if(type == "css"){
+                        link = document.createElement("link");
+                        link.rel = "stylesheet";
+                        link.href = url;
+                    } else {
+                        link = document.createElement("script");
+                        link.src = url;
+                    }
+
+                    link.onload = function(){
+                        if(callback) callback();
+                        resolve()
+                    }
+
+                    link.onerror = function(error){
+                        if(callback) callback(error);
+                        reject(error.toString())
+                    }
+
+                    document.querySelector("head").appendChild(link);
+                })
+            }
+
+            let supported = false, userAgent = navigator.userAgent.toLowerCase(), browserVersion, browserType;
+
+            if (/chrome/.test(userAgent)) {
+                browserType = "Chrome"
+                browserVersion = parseInt(userAgent.match(/chrome\/(\d+)/)[1], 10);
+                supported = browserVersion >= 88;
+            } else if (/firefox/.test(userAgent)) {
+                browserType = "Firefox"
+                browserVersion = parseInt(userAgent.match(/firefox\/(\d+)/)[1], 10);
+                supported =  browserVersion >= 78;
+            } else if (/msie|trident/.test(userAgent)) {
+                browserType = "Internet Explorer"
+                browserVersion = 0
+                supported =  false;
+            } else {
+                // If using some obscure browser, try to run anyway - since the real support cant be determined.
+                supported = true
+                browserType = "unknown"
+                browserVersion = 0
+            }
+
+            if(!supported) {
+                window.addEventListener("load", ()=>{
+                    document.querySelectorAll("#load_circle, .loadingSubject").forEach(element => {element.style.display = "none"});
+                    document.querySelector(".loadingLog").innerText += `Your web browser is severely out of date (you are using ${browserType} ${browserVersion}, minimum supported is ${browserType} ${browserType == "Chrome"? 88 : 78})\nPlease, update your browser to the latest version.`;
+                })
+                return
+            }
+
+            let resources = $_backend.get("resources");
+            let errored = false, loaded = 0, promises = [];
+
+            for(let resource of resources){
+                if(resource.length < 1) return;
+
+                promises.push(Load(resource, (error) => {
+                    loaded++;
+                    if(error){
+                        document.querySelector(".loadingLog").innerText += `\nFailed to load "${resource}"`
+                        errored = true;
+                    }
+                }));
+            }
+
+            for(promise of promises){
+                await promise
+            }
+
+            if(!appJS){
+                window.addEventListener("load", ()=>{
+                    document.querySelector(".loadingLog").innerText += `\nCritical application error occured: the app script was not found in the resources.`
+                    errored = true;
+                })
+            }
+            
+            if(windowLoaded) document.querySelector(".loadingSubject").innerText = `Loading scripts.`;
+            await Load(appJS);
+
+            window.addEventListener("load", ()=>{
+                windowLoaded = true;
+
+                LS.once("body-available", ()=>{
+                    LS.Color.on("theme-changed", () => {
+                        app.theme = null // Update the button
+                    })
+
+                    // Set the theme based on user preffered scheme and add an listener to when this changes to apply automatically:
+                    LS.Color.adaptiveTheme()
+                    LS.Color.on("scheme-changed", LS.Color.adaptiveTheme)
+
+
+                    if(errored){
+                        Q("#load_circle, .loadingSubject").all().applyStyle({display: "none"});
+        
+                        O(".loadingLog").add("\n\nSome resourced failed to load!\nDo you wish to procceed?\n\n", N("button", {
+                            inner: "Ignore errors and continue",
+                            onclick(){
+                                LS.invoke("app-ready")
+                            }
+                        }))
+                    } else {
+                        LS.invoke("app-ready")
+                    }
+                })
+            })
+        })();
+    </script>
+
+    <style>
+        body {
+            /* Eye-saver! */
+            background: #222;
+            color: #ddd;
+        }
+        
+        @media (prefers-color-scheme: light) {
+            body {
+                background: #ddd;
+                color: #222;
+            }
+        }
+    </style>
+</head>
+
+<page>
+
+    <div %loading style="display: flex; justify-content: center; align-items: center; height: 94vh; font-family: sans-serif; overflow: hidden; padding: 0 256px">
+        <div %load_circle ls-accent="auto" load class="load-noBackground" style="position: absolute; height: 2em; width: 2em; top: calc(50% + 3em); left: calc(50% - 1em); --load-width: calc(2 / 16 * 1em); transition: 1s; z-index: 30000"></div>
+        <span style="font-family: sans-serif; font-size: 1.8em"><span class="loadingSubject">Loading content. <noscript><br>Error: This website requires JavaScript to be enabled in order to function.<br>Please enable JavaScript in your browser to continue.</noscript><br></span><pre style="white-space: pre-wrap" class="loadingLog"></pre></span>
+    </div>
+
+    <div %app style="display: none;">
+        <div %header>
+            <a ls-accent="auto" %header_link href="/"><span class="headerTitle">LSTV</span><span class="headerText"></span></a>
+
+            <div %headerButtons ls-accent="auto">
+                <button ls-tooltip="Applications" style="display: none" for="toolbarApps" %appsButton class="pill elevated">
+                    <i class="bi-grid-fill"></i> <span class="label">Apps</span>
+                </button>
+
+                <button ls-tooltip="Manage profiles" %accountsButton for="toolbarLogin" class="pill elevated" ls-accent="gray-light">
+                    <span class="text">Loading</span>
+                    <div %profilePicturePreview class="load-noBackground" load>
+                        <i class="bi-person-fill"></i>
+                    </div>
+                </button>
+
+                <button ls-tooltip="Dark/Light theme" %themeButton class="pill elevated" style="padding: .4em .8em">
+                    <i class="bi-sun-fill"></i>
+                </button>
+            </div>
+
+            <div %toolbars style="display: none">
+
+                <div %toolbarApps>
+                    <h3>Applications</h3>
+                    <div>
+                        <ls-info>
+                            <ls-info-close></ls-info-close>
+                        </ls-info>
+                    </div>
+                </div>
+
+                <div %toolbarAccount>
+                    <div %profileListWrap>
+                        <h2>Your accounts</h2>
+                        <div>
+                            <button class="pill small"><i class="bi-plus"></i> Add account</button>
+                        </div>
+                    </div>
+                    <div %profileWrap>
+                        <button %returnButton onclick="O('#toolbarAccount').class('selecting', 0)" class="pill small solid elevated" ls-accent="auto"><i class="bi-arrow-return-left"></i> Return</button>
+                        
+                        <div style="line-height: 1em; margin: 1.2rem 0">
+                            <h2 %profileDisplayname></h2>
+                            <h3 %profileUsername></h3>
+                        </div>
+
+                        <div .hButtonGroup>
+                            <a href="/account" class="ls-button pill elevated" ls-accent="auto">Manage account</a>
+                            <button class="pill elevated" ls-accent="auto">Edit profile</button>
+                            <button class="pill elevated" ls-accent="red" %logOutButton>Log out</button>
+                        </div>
+
+                        <button onclick="O('#toolbarAccount').class('selecting')" style="margin: 1em 0; margin-top: .8em" class="pill small elevated"><i class="bi-arrow-repeat"></i> Switch accounts</button>
+                    </div>
+                </div>
+
+                <div %toolbarLogin>
+                    <div %loginPopupOverlay>
+                        <div>
+                            <h2>Log-In!</h2>
+
+                            <span style="margin-bottom: 1em; display: block;">
+                                Create a LSTV account to enjoy a fresh and seamless experience!
+                            </span>
+
+                            <div .buttons>
+                                <a href="/login" class="ls-button pill elevated solid" ls-accent="auto">Log-In</a>
+                                <a href="/sign-up" class="ls-button pill elevated solid">Create account</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div %viewport>
+            <div %page_loading .page style="display: block">
+                <div ls-accent="auto" load class="load-noBackground" style="height: 2em; width: 2em; --load-width: calc(2 / 16 * 1em); z-index: 30000; position: absolute; top: calc(50% - 1em); left: calc(50% - 1em)"></div>
+            </div>
+
+            <div %page_error .page>
+                <h1>404</h1>
+            </div>
+        </div>
+    </div>
+</page>

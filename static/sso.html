@@ -1,0 +1,297 @@
+@no-init ();
+
+<ls-manifest title="Log-In with LSTV" hidden module="sso"></ls-manifest>
+
+<div class="wrapper">
+    <ls-tabs>
+        <ls-tab>
+            <div ls-accent="auto" ls-load .load-noBackground style="position: absolute; height: 2em; width: 2em; top: calc(50%); left: calc(50% - 1em); --load-width: calc(2 / 16 * 1em); transition: 1s; z-index: 30000"></div>
+        </ls-tab>
+
+        <ls-tab tab-id="sso" style="display: none">
+            <ls-modal .loginForm>
+                <ls-modal-body>
+                    <div style="text-align: center">
+                        <span style="box-shadow: 0 -170px 100px 195px var(--accent-transparent)"></span>
+                    </div>
+
+                    <div style="text-align: center; color: var(--elevate-4)">
+                        <div style="display: flex;" .sso-icons>
+                            <div %sso-avatar></div>
+                            <ls-box .linkIcon><i class="bi-link"></i></ls-box>
+                            <div %sso-icon>
+                                <div .pfpWrap>
+                                    <img .profilePicture alt="Application icon">
+                                </div>
+                            </div>
+                        </div> <br> <br>
+
+                        An extrenal application
+                        <h1 %appName></h1>
+                        wants to connect with your account.
+
+
+                    </div>
+
+                    <hr>
+                    
+                    <div style="text-align: center; font-size: smaller">
+                        You are logged in as <b %sso-user></b>.<br><a href="#" onclick="sso_changeAccount()">Change account</a>
+                    </div>
+
+                    <br>
+
+                    <span style="text-align: center; display: block">
+                        This will allow the application to do the following:<br>
+                        <div .hButtonGroup %sso-permissions ls-accent="auto"></div>
+                    </span>
+
+                    <br>
+
+                    <div style="color: var(--elevate-3); font-size: smaller">
+                        <i class="bi-link-45deg"></i> You will be taken to <b %sso-domain></b>. <br>
+                        <i class="bi-shield-fill-check"></i> The application will only gain access to the things mentioned above. It can't log-in to your account.
+                    </div>
+
+                    <hr>
+
+                    <div style="display: flex; gap: 1em; margin: 0 20px">
+                        <button %cancel .elevated ls-accent="auto">Cancel</button>
+                        <button %authorize>Authorize</button>
+                    </div>
+                </ls-modal-body>
+            </ls-modal>
+        </ls-tab>
+    </ls-tabs>
+</div>
+
+<style>
+    .loginForm {
+        width: 64vw;
+        max-width: 32em;
+        margin: auto;
+        margin-top: 2em;
+        --font: Poppins;
+        font-family: var(--font);
+        -webkit-user-select: none;
+        user-select: none;
+        text-align: left;
+        margin-bottom: 0;
+    }
+
+    .loginForm .profilePicture {
+        padding: 4px;
+    }
+
+    .linkIcon {
+        position: absolute;
+        padding: 0 16px;
+        font-size: xx-large;
+        line-height: 1em;
+        border-radius: 1em;
+    }
+
+    .sso-icons {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 12px;
+        position: relative;
+    }
+
+    .loginForm :is(button, input) {
+        width: 100%;
+        margin: .4em 0;
+    }
+
+    .loginForm ls-modal-body {
+        white-space: normal
+    }
+
+    ls-group {
+        --br: var(--br-lg);
+    }
+
+    .loginForm ls-group[join] button {
+        padding: 0 1em;
+    }
+
+    #appName {
+        margin: 0;
+        color: var(--color);
+    }
+
+    #sso-permissions .ls-button {
+        margin: 2px 0;
+        text-align: left;
+        pointer-events: none;
+    }
+
+    #sso-permissions {
+        margin-top: 8px;
+    }
+
+    #sso-permissions i {
+        display: inline-block;
+        height: 100%;
+        margin-right: 1em;
+    }
+
+    ls-tabs {
+        width: 100%;
+    }
+
+    @media only screen and (max-width: 600px) {
+        .loginForm {
+            width: unset;
+            margin-top: 1em;
+        }
+
+        .wrapper {
+            justify-content: flex-start;
+            padding: .8em 1em;
+        }
+    }
+</style>
+
+<script>
+
+    function sso_changeAccount(){
+        location.replace("/login?continue=" + encodeURIComponent(location.href))
+    }
+
+    app.module("sso", async (app, source, container) => {
+
+        if(app.user.current === null){
+            return sso_changeAccount()
+        }  
+
+        let tabs = LS.Tabs("sso-tabs", container.get("ls-tabs"), {
+            list: false
+        })
+
+        app.once("users-available", async ()=>{
+
+            container.get("#sso-user").set(app.user.fragment.displayname)
+            container.get("#sso-avatar").set(app.user.getProfilePictureView())
+    
+            let userList = app.user.list(),
+                query = LS.Util.params(),
+                modal = {
+                    title: "Invalid login page",
+                    cancelable: false,
+                    buttons: [{text: "OK", color: "auto"}]
+                },
+                url
+            ;
+
+            try{
+                url = new URL(query.ref)
+            } catch(e) {
+                console.error(e);
+                modal.content = 'Wrong or missing target URL.'
+                return LS.Modal.build(modal).show()
+            }
+    
+            if(!query.app){
+                modal.content = 'The URL does not specify the required "app" parameter.'
+                return LS.Modal.build(modal).show()
+            }
+    
+            let validation = await app.get("auth/check_sso", {
+                app: query.app || "",
+                permissions: query.permissions,
+                target: query.ref,
+                type: query.type
+            }).json()
+    
+            if(!validation) {
+                modal.content = "Could not connect with our server to validate the login request.";
+                return LS.Modal.build(modal).show()
+            }
+    
+            if(validation.error) {
+                modal.content = validation.error;
+                return LS.Modal.build(modal).show()
+            }
+    
+            if(!validation.success || !validation.app) {
+                modal.content = "Failed validating the login request.";
+                return LS.Modal.build(modal).show()
+            }
+
+            if(validation.app.icon){
+                container.get("#sso-icon img").src = app.cdn + "/file/" + validation.app.icon + "?size=120"
+            } else {
+                container.get("#sso-icon .pfpWrap").set(N("i", {
+                    class: "profilePicture bi-grid-1x2-fill"
+                }))
+            }
+    
+            O("#appName").set(validation.app.displayname || validation.app.name);
+
+            container.get("#sso-domain").set(url.origin)
+    
+            let permissions = {
+                'pockets.list': ["cash-coin", "Manage own pockets"],
+                'pockets.transaction': ["cash-coin", "Make pocket transactions"],
+                'info.email.read': ["at", "See your email"],
+                'info.email.change': ["at", "Change your account email", 1],
+                'info.username.read': ["person-fill", "See your username"],
+                'info.username.change': ["person-fill-gear", "Change your account username", 1],
+                'info.phone.read': ["telephone-fill", "See your phone number", 1],
+                'info.phone.change': ["telephone-plus-fill", "Change your account phone number", 2],
+                'info.ip.read': ["hdd-network-fill", "Always see your current IP address", 1],
+                'info.password.change': ["key-fill", "Request a password change", 1],
+                'info.password.validate': ["key-fill", "Make password validation attempts", 2],
+            }
+    
+            if(validation.permissions.length < 1){
+                O("#sso-permissions").add(N("div", {
+                    inner: `This app is not asking for any extra permissions.`,
+                    class: "elevated ls-button",
+                    accent: "gray-light"
+                }))
+            } else {
+                for(let permission of validation.permissions.sort((a, b) => (permissions[a]?.[2] || 0) - (permissions[b]?.[2] || 0)).reverse()){
+                    O("#sso-permissions").add(N("div", {
+                        inner: `<i class="bi-${permissions[permission]?.[0] || "wrench-adjustable-circle-fill"}"></i>${permissions[permission]?.[1] || permission}`,
+                        class: (permissions[permission]?.[2] == 2? "important" : "elevated") + " ls-button",
+                        accent: ["auto", "deep-orange", "rusty-red"][permissions[permission]?.[2]] || "auto"
+                    }))
+                }
+            }
+
+            if(validation.app.accent){
+                LS.Color.setAccent(validation.app.accent)
+            }
+
+            // Here, the SSO page is ready for render
+
+            tabs.setActive("sso")
+    
+            O("#authorize").on("click", async () => {
+    
+                let token = await app.get("auth/authorize_sso", {
+                    app: query.app || "",
+                    permissions: query.permissions,
+                    target: query.ref,
+                    type: query.type
+                }).json()
+                
+                if(token.error) {
+                    modal.title = "Could not authorize";
+                    modal.content = token.error;
+                    return LS.Modal.build(modal).show()
+                }
+
+                location.replace(query.ref + `?result=success#${token.token}`)
+            })
+    
+            O("#cancel").on("click", async () => {
+                location.replace(query.ref + "?result=canceled")
+            })
+        })
+
+    })
+</script>
