@@ -181,7 +181,7 @@
 
         /* TODO: Move this to main.css */
 
-        #drawer {
+        /* #drawer {
             position: absolute;
             height: 0;
             right: 0;
@@ -248,7 +248,7 @@
             height: 5px;
             background: var(--elevate-4);
             border-radius: 20px;
-        }
+        } */
     </style>
 </head>
 
@@ -334,7 +334,7 @@
                 </div>
             </div>
 
-            <div %drawer>
+            <!-- <div %drawer>
                 <div %drawerContent>
                     <div .buttonGrid>
                         <button ls-accent="blue" .pill><i class="bi-sun-fill"></i> Dark mode</button>
@@ -344,7 +344,7 @@
                     </div>
                 </div>
                 <div .drawerHandle></div>
-            </div>
+            </div> -->
         </div>
 
 
@@ -360,57 +360,57 @@
     </div>
     
     <script>
-window.addEventListener("load", () => {
-let header = O("#header"), drawer = O("#drawer"), drawerContent = O("#drawerContent");
+// window.addEventListener("load", () => {
+// let header = O("#header"), drawer = O("#drawer"), drawerContent = O("#drawerContent");
 
-let handle = LS.Util.RegisterMouseDrag(header, true, {
-    buttons: [0],
-    cursor: "grabbing"
-}),
-    innerHandle = LS.Util.RegisterMouseDrag(drawer, null, {
-    buttons: [0],
-    cursor: "grabbing"
-})
+// let handle = LS.Util.RegisterMouseDrag(header, true, {
+//     buttons: [0],
+//     cursor: "grabbing"
+// }),
+//     innerHandle = LS.Util.RegisterMouseDrag(drawer, null, {
+//     buttons: [0],
+//     cursor: "grabbing"
+// })
 
-let initialY = null, drawerBox, targetHeight = 450;
+// let initialY = null, drawerBox, targetHeight = 450;
 
-function start() {
-    initialY = M.y;
-    drawerBox = drawer.getBoundingClientRect()
+// function start() {
+//     initialY = M.y;
+//     drawerBox = drawer.getBoundingClientRect()
 
-    drawerContent.style.opacity = 0
-    drawer.style.height = 0
-}
+//     drawerContent.style.opacity = 0
+//     drawer.style.height = 0
+// }
 
-function move(x, y, event) {
-    drawer.style.height = (y - drawerBox.top) + "px"
+// function move(x, y, event) {
+//     drawer.style.height = (y - drawerBox.top) + "px"
 
-    if(y < 420){
-        drawerContent.style.opacity = (Math.min(400, y - drawerBox.top) / 2) / 100
-    }
+//     if(y < 420){
+//         drawerContent.style.opacity = (Math.min(400, y - drawerBox.top) / 2) / 100
+//     }
 
-    if(y > targetHeight){
-        drawerContent.style.transform = "scaleY("+ ((Math.max(0, y - drawerBox.top - targetHeight) / targetHeight) + 1) +")"
-    } else drawerContent.style.transform = "";
-}
+//     if(y > targetHeight){
+//         drawerContent.style.transform = "scaleY("+ ((Math.max(0, y - drawerBox.top - targetHeight) / targetHeight) + 1) +")"
+//     } else drawerContent.style.transform = "";
+// }
 
-function end(event) {
-    drawerContent.style.transform = "";
-    drawerContent.style.opacity = 1;
+// function end(event) {
+//     drawerContent.style.transform = "";
+//     drawerContent.style.opacity = 1;
 
-    if(M.y < 200) drawer.style.height = 0 + "px"; else {
-        drawer.style.height = targetHeight + "px";
-    }
-}
+//     if(M.y < 200) drawer.style.height = 0 + "px"; else {
+//         drawer.style.height = targetHeight + "px";
+//     }
+// }
 
-handle.on("start", start)
-handle.on("move", move)
-handle.on("end", end)
+// handle.on("start", start)
+// handle.on("move", move)
+// handle.on("end", end)
 
 // TODO:
 //innerHandle.on("start", start)
 //innerHandle.on("move", move)
 //innerHandle.on("end", end)
-})
+// })
     </script>
 </page>
