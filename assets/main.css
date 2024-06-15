@@ -106,7 +106,7 @@ body {
 
 #toolbars > div {
     text-align: center;
-    height: 20rem;
+    /* height: 20rem; */
 }
 
 .buttons :is(button, a) {
@@ -135,17 +135,15 @@ button.solid::before {
     flex-direction: column;
     align-items: center;
     padding: 0 20px;
-    gap: .6em;
 }
 
 #loginPopupOverlay {
-    backdrop-filter: blur(18px);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 5;
     position: relative;
-    padding: 1em 24px;
+    padding: 3em 30px;
     height: 100%;
 }
 
@@ -154,7 +152,6 @@ button.solid::before {
 }
 
 #toolbarLogin {
-    background: url(https://cdn.extragon.cloud/file/24b53516c3e924d063fe9e48d5462e7d.svg);
     background-size: 130%;
     background-position: center;
     background-repeat: no-repeat;
