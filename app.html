@@ -40,14 +40,17 @@
         */
 
         var windowLoaded = false, loadStarted = Date.now();
+
         (async()=>{
-            let appJS;
+            let appFile;
+
             function Load(url, callback){
                 // This is a PLACEHOLDER until LS is loaded so the M.Style method can be used - sadly this happens after we already need the files.
 
-                if(!appJS && url.startsWith("js:/assets/app.js")) {appJS = url; return};
+                if(!appFile && url.startsWith("js:/assets/app.js")) return appFile = url;
 
                 let type = url.split(":");
+
                 url = type.slice(1).join(":")
                 type = type[0]
 
@@ -76,37 +79,7 @@
                 })
             }
 
-            let supported = false, userAgent = navigator.userAgent.toLowerCase(), browserVersion, browserType;
-
-            if (/chrome/.test(userAgent)) {
-                browserType = "Chrome"
-                browserVersion = parseInt(userAgent.match(/chrome\/(\d+)/)[1], 10);
-                supported = browserVersion >= 88;
-            } else if (/firefox/.test(userAgent)) {
-                browserType = "Firefox"
-                browserVersion = parseInt(userAgent.match(/firefox\/(\d+)/)[1], 10);
-                supported =  browserVersion >= 78;
-            } else if (/msie|trident/.test(userAgent)) {
-                browserType = "Internet Explorer"
-                browserVersion = 0
-                supported =  false;
-            } else {
-                // If using some obscure browser, try to run anyway - since the real support cant be determined.
-                supported = true
-                browserType = "unknown"
-                browserVersion = 0
-            }
-
-            if(!supported) {
-                window.addEventListener("load", ()=>{
-                    document.querySelectorAll("#load_circle, .loadingSubject").forEach(element => {element.style.display = "none"});
-                    document.querySelector(".loadingLog").innerText += `Your web browser is severely out of date (you are using ${browserType} ${browserVersion}, minimum supported is ${browserType} ${browserType == "Chrome"? 88 : 78})\nPlease, update your browser to the latest version.`;
-                })
-                return
-            }
-
-            let resources = $_backend.get("resources");
-            let errored = false, loaded = 0, promises = [];
+            let resources = Akeno.get("resources"), errored = false, loaded = 0, promises = [];
 
             for(let resource of resources){
                 if(resource.length < 1) return;
@@ -120,11 +93,9 @@
                 }));
             }
 
-            for(promise of promises){
-                await promise
-            }
+            for(promise of promises) await promise;
 
-            if(!appJS){
+            if(!appFile){
                 window.addEventListener("load", ()=>{
                     document.querySelector(".loadingLog").innerText += `\nCritical application error occured: the app script was not found in the resources.`
                     errored = true;
@@ -132,7 +103,7 @@
             }
             
             if(windowLoaded) document.querySelector(".loadingSubject").innerText = `Loading scripts.`;
-            await Load(appJS);
+            await Load(appFile);
 
             window.addEventListener("load", ()=>{
                 windowLoaded = true;
