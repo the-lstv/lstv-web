@@ -1,11 +1,128 @@
 @no-init ();
 
-<ls-manifest title="Home" hidden></ls-manifest>
+<ls-manifest title="Home" module="static.home" hidden></ls-manifest>
 
 <style>
+.full-height {
+    height: 100%;
+}
 
+.center-board {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#logo {
+    width: 30vw;
+    min-width: 120px;
+    max-width: 300px;
+    overflow: visible;
+}
+
+.logo-stripe {
+    transform-origin: center;
+    transform: scaleX(40);
+    opacity: .1;
+}
+
+#chevron {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 30px;
+    -webkit-text-stroke: medium;
+    animation: jump 1.5s cubic-bezier(0.7, 0, 0.175, 1) 250ms infinite alternate both;
+    transition: opacity .2s;
+    pointer-events: none;
+    opacity: 0;
+}
+
+#chevron.visible {
+    opacity: 1;
+}
+
+@keyframes jump {
+    0% {
+        transform: translateY(0) translateX(-50%)
+    }
+
+    100% {
+        transform: translateY(-10px) translateX(-50%)
+    }
+}
+
+.lstv-pattern {
+    position: relative;
+    background: linear-gradient(transparent 50%, var(--background));
+}
+
+.lstv-pattern::after {
+    content: '';
+    background-image: url(https://cdn.extragon.cloud/file/2c4741e31df140d63dd3007076264d77.svg);
+    background-size: 130px 285px;
+    background-position: center;
+    inset: 0;
+    position: absolute;
+    z-index: -1;
+    opacity: .2;
+}
+
+#footer {
+    background-color: var(--elevate);
+}
+
+#footer {
+    position: relative;
+    min-height: 250px;
+    padding: 30px 0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.padding {
+    padding: 2em 4em;
+}
 </style>
 
-<div .app>
-    <div .></div>
+<div .full-height .center-board>
+    <svg %logo xmlns="http://www.w3.org/2000/svg" viewBox="0 0 111 124" fill="none"><path fill="#ed6c30" d="M0 16h111v14H0z"/><path class="logo-stripe" fill="#ed6c30" d="M0 16h111v14H0z"/><path fill="#fcc21b" d="M0 35h111v15H0z"/><path class="logo-stripe" fill="#fcc21b" d="M0 35h111v15H0z"/><path fill="#40c0e7" d="M0 55h111v14H0z"/><path class="logo-stripe" fill="#40c0e7" d="M0 55h111v14H0z"/><path d="M10.9 118v-14.6h3v11.8h5.9v2.8h-8.9zm31.092.2c-1.027 0-1.92-.173-2.68-.52s-1.347-.833-1.76-1.46-.62-1.367-.62-2.22h3c0 .493.187.887.56 1.18.387.28.907.42 1.56.42.627 0 1.113-.14 1.46-.42.36-.28.54-.667.54-1.16a1.62 1.62 0 0 0-.4-1.1c-.267-.307-.64-.513-1.12-.62l-1.48-.34c-1.24-.293-2.207-.833-2.9-1.62-.68-.8-1.02-1.773-1.02-2.92 0-.853.193-1.593.58-2.22.4-.64.96-1.133 1.68-1.48s1.573-.52 2.56-.52c1.493 0 2.673.373 3.54 1.12.88.733 1.32 1.727 1.32 2.98h-3c0-.467-.167-.833-.5-1.1-.32-.267-.787-.4-1.4-.4-.573 0-1.013.133-1.32.4-.307.253-.46.62-.46 1.1a1.73 1.73 0 0 0 .36 1.1c.253.293.607.493 1.06.6l1.56.36c1.293.293 2.273.827 2.94 1.6.667.76 1 1.733 1 2.92 0 .853-.213 1.607-.64 2.26-.413.653-1 1.16-1.76 1.52-.747.36-1.633.54-2.66.54zm25.492-.2v-11.8h-3.7v-2.8h10.4v2.8h-3.7V118h-3zm26.612 0l-3.62-14.6h3.1l2.02 9.22.24 1.22.24 1.26.2-1.26.22-1.24 1.96-9.2h3.02l-3.58 14.6h-3.8zM56 0l43.301 75H12.699L56 0z" fill="var(--color)"/></svg>
+    <div %chevron .visible><i class="bi-chevron-down"></i></div>
 </div>
+
+<div .full-height style="background: var(--elevate)" .padding>
+    <ls-box .color ls-accent="lstv-red"><i class="bi-exclamation-triangle-fill"></i> This is a beta version of our site (2024). Bugs may appear. <a href="https://old.lstv.space">Back to the old (2020) version</a> (not recommended)</ls-box>
+</div>
+
+<div .full-height>
+    
+</div>
+
+<div %footer>
+    <svg style="width:300px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 290 95" fill="none"><path d="M101.84 73V20.44h10.8v42.48h21.24V73h-32.04zm65.132.72c-3.696 0-6.912-.624-9.648-1.872s-4.848-3-6.336-5.256-2.232-4.92-2.232-7.992h10.8c0 1.776.672 3.192 2.016 4.248 1.392 1.008 3.264 1.512 5.616 1.512 2.256 0 4.008-.504 5.256-1.512 1.296-1.008 1.944-2.4 1.944-4.176 0-1.536-.48-2.856-1.44-3.96s-2.304-1.848-4.032-2.232l-5.328-1.224c-4.464-1.056-7.944-3-10.44-5.832-2.448-2.88-3.672-6.384-3.672-10.512 0-3.072.696-5.736 2.088-7.992 1.44-2.304 3.456-4.08 6.048-5.328s5.664-1.872 9.216-1.872c5.376 0 9.624 1.344 12.744 4.032 3.168 2.64 4.752 6.216 4.752 10.728h-10.8c0-1.68-.6-3-1.8-3.96-1.152-.96-2.832-1.44-5.04-1.44-2.064 0-3.648.48-4.752 1.44-1.104.912-1.656 2.232-1.656 3.96 0 1.536.432 2.856 1.296 3.96.912 1.056 2.184 1.776 3.816 2.16l5.616 1.296c4.656 1.056 8.184 2.976 10.584 5.76 2.4 2.736 3.6 6.24 3.6 10.512 0 3.072-.768 5.784-2.304 8.136-1.488 2.352-3.6 4.176-6.336 5.472-2.688 1.296-5.88 1.944-9.576 1.944zm44.972-.72V30.52h-13.32V20.44h37.44v10.08h-13.32V73h-10.8zm49.004 0l-13.032-52.56h11.16l7.272 33.192.864 4.392c.384 1.776.672 3.288.864 4.536l.72-4.536.792-4.464 7.056-33.12h10.872L274.628 73h-13.68z" fill="url(#A)"/><path d="M40.321 20H78v14H48.348l-8.027-14z" fill="#ed6c30"/><path d="M51.215 39H78v15H59.816l-8.601-15z" fill="#fcc21b"/><path d="M62.683 59H78v14h-7.29l-8.027-14z" fill="#40c0e7"/><path d="M12.483 68L35 29l22.517 39H12.483z" stroke="var(--color)" stroke-width="9"/><defs><linearGradient id="A" x1="95" y1="-48.5" x2="279.5" y2="63.5" gradientUnits="userSpaceOnUse"><stop stop-color="#fcc21b"/><stop offset=".465" stop-color="#fcc21b"/><stop offset=".465" stop-color="#ed6c30"/><stop offset=".725" stop-color="#ed6c30"/><stop offset=".725" stop-color="#40c0e7"/></linearGradient></defs></svg>
+    <div ls-accent="auto" style="line-height: 1.6em; text-align: center">
+        <a href="/tos">Terms of Service</a> · <a href="/pp">Privacy Policy</a> <br>
+        <a style="font-weight: 100" href="https://github.com/the-lstv/lstv-web"><i class="bi-github"></i> Website GitHub</a>
+    </div>
+</div>
+
+<script>
+    app.module("static.home", (app, source, container) => {
+
+        container.on("scroll", () => {
+            let scroll = container.scrollTop;
+
+            container.get("#chevron").class("visible", scroll < 160)
+        })
+
+        if(!localStorage["ls.visited"]){
+            LS.Toast.show("Warning: This site is in beta.", {accent: "lstv-red", timeout: 2000})
+            localStorage["ls.visited"] = true
+        }
+
+    })
+</script>

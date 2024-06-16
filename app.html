@@ -39,7 +39,7 @@
 
         */
 
-        var windowLoaded = false;
+        var windowLoaded = false, loadStarted = Date.now();
         (async()=>{
             let appJS;
             function Load(url, callback){

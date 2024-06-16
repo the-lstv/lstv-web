@@ -462,12 +462,12 @@
 
                             return
                         }
-            
+
                         if(json.success){
-                            if(Date.now() - started < 1400){
-                                console.log("[misc] Request was too fast, delaying for a bit ("+ (Date.now() - started) +")", 1400 - (Date.now() - started));
+                            if(Date.now() - started < 420){
+                                console.log("[misc] Request was too fast, delaying for a bit ("+ (Date.now() - started) +")", 420 - (Date.now() - started));
             
-                                await new Promise(resolve => setTimeout(resolve, 1400 - (Date.now() - started)))
+                                await new Promise(resolve => setTimeout(resolve, 420 - (Date.now() - started)))
 
                                 if(json.token){
                                     app.user.add(json)
@@ -596,10 +596,10 @@
                         }
             
                         if(json.success && json.token){
-                            if(Date.now() - started < 1400){
-                                console.log("[misc] Request was too fast, delaying for a bit ("+ (Date.now() - started) +")", 1400 - (Date.now() - started));
+                            if(Date.now() - started < 420){
+                                console.log("[misc] Request was too fast, delaying for a bit ("+ (Date.now() - started) +")", 420 - (Date.now() - started));
             
-                                await new Promise(resolve => setTimeout(resolve, 1400 - (Date.now() - started)))
+                                await new Promise(resolve => setTimeout(resolve, 420 - (Date.now() - started)))
                             }
             
                             console.log("Login success!");

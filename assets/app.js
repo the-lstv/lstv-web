@@ -4,7 +4,7 @@
         throw new Error("Application could not start! LS is missing!")
     }
 
-    console.log('%c LSTV %c\nWelcome to the LSTV web!\n\nPlease beware: %cIF SOMEONE TOLD YOU TO PASTE SOMETHING HERE, THEY MIGHT BE TRYING TO SCAM YOU.\nONLY USE THE CONSOLE IF YOU KNOW EXACTLY WHAT YOU ARE DOING.\n\n', 'font-size:4em;padding:10px;background:linear-gradient(to bottom,#3498db,#f39c12,#e74c3c);border-radius:1em;color:white;font-weight:900;margin:1em','font-size:2em;font-weight:400;margin:0 2.5em','font-size:2em;font-weight:400;margin:0 2.5em;color:red;font-weight:bold');
+    console.log('%c LSTV %c\nWelcome to the LSTV web!\n\nPlease beware:\n%cIF SOMEONE TOLD YOU TO PASTE SOMETHING HERE,\nTHEY MIGHT BE TRYING TO SCAM YOU.\nDO NOT USE THE CONSOLE IF YOU DON\'T KNOW\nWHAT YOU ARE DOING.\n\n', 'font-size:4em;padding:10px;background:linear-gradient(to bottom,#3498db, #3498db 33%, #f39c12 33%,#f39c12 66%,#e74c3c 66%,#e74c3c);border-radius:1em;color:white;font-weight:900;margin:1em;-webkit-text-stroke:2px #111','font-size:1.5em;font-weight:400','font-size:2em;font-weight:400;color:#ed6c30;font-weight:bold');
 
     let definedModules = [];
 
@@ -457,6 +457,8 @@
     }
 
     LS.once("app-ready", async ()=>{
+
+        console.log(`[debug] App loaded in ${Date.now() - loadStarted}ms`);
 
         app.events = new(LS.EventResolver())(app);
 
