@@ -138,84 +138,6 @@ h2 {
         width: 250px;
     }
 }
-
-.app {
-    box-shadow: 0 9px 25px -11px #000;
-    cursor: pointer;
-    height: fit-content;
-    width: 250px;
-    overflow: hidden;
-    background: #fff;
-    border: 1px solid #0005;
-    border-radius: 11px;
-    padding: 15px;
-    margin: 8px;
-    text-align: center;
-    position: relative;
-    color: #000;
-    padding-top: 55px;
-    padding-bottom: 60px;
-}
-
-.apptag {
-    white-space: nowrap;
-    background: #61616136;
-    border-radius: 5.6px;
-    padding: 3px 10px;
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    margin: 3px
-}
-.apptag.compat{
-    font-size: 13px;
-    padding: 3px 8px;
-}
-
-.app-top,.app-bottom{
-    display: flex;
-    position: absolute;
-    left: 0;
-    right: 0;
-    padding: 5px;
-    background: #0005;
-    backdrop-filter: blur(25px);
-    --scrollbar-size:0
-}
-.app-top{
-    color: #fff;
-    top: 0;
-}
-.app-bottom{
-    overflow: auto;
-    bottom: 0;
-}
-
-.app.light .app-top{
-    border-bottom: 1px solid #0005;
-}
-.app.light .app-bottom{
-    border-top: 1px solid #0005;
-}
-.app.light .app-top,.app.light .app-bottom{
-    background: #fff5;
-}
-
-.app-top right{
-    width: 100%;
-}
-
-.app img {
-    width: 109px;
-    height: 109px;
-    margin: 5px;
-    border-radius: 15px
-}
-
-.app:active {
-    box-shadow: none;
-    transform: scale(0.97)
-}
 </style>
 
 <div .full-height .center-board>
@@ -262,7 +184,7 @@ My name is Lukas (with a k).<br>
 </div>
 
 <div .full-height>
-    
+    <div %apps-showcase></div>
 </div>
 
 <div %footer>
@@ -276,16 +198,59 @@ My name is Lukas (with a k).<br>
 <script>
     app.module("static.home", (app, source, container) => {
 
+        let initialLoadApps = false, appsBottom = Infinity, appsOffset = 0, appsAtBottom = false;
+
         container.on("scroll", () => {
             let scroll = container.scrollTop;
 
             container.get("#chevron").class("visible", scroll < 160)
             container.style.setProperty("--scroll", scroll)
+
+            if(!initialLoadApps && scroll > 500) {
+                initialLoadApps = true
+                loadApps()
+            }
+
+            if(!appsAtBottom && scroll > (container.scrollHeight - innerHeight - 100)) {
+                appsOffset++
+                loadApps()
+            }
         })
 
         if(!localStorage["ls.visited"]){
-            LS.Toast.show("Warning: This site is in beta.", {accent: "lstv-red", timeout: 2000})
+            LS.Toast.show("Warning: This site is in beta. <a href='https://lstv.space:8443'>Visit the legacy site</a>", {accent: "lstv-red", timeout: 2000})
             localStorage["ls.visited"] = true
+        }
+
+
+        let appsPageSize = 10;
+
+        async function loadApps(limit = appsPageSize, offset = (appsOffset * appsPageSize)) {
+            let list = await app.get(`${app.api}/v2/apps/list/home?limit=${limit}&offset=${offset}`).json()
+
+            if(list.length < limit) appsAtBottom = true;
+
+            for(let item of list){
+                O("#apps-showcase").add(N({
+                    accent: item.accent,
+                    inner: [
+                        N({
+                            class: "appTop"
+                        }),
+
+                        app.icon? N("img", {src: app.cdn + "/file/" + app.icon + ".webp?size=120"}): "",
+
+                        N("span", {innerText: item.displayname, class: "appName"}),
+                        N({innerText: item.description, class: "appDescription"}),
+
+                        item.tags? N({
+                            class: "appBottom",
+                            inner: item.tags.split(",").map(tag => N("ls-box", {innerText: tag.toUpperCase(), class: "inline appTag"}))
+                        }): "",
+                    ],
+                    class: "appItem"
+                }))
+            }
         }
 
     })
