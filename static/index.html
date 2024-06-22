@@ -139,14 +139,99 @@ h2 {
     }
 }
 
+.appShowcaseWrap {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+}
 
-
+#apps-showcase {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+    padding: 50px 0;
+    max-width: 965px;
+    justify-content: center;
+}
 
 .appItem {
     display: flex;
-    
+    width: 295px;
+    --color-1: var(--elevate);
+    --color-2: var(--elevate-1);
+    background: linear-gradient(45deg, var(--color-1), var(--color-2));
+    border-radius: 15px;
+    overflow: hidden;
+    flex-direction: column;
+    box-shadow: inset 0 0 0 1px #fff2, 0 9px 25px -11px #000;
+    height: fit-content;
 }
 
+.appBody {
+    padding: 30px 20px;
+    text-align: center;
+    font-weight: 200;
+}
+
+.appDescription {
+    text-align: left;
+}
+
+.appIconContainer {
+    margin-bottom: 15px;
+}
+
+.appIconContainer img {
+    width: 120px;
+    border-radius: 8px;
+}
+
+.appName {
+    font-size: 1.4em;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.appTop {
+    background: var(--transparent-overlay);
+    padding: 8px;
+    text-align: center;
+}
+
+.appBottom {
+    background: var(--transparent-overlay);
+    padding: 8px;
+    display: flex;
+    overflow-x: overlay;
+}
+
+.appTop span {
+    letter-spacing: 1px;
+    font-weight: 500;
+    font-size: 1.2em;
+    opacity: .9;
+}
+
+.appTag {
+    background: var(--transparent-overlay);
+    padding: 4px 12px !important;
+}
+
+.appItemDark .appBottom {
+    background: #fff1;
+}
+
+.appItemLight .appBottom {
+    background: #0002;
+}
+
+.appItemLight {
+    color: #111;
+}
+
+.appItemDark {
+    color: #eee;
+}
 
 </style>
 
@@ -193,8 +278,10 @@ My name is Lukas (with a k).<br>
 
 </div>
 
-<div .full-height>
-    <div %apps-showcase></div>
+<div>
+    <div .appShowcaseWrap>
+        <div %apps-showcase></div>
+    </div>
 </div>
 
 <div %footer>
@@ -240,18 +327,41 @@ My name is Lukas (with a k).<br>
 
             if(list.length < limit) appsAtBottom = true;
 
+            let types = ["Application", "Application", "Game", "Service", "Authentication", "Utility", "Website", "Finance"]
+
             for(let item of list){
-                O("#apps-showcase").add(N({
+                console.log(item);
+
+                let element = N({
                     accent: item.accent,
                     inner: [
                         N({
-                            class: "appTop"
+                            class: "appTop",
+                            inner: N("span", {
+                                innerText: types[item.type]
+                            })
                         }),
 
-                        app.icon? N("img", {src: app.cdn + "/file/" + app.icon + ".webp?size=120"}): "",
+                        N({
+                            class: "appBody",
+                            inner: [
+                                item.icon? N({class: "appIconContainer", inner: N("img", {crossOrigin: "Anonymous", src: app.cdn + "/file/" + item.icon + "?size=120", onload(){
+                                    let color = LS.Color.getAverageRGB(this);
+        
+                                    console.log(color.hex, color.rgb, color);
+        
+                                    element.style.setProperty("--color-1", color.darken(8).hex)
+                                    element.style.setProperty("--color-2", color.hex)
+        
+                                    element.class(color.isDark? "appItemDark" : "appItemLight")
+                                }})}): "",
 
-                        N("span", {innerText: item.displayname, class: "appName"}),
-                        N({innerText: item.description, class: "appDescription"}),
+                                item.icon? N("br"): "",
+        
+                                N("span", {innerText: item.displayname, class: "appName"}),
+                                N({innerText: item.description, class: "appDescription"}),
+                            ]
+                        }),
 
                         item.tags? N({
                             class: "appBottom",
@@ -259,7 +369,9 @@ My name is Lukas (with a k).<br>
                         }): "",
                     ],
                     class: "appItem"
-                }))
+                });
+
+                O("#apps-showcase").add(element)
             }
         }
 
