@@ -150,31 +150,34 @@ h2 {
     gap: 40px;
     flex-wrap: wrap;
     padding: 50px 0;
-    max-width: 965px;
+    max-width: 875px;
     justify-content: center;
 }
 
 .appItem {
     display: flex;
-    width: 295px;
+    width: 265px;
     --color-1: var(--elevate);
     --color-2: var(--elevate-1);
-    background: linear-gradient(45deg, var(--color-1), var(--color-2));
+    background: radial-gradient(270% 160% at 69% 100%,var(--color-1) 0%,var(--color-2) 100%);
     border-radius: 15px;
     overflow: hidden;
     flex-direction: column;
     box-shadow: inset 0 0 0 1px #fff2, 0 9px 25px -11px #000;
     height: fit-content;
+    color: var(--color-fg-light);
+    cursor: pointer;
 }
 
 .appBody {
     padding: 30px 20px;
     text-align: center;
-    font-weight: 200;
+    font-weight: 300;
 }
 
 .appDescription {
     text-align: left;
+    white-space: pre-wrap;
 }
 
 .appIconContainer {
@@ -193,14 +196,17 @@ h2 {
 }
 
 .appTop {
+    text-align: center;
+    color: var(--color-fg);
+}
+
+.appTop, .appBottom {
     background: var(--transparent-overlay);
     padding: 8px;
-    text-align: center;
+    backdrop-filter: blur(25px);
 }
 
 .appBottom {
-    background: var(--transparent-overlay);
-    padding: 8px;
     display: flex;
     overflow-x: overlay;
 }
@@ -225,13 +231,36 @@ h2 {
     background: #0002;
 }
 
-.appItemLight {
+#cursorPopout {
+    position: fixed;
+    width: 60px;
+    height: 60px;
+    background: var(--color);
+    color: var(--accent);
+    top: 0;
+    border-radius: 50%;
+    transform: scale(.5) translate(-50%, -50%);
+    opacity: 0;
+    transition: transform .2s, opacity .2s, background .4s;
+    z-index: 500;
+    pointer-events: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#cursorPopout.active {
+    transform: scale(1) translate(-50%, -50%);
+    opacity: 1;
+}
+
+/* .appItemLight {
     color: #111;
 }
 
 .appItemDark {
     color: #eee;
-}
+} */
 
 </style>
 
@@ -279,6 +308,9 @@ My name is Lukas (with a k).<br>
 </div>
 
 <div>
+    <div %cursorPopout>
+        <i class="bi-box-arrow-up-right"></i>
+    </div>
     <div .appShowcaseWrap>
         <div %apps-showcase></div>
     </div>
@@ -295,7 +327,7 @@ My name is Lukas (with a k).<br>
 <script>
     app.module("static.home", (app, source, container) => {
 
-        let initialLoadApps = false, appsBottom = Infinity, appsOffset = 0, appsAtBottom = false;
+        let initialLoadApps = false, appsBottom = Infinity, appsOffset = 0, appsAtBottom = false, cursorPopout = container.get("#cursorPopout");
 
         container.on("scroll", () => {
             let scroll = container.scrollTop;
@@ -338,7 +370,7 @@ My name is Lukas (with a k).<br>
                         N({
                             class: "appTop",
                             inner: N("span", {
-                                innerText: types[item.type]
+                                innerText: item.displayname//types[item.type]
                             })
                         }),
 
@@ -349,16 +381,21 @@ My name is Lukas (with a k).<br>
                                     let color = LS.Color.getAverageRGB(this);
         
                                     console.log(color.hex, color.rgb, color);
-        
-                                    element.style.setProperty("--color-1", color.darken(8).hex)
-                                    element.style.setProperty("--color-2", color.hex)
-        
+                                    
+                                    element.appColor = color.hex;
+                                    element.style.setProperty("--color-1", color.saturation(80).darken(16).hex)
+                                    element.style.setProperty("--color-2", element.appColor)
+
+                                    element.fgColor = color.lighten(60).saturation(80).hex;
+                                    element.style.setProperty("--color-fg", element.fgColor)
+                                    element.style.setProperty("--color-fg-light", color.lighten(60).saturation(25).hex)
+    
                                     element.class(color.isDark? "appItemDark" : "appItemLight")
                                 }})}): "",
 
                                 item.icon? N("br"): "",
         
-                                N("span", {innerText: item.displayname, class: "appName"}),
+                                // N("span", {innerText: item.displayname, class: "appName"}),
                                 N({innerText: item.description, class: "appDescription"}),
                             ]
                         }),
@@ -368,8 +405,29 @@ My name is Lukas (with a k).<br>
                             inner: item.tags.split(",").map(tag => N("ls-box", {innerText: tag.toUpperCase(), class: "inline appTag"}))
                         }): "",
                     ],
-                    class: "appItem"
+
+                    class: "appItem",
+
+                    onmouseenter(){
+                        updatePopout()
+                        cursorPopout.style.setProperty("--accent", element.appColor || "#444")
+                        cursorPopout.style.setProperty("--color", element.fgColor || "#fff")
+                        cursorPopout.class("active")
+                    },
+
+                    onmousemove(){
+                        updatePopout()
+                    },
+                    
+                    onmouseleave(){
+                        cursorPopout.class("active", 0)
+                    }
                 });
+
+                function updatePopout(){
+                    cursorPopout.style.left = M.x + "px"
+                    cursorPopout.style.top = M.y + "px"
+                }
 
                 O("#apps-showcase").add(element)
             }
