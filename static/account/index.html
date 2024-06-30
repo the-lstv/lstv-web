@@ -1,4 +1,138 @@
 @no-init ();
 
-<ls-manifest title="Account management" header="Account" hidden></ls-manifest>
+<ls-manifest title="Account management" header="Account" hidden module="account.manage"></ls-manifest>
 
+<script>
+app.module("account.manage", async (app, page, container) => {
+    let user = await app.user.fetch()
+
+})
+</script>
+
+<style>
+.sidebar-container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    padding: 10px 10px 0 10px;
+}
+
+.sidebar {
+    background: var(--elevate-0);
+    width: 250px;
+    height: 100%;
+    border-radius: 24px 0 0 0;
+    padding: 15px;
+    overflow: auto;
+    -webkit-user-select: none;
+    user-select: none;
+    border-right: 1px solid var(--elevate-3);
+}
+
+.sidebar-content {
+    width: 100%;
+    flex: 1;
+    background: var(--ui-bg-0);
+    border-radius: 0 24px 0 0;
+}
+
+@media screen and (max-width: 680px) {
+    .sidebar {
+        border-radius: 0;
+        position: absolute;
+        z-index: 1;
+        left: 0;
+        right: 0;
+        width: unset;
+        background: var(--elevate);
+        border-right: none;
+    }
+
+    .sidebar-content::after {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #0004;
+    }
+
+    .sidebar-content {
+        border-radius: 24px 24px 0 0;
+    }
+}
+
+.sidebar-path {
+    margin-bottom: 10px;
+    padding: 5px;
+}
+
+.sidebar-items {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.sidebar-item.selected {
+    background: var(--elevate-1);
+    position: relative;
+}
+
+.sidebar-item {
+    border-radius: 15px;
+    padding: 8px 18px;
+    cursor: pointer;
+}
+
+.sidebar-item.selected::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 32%;
+    bottom: 32%;
+    background: var(--accent);
+    width: 5px;
+    border-radius: 10px;
+}
+
+.sidebar-item > i {
+    margin-right: 8px;
+}
+</style>
+
+<div .sidebar-container>
+    <div .sidebar %accountManageSidebar>
+        <!-- <div .sidebar-path>
+            <div .sidebar-path-item>
+                <i class="bi-house-fill"></i>
+            </div>
+        </div> -->
+        <div .sidebar-items>
+            <div .sidebar-item .selected>
+                <i class="bi-person-fill"></i>
+                Profile
+            </div>
+            <div .sidebar-item>
+                <i class="bi-wallet-fill"></i>
+                Pockets
+            </div>
+            <div .sidebar-item>
+                <i class="bi-cloudy-fill"></i>
+                Cloud services
+            </div>
+            <div .sidebar-item>
+                <i class="bi-currency-exchange"></i>
+                Billing
+            </div>
+            <div .sidebar-item>
+                <i class="bi-person-fill"></i>
+                Thing
+            </div>
+        </div>
+    </div>
+    
+    <div .sidebar-content>
+
+    </div>
+</div>

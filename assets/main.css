@@ -43,11 +43,11 @@ body {
     position: relative;
     -webkit-user-select: none;
     user-select: none;
+    z-index: 50;
 }
 
 #headerButtons button {
     margin: 0;
-    margin-left: .4rem;
     font-size: .9rem;
     overflow: hidden;
 }
@@ -102,6 +102,12 @@ body {
     --font: Poppins, Rubik, sans-serif;
     font-family: Poppins, Rubik, sans-serif;
     z-index: 1000;
+}
+
+#headerButtons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 #toolbars > div {
@@ -172,14 +178,30 @@ button.solid::before {
     }
 }
 
+@media only screen and (max-width: 430px) {
+    .headerText {
+        display: none;
+    }
+
+    .headerTitle {
+        font-weight: 400 !important;
+    }
+}
+
 @media only screen and (max-width: 350px) {
     #headerButtons .label {
         display: none;
     }
 }
 
-@media only screen and (max-width: 300px) {
+@media only screen and (max-width: 310px) {
     #appsButton {
+        display: none !important;
+    }
+}
+
+@media only screen and (max-width: 250px) {
+    #themeButton {
         display: none !important;
     }
 }

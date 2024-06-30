@@ -11,4 +11,3 @@ The backend is based and served on uWebSockets - meaning that performance is goi
 **Copyright notice:**<br>
 License: CC BY-NC-ND 4.0 - This project is not open source like most of my other projects.<br>
 You are free to browse the code and make contributions, but you are not allowed to redistribute modified copies, and you must always include credit.
-hi
