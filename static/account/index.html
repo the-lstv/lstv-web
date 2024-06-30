@@ -36,6 +36,10 @@ app.module("account.manage", async (app, page, container) => {
     border-radius: 0 24px 0 0;
 }
 
+[ls-theme="light"] .sidebar-item.selected {
+    background: var(--elevate);
+}
+
 @media screen and (max-width: 680px) {
     .sidebar {
         border-radius: 0;
@@ -46,6 +50,10 @@ app.module("account.manage", async (app, page, container) => {
         width: unset;
         background: var(--elevate);
         border-right: none;
+    }
+
+    [ls-theme="light"] .sidebar-item.selected {
+        background: var(--elevate-0);
     }
 
     .sidebar-content::after {

@@ -41,15 +41,14 @@
 
         */
 
-        var windowLoaded = false, loadStarted = Date.now();
+        var loadStarted = Date.now();
 
         (async()=>{
-            let appFile;
+            let appFile, errored = false, loaded = 0, promises = [];
 
             function Load(url, callback){
-                // This is a PLACEHOLDER until LS is loaded so the M.Style method can be used - sadly this happens after we already need the files.
-
                 if(!appFile && url.startsWith("js:/assets/app.js")) return appFile = url;
+                if(errored) return;
 
                 let type = url.split(":");
 
@@ -57,14 +56,19 @@
                 type = type[0]
 
                 return new Promise((resolve, reject) => {
-                    let link;
+                    let link = document.createElement(type == "js"? "script": "link");
+
                     if(type == "css"){
-                        link = document.createElement("link");
                         link.rel = "stylesheet";
                         link.href = url;
                     } else {
-                        link = document.createElement("script");
                         link.src = url;
+                    }
+                    
+                    document.querySelector("head").appendChild(link);
+
+                    if(type == "css"){
+                        return resolve()
                     }
 
                     link.onload = function(){
@@ -76,14 +80,10 @@
                         if(callback) callback(error);
                         reject(error.toString())
                     }
-
-                    document.querySelector("head").appendChild(link);
                 })
             }
 
-            let resources = Akeno.get("resources"), errored = false, loaded = 0, promises = [];
-
-            for(let resource of resources){
+            for(let resource of Akeno.get("resources")){
                 if(resource.length < 1) return;
 
                 promises.push(Load(resource, (error) => {
@@ -96,20 +96,10 @@
             }
 
             for(promise of promises) await promise;
-
-            if(!appFile){
-                window.addEventListener("load", ()=>{
-                    document.querySelector(".loadingLog").innerText += `\nCritical application error occured: the app script was not found in the resources.`
-                    errored = true;
-                })
-            }
             
-            if(windowLoaded) document.querySelector(".loadingSubject").innerText = `Loading scripts.`;
             await Load(appFile);
 
             window.addEventListener("load", ()=>{
-                windowLoaded = true;
-
                 LS.once("body-available", ()=>{
                     LS.Color.on("theme-changed", () => {
                         app.theme = null // Update the button
@@ -121,9 +111,7 @@
 
 
                     if(errored){
-                        Q("#load_circle, .loadingSubject").all().applyStyle({display: "none"});
-        
-                        O(".loadingLog").add("\n\nSome resourced failed to load!\nDo you wish to procceed?\n\n", N("button", {
+                        O(".loadingLog").add("\n\nSome resources failed to load!\nDo you wish to procceed?\n\n", N("button", {
                             inner: "Ignore errors and continue",
                             onclick(){
                                 LS.invoke("app-ready")
@@ -152,7 +140,7 @@
         }
 
 
-        /* TODO: Move this to main.css */
+        /* TODO: Move this to main.css once ready */
 
         /* #drawer {
             position: absolute;
@@ -227,17 +215,16 @@
 
 <page>
 
-    <div %loading style="display: flex; justify-content: center; align-items: center; height: 94vh; font-family: sans-serif; overflow: hidden; padding: 0 256px">
-        <div %load_circle ls-accent="auto" load class="load-noBackground" style="position: absolute; height: 2em; width: 2em; top: calc(50% + 3em); left: calc(50% - 1em); --load-width: calc(2 / 16 * 1em); transition: 1s; z-index: 30000"></div>
-        <span style="font-family: sans-serif; font-size: 1.8em"><span class="loadingSubject">Loading content. <noscript><br>Error: This website requires JavaScript to be enabled in order to function.<br>Please enable JavaScript in your browser to continue.</noscript><br></span><pre style="white-space: pre-wrap" class="loadingLog"></pre></span>
+    <div %loading style="display: flex; justify-content: center; align-items: center; height: 94vh; font-family: sans-serif; overflow: hidden">
+        <span style="font-family: sans-serif; font-size: 1.8em"><noscript><br>Error: This website requires JavaScript to be enabled in order to function.<br>Please enable JavaScript in your browser to continue.</noscript><br><pre style="white-space: pre-wrap" .loadingLog></pre></span>
     </div>
 
-    <div %app style="display: none;">
+    <div %app hidden>
         <div %header>
             <a ls-accent="auto" %header_link href="/"><span class="headerTitle">LSTV</span><span class="headerText"></span></a>
 
             <div %headerButtons ls-accent="auto">
-                <button ls-tooltip="Applications" style="display: none" for="toolbarApps" %appsButton class="pill elevated">
+                <button ls-tooltip="Applications" hidden for="toolbarApps" %appsButton class="pill elevated">
                     <i class="bi-grid-fill"></i> <span class="label">Apps</span>
                 </button>
 
@@ -253,7 +240,7 @@
                 </button>
             </div>
 
-            <div %toolbars style="display: none">
+            <div %toolbars hidden>
 
                 <div %toolbarApps>
                     <h3>Applications</h3>
@@ -335,6 +322,7 @@
     </div>
     
     <script>
+        let a;
 // window.addEventListener("load", () => {
 // let header = O("#header"), drawer = O("#drawer"), drawerContent = O("#drawerContent");
 
