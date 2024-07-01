@@ -339,10 +339,10 @@ My name is Lukas (with a k).<br>
                 loadApps()
             }
 
-            if(!appsAtBottom && scroll > (container.scrollHeight - innerHeight - 100)) {
-                appsOffset++
-                loadApps()
-            }
+            // if(!appsAtBottom && scroll > (container.scrollHeight - innerHeight - 100)) {
+            //     appsOffset++
+            //     loadApps()
+            // }
         })
 
         if(!localStorage["ls.visited"]){
@@ -376,7 +376,7 @@ My name is Lukas (with a k).<br>
                         N({
                             class: "appBody",
                             inner: [
-                                item.icon? N({class: "appIconContainer", inner: N("img", {crossOrigin: "Anonymous", src: app.cdn + "/file/" + item.icon + "?size=120", onload(){
+                                item.icon? N({class: "appIconContainer", inner: N("img", {crossOrigin: "Anonymous", src: app.cdn + "/file/" + item.icon + (item.icon.endsWith("svg")? "": "?size=120"), onload(){
                                     let color = LS.Color.getAverageRGB(this);
         
                                     console.log(color.hex, color.rgb, color);
