@@ -8,7 +8,7 @@
 
     let definedModules = [];
 
-    let auth = null, set = $_backend.randomSet;
+    let auth = null, set = Akeno.randomSet;
 
     let app = {
         container: O("#app"),
