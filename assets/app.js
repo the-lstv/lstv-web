@@ -538,7 +538,7 @@
 
             if(targetElement.href.endsWith("#")) return event.preventDefault();
 
-            if(targetElement.href.startsWith(origin) && !targetElement.href.endsWith("?")){
+            if(targetElement.href.startsWith(origin) && !targetElement.href.endsWith("?") && !targetElement.href.startsWith(origin + ":")){
                 event.preventDefault();
                 app.navigate(targetElement.getAttribute('href'));
                 app.toolbarClose()
