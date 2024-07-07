@@ -222,12 +222,24 @@ h2 {
     padding: 4px 12px !important;
 }
 
-.appItemDark .appBottom {
-    background: #fff1;
+.appItemLight .appTag {
+    background: var(--transparent-overlay-strong);
 }
 
+/* .appItemDark :is(.appBottom, .appTop) {
+    background: #fff1;
+} */
+
 .appItemLight .appBottom {
-    background: #0002;
+    border-top: 1px solid var(--transparent-overlay-dark);
+}
+
+.appItemLight .appTop {
+    border-bottom: 1px solid var(--transparent-overlay-dark);
+}
+
+.appItemLight {
+    color: #111;
 }
 
 #cursorPopout {
@@ -252,14 +264,6 @@ h2 {
     transform: scale(1) translate(-50%, -50%);
     opacity: 1;
 }
-
-.appItemLight {
-    color: #111;
-}
-
-/* .appItemDark {
-    color: #eee;
-} */
 
 </style>
 
@@ -348,10 +352,11 @@ My name is Lukas (with a k).<br>
 
         let customOrder = [2, 3, 4, 5, 10, 1, 8],
             customColor = {
-                7: "#fff",
+                7: ["#fff", "#eee", "#222"],
                 5: "#004ba6",
                 10: "#0a0822",
-                1: "#07436d"
+                1: "#07436d",
+                8: ["#ffe50e", "#c77c00", "#222"]
             }
         ;
 
@@ -410,17 +415,19 @@ My name is Lukas (with a k).<br>
                             class: "appBody",
                             inner: [
                                 item.icon? N({class: "appIconContainer", inner: N("img", {crossOrigin: "Anonymous", src: app.cdn + "/file/" + item.icon + (item.icon.endsWith("svg")? "": "?size=120"), onload(){
-                                    let color = customColor[item.id]? C(customColor[item.id]): LS.Color.getAverageRGB(this);
-        
-                                    console.log(color.hex, color.rgb, color);
+                                    let override = typeof customColor[item.id] == "string"? [C(customColor[item.id])]: Array.isArray(customColor[item.id])? customColor[item.id].map(color => typeof color == "string"? C(color) : null) : [];
                                     
+                                    let color = override[0] || LS.Color.getAverageRGB(this);
+        
+                                    console.log(override, color.hex, color.rgb, color);
+
                                     element.appColor = color.rgb;
-                                    element.style.setProperty("--color-1", color.saturation(80).darken(15).rgb)
+                                    element.style.setProperty("--color-1", (override[1] || color.saturation(80).darken(15)).rgb)
                                     element.style.setProperty("--color-2", element.appColor)
                                     
                                     let isDark = color.isDark;
 
-                                    element.fgColor = (isDark? color.lighten(60).saturation(80): color.darken(20).saturation(50)).rgb;
+                                    element.fgColor = (override[2] || (isDark? color.lighten(60).saturation(80): color.darken(20).saturation(50))).rgb;
                                     element.style.setProperty("--color-fg", element.fgColor)
                                     element.style.setProperty("--color-fg-light", color.lighten(60).saturation(25).rgb)
     
