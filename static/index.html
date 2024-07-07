@@ -253,11 +253,11 @@ h2 {
     opacity: 1;
 }
 
-/* .appItemLight {
+.appItemLight {
     color: #111;
 }
 
-.appItemDark {
+/* .appItemDark {
     color: #eee;
 } */
 
@@ -271,7 +271,7 @@ h2 {
 <div style="background: var(--elevate)" .padding>
     <ls-box .color ls-accent="lstv-red"><i class="bi-exclamation-triangle-fill"></i> This is an alpha version of my site (2024). Bugs may appear all over the palce and features are missing.</ls-box>
     
-    <span style="color: gray; font-size: small">
+    <span style="color: gray; font-size: small; text-align: center">
         To visit the severely outdated version, <a href="https://lstv.space:8443">you can click here</a>. (not recommended)
     </span>
 
@@ -328,6 +328,9 @@ My name is Lukas (with a k).<br>
     ... And <b>hundereds</b> more!<br>
     Bare with me as I complete this website and add a functional appstore along with the rest of my projects (believe me, there are LOTS of them).
     <br>
+    <br>
+    <br>
+    Do you like to live on the edge? <a href="http://lstv.test">Click here</a> to try out the absolute most cutting-edge recent release of the site - that is, if you are on my network...
 </h3>
 
 <div %footer>
@@ -342,6 +345,15 @@ My name is Lukas (with a k).<br>
     app.module("static.home", (app, source, container) => {
 
         let initialLoadApps = false, appsBottom = Infinity, appsOffset = 0, appsAtBottom = false, cursorPopout = container.get("#cursorPopout");
+
+        let customOrder = [2, 3, 4, 5, 10, 1, 8],
+            customColor = {
+                7: "#fff",
+                5: "#004ba6",
+                10: "#0a0822",
+                1: "#07436d"
+            }
+        ;
 
         container.on("scroll", () => {
             let scroll = container.scrollTop;
@@ -375,6 +387,8 @@ My name is Lukas (with a k).<br>
 
             let types = ["Application", "Application", "Game", "Service", "Authentication", "Utility", "Website", "Finance"]
 
+            list = list.sort((a, b) => (customOrder.indexOf(a.id) !== -1 ? customOrder.indexOf(a.id) : customOrder.length) - (customOrder.indexOf(b.id) !== -1 ? customOrder.indexOf(b.id) : customOrder.length) || a.id - b.id);
+
             for(let item of list){
                 console.log(item);
 
@@ -388,23 +402,29 @@ My name is Lukas (with a k).<br>
                             })
                         }),
 
+                        // .darken(16)
+                        // .saturation(80)
+                        // .substract(20, 20, 20)
+
                         N({
                             class: "appBody",
                             inner: [
                                 item.icon? N({class: "appIconContainer", inner: N("img", {crossOrigin: "Anonymous", src: app.cdn + "/file/" + item.icon + (item.icon.endsWith("svg")? "": "?size=120"), onload(){
-                                    let color = LS.Color.getAverageRGB(this);
+                                    let color = customColor[item.id]? C(customColor[item.id]): LS.Color.getAverageRGB(this);
         
                                     console.log(color.hex, color.rgb, color);
                                     
-                                    element.appColor = color.hex;
-                                    element.style.setProperty("--color-1", color.saturation(80).darken(16).hex)
+                                    element.appColor = color.rgb;
+                                    element.style.setProperty("--color-1", color.saturation(80).darken(15).rgb)
                                     element.style.setProperty("--color-2", element.appColor)
+                                    
+                                    let isDark = color.isDark;
 
-                                    element.fgColor = color.lighten(60).saturation(80).hex;
+                                    element.fgColor = (isDark? color.lighten(60).saturation(80): color.darken(20).saturation(50)).rgb;
                                     element.style.setProperty("--color-fg", element.fgColor)
-                                    element.style.setProperty("--color-fg-light", color.lighten(60).saturation(25).hex)
+                                    element.style.setProperty("--color-fg-light", color.lighten(60).saturation(25).rgb)
     
-                                    element.class(color.isDark? "appItemDark" : "appItemLight")
+                                    element.class(isDark? "appItemDark" : "appItemLight")
                                 }})}): "",
 
                                 item.icon? N("br"): "",
