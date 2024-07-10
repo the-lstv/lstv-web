@@ -221,7 +221,7 @@
             }
 
             if(validation.app.icon){
-                container.get("#sso-icon img").src = app.cdn + "/file/" + validation.app.icon + "?size=120"
+                container.get("#sso-icon img").src = app.cdn + "/file/" + validation.app.icon + (validation.app.icon.endsWith("svg")? "" : "?size=120")
             } else {
                 container.get("#sso-icon .pfpWrap").set(N("i", {
                     class: "profilePicture bi-grid-1x2-fill"
