@@ -466,29 +466,28 @@
                         if(json.success){
                             if(Date.now() - started < 420){
                                 console.log("[misc] Request was too fast, delaying for a bit ("+ (Date.now() - started) +")", 420 - (Date.now() - started));
-            
                                 await new Promise(resolve => setTimeout(resolve, 420 - (Date.now() - started)))
+                            }
 
-                                if(json.token){
-                                    app.user.add(json)
-                                    app.user.use(json.id)
+                            if(json.token){
+                                app.user.add(json)
+                                app.user.use(json.id)
 
-                                    let query = LS.Util.params()
+                                let query = LS.Util.params()
 
-                                    if(query.continue) return location.replace(query.continue);
+                                if(query.continue) return location.replace(query.continue);
 
-                                    app.navigate("/", {reload: true, replace: true})
-                                } else {
+                                app.navigate("/", {reload: true, replace: true})
+                            } else {
 
-                                    tabs.setActive(2)
+                                tabs.setActive(2)
 
-                                    LS.Modal.build({
-                                        content: "Warning: Account was created successfully, but we couldn't log you in automatically.<br>Please procceed to login via the login screen as usual.<br>We are sorry for the inconvenience.",
-                                        buttons: [ { text: "OK", color: "auto" } ]
-                                    }, {
-                                        keep: false
-                                    }).show();
-                                }
+                                LS.Modal.build({
+                                    content: "Warning: Account was created successfully, but we couldn't log you in automatically.<br>Please procceed to login via the login screen as usual.<br>We are sorry for the inconvenience.",
+                                    buttons: [ { text: "OK", color: "auto" } ]
+                                }, {
+                                    keep: false
+                                }).show();
                             }
                         } else {
                             let modal = {
