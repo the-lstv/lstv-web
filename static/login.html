@@ -582,7 +582,7 @@
                             console.log("Error, ", e);
                         }
             
-                        if(!result || !result.ok || typeof json !== "object" || !json){
+                        if(!result || typeof json !== "object" || !json){
                             console.log("Error, not OK");
                             LS.Modal.build({
                                 content: "Error: Failed to connect with our API server. Make sure you are connected to the internet and try again later. If this persists, please contact us!",
