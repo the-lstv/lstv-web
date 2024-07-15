@@ -416,7 +416,7 @@
                         let result, json, started = Date.now();
 
                         let user = {
-                            username: O("#signupUsername").value,
+                            username: O("#signupUsername").value.toLowerCase(),
                             password: O("#signupPassword").value,
                             email: O("#signupEmail").value,
                             profile: {
@@ -531,7 +531,7 @@
                         Q('[name="signupForm"] > :is(input, ls-group)').all().delAttr("ls-accent")
                         Q('.inputError').all().clear()
 
-                        if(!/^(?![0-9])[a-z0-9_.\-]{2,60}$/.test(user.username)){
+                        if(!/^(?![0-9])[a-z0-9_.\-]{2,60}$/.test(user.username.toLowerCase())){
                             O("#signupUsername").attr("ls-accent", "red")
                             O("#signup_username_error").set("Username can only contain letters, numbers, periods (.), underscores (_), and dashes (-).<br>An username can only be 2 to 40 characters long.")
                             return
