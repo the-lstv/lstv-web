@@ -198,16 +198,17 @@ h2 {
 .appTop {
     text-align: center;
     color: var(--color-fg);
+    padding: 8px 0;
 }
 
 .appTop, .appBottom {
     background: var(--transparent-overlay);
-    padding: 8px;
 }
 
 .appBottom {
     display: flex;
     overflow-x: overlay;
+    padding: 4px 8px;
 }
 
 .appTop span {
@@ -220,6 +221,7 @@ h2 {
 .appTag {
     background: var(--transparent-overlay);
     padding: 4px 12px !important;
+    white-space: nowrap;
 }
 
 .appItemLight .appTag {
@@ -375,9 +377,19 @@ My name is Lukas (with a k).<br>
 
         let initialLoadApps = false, appsBottom = Infinity, appsOffset = 0, appsAtBottom = false, cursorPopout = container.get("#cursorPopout");
 
-        let customOrder = [2, 3, 4, 5, 10, 1, 8],
+        let customOrder = [2, 3, 4, 5, 10, 1, 8, 9, 7, 31, 11, 6],
+            customBackOrder = [15, 26],
+            customGroups = [
+                [13, 19, 14]
+            ],
+
             customColor = {
                 7: ["#fff", "#eee", "#222"],
+                16: ["#fff", "#eee", "#222"],
+                13: ["#155676", "#030405", "#8fd2ff"],
+                22: ["#ffffff", "#fbb8ff", "#320c35"],
+                23: [null, null, "#fff"],
+                28: [null, null, "#fff"],
                 5: "#004ba6",
                 10: "#0a0822",
                 1: "#07436d",
@@ -408,7 +420,44 @@ My name is Lukas (with a k).<br>
         }
 
 
-        let appsPageSize = 10;
+        let appsPageSize = 100;
+
+        function customSort(arr) {
+            // Create a map for quick lookup of customOrder positions
+            const customOrderMap = new Map(customOrder.map((id, index) => [id, index]));
+            
+            // Sort function
+            arr.sort((a, b) => {
+                // First, handle customBackOrder by placing those IDs at the end
+                const aInBackOrder = customBackOrder.indexOf(a.id) !== -1;
+                const bInBackOrder = customBackOrder.indexOf(b.id) !== -1;
+                
+                if (aInBackOrder && !bInBackOrder) return 1;
+                if (!aInBackOrder && bInBackOrder) return -1;
+                if (aInBackOrder && bInBackOrder) return customBackOrder.indexOf(a.id) - customBackOrder.indexOf(b.id);
+                
+                // Then, handle customOrder
+                const aOrder = customOrderMap.has(a.id) ? customOrderMap.get(a.id) : customOrder.length;
+                const bOrder = customOrderMap.has(b.id) ? customOrderMap.get(b.id) : customOrder.length;
+                
+                if (aOrder !== bOrder) return aOrder - bOrder;
+                
+                // Finally, handle customGroups
+                for (let group of customGroups) {
+                    const aInGroup = group.findIndex(item => item === a.id);
+                    const bInGroup = group.findIndex(item => item === b.id);
+                    
+                    if (aInGroup !== -1 && bInGroup !== -1) {
+                        return aInGroup - bInGroup;
+                    }
+                    if (aInGroup !== -1) return -1;
+                    if (bInGroup !== -1) return 1;
+                }
+                
+                // Fallback to natural order by ID if none of the above applied
+                return a.id - b.id;
+            });
+        }
 
         async function loadApps(limit = appsPageSize, offset = (appsOffset * appsPageSize)) {
             let list = await app.get(`${app.api}/v2/apps/list/home?limit=${limit}&offset=${offset}`).json()
@@ -417,7 +466,9 @@ My name is Lukas (with a k).<br>
 
             let types = ["Application", "Application", "Game", "Service", "Authentication", "Utility", "Website", "Finance"]
 
-            list = list.sort((a, b) => (customOrder.indexOf(a.id) !== -1 ? customOrder.indexOf(a.id) : customOrder.length) - (customOrder.indexOf(b.id) !== -1 ? customOrder.indexOf(b.id) : customOrder.length) || a.id - b.id);
+            customSort(list)
+
+            // list = list.sort((a, b) => (customOrder.indexOf(a.id) !== -1 ? customOrder.indexOf(a.id) : customOrder.length) - (customOrder.indexOf(b.id) !== -1 ? customOrder.indexOf(b.id) : customOrder.length) || a.id - b.id);
 
             for(let item of list){
                 console.log(item);
