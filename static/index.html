@@ -168,7 +168,12 @@ h2 {
     height: fit-content;
     color: var(--color-fg-light);
     cursor: pointer;
+
+    outline: 0px solid;
+
+    transition: .2s outline ease-in-out;
 }
+
 
 .appBody {
     padding: 30px 20px;
@@ -187,7 +192,9 @@ h2 {
 
 .appIconContainer img {
     width: 120px;
-    border-radius: 8px;
+    /* border-radius: 8px; */
+    clip-path: inset(0 round 15px);
+    filter: opacity(1);  /* This fixes a weird rendering bug for whatever reason. */
 }
 
 .appName {
@@ -301,11 +308,11 @@ h2 {
 </div>
 
 <div style="background: var(--elevate)" .padding>
-    <ls-box .color ls-accent="lstv-red"><i class="bi-exclamation-triangle-fill"></i> This is an alpha version of my site (2024). Bugs may appear all over the palce and features are missing.</ls-box>
+    <ls-box .color ls-accent="lstv-red"><i class="bi-exclamation-triangle-fill"></i> This is an alpha version of my site (August 29. 2024). Bugs will appear all over the palce and some features are missing.</ls-box>
     
-    <span style="color: gray; font-size: small; text-align: center">
+    <!-- <span style="color: gray; font-size: small; text-align: center">
         To visit the severely outdated version, <a href="https://lstv.space:8443">you can click here</a>. (not recommended)
-    </span>
+    </span> -->
 
     <br><br>
 
@@ -315,11 +322,11 @@ h2 {
         <div>
             <h1>Who am I?</h1>
 My name is <b>Lukáš / Lukas</b>, rarely also known as <b>arin</b>.<br>
-I am a current student in IT, with about 8 years of coding experience and 4 years of design experience, all self-taught. (More in-depth information on my Github profile).<br>
+I am a current student in IT, with about 8 years of coding experience and 4 years of design experience, all self-taught. (More information on my Github profile).<br>
 <br>
-I learn with experience. I think that you shouldn't over-prepare to reach your goal - just head right in and find your path along the way. You can always refine things later. I do not really believe in courses, school, or whatever. The best teacher is experience.<br>
+I learn with experience. I think that you shouldn't over-prepare to reach your goal - just head right in and find your path along the way. You can always refine things later.<br>
 <br>
-I believe in Free And Open Source software.
+I believe in Free And Open Source software, and don't like corporate tactics as I think they do not benefit our community in any way.
         </div>
     </div>
 
@@ -383,11 +390,11 @@ My name is Lukas (with a k).<br>
 <h3 style="text-align: center; color: var(--color); padding: 10px;">
     <br>
     ... And <b>hundereds</b> more!<br>
-    Bare with me as I complete this website and add a functional appstore along with the rest of my projects (believe me, there are LOTS of them).
-    <br>
-    <br>
-    <br>
-    Do you like to live on the edge? <a href="http://lstv.test">Click here</a> to try out the absolute most cutting-edge recent release of the site - that is, if you are on my network...
+    Bare with me as I complete this website and add the rest of my projects (there are LOTS of them).
+    <br><br>
+    <a style="color: #560058" href="/[⫖⌊∄∄◗⫖⌊⦰⦰ꗐ]">
+        Are you afraid of the night?<br>Close your eyes and discover a new world.<br>Leave the world behind.<br>Feel the tune of my mind.<br>Scream with my soul.<br>B L A C K - R A Y
+    </a>
 </h3>
 
 <div %footer>
@@ -404,7 +411,7 @@ My name is Lukas (with a k).<br>
         let initialLoadApps = false, appsBottom = Infinity, appsOffset = 0, appsAtBottom = false, cursorPopout = container.get("#cursorPopout");
 
         let customOrder = [2, 3, 4, 5, 10, 1, 8, 9, 7, 31, 11, 6],
-            customBackOrder = [15, 26],
+            customBackOrder = [36, 27, 28, 29, 15, 26],
             customGroups = [
                 [13, 19, 14]
             ],
