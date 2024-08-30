@@ -8,7 +8,7 @@
 
     let definedModules = [];
 
-    let auth = null, set = Akeno.randomSet;
+    let auth = null, __auth = null, __authRead = false, set = Akeno.randomSet;
 
     let app = {
         container: O("#app"),
@@ -64,10 +64,9 @@
 
         user: {
             add(auth){
-                console.log(auth);
                 if(typeof auth.id !== "number" || !auth.token) return false;
 
-                let users = getAuth().split(":").filter(garbage => garbage).filter(token => !token.startsWith(auth.id + "="))
+                let users = __auth.split(":").filter(garbage => garbage).filter(token => !token.startsWith(auth.id + "="))
 
                 users.push(`${auth.id}=${auth.token}`)
 
@@ -77,7 +76,7 @@
             },
 
             list(){
-                return getAuth().split(":").map(token => {
+                return __auth.split(":").map(token => {
                     let user = token.slice(0, token.indexOf("="));
                     if(user && user.length > 0) return +user;
                     return null
@@ -181,7 +180,7 @@
             logout(){
                 if(typeof app.user.current !== "number") return;
 
-                setAuth(getAuth().split(":").filter(token => !token.startsWith(app.user.current + "=")).join(":"))
+                setAuth(__auth.split(":").filter(token => !token.startsWith(app.user.current + "=")).join(":"))
 
                 app.user.current = null
                 app.user.fragment = null
@@ -199,7 +198,7 @@
                 ...options,
                 ...url.startsWith(app.api) && typeof app.user.current == "number" ? {
                     headers: {
-                        authorization: getAuth().split(":").find(token => token.startsWith(app.user.current + "=")).split("=")[1],
+                        authorization: __auth.split(":").find(token => token.startsWith(app.user.current + "=")).split("=")[1],
                         ...options.headers? options.headers : {}
                     }
                 }: {}
@@ -571,64 +570,68 @@
         }
     };
 
-    (function(_0x528858,_0x3f8835){const _0x7fcecd=_0x59a4,_0x4f287e=_0x528858();while(!![]){try{const _0x37399f=-parseInt(_0x7fcecd(0x1c9))/0x1+-parseInt(_0x7fcecd(0x1c8))/0x2+-parseInt(_0x7fcecd(0x1da))/0x3+parseInt(_0x7fcecd(0x1c6))/0x4*(parseInt(_0x7fcecd(0x1d6))/0x5)+-parseInt(_0x7fcecd(0x1ce))/0x6*(parseInt(_0x7fcecd(0x1d1))/0x7)+-parseInt(_0x7fcecd(0x1d5))/0x8*(parseInt(_0x7fcecd(0x1c7))/0x9)+parseInt(_0x7fcecd(0x1cc))/0xa*(parseInt(_0x7fcecd(0x1d4))/0xb);if(_0x37399f===_0x3f8835)break;else _0x4f287e['push'](_0x4f287e['shift']());}catch(_0x352563){_0x4f287e['push'](_0x4f287e['shift']());}}}(_0x2a1e,0x65c75));function getAuth(){const _0x3194cf=_0x59a4;if(auth!==null)return auth;for(let _0x18f25c of Object[_0x3194cf(0x1cb)](localStorage)){if(_0x18f25c['startsWith'](_0x3194cf(0x1d7))){try{let _0x45f9aa=atob(localStorage[_0x18f25c]['substring'](0x0,0x14));/[0-9]/['test'](_0x45f9aa[0x0])&&_0x45f9aa[_0x3194cf(0x1cf)]('=')&&(auth=atob(localStorage[_0x18f25c]));}catch{}localStorage['removeItem'](_0x18f25c);}}let _0x31df8a=Object['keys'];Object[_0x3194cf(0x1cb)]=_0x10482c=>{if(_0x10482c===localStorage)return[];return _0x31df8a(_0x10482c);};let _0xa41b1e=Object[_0x3194cf(0x1d0)];Object[_0x3194cf(0x1d0)]=_0x41534c=>{if(_0x41534c===localStorage)return[];return _0xa41b1e(_0x41534c);};if(auth===null)auth='';return setAuth(auth),auth;}function _0x59a4(_0x471624,_0x339255){const _0x2a1e82=_0x2a1e();return _0x59a4=function(_0x59a43c,_0x2b3c25){_0x59a43c=_0x59a43c-0x1c6;let _0x3eaa17=_0x2a1e82[_0x59a43c];return _0x3eaa17;},_0x59a4(_0x471624,_0x339255);}function setAuth(_0x30533f){const _0x4e6d48=_0x59a4;auth=_0x30533f;for(let _0x8494a6 of set){localStorage[':app'+_0x8494a6]=btoa(Array['from']({'length':Math[_0x4e6d48(0x1d9)](Math[_0x4e6d48(0x1d2)]()*0x100)},()=>_0x4e6d48(0x1ca)[_0x4e6d48(0x1d8)](Math[_0x4e6d48(0x1d9)](Math[_0x4e6d48(0x1d2)]()*0x40)))[_0x4e6d48(0x1cd)](''));}localStorage[_0x4e6d48(0x1d7)+set[crypto[_0x4e6d48(0x1d3)](new Uint8Array(0x1))[0x0]%0x3]]=btoa(auth);}function _0x2a1e(){const _0x2ce9f5=[':app','charAt','floor','305763THArkd','60GwTGFs','1914309TRqYcU','1529342aGpAKd','787754SuaZBP','ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_','keys','27172330WRQRMa','join','4129176sFvoSO','includes','values','7jlHfYK','random','getRandomValues','11HvmeVw','8hZGUcQ','84965BNWkSM'];_0x2a1e=function(){return _0x2ce9f5;};return _0x2a1e();}
+    function _0x2494(){const _0x49bdaf=['body','329svUFeS','parsePayloadSignature','348366LvOzKT','getRandomValues','values','120WidodK','length','109974oZLdgi','12mluDNG','key','join','decode','removeItem','2655235EXRDOj',':app','211780cFeYFD','259330qQcCPY','3IBPWxB','91768myMSFp','from','includes','ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_','payloadSignature','floor','11304ahluwV','random','Session\x20token\x20may\x20only\x20be\x20read\x20once','225xeOtzF','keys','---','startsWith'];_0x2494=function(){return _0x49bdaf;};return _0x2494();}function _0x8bb2(_0x234cbf,_0x194fe1){const _0x2494b9=_0x2494();return _0x8bb2=function(_0x8bb21d,_0x129770){_0x8bb21d=_0x8bb21d-0x14d;let _0x279a8e=_0x2494b9[_0x8bb21d];return _0x279a8e;},_0x8bb2(_0x234cbf,_0x194fe1);}const _0x4e3b1d=_0x8bb2;(function(_0x1041fd,_0x3e9ddb){const _0x50cb84=_0x8bb2,_0x125516=_0x1041fd();while(!![]){try{const _0xdbbe7a=-parseInt(_0x50cb84(0x15a))/0x1+-parseInt(_0x50cb84(0x16c))/0x2+-parseInt(_0x50cb84(0x15b))/0x3*(parseInt(_0x50cb84(0x162))/0x4)+parseInt(_0x50cb84(0x14f))/0x5*(-parseInt(_0x50cb84(0x151))/0x6)+-parseInt(_0x50cb84(0x16a))/0x7*(-parseInt(_0x50cb84(0x15c))/0x8)+-parseInt(_0x50cb84(0x165))/0x9*(-parseInt(_0x50cb84(0x159))/0xa)+-parseInt(_0x50cb84(0x157))/0xb*(-parseInt(_0x50cb84(0x152))/0xc);if(_0xdbbe7a===_0x3e9ddb)break;else _0x125516['push'](_0x125516['shift']());}catch(_0x216d82){_0x125516['push'](_0x125516['shift']());}}}(_0x2494,0x69e49));_0x45a48b:{if(__authRead||__auth||auth)throw _0x4e3b1d(0x164);for(let key of Object['keys'](localStorage)){if(key[_0x4e3b1d(0x168)](':app')){try{if(localStorage[key][_0x4e3b1d(0x168)](_0x4e3b1d(0x167))){let payload=M[_0x4e3b1d(0x16b)](localStorage[key]),decoded=new TextDecoder()[_0x4e3b1d(0x155)](payload[_0x4e3b1d(0x169)][0x0]);decoded[_0x4e3b1d(0x15e)]('.')&&(auth=decoded);}}catch{}localStorage[_0x4e3b1d(0x156)](key);}}let objk=Object[_0x4e3b1d(0x166)];Object[_0x4e3b1d(0x166)]=_0x26efc3=>{if(_0x26efc3===localStorage)return[];return objk(_0x26efc3);};let objv=Object[_0x4e3b1d(0x14e)];Object[_0x4e3b1d(0x14e)]=_0x419337=>{if(_0x419337===localStorage)return[];return objv(_0x419337);},localStorage[_0x4e3b1d(0x153)]=()=>null;if(auth===null)auth='';setAuth(auth),__auth=auth;}function randomBase(){const _0xae13b1=_0x4e3b1d;return Math[_0xae13b1(0x161)](Math[_0xae13b1(0x163)]()*(0x24-0x10)+0x10);}function setAuth(_0x2930e0){const _0x2244f7=_0x4e3b1d;auth=_0x2930e0;for(let _0x4c011d of set){localStorage[_0x2244f7(0x158)+_0x4c011d]=M[_0x2244f7(0x160)](null,[Array[_0x2244f7(0x15d)]({'length':Math[_0x2244f7(0x161)](Math[_0x2244f7(0x163)]()*0x100)},()=>_0x2244f7(0x15f)['charAt'](Math[_0x2244f7(0x161)](Math[_0x2244f7(0x163)]()*0x40)))[_0x2244f7(0x154)]('')],0x10,randomBase());}if(_0x2930e0&&_0x2930e0[_0x2244f7(0x150)])localStorage[_0x2244f7(0x158)+set[crypto[_0x2244f7(0x14d)](new Uint8Array(0x1))[0x0]%0x3]]=M['payloadSignature'](null,[_0x2930e0],0x10,randomBase());}
     
-    /*
-    function getAuth(){
-        if(auth !== null) return auth;
+    // getAuth: {
+    //     if(__authRead || __auth || auth) throw "Session token may only be read once";
 
-        for(let key of Object.keys(localStorage)){
-            if(key.startsWith(":app")) {
-                try{
-                    let check = atob(localStorage[key].substring(0, 20));
-                    if(/[0-9]/.test(check[0]) && check.includes("=")){
-                        auth = atob(localStorage[key]);
-                    }
-                } catch {}
+    //     for(let key of Object.keys(localStorage)){
+    //         if(key.startsWith(":app")) {
+    //             try{
+    //                 if(localStorage[key].startsWith("---")){
+    //                     let payload = M.parsePayloadSignature(localStorage[key])
 
-                localStorage.removeItem(key)
-            }
-        }
+    //                     let decoded = (new TextDecoder).decode(payload.body[0])
 
-        let objk = Object.keys;
+    //                     if(decoded.includes(".")){
+    //                         auth = decoded
+    //                     }
+    //                 }
+    //             } catch { }
 
-        Object.keys = object => {
-            if(object === localStorage) return [];
-            return objk(object)
-        }
+    //             localStorage.removeItem(key)
+    //         }
+    //     }
 
-        let objv = Object.values;
+    //     let objk = Object.keys;
 
-        Object.values = object => {
-            if(object === localStorage) return [];
-            return objv(object)
-        }
+    //     Object.keys = object => {
+    //         if(object === localStorage) return [];
+    //         return objk(object)
+    //     }
 
-        localStorage.key = () => null;
+    //     let objv = Object.values;
 
-        if(auth === null) auth = "";
+    //     Object.values = object => {
+    //         if(object === localStorage) return [];
+    //         return objv(object)
+    //     }
 
-        setAuth(auth)
+    //     localStorage.key = () => null;
 
-        return auth;
-    }
+    //     if(auth === null) auth = "";
 
-    getAuth();
+    //     setAuth(auth)
 
-    function setAuth(data){
+    //     __auth = auth;
+    // }
 
-        // This is more of a "security through obscurity" type thing.
-        // Should be migrated immidiately as soon as a better method is available to browsers.
+    // function randomBase(){
+    //     return Math.floor((Math.random() * (36 - 16)) + 16)
+    // }
 
-        auth = data;
+    // function setAuth(data){
+    //     // This is more of a "security through obscurity" type thing.
+    //     // Should be migrated immidiately as soon as a better method is available to browsers.
 
-        for(let thing of set){
-            localStorage[":app" + thing] = btoa(Array.from({ length: Math.floor(Math.random() * 256) }, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'.charAt(Math.floor(Math.random() * 64))).join(''));
-        }
+    //     auth = data;
 
-        localStorage[":app" + set[crypto.getRandomValues(new Uint8Array(1))[0] % 3]] = btoa(auth)
-    }
-    */
+    //     for(let thing of set){
+    //         localStorage[":app" + thing] = M.payloadSignature(null, [Array.from({ length: Math.floor(Math.random() * 256) }, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'.charAt(Math.floor(Math.random() * 64))).join('')], 16, randomBase())
+    //     }
+
+    //     if(data && data.length) localStorage[":app" + set[crypto.getRandomValues(new Uint8Array(1))[0] % 3]] = M.payloadSignature(null, [data], 16, randomBase())
+    // }
 
     // DEBUG
     app.module = global.app.module;
