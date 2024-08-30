@@ -328,9 +328,9 @@ h2 {
                 <br>
                 I learn with experience. I think over-preparing is a terrible way to reach your goal - just head right in and find your path along the way. You can always refine it later.<br>
                 <br>
-                I design and develop software. Anything from networking, hardware and utility to creative software that help achieve certain goals - video editing, music composition, art, game development, you name it.
+                I design and develop software. Anything from networking, hardware, libraries and utility to creative software that helps with my other areas of interest - video editing, sound composition and design, art, game development, you name it.
                 <br><br>
-                I believe in Free And Open Source software, and don't like corporate tactics as I think they do not benefit our community in any way.
+                I support in Free And Open Source software.
             </div>
         </div>
     </div>
@@ -400,6 +400,8 @@ h2 {
 </div>
 
 <script>
+    let cloudsSpeedFactor = .001, cloudsCanvas = O("#glCanvas"), cloudsRenderer;
+
     app.module("static.home", (app, source, container) => {
 
         let initialLoadApps = false, appsBottom = Infinity, appsOffset = 0, appsAtBottom = false, cursorPopout = container.get("#cursorPopout");
@@ -421,7 +423,9 @@ h2 {
                 10: "#0a0822",
                 1: "#07436d",
                 8: ["#ffe50e", "#c77c00", "#222"]
-            }
+            },
+
+            allTags = new Set
         ;
 
         container.on("scroll", () => {
@@ -434,6 +438,10 @@ h2 {
                 initialLoadApps = true
                 loadApps()
             }
+
+            if(cloudsCanvas.isInView()){
+                cloudsRenderer.resume()
+            } else cloudsRenderer.paused = true;
 
             // if(!appsAtBottom && scroll > (container.scrollHeight - innerHeight - 100)) {
             //     appsOffset++
@@ -496,6 +504,8 @@ h2 {
             customSort(list)
 
             for(let item of list){
+                if(item.tags) item.tags = item.tags.split(",");
+
                 let element = N({
                     accent: item.accent,
                     inner: [
@@ -540,7 +550,7 @@ h2 {
 
                         item.tags? N({
                             class: "appBottom",
-                            inner: item.tags.split(",").map(tag => N("ls-box", {innerText: tag.toUpperCase(), class: "inline appTag"}))
+                            inner: item.tags.map(tag => N("ls-box", {innerText: tag.toUpperCase(), class: "inline appTag"}))
                         }): "",
                     ],
 
@@ -562,6 +572,8 @@ h2 {
                     }
                 });
 
+                for(let tag of item.tags) allTags.add(tag);
+
                 function updatePopout(){
                     cursorPopout.style.left = M.x + "px"
                     cursorPopout.style.top = M.y + "px"
@@ -570,7 +582,6 @@ h2 {
                 O("#apps-showcase").add(element)
             }
         }
-
 
         class NoiseAndTextureNano {
             constructor(canvas, uniforms, vertexShaderSource, fragmentShaderSource){
@@ -590,8 +601,12 @@ h2 {
                     return;
                 }
 
+                let _this = this;
+
                 canvas.width = 1024;
                 canvas.height = 1024;
+
+                this.paused = false;
 
                 function compileShader(gl, source, type) {
                     const shader = gl.createShader(type);
@@ -643,17 +658,25 @@ h2 {
                 }
         
                 function render(time) {
+                    if(_this.paused) return;
+
                     gl.viewport(0, 0, canvas.width, canvas.height);
                     gl.clear(gl.COLOR_BUFFER_BIT);
 
                     for(let uniform in uniforms) gl[uniformTypes[uniform]](uniformLocations[uniform], ...typeof uniforms[uniform] === "function"? uniforms[uniform](time): uniforms[uniform]);
 
                     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-        
+
                     requestAnimationFrame(render);
                 }
 
-                requestAnimationFrame(render);
+                this.farme = render
+            }
+            
+            resume(){
+                if(!this.paused) return;
+                this.paused = false
+                requestAnimationFrame(this.farme);
             }
 
             getUniformType(value) {
@@ -671,9 +694,9 @@ h2 {
         }
 
 
-        new NoiseAndTextureNano(O("#glCanvas"), {
+        cloudsRenderer = new NoiseAndTextureNano(cloudsCanvas, {
+            u_time: time => [time * cloudsSpeedFactor],
             u_resolution: [1024, 1024],
-            u_time: time => [time * .001],
             u_mouse: [0, 0],
             u_speed: [0.196],
             u_scale: [0],
@@ -684,5 +707,15 @@ h2 {
             coverage: [0.276],
             alpha: [1.0]
         }, `attribute vec4 a_position;\nvoid main() { gl_Position = a_position; }`, `#ifdef GL_ES\nprecision mediump float;\n#endif\nuniform vec2 u_resolution,u_mouse;uniform vec4 u_colors[2];uniform float u_speed,u_time,u_scale,light,shadow,tint,coverage,alpha;const mat2 m=mat2(1.6,1.2,-1.2,1.6);vec2 hash(vec2 p){p=vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3)));return-1.+2.*fract(sin(p)*43758.5453123);}float noise(vec2 p){vec2 i=floor(p+(p.x+p.y)*.366025404),a=p-i+(i.x+i.y)*.211324865,o=a.x>a.y?vec2(1,0):vec2(0,1),b=a-o+.211324865,c=a-1.+.42264973;vec3 h=max(.5-vec3(dot(a,a),dot(b,b),dot(c,c)),0.);return dot(h*h*h*h*vec3(dot(a,hash(i)),dot(b,hash(i+o)),dot(c,hash(i+1.))),vec3(70));}float fbm(vec2 n){float total=0.,amplitude=.1;for(int i=0;i<7;i++)total+=noise(n)*amplitude,n=m*n,amplitude*=.4;return total;}void main(){vec2 p=gl_FragCoord.xy/u_resolution.xy,uv=p*vec2(u_resolution.x/u_resolution.y,1);float speed=u_speed*.1,time=u_time*speed,scale=1.-u_scale,q=fbm(uv*scale*.5),r=0.;uv=uv*scale-q+time;float weight=.8;for(int i=0;i<8;i++)r+=abs(weight*noise(uv)),uv=m*uv+time,weight*=.7;float f=0.;uv=p*vec2(u_resolution.x/u_resolution.y,1)*scale-q+time;weight=.7;for(int i=0;i<8;i++)f+=weight*noise(uv),uv=m*uv+time,weight*=.6;f*=r+f;float c=0.;time=u_time*speed*2.;uv=p*vec2(u_resolution.x/u_resolution.y,1)*(scale*2.)-q+time;weight=.4;for(int i=0;i<7;i++)c+=weight*noise(uv),uv=m*uv+time,weight*=.6;float c1=0.;time=u_time*speed*3.;uv=p*vec2(u_resolution.x/u_resolution.y,1)*(scale*3.)-q+time;weight=.4;for(int i=0;i<7;i++)c1+=abs(weight*noise(uv)),uv=m*uv+time,weight*=.6;c+=c1;vec4 skycolour=mix(u_colors[1],u_colors[0],p.y),cloudcolour=vec4(1)*clamp(1.-shadow+light*c,0.,1.);f=coverage+20.*alpha*f*r;cloudcolour=mix(skycolour,clamp(tint*skycolour+cloudcolour,0.,1.),clamp(f+c,0.,1.));gl_FragColor=cloudcolour;}`)
+
+        // new NoiseAndTextureNano(O("#glCanvas"), {
+        //     u_time: time => [time * .001],
+        //     u_colors: [[0.6235294117647059, 0, 1, 1, 0.33725490196078434, 0.3764705882352941, 1, 1]],
+        //     u_intensity: [0.946],
+        //     u_rays: [0.094],
+        //     u_reach: [0.211],
+        //     u_mouse: [0,0],
+        //     u_resolution: [1024, 1024]
+        // }, `attribute vec4 a_position;\nvoid main() { gl_Position = a_position; }`, `precision highp float;uniform vec2 u_resolution,u_mouse;uniform float u_time;uniform vec4 u_colors[2];uniform float u_intensity,u_rays,u_reach;\n#ifndef FNC_MOD289\n#define FNC_MOD289\n#endif\n#ifndef FNC_PERMUTE\n#define FNC_PERMUTE\n#endif\n#ifndef FNC_TAYLORINVSQRT\n#define FNC_TAYLORINVSQRT\n#endif\n#ifndef FNC_QUINTIC\n#define FNC_QUINTIC \n#endif\n#ifndef FNC_PNOISE\n#define FNC_PNOISE\n#endif\n#ifndef SRGB_EPSILON\n#define SRGB_EPSILON 0.00000001\n#endif\n#ifndef FNC_SRGB2RGB\n#define FNC_SRGB2RGB\nfloat srgb2rgb(float channel){return channel<.04045?channel*.0773993808:pow((channel+.055)*.947867298578199,2.4);}vec3 srgb2rgb(vec3 srgb){return vec3(srgb2rgb(srgb.x+SRGB_EPSILON),srgb2rgb(srgb.y+SRGB_EPSILON),srgb2rgb(srgb.z+SRGB_EPSILON));}vec4 srgb2rgb(vec4 srgb){return vec4(srgb2rgb(srgb.xyz),srgb.w);}\n#endif\n#if!defined(FNC_SATURATE)&&!defined(saturate)\n#define FNC_SATURATE\n#define saturate(x)clamp(x,0.0,1.0)\n#endif\n#ifndef SRGB_EPSILON\n#define SRGB_EPSILON 0.00000001\n#endif\n#ifndef FNC_RGB2SRGB\n#define FNC_RGB2SRGB\nfloat rgb2srgb(float channel){return channel<.0031308?channel*12.92:1.055*pow(channel,.416666666666667)-.055;}vec3 rgb2srgb(vec3 rgb){return saturate(vec3(rgb2srgb(rgb.x-SRGB_EPSILON),rgb2srgb(rgb.y-SRGB_EPSILON),rgb2srgb(rgb.z-SRGB_EPSILON)));}vec4 rgb2srgb(vec4 rgb){return vec4(rgb2srgb(rgb.xyz),rgb.w);}\n#endif\n#ifndef FNC_MIXOKLAB\n#define FNC_MIXOKLAB\nvec3 mixOklab(vec3 colA,vec3 colB,float h){\n#ifdef MIXOKLAB_COLORSPACE_SRGB\ncolA=srgb2rgb(colA);colB=srgb2rgb(colB);\n#endif\nconst mat3 kCONEtoLMS=mat3(.412165612,.211859107,.0883097947,.536275208,.6807189584,.2818474174,.0514575653,.107406579,.6302613616);vec3 lmsA=pow(kCONEtoLMS*colA,vec3(1./3.)),lmsB=pow(kCONEtoLMS*colB,vec3(1./3.)),lms=mix(lmsA,lmsB,h),rgb=lms*lms*lms*mat3(4.0767245293,-1.2681437731,-.0041119885,-3.3072168827,2.6093323231,-.7034763098,.2307590544,-.341134429,1.7068625689);\n#ifdef MIXOKLAB_COLORSPACE_SRGB\nreturn rgb2srgb(rgb);\n#else\nreturn rgb;\n#endif\n}vec4 mixOklab(vec4 colA,vec4 colB,float h){return vec4(mixOklab(colA.xyz,colB.xyz,h),mix(colA.w,colB.w,h));}\n#endif\nfloat rayStrength(vec2 raySource,vec2 rayRefDirection,vec2 coord,float seedA,float seedB,float speed){raySource=coord-raySource;float cosAngle=dot(normalize(raySource),rayRefDirection);return clamp(.45+.15*sin(cosAngle*seedA+u_time*speed)+(.3+.2*cos(-cosAngle*seedB+u_time*speed)),u_reach,1.)*clamp((u_resolution.x-length(raySource))/u_resolution.x,u_reach,1.);}void main(){vec2 uv=gl_FragCoord.xy/u_resolution.xy;uv.y=1.-uv.y;uv=vec2(gl_FragCoord.x,u_resolution.y-gl_FragCoord.y);float speed=u_rays*10.;vec4 fragColor=(vec4(0)+rayStrength(vec2(u_resolution.x*.7,u_resolution.y*-.4),normalize(vec2(1,-.116)),uv,36.2214*speed,21.11349*speed,1.5*speed)*u_colors[0]+(vec4(0)+rayStrength(vec2(u_resolution.x*.8,u_resolution.y*-.6),normalize(vec2(1,.241)),uv,22.3991*speed,18.0234*speed,1.1*speed)*u_colors[1]))*(u_reach-uv.y/u_resolution.y+(.5+u_intensity));gl_FragColor=fragColor;}`)
     });
 </script>

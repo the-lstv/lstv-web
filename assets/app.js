@@ -420,9 +420,12 @@
             if(!result){
                 O("#page_error").style.display = "flex";
             } else {
+                Q(".page.active").all().class("active", false);
+
                 let contentElement = (app.pages[path]? app.pages[path].content : null) || O(`#${btoa(path).replaceAll("=", "-")}`);
 
                 contentElement.style.display = app.pages[path].manifest.display || "block";
+                contentElement.class("active")
             }
 
             O(`title`).set(title)
