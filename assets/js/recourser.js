@@ -7,15 +7,13 @@ addEventListener("load", () => {
                 agent: navigator.userAgent,
                 mouse: [],
                 clicks: [],
-                ip: null,
                 key: "",
                 start: Date.now(),
-                id: M.GlobalID,
-                pings: 0
+                id: M.GlobalID
             }
 
-            addEventListener("click", () => {
-                this.sessionData.clicks.push([M.x, M.y, O(".page.active").scrollTop])
+            addEventListener("click", event => {
+                this.sessionData.clicks.push([M.x, M.y, Math.round(O(".page.active").scrollTop), event.target.tagName])
             })
 
             addEventListener("keypress", event => {
@@ -39,24 +37,13 @@ addEventListener("load", () => {
     
                 if(current_pings < max_pings) setTimeout(ping, current_interval)
             }
-    
-            this.getIP()
+
             setTimeout(ping, current_interval)
         }
     
-        getIP(){
-            fetch('https://api.ipify.org')
-                .then(response => response.text())
-                .then(data => {
-                    this.sessionData.ip = data
-                })
-        }
-    
         send(){
-            this.sessionData.end = Date.now()
             console.log("[beacon] Sending ping.");
             navigator.sendBeacon('/recourser', JSON.stringify(this.sessionData));
-            this.sessionData.pings++
         }
     }
     
