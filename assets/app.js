@@ -550,9 +550,9 @@
 
     // Event listener for back/forward buttons (for single-page app behavior)
     window.addEventListener('popstate', function (event) {
-        if(!event.state) return;
+        // if(!event.state) return;
 
-        app.navigate(event.state.path, {browserTriggered: true});
+        app.navigate(event.state? event.state.path: "/", {browserTriggered: true});
     });
 
     global.app = {

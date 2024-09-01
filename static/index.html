@@ -365,7 +365,9 @@ h2 {
         </div>
     
         <div %searchBar>
-            <input type="text" placeholder="Search" id="search-input">
+            <input type="text" placeholder="Search" id="searchInput">
+
+            <!-- <ls-select %searchTagFilter></ls-select> -->
         </div>
 
         <div .appShowcaseWrap>
@@ -398,7 +400,7 @@ h2 {
     Bare with me as I complete this website and add the rest of my projects (there are LOTS of them).
     <br><br>
     <a style="color: #560058" href="/warp">
-        Are you afraid of the night?<br>Close your eyes and discover a new world.<br>Leave the world behind.<br>Feel the tune of my mind.<br>Scream with my soul.<br>B L A C K - R A Y
+        Are you afraid of the night?<br>B L A C K - R A Y
     </a>
 </h3>
 
@@ -509,19 +511,39 @@ h2 {
             });
         }
 
+        let types = ["Application", "Application", "Game", "Service", "Authentication", "Utility", "Website", "Finance"], list, elements = {};
+
         async function loadApps(limit = appsPageSize, offset = (appsOffset * appsPageSize)) {
-            let list = await app.get(`${app.api}/v2/apps/list/home?limit=${limit}&offset=${offset}`).json()
+            list = await app.get(`${app.api}/v2/apps/list/home?limit=${limit}&offset=${offset}`).json()
 
             if(list.length < limit) appsAtBottom = true;
 
-            let types = ["Application", "Application", "Game", "Service", "Authentication", "Utility", "Website", "Finance"]
-
             customSort(list)
 
+            drawApps()
+        }
+
+        // let tagFilter = LS.Select(O("#searchTagFilter"), {
+        //     getLabel: () => "Filter tags",
+        //     handleClickEvents: false
+        // })
+
+        function drawApps(filter){
             for(let item of list){
+
+                if(typeof filter === "function" && !filter(item)) {
+                    if(elements[item.id]) elements[item.id].hide();
+                    continue
+                }
+
+                if(elements[item.id]) {
+                    elements[item.id].show()
+                    continue
+                }
+
                 if(item.tags) item.tags = item.tags.split(",");
 
-                let element = N({
+                let element = elements[item.id] = N({
                     accent: item.accent,
                     inner: [
                         N({
@@ -587,7 +609,23 @@ h2 {
                     }
                 });
 
-                for(let tag of item.tags) allTags.add(tag);
+                // for(let tag of item.tags) {
+                //     if(!allTags.has(tag)){
+                //         tagFilter.addOption({
+                //             value: tag,
+                //             element: N("label", {
+                //                 class: "ls-checkbox",
+                //                 inner: [
+                //                     tag,
+                //                     N("input", {type: "checkbox"}),
+                //                     N("span")
+                //                 ]
+                //             })
+                //         })
+
+                //         allTags.add(tag)
+                //     }
+                // }
 
                 function updatePopout(){
                     cursorPopout.style.left = M.x + "px"
@@ -597,6 +635,18 @@ h2 {
                 O("#apps-showcase").add(element)
             }
         }
+
+        function fuzz(string){
+            return string.toLowerCase().trim().replace(/[\s\n\t\r:|_]/g, "")
+        }
+
+        O("#searchInput").on("input", () => {
+            let value = fuzz(O("#searchInput").value);
+
+            drawApps(item => {
+                return fuzz(item.name).includes(value) || fuzz(item.description).includes(value);
+            })
+        })
 
         class NoiseAndTextureNano {
             constructor(canvas, uniforms, vertexShaderSource, fragmentShaderSource){
