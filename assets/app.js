@@ -1,4 +1,5 @@
-((global) => {
+addEventListener("load", () => {
+    const global = window;
 
     if(!global.LS){
         throw new Error("Application could not start! LS is missing!")
@@ -453,7 +454,7 @@
 
     LS.once("app-ready", async ()=>{
 
-        console.log(`[debug] App loaded in ${Date.now() - loadStarted}ms`);
+        console.log(`[debug] App loaded in ${performance.now() - loadStarted}ms`);
 
         app.events = new(LS.EventResolver())(app);
 
@@ -633,4 +634,4 @@
     app.module = global.app.module;
     global.app = app;
 
-})(window)
+})
