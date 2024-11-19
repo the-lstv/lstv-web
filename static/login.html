@@ -352,7 +352,7 @@
                         let usersContainer = container.get(".accountList");
 
                         for(let user of userList){
-                            let fragment = app.user.fragments[user];
+                            let fragment = app.user.fragments.get(user);
                             console.log(fragment);
 
                             usersContainer.prepend(N("button", {

@@ -5,143 +5,182 @@
 <script>
 app.module("account.manage", async (app, page, container) => {
     let user = await app.user.fetch()
+    
+    const tabs = container.getAll(".sidebar-tab")
 
+    let i = 0;
+    for(let element of container.getAll(".sidebar-item")){
+        const index = i;
+
+        element.on("click", () => {
+            setTab(index)
+        })
+
+        i++
+    }    
+
+    function setTab(index = 0){
+        for(let i = 0; i < tabs.length; i++) tabs[i].style.display = i === index? "block": "none";
+    }
+
+    setTab()
 })
 </script>
 
 <style>
+
 .sidebar-container {
     display: flex;
     width: 100%;
     height: 100%;
-    padding: 10px 10px 0 10px;
 }
 
 .sidebar {
-    background: var(--elevate-0);
-    width: 250px;
-    height: 100%;
-    border-radius: 24px 0 0 0;
-    padding: 15px;
     overflow: auto;
-    -webkit-user-select: none;
+    width: 250px;
+    background: var(--bg-5);
+    padding: 10px;
     user-select: none;
-    border-right: 1px solid var(--elevate-3);
 }
 
-.sidebar-content {
-    width: 100%;
-    flex: 1;
-    background: var(--ui-bg-0);
-    border-radius: 0 24px 0 0;
+.sidebar-item {
+    padding: 6px 8px;
+    border-radius: var(--br-lg);
+    cursor: pointer;
+    margin-bottom: 8px;
 }
 
-[ls-theme="light"] .sidebar-item.selected {
-    background: var(--elevate);
+.sidebar-item:hover {
+    background: var(--elevate-1);
 }
 
-@media screen and (max-width: 680px) {
-    .sidebar {
-        border-radius: 0;
-        position: absolute;
-        z-index: 1;
-        left: 0;
-        right: 0;
-        width: unset;
-        background: var(--elevate);
-        border-right: none;
-        top: 45px;
-    }
-
-    [ls-theme="light"] .sidebar-item.selected {
-        background: var(--elevate-0);
-    }
-
-    .sidebar-content::after {
-        content: "";
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: #0004;
-    }
-
-    .sidebar-content {
-        border-radius: 24px 24px 0 0;
-    }
+.sidebar-item:active {
+    background: var(--transparent-overlay-dark-strong);
 }
 
-.sidebar-path {
-    margin-bottom: 10px;
-    padding: 5px;
-}
-
-.sidebar-items {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
+.sidebar-item > i {
+    margin-right: 6px;
 }
 
 .sidebar-item.selected {
     background: var(--elevate-1);
-    position: relative;
 }
 
-.sidebar-item {
-    border-radius: 15px;
-    padding: 8px 18px;
-    cursor: pointer;
+.sidebar-tab {
+    padding: 10px 20px;
 }
 
-.sidebar-item.selected::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 32%;
-    bottom: 32%;
-    background: var(--accent);
-    width: 5px;
-    border-radius: 10px;
-}
-
-.sidebar-item > i {
-    margin-right: 8px;
-}
 </style>
 
 <div .sidebar-container>
-    <div .sidebar %accountManageSidebar>
-        <!-- <div .sidebar-path>
-            <div .sidebar-path-item>
-                <i class="bi-house-fill"></i>
-            </div>
-        </div> -->
+    <div .sidebar>
+
         <div .sidebar-items>
             <div .sidebar-item .selected>
-                <i class="bi-person-fill"></i>
+                <i .bi-person-fill></i>
                 Profile
             </div>
+
             <div .sidebar-item>
-                <i class="bi-wallet-fill"></i>
-                Pockets
+                <i .bi-cloudy-fill></i>
+                Cloud
             </div>
+
             <div .sidebar-item>
-                <i class="bi-cloudy-fill"></i>
-                Cloud services
-            </div>
-            <div .sidebar-item>
-                <i class="bi-currency-exchange"></i>
-                Billing
-            </div>
-            <div .sidebar-item>
-                <i class="bi-person-fill"></i>
-                Thing
+                <i .bi-app-indicator></i>
+                Applications
             </div>
         </div>
+
     </div>
     
     <div .sidebar-content>
+        <div .sidebar-tab>
+            <h2>Profile</h2>
 
+            <br>
+
+            <div .profileEditorWrapper>
+                <div .profileEditorContentWrapper>
+                    <div>
+                        <span .sidebar-label>Display name</span> <br>
+                        <input type="text" %profileEditorDisplayname maxlength="50">
+                    </div>
+
+                    <div>
+                        <span .sidebar-label>Avatar</span> <br>
+                        <input accept="image/*" type="file" hidden %profileEditorAvatar>
+
+                        <ls-group join>
+                            <button onclick="O('#profileEditorAvatar').click()"><i .bi-person-bounding-box></i> Change</button>
+                            <button ls-accent="gray">Remove</button>
+                        </ls-group>
+                    </div>
+
+                    <div>
+                        <span .sidebar-label>Banner</span> <br>
+                        <input accept="image/*" type="file" hidden %profileEditorBanner>
+
+                        <ls-group join>
+                            <button onclick="O('#profileEditorBanner').click()"><i .bi-person-bounding-box></i> Change</button>
+                            <button ls-accent="gray">Remove</button>
+                        </ls-group>
+                    </div>
+
+                    <div>
+                        <span .sidebar-label>About me</span> <br>
+                        <textarea maxlength="600" %profileEditorBio rows="8"></textarea> <br>
+                        <span style="color: var(--elevate-3); margin-left: 10px">TIP: You can use markdown.</span>
+                    </div>
+
+                    <div>
+                        <span .sidebar-label>Colors</span> <br> <br>
+
+                        <label .ls-checkbox>
+                            Enable profile gradient
+                            <input type="checkbox" %profileEditorGradientToggle>
+                            <span></span>
+                        </label>
+
+                        <br>
+                        <br>
+
+                        <label .color-picker style="margin: 0 20px">
+                            <span .sidebar-label>Primary</span>
+                            <input type="color" %profileEditorGradientPrimary>
+                        </label>
+
+                        <label .color-picker>
+                            <span .sidebar-label>Secondary</span>
+                            <input type="color" %profileEditorGradientSecondary>
+                        </label> <br> <br> <br> <br>
+                    </div>
+
+                    <div>
+                        <span .sidebar-label>Miscellaneous</span> <br> <br>
+                        <label .ls-checkbox>
+                            Mark my profile as NSFW
+                            <input type="checkbox" %profileEditorNSFWToggle>
+                            <span></span>
+                        </label> <br> <br>
+                        <span style="color: var(--elevate-3); margin-left: 10px; display: inline-block">
+                            When you mark your profile as NSFW,<br>it will be blured to everyone<br>who has NSFW disabled.<br>
+                            If our system determines your<br>profile as unsafe, this option<br>will be turned on automatically.
+                        </span>
+                    </div>
+                </div>
+                <div .profileEditorPreviewWrapper>
+                    <span .sidebar-label>Preview</span> <br>
+                </div>
+            </div>
+        </div>
+
+        <div .sidebar-tab>
+            
+        </div>
+
+        <div .sidebar-tab>
+            
+        </div>
     </div>
 </div>

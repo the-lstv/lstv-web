@@ -14,23 +14,21 @@
         container: O("#app"),
         viewport: O("#viewport"),
 
-        pages: {},
+        pages: new Map,
 
         get page(){
-            return app.pages[app.currentPage] || null
+            return app.pages.get(app.currentPage) || null
         },
 
         currentPage: "",
 
-        api: true? "https://api.extragon.cloud": "http://api.extragon.test",
+        api: location.hostname.endsWith("test")? "http://api.extragon.test": "https://api.extragon.cloud",
 
         apiVersion: 2,
 
         cdn: "https://cdn.extragon.cloud",
 
-        module(){
-
-        },
+        module() { throw false },
 
         originalQuery: LS.Util.params(),
 
@@ -38,25 +36,20 @@
             normalizePath(path) {
                 // Replace backslashes with forward slashes
                 path = path.replace(/\\/g, '/');
-            
-                // Resolve '..' and '.' in the path
+
                 const parts = path.split('/');
                 const normalizedParts = [];
             
                 for (const part of parts) {
                     if (part === '..') {
-                        // Pop the last directory off the stack if '..' encountered
                         normalizedParts.pop();
                     } else if (part !== '.' && part !== '') {
-                        // Ignore '.' and empty parts
                         normalizedParts.push(part);
                     }
                 }
-            
-                // Join the parts to form the normalized path
+
                 const normalizedPath = normalizedParts.join('/');
-            
-                // Check if the path was absolute and preserve the leading slash
+
                 const isAbsolute = path.startsWith('/');
                 return (isAbsolute ? '/' : '') + normalizedPath;
             }
@@ -105,11 +98,11 @@
                 } else return false;
             },
 
-            // User fragments (Contain information about users. Key = id. The values may vary based on availability - eg. when pocket information is fetched, it may get added.)
-            fragments: {},
+            // User fragments (Contain information about users. Key = id. The values included vary based on availability - eg. when pocket information is fetched, it may get added to the user fragment, otherwise it is not there.)
+            fragments: new Map,
 
             get fragment(){
-                return app.user.fragments[app.user.current]
+                return app.user.fragments.get(app.user.current)
             },
 
             async fetchAll(){
@@ -127,7 +120,7 @@
 
                 if(Array.isArray(users) && users.length > 0) {
                     for(let fragment of users){
-                        app.user.fragments[fragment.id] = fragment;
+                        app.user.fragments.set(fragment.id, fragment);
                     }
                 } else return false;
 
@@ -159,7 +152,7 @@
                 let pfp = source;
 
                 if(typeof source === "number"){
-                    pfp = app.user.fragments[source].pfp;
+                    pfp = app.user.fragments.get(source).pfp;
                 } else if(typeof source === "object"){
                     pfp = source.pfp
                 }
@@ -343,7 +336,7 @@
                     return location.href = path
                 }
 
-                let content = app.pages[path] ? app.pages[path].content : null;
+                let content = app.pages.get(path) ? app.pages.get(path).content : null;
     
                 if(!content || options.refetch) {
                     let response;
@@ -357,16 +350,16 @@
                             class: "page"
                         })
 
-                        app.pages[path] = {
+                        app.pages.set(path, {
                             content,
                             manifest: content.has("ls-manifest")? content.get("ls-manifest").attr(): {},
                             path
-                        }
+                        })
 
                         content.getAll("script").all(script => {
                             if(script.parentElement !== content) return;
 
-                            if(!app.pages[path].moduleName) app.pages[path].moduleName = app.pages[path].manifest.module || null;
+                            if(!app.pages.get(path).moduleName) app.pages.get(path).moduleName = app.pages.get(path).manifest.module || null;
 
                             content.add(N("script", script.innerText))
                             script.remove()
@@ -392,20 +385,20 @@
                     app.viewport.add(content)
                 }
 
-                if(app.pages[path].moduleName){
+                if(app.pages.get(path).moduleName){
                     setTimeout(()=>{
-                        if(!definedModules.includes(app.pages[path].moduleName)){
-                            console.error(`[Secutity Violation] A page with the module name of "${app.pages[path].moduleName}" did not register a function within 20ms from its initial load - further attempts at registering a function have been blocked to eliminate security concerns.`)
-                            definedModules.push(app.pages[path].moduleName)
+                        if(!definedModules.includes(app.pages.get(path).moduleName)){
+                            console.error(`[Secutity Violation] A page with the module name of "${app.pages.get(path).moduleName}" did not register a function within 20ms from its initial load - further attempts at registering a function have been blocked to eliminate security concerns.`)
+                            definedModules.push(app.pages.get(path).moduleName)
                         }
                     }, 20)
                 }
 
                 content.getAll("style").all(style => style.disabled = false)
 
-                title = "LSTV" + (app.pages[path].manifest.title? " | " + app.pages[path].manifest.title : "");
-                O('.headerText').set(app.pages[path].manifest.header || "");
-                O('.headerTitle').style.fontWeight = app.pages[path].manifest.header? "600" : "400";
+                title = "LSTV" + (app.pages.get(path).manifest.title? " | " + app.pages.get(path).manifest.title : "");
+                O('.headerText').set(app.pages.get(path).manifest.header || "");
+                O('.headerTitle').style.fontWeight = app.pages.get(path).manifest.header? "600" : "400";
 
                 return true
             })();
@@ -422,9 +415,9 @@
             } else {
                 Q(".page.active").all().class("active", false);
 
-                let contentElement = (app.pages[path]? app.pages[path].content : null) || O(`#${btoa(path).replaceAll("=", "-")}`);
+                let contentElement = (app.pages.get(path)? app.pages.get(path).content : null) || O(`#${btoa(path).replaceAll("=", "-")}`);
 
-                contentElement.style.display = app.pages[path].manifest.display || "block";
+                contentElement.style.display = app.pages.get(path).manifest.display || "block";
                 contentElement.class("active")
             }
 
@@ -557,7 +550,7 @@
 
     global.app = {
         module(name, init){
-            let source = Object.values(app.pages).find(page => page.moduleName == name);
+            let source = app.pages.values().find(page => page.moduleName == name);
 
             if(!source) {
                 throw new Error(`[Security Violation] Module "${name}" has not been found on this page or does not have permission to access the global object`);
