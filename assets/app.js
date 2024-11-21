@@ -205,7 +205,7 @@ addEventListener("load", () => {
             async function execute(){
                 if(response) return response;
 
-                response = await app.fetch(endpoint.startsWith("https://")? endpoint : `${app.api}/v${app.apiVersion}/${endpoint}`, {
+                response = await app.fetch(endpoint.startsWith("http")? endpoint : `${app.api}/v${app.apiVersion}/${endpoint}`, {
                     ...body? {body: typeof body == "string"? body : JSON.stringify(body)} : {},
                     ...body? {method: "POST"} : {},
                     ...options
