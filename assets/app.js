@@ -9,7 +9,7 @@ addEventListener("load", () => {
 
     let definedModules = [];
 
-    let auth = null, __auth = null, __authRead = false, set = Akeno.randomSet;
+    let auth = null, __auth = null, __authRead = false, set = [1, 2, 3, 4];
 
     let app = {
         container: O("#app"),
