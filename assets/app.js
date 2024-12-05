@@ -1,3 +1,6 @@
+
+
+
 addEventListener("load", () => {
     const global = window;
 
@@ -9,7 +12,7 @@ addEventListener("load", () => {
 
     let definedModules = [];
 
-    let auth = null, __auth = null, __authRead = false, set = [1, 2, 3, 4];
+    let __auth = null;
 
     let app = {
         container: O("#app"),
@@ -18,7 +21,7 @@ addEventListener("load", () => {
         pages: new Map,
 
         get page(){
-            return app.pages.get(app.currentPage) || null
+            return app.pages.get(app.currentPage)
         },
 
         currentPage: "",
@@ -99,7 +102,12 @@ addEventListener("load", () => {
                 } else return false;
             },
 
-            // User fragments (Contain information about users. Key = id. The values included vary based on availability - eg. when pocket information is fetched, it may get added to the user fragment, otherwise it is not there.)
+            /*
+                User fragments
+                Contain information about users where user ID is the key.
+                The data available vary on request (can be fetched later)
+            */
+
             fragments: new Map,
 
             get fragment(){
@@ -150,25 +158,12 @@ addEventListener("load", () => {
             },
 
             getProfilePictureView(source = app.user.current, quality = 128){
-                let pfp = source;
+                let pfp = typeof source === "number"? app.user.fragments.get(source).pfp: typeof source === "object"? source.pfp: source;
 
-                if(typeof source === "number"){
-                    pfp = app.user.fragments.get(source).pfp;
-                } else if(typeof source === "object"){
-                    pfp = source.pfp
-                }
-
-                let wrapper = N({
-                    class: "pfpWrap"
+                return N({
+                    class: "pfpWrap",
+                    inner: pfp? N("img", {src: app.cdn + "/file/" + pfp + "?size=" + quality, class: "profilePicture", draggable: false, alt: "Profile picture"}): N("i", {class: "bi-person-fill profilePicture"})
                 })
-
-                if(pfp) {
-                    wrapper.add(N("img", {src: app.cdn + "/file/" + pfp + "?size=" + quality, class: "profilePicture", draggable: false, alt: "Profile picture"}))
-                } else {
-                    wrapper.add(N("i", {class: "bi-person-fill profilePicture"}))
-                }
-
-                return wrapper
             },
 
             logout(){
@@ -176,24 +171,23 @@ addEventListener("load", () => {
 
                 setAuth(__auth.split(":").filter(token => !token.startsWith(app.user.current + "=")).join(":"))
 
-                app.user.current = null
-                app.user.fragment = null
+                app.user.current = app.user.fragment = null
 
                 LS.invoke("before-logout")
-
-                setTimeout(() => location.reload(), 2)
+                setTimeout(() => location.reload(), 8)
             },
 
             current: null
         },
 
-        fetch(url, options = {}){
+        fetch(url, options){
             return fetch(url, {
                 ...options,
                 ...url.startsWith(app.api) && typeof app.user.current == "number" ? {
                     headers: {
+                        credentials: 'include',
                         authorization: __auth.split(":").find(token => token.startsWith(app.user.current + "=")).split("=")[1],
-                        ...options.headers? options.headers : {}
+                        ...options.headers && options.headers
                     }
                 }: {}
             })
@@ -205,13 +199,10 @@ addEventListener("load", () => {
             async function execute(){
                 if(response) return response;
 
-                response = await app.fetch(endpoint.startsWith("http")? endpoint : `${app.api}/v${app.apiVersion}/${endpoint}`, {
-                    ...body? {body: typeof body == "string"? body : JSON.stringify(body)} : {},
-                    ...body? {method: "POST"} : {},
+                return response = await app.fetch(endpoint.startsWith("http")? endpoint : `${app.api}/v${app.apiVersion}/${endpoint}`, {
+                    ...body && { method: "POST", body: typeof body == "string"? body : JSON.stringify(body) },
                     ...options
                 });
-
-                return response
             }
 
             return {
@@ -229,6 +220,7 @@ addEventListener("load", () => {
 
                     return response
                 },
+
                 async text(){
                     let response;
                     try{
@@ -237,6 +229,7 @@ addEventListener("load", () => {
 
                     return response
                 },
+
                 async blob(){
                     let response;
                     try{
@@ -248,17 +241,11 @@ addEventListener("load", () => {
             }
         },
 
-        post(endpoint, body, options = {}){
-            return app.get(endpoint, body, {
-                method: "POST",
-                ...options
-            })
+        post(endpoint, body, options){
+            return app.get(endpoint, body, options)
         },
 
         set theme(value){
-
-            // Do NOT remove this check - in the case that we set "null", only the button should be updated, so this is correct.
-            // The theme cant become "null". Default value is dark.
             if(value !== null){
                 LS.Color.setTheme(value)
             }
@@ -322,13 +309,13 @@ addEventListener("load", () => {
 
             app.viewport.getAll("style").all(style => style.disabled = true)
             Q(".page").all().applyStyle({display: "none"});
-            O("#page_loading").style.display = "block";
+            O("#loading_page").style.display = "block";
 
             let title = "LSTV | Error";
 
             let result = await (async () => {
                 if(options.reload){
-                    app.expiredSession = true;
+                    app.expireSession();
 
                     if(options.replace){
                         return location.replace(location.origin + path)
@@ -408,11 +395,11 @@ addEventListener("load", () => {
                 return
             }
             
-            O("#page_loading").style.display = "none";
+            O("#loading_page").style.display = "none";
 
             
             if(!result){
-                O("#page_error").style.display = "flex";
+                O("#error_page").style.display = "flex";
             } else {
                 Q(".page.active").all().class("active", false);
 
@@ -438,30 +425,82 @@ addEventListener("load", () => {
             await app.navigate(app.currentPage, {refetch: true})
         },
 
-        set expiredSession(value){
-            if(value){
-                O("#app").class("expired").set("<h1><i class=bi-hourglass-split></i></h1><br><h2>Redirecting...</h2>Please wait up to a few seconds while we redirect you to your target page.")
-                
-                global.app = null;
-                app = null;
+        expireSession(){
+            app.container.class("expired").set("<h1><i class=bi-hourglass-split></i></h1><br><h2>Redirecting...</h2>Please wait up to a few seconds while we redirect you to your target page.")
 
-                setTimeout(() => {
-                    O("#app").add("<br><br>Did you get stuck here unexpectedly and nothing is happening?<br>Your browser might have reverted to this page on accident.<br>Try reloading the page to continue browsing!<br><br><span style=color:gray>(This session became invalid as you changed something critical, eg. logged in/out.)</span>")
-                }, 2000);
-            }
+            global.app = null;
+            app = null;
+
+            return setTimeout(() => {
+                app.container.add("<br><br>Did you get stuck here unexpectedly or nothing is happening?<br>Your browser might have reverted to this page on accident.<br>Try reloading the page to continue browsing!<br><br><span style=color:gray>(This session has became invalid as something critical happened, eg. logged in/out.)</span>")
+            }, 2000);
         }
     }
 
-    LS.once("app-ready", async ()=>{
+    // Enables single-page app behavior
+    M.on('click', function (event) {
+        const targetElement = event.target.closest("a");
 
-        console.log(`[debug] App loaded in ${performance.now() - loadStarted}ms`);
+        if (targetElement && targetElement.tagName === 'A') {
+            
+            if(targetElement.hasAttribute("target")) return;
+
+            if(targetElement.href.endsWith("#")) return event.preventDefault();
+
+            if(targetElement.href.startsWith(origin) && !targetElement.href.endsWith("?") && !targetElement.href.startsWith(origin + ":")){
+                event.preventDefault();
+                app.navigate(targetElement.getAttribute('href'));
+                app.toolbarClose()
+            }
+        }
+    });
+
+    // Event listener for back/forward buttons (for single-page app behavior)
+    window.addEventListener('popstate', function (event) {
+        // if(!event.state) return;
+
+        app.navigate(event.state? event.state.path: "/", {browserTriggered: true});
+    });
+
+    global.app = {
+        module(name, init){
+            let source = app.pages.values().find(page => page.moduleName == name);
+
+            if(!source) {
+                throw new Error(`[Security Violation] Module "${name}" has not been found on this page or does not have permission to access the global object`);
+            }
+
+            if(definedModules.includes(name)) {
+                throw new Error(`[Security Violation] Module "${name}" already had a script registered`);
+            }
+
+            definedModules.push(name)
+
+            init(app, source, source.content)
+        }
+    };
+
+    __auth = localStorage.token || "";
+
+    function setAuth(data){
+        // TODO: Make something better again
+        localStorage.token = data
+    }
+
+    LS.once("body-available", async () => {
+        LS.Color.on("theme-changed", () => {
+            app.theme = null
+        })
+    
+        // Set the theme based on user preffered scheme and add an listener to when this changes to apply automatically:
+        LS.Color.adaptiveTheme()
+        LS.Color.on("scheme-changed", LS.Color.adaptiveTheme)
 
         app.events = new(LS.EventResolver())(app);
 
         app.navigate(location.pathname, {browserTriggered: true})
 
         app.container.style.display = "flex"
-        O(loading).hide()
 
         let userList = app.user.list();
 
@@ -524,114 +563,8 @@ addEventListener("load", () => {
 
     })
 
-    // Enables single-page app behavior
-    M.on('click', function (event) {
-        const targetElement = event.target.closest("a");
-
-        if (targetElement && targetElement.tagName === 'A') {
-            
-            if(targetElement.hasAttribute("target")) return;
-
-            if(targetElement.href.endsWith("#")) return event.preventDefault();
-
-            if(targetElement.href.startsWith(origin) && !targetElement.href.endsWith("?") && !targetElement.href.startsWith(origin + ":")){
-                event.preventDefault();
-                app.navigate(targetElement.getAttribute('href'));
-                app.toolbarClose()
-            }
-        }
-    });
-
-    // Event listener for back/forward buttons (for single-page app behavior)
-    window.addEventListener('popstate', function (event) {
-        // if(!event.state) return;
-
-        app.navigate(event.state? event.state.path: "/", {browserTriggered: true});
-    });
-
-    global.app = {
-        module(name, init){
-            let source = app.pages.values().find(page => page.moduleName == name);
-
-            if(!source) {
-                throw new Error(`[Security Violation] Module "${name}" has not been found on this page or does not have permission to access the global object`);
-            }
-
-            if(definedModules.includes(name)) {
-                throw new Error(`[Security Violation] Module "${name}" already had a script registered`);
-            }
-
-            definedModules.push(name)
-
-            init(app, source, source.content)
-        }
-    };
-
-    function _0x2494(){const _0x49bdaf=['body','329svUFeS','parsePayloadSignature','348366LvOzKT','getRandomValues','values','120WidodK','length','109974oZLdgi','12mluDNG','key','join','decode','removeItem','2655235EXRDOj',':app','211780cFeYFD','259330qQcCPY','3IBPWxB','91768myMSFp','from','includes','ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_','payloadSignature','floor','11304ahluwV','random','Session\x20token\x20may\x20only\x20be\x20read\x20once','225xeOtzF','keys','---','startsWith'];_0x2494=function(){return _0x49bdaf;};return _0x2494();}function _0x8bb2(_0x234cbf,_0x194fe1){const _0x2494b9=_0x2494();return _0x8bb2=function(_0x8bb21d,_0x129770){_0x8bb21d=_0x8bb21d-0x14d;let _0x279a8e=_0x2494b9[_0x8bb21d];return _0x279a8e;},_0x8bb2(_0x234cbf,_0x194fe1);}const _0x4e3b1d=_0x8bb2;(function(_0x1041fd,_0x3e9ddb){const _0x50cb84=_0x8bb2,_0x125516=_0x1041fd();while(!![]){try{const _0xdbbe7a=-parseInt(_0x50cb84(0x15a))/0x1+-parseInt(_0x50cb84(0x16c))/0x2+-parseInt(_0x50cb84(0x15b))/0x3*(parseInt(_0x50cb84(0x162))/0x4)+parseInt(_0x50cb84(0x14f))/0x5*(-parseInt(_0x50cb84(0x151))/0x6)+-parseInt(_0x50cb84(0x16a))/0x7*(-parseInt(_0x50cb84(0x15c))/0x8)+-parseInt(_0x50cb84(0x165))/0x9*(-parseInt(_0x50cb84(0x159))/0xa)+-parseInt(_0x50cb84(0x157))/0xb*(-parseInt(_0x50cb84(0x152))/0xc);if(_0xdbbe7a===_0x3e9ddb)break;else _0x125516['push'](_0x125516['shift']());}catch(_0x216d82){_0x125516['push'](_0x125516['shift']());}}}(_0x2494,0x69e49));_0x45a48b:{if(__authRead||__auth||auth)throw _0x4e3b1d(0x164);for(let key of Object['keys'](localStorage)){if(key[_0x4e3b1d(0x168)](':app')){try{if(localStorage[key][_0x4e3b1d(0x168)](_0x4e3b1d(0x167))){let payload=M[_0x4e3b1d(0x16b)](localStorage[key]),decoded=new TextDecoder()[_0x4e3b1d(0x155)](payload[_0x4e3b1d(0x169)][0x0]);decoded[_0x4e3b1d(0x15e)]('.')&&(auth=decoded);}}catch{}localStorage[_0x4e3b1d(0x156)](key);}}let objk=Object[_0x4e3b1d(0x166)];Object[_0x4e3b1d(0x166)]=_0x26efc3=>{if(_0x26efc3===localStorage)return[];return objk(_0x26efc3);};let objv=Object[_0x4e3b1d(0x14e)];Object[_0x4e3b1d(0x14e)]=_0x419337=>{if(_0x419337===localStorage)return[];return objv(_0x419337);},localStorage[_0x4e3b1d(0x153)]=()=>null;if(auth===null)auth='';setAuth(auth),__auth=auth;}function randomBase(){const _0xae13b1=_0x4e3b1d;return Math[_0xae13b1(0x161)](Math[_0xae13b1(0x163)]()*(0x24-0x10)+0x10);}function setAuth(_0x2930e0){const _0x2244f7=_0x4e3b1d;auth=_0x2930e0;for(let _0x4c011d of set){localStorage[_0x2244f7(0x158)+_0x4c011d]=M[_0x2244f7(0x160)](null,[Array[_0x2244f7(0x15d)]({'length':Math[_0x2244f7(0x161)](Math[_0x2244f7(0x163)]()*0x100)},()=>_0x2244f7(0x15f)['charAt'](Math[_0x2244f7(0x161)](Math[_0x2244f7(0x163)]()*0x40)))[_0x2244f7(0x154)]('')],0x10,randomBase());}if(_0x2930e0&&_0x2930e0[_0x2244f7(0x150)])localStorage[_0x2244f7(0x158)+set[crypto[_0x2244f7(0x14d)](new Uint8Array(0x1))[0x0]%0x3]]=M['payloadSignature'](null,[_0x2930e0],0x10,randomBase());}
-    
-    // getAuth: {
-    //     if(__authRead || __auth || auth) throw "Session token may only be read once";
-
-    //     for(let key of Object.keys(localStorage)){
-    //         if(key.startsWith(":app")) {
-    //             try{
-    //                 if(localStorage[key].startsWith("---")){
-    //                     let payload = M.parsePayloadSignature(localStorage[key])
-
-    //                     let decoded = (new TextDecoder).decode(payload.body[0])
-
-    //                     if(decoded.includes(".")){
-    //                         auth = decoded
-    //                     }
-    //                 }
-    //             } catch { }
-
-    //             localStorage.removeItem(key)
-    //         }
-    //     }
-
-    //     let objk = Object.keys;
-
-    //     Object.keys = object => {
-    //         if(object === localStorage) return [];
-    //         return objk(object)
-    //     }
-
-    //     let objv = Object.values;
-
-    //     Object.values = object => {
-    //         if(object === localStorage) return [];
-    //         return objv(object)
-    //     }
-
-    //     localStorage.key = () => null;
-
-    //     if(auth === null) auth = "";
-
-    //     setAuth(auth)
-
-    //     __auth = auth;
-    // }
-
-    // function randomBase(){
-    //     return Math.floor((Math.random() * (36 - 16)) + 16)
-    // }
-
-    // function setAuth(data){
-    //     // This is more of a "security through obscurity" type thing.
-    //     // Should be migrated immidiately as soon as a better method is available to browsers.
-
-    //     auth = data;
-
-    //     for(let thing of set){
-    //         localStorage[":app" + thing] = M.payloadSignature(null, [Array.from({ length: Math.floor(Math.random() * 256) }, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'.charAt(Math.floor(Math.random() * 64))).join('')], 16, randomBase())
-    //     }
-
-    //     if(data && data.length) localStorage[":app" + set[crypto.getRandomValues(new Uint8Array(1))[0] % 3]] = M.payloadSignature(null, [data], 16, randomBase())
-    // }
-
-    // DEBUG
-    app.module = global.app.module;
-    global.app = app;
-
+    if(location.hostname.endsWith("test")){
+        app.module = global.app.module;
+        global.app = app;
+    }
 })

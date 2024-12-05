@@ -1,23 +1,8 @@
 <head>
 
-    @resources {
-        ls-js: tiny, select, tooltips, modal, tabs, color, toast;
-        ls-css: base, select, ls-flat, tooltips, loader, modal, tabs, toast;
-
-        bootstrap-icons;
-
-        fonts: Rubik, Poppins, "JetBrains Mono";
-
-        css: /assets/main.css;
-        js: /assets/app.js, /assets/js/recourser.js;
-
-        defer-css;
-        defer-js;
-    }
 
     @manifest {
         title: "LSTV";
-        lang: "en";
 
         style: "flat";
         theme: "dark";
@@ -26,13 +11,26 @@
         favicon: /assets/favicon.svg;
     }
 
+    @resources {
+        ls-js: tiny, select, tooltips, modal, tabs, color, toast;
+        ls-css: base, select, ls-flat, tooltips, loader, modal, tabs, toast;
+        ls-version: 4.0.0;
+
+        bootstrap-icons;
+
+        fonts: Rubik, Poppins, "JetBrains Mono";
+
+        css: /assets/main.css;
+        js: /assets/app.js, /assets/js/ping.js;
+    }
+
     <style>
         body {
             /* Eye-saver! */
             background: #222;
             color: #ddd;
         }
-        
+
         @media (prefers-color-scheme: light) {
             body {
                 background: #ddd;
@@ -42,36 +40,41 @@
     </style>
 </head>
 
-<page>
+<body>
 
-    <div %loading style="display: flex; justify-content: center; align-items: center; height: 94vh; font-family: sans-serif; overflow: hidden">
-        <span style="font-family: sans-serif; font-size: 1.8em"><noscript><br>Error: This website requires JavaScript to be enabled in order to function.<br>Please enable JavaScript in your browser to continue.</noscript><br><pre style="white-space: pre-wrap" .loadingLog></pre></span>
+    <div .loaderContainer>
+        <div .loader></div>
     </div>
 
-    <div %app hidden>
-        <div %header>
-            <a ls-accent="auto" %header_link href="/"><span class="headerTitle">LSTV</span><span class="headerText"></span></a>
+    <div #app hidden>
+        <nav ls-accent="auto">
 
-            <div %headerButtons ls-accent="auto">
-                <button ls-tooltip="Applications" hidden for="toolbarApps" %appsButton class="pill elevated">
-                    <i class="bi-grid-fill"></i> <span class="label">Apps</span>
+            <a href="/">
+                <span .headerTitle>LSTV</span><span .headerText></span>
+            </a>
+
+            <div #headerButtons>
+                <button ls-tooltip="Applications" hidden for="toolbarApps" #appsButton .pill.elevated>
+                    <i .bi-grid-fill></i> <span .label>Apps</span>
                 </button>
 
-                <button ls-tooltip="Manage profiles" %accountsButton for="toolbarLogin" class="pill elevated" ls-accent="gray-light">
-                    <span class="text">Loading</span>
-                    <div %profilePicturePreview class="load-noBackground" load>
-                        <i class="bi-person-fill"></i>
+                <button ls-tooltip="Manage profiles" #accountsButton for="toolbarLogin" .pill.elevated ls-accent="gray-light">
+                    <span .text>Loading</span>
+
+                    <div #profilePicturePreview .load-noBackground load>
+                        <i .bi-person-fill></i>
                     </div>
+
                 </button>
 
-                <button ls-tooltip="Dark/Light theme" %themeButton class="pill elevated" style="padding: .4em .8em">
-                    <i class="bi-sun-fill"></i>
+                <button ls-tooltip="Dark/Light theme" #themeButton .pill.elevated>
+                    <i .bi-sun-fill></i>
                 </button>
             </div>
 
-            <div %toolbars hidden>
+            <div #toolbars hidden ls-accent="blue">
 
-                <div %toolbarApps>
+                <div #toolbarApps>
                     <h3>Applications</h3>
                     <div>
                         <ls-info>
@@ -80,33 +83,33 @@
                     </div>
                 </div>
 
-                <div %toolbarAccount>
-                    <div %profileListWrap>
+                <div #toolbarAccount>
+                    <div #profileListWrap>
                         <h2>Your accounts</h2>
                         <div>
-                            <button class="pill small"><i class="bi-plus"></i> Add account</button>
+                            <button .pill.small><i .bi-plus></i> Add account</button>
                         </div>
                     </div>
-                    <div %profileWrap>
-                        <button %returnButton onclick="O('#toolbarAccount').class('selecting', 0)" class="pill small solid elevated" ls-accent="auto"><i class="bi-arrow-return-left"></i> Return</button>
+                    <div #profileWrap>
+                        <button #returnButton onclick="O('#toolbarAccount').class('selecting', 0)" .pill.small.solid.elevated ls-accent="auto"><i .bi-arrow-return-left></i> Return</button>
                         
                         <div style="line-height: 1em; margin: 1.2rem 0">
-                            <h2 %profileDisplayname></h2>
-                            <h3 %profileUsername></h3>
+                            <h2 #profileDisplayname></h2>
+                            <h3 #profileUsername></h3>
                         </div>
 
                         <div .hButtonGroup>
-                            <a href="/account" class="ls-button pill elevated" ls-accent="auto">Manage account</a>
-                            <button class="pill elevated" ls-accent="auto">Edit profile</button>
-                            <button class="pill elevated" ls-accent="red" %logOutButton>Log out</button>
+                            <a href="/account" .pill.ls-button.elevated ls-accent="auto">Manage account</a>
+                            <button .pill.elevated ls-accent="auto">Edit profile</button>
+                            <button .pill.elevated ls-accent="red" #logOutButton>Log out</button>
                         </div>
 
-                        <button onclick="O('#toolbarAccount').class('selecting')" style="margin: 1em 0; margin-top: .8em" class="pill small elevated"><i class="bi-arrow-repeat"></i> Switch accounts</button>
+                        <button onclick="O('#toolbarAccount').class('selecting')" style="margin: 1em 0; margin-top: .8em" .pill.small.elevated><i .bi-arrow-repeat></i> Switch accounts</button>
                     </div>
                 </div>
 
-                <div %toolbarLogin>
-                    <div %loginPopupOverlay>
+                <div #toolbarLogin>
+                    <div #loginPopupOverlay>
                         <div>
                             <svg xmlns="http://www.w3.org/2000/svg" width="45" height="27" fill="none"><rect y="27" width="10" height="30" rx="5" transform="rotate(270 0 27)" fill="#fcc21b"/><rect x="15" y="10" width="10" height="30" rx="5" transform="rotate(270 15 10)" fill="#ed6c30"/><g fill="#40c0e7"><rect y="10" width="10" height="10" rx="5" transform="rotate(270 0 10)"/><rect x="35" y="27" width="10" height="10" rx="5" transform="rotate(270 35 27)"/></g></svg>
                             
@@ -117,27 +120,23 @@
                             </span>
 
                             <div .buttons>
-                                <a href="/login" class="ls-button pill elevated solid" ls-accent="auto">Log-In</a>
-                                <a href="/sign-up" class="ls-button pill elevated solid">Create account</a>
+                                <a href="/login" .ls-button.pill.elevated.solid ls-accent="auto">Log-In</a>
+                                <a href="/sign-up" .ls-button.pill.elevated.solid>Create account</a>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </nav>
 
 
-        <div %viewport>
-            <div %page_loading .page style="display: block">
-                <div ls-accent="auto" load class="load-noBackground" style="height: 2em; width: 2em; --load-width: calc(2 / 16 * 1em); z-index: 30000; position: absolute; top: calc(50% - 1em); left: calc(50% - 1em)"></div>
+        <div #viewport>
+            <div #loading_page .page>
+                <div .loader></div>
             </div>
 
-            <div %page_error .page>
-                <h1>Error</h1>
-            </div>
+            <div #error_page .page></div>
         </div>
-
-        @import("/assets/preload.html");
-
     </div>
-</page>
+
+</body>

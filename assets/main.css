@@ -37,7 +37,7 @@ body {
 
 
 /* Part: Header */
-#header {
+nav {
     background: var(--ui);
     padding: 8px 14px;
     display: flex;
@@ -84,7 +84,7 @@ body {
     display: none;
 }
 
-#header_link {
+nav > a {
     font-size: 1.2rem;
 }
 
@@ -170,6 +170,10 @@ button.solid::before {
     background: var(--ui-bg-0);
     height: calc(100% - 22px - 1em);
     border-radius: 1.5em 1.5em 0 0;
+}
+
+#themeButton {
+    padding: .4em .8em;
 }
 
 
@@ -323,7 +327,7 @@ button.solid::before {
     font-weight: 300;
 }
 
-#page_error {
+#error_page {
     align-items: center;
     justify-content: center;
 }

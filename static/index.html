@@ -495,12 +495,6 @@ ls-box.inline.color {
             // }
         })
 
-        if(!localStorage["ls.visited"]){
-            LS.Toast.show("Warning: This site is in beta. <a href='https://lstv.space:8443'>Visit the legacy site</a>", {accent: "lstv-red", timeout: 2000})
-            localStorage["ls.visited"] = true
-        }
-
-
         let appsPageSize = 100;
 
         function customSort(arr) {

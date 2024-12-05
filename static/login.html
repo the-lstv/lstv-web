@@ -568,7 +568,7 @@
                         O("#loginButton").class('loading');
                         
                         try{
-                            result = await fetch(app.api + "/v2/auth/login/token", {
+                            result = await fetch(app.api + "/v2/auth/login/cookie", {
                                 method: "POST",
                                 body: JSON.stringify({
                                     username: O("#loginUsername").value,
