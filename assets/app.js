@@ -12,7 +12,7 @@ addEventListener("load", () => {
 
     let definedModules = [];
 
-    let __auth = null;
+    let __auth = "";
 
     let app = {
         container: O("#app"),
@@ -26,7 +26,7 @@ addEventListener("load", () => {
 
         currentPage: "",
 
-        api: location.hostname.endsWith("test")? "http://api.extragon.test": "https://api.extragon.cloud",
+        api: location.protocol + (location.hostname.endsWith("test")? "//api.extragon.test": "//api.extragon.cloud"),
 
         apiVersion: 2,
 
@@ -180,13 +180,13 @@ addEventListener("load", () => {
             current: null
         },
 
-        fetch(url, options){
+        fetch(url, options = {}){
             return fetch(url, {
                 ...options,
                 ...url.startsWith(app.api) && typeof app.user.current == "number" ? {
                     headers: {
                         credentials: 'include',
-                        authorization: __auth.split(":").find(token => token.startsWith(app.user.current + "=")).split("=")[1],
+                        // authorization: __auth.split(":").find(token => token.startsWith(app.user.current + "=")).split("=")[1],
                         ...options.headers && options.headers
                     }
                 }: {}
