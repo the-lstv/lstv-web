@@ -1,18 +1,105 @@
 
 
 
-addEventListener("load", () => {
-    const global = window;
+/*
 
-    if(!global.LS){
-        throw new Error("Application could not start! LS is missing!")
+    This script is a little old and may not be up to the best standards.
+    If you see an obvious mistake, please inform me!
+
+*/
+
+
+window.addEventListener("load", () => {
+    if(!window.LS || typeof LS !== "object") throw new Error("Application could not start (missing LS in the global scope)! Aborting.");
+
+    console.log(
+        '%c LSTV %c\nWelcome to the LSTV web!\n\nPlease beware:\n%cIF SOMEONE TOLD YOU TO PASTE SOMETHING HERE,\nTHEY MIGHT BE TRYING TO SCAM YOU.\nDO NOT USE THE CONSOLE IF YOU DON\'T KNOW\nWHAT YOU ARE DOING.\n\n',
+        'font-size:4em;padding:10px;background:linear-gradient(to bottom,#3498db, #3498db 33%, #f39c12 33%,#f39c12 66%,#e74c3c 66%,#e74c3c);border-radius:1em;color:white;font-weight:900;margin:1em;-webkit-text-stroke:2px #111','font-size:1.5em;font-weight:400','font-size:2em;font-weight:400;color:#ed6c30;font-weight:bold'
+    );
+
+    let definedModules = new Map;
+
+    let __authString = localStorage.account || "";
+
+    // TODO: Make something better again
+    function setAuth(data){
+        __authString = localStorage.account = data
     }
 
-    console.log('%c LSTV %c\nWelcome to the LSTV web!\n\nPlease beware:\n%cIF SOMEONE TOLD YOU TO PASTE SOMETHING HERE,\nTHEY MIGHT BE TRYING TO SCAM YOU.\nDO NOT USE THE CONSOLE IF YOU DON\'T KNOW\nWHAT YOU ARE DOING.\n\n', 'font-size:4em;padding:10px;background:linear-gradient(to bottom,#3498db, #3498db 33%, #f39c12 33%,#f39c12 66%,#e74c3c 66%,#e74c3c);border-radius:1em;color:white;font-weight:900;margin:1em;-webkit-text-stroke:2px #111','font-size:1.5em;font-weight:400','font-size:2em;font-weight:400;color:#ed6c30;font-weight:bold');
 
-    let definedModules = [];
+    class Page {
+        constructor(path, options = {}){
+            this.path = app.util.normalizePath(path)
+            this.options = options
 
-    let __auth = "";
+            app.pages.set(path, this)
+        }
+
+        contentRequested(){
+            if(this.contentElement){
+                this.contentElement.class("page")
+                this.contentElement.pageObject = this
+                return true
+            } else return false
+        }
+    }
+
+
+    class RemotePage extends Page {
+        constructor(path, options = {}){
+            super(path, options)
+        }
+
+        async contentRequested(){
+            if(!this.contentElement) {
+                let response;
+
+                try {
+                    response = await fetch("/static" + this.path);
+
+                    this.contentElement = N("div", {
+                        class: "page",
+                        inner: await response.text()
+                    })
+
+                    this.contentElement.pageObject = this
+
+                    this.contentElement.getAll("script").all(script => {
+                        if(script.parentElement !== this.contentElement) return;
+
+                        // if(!app.pages.get(this.path).moduleName) app.pages.get(this.path).moduleName = app.pages.get(this.path).manifest.module || null;
+
+                        const newScript = N("script", script.src? { src: script.src }: { inner: script.innerText })
+
+                        newScript.async = true;
+                        this.contentElement.add(newScript)
+
+                        script.remove()
+                    })
+
+                    this.contentElement.getAll('link[rel="stylesheet"]').all(link => {
+                        if(link.parentElement !== this.contentElement) return;
+
+                        this.contentElement.add(N("link", { href: link.href, rel: "stylesheet" }))
+                        link.remove()
+                    })
+
+                } catch (error) {
+                    console.error(error);
+                    return false
+                }
+
+                // TODO: An error page here
+                if(response.status > 399){
+                    console.log(response.status);
+                    return false
+                }
+            }
+
+            return true
+        }
+    }
+
 
     let app = {
         container: O("#app"),
@@ -32,14 +119,20 @@ addEventListener("load", () => {
 
         cdn: "https://cdn.extragon.cloud",
 
-        module() { throw false },
+        module() { throw new Error },
 
         originalQuery: LS.Util.params(),
+
+        authStyle: "cookies",
+
+        get cookieLogin(){
+            return app.authStyle === "cookies"
+        },
 
         util: {
             normalizePath(path) {
                 // Replace backslashes with forward slashes
-                path = path.replace(/\\/g, '/');
+                path = "/" + path.replace("index.html", "").replace(".html", "").replace(/\\/g, '/');
 
                 const parts = path.split('/');
                 const normalizedParts = [];
@@ -61,22 +154,23 @@ addEventListener("load", () => {
 
         user: {
             add(auth){
-                if(typeof auth.id !== "number" || !auth.token) return false;
+                if(typeof auth.id !== "number") return false;
 
-                let users = __auth.split(":").filter(garbage => garbage).filter(token => !token.startsWith(auth.id + "="))
+                let users = __authString.split(":").filter(Boolean).filter(token => !(app.cookieLogin? token === String(auth.id): token.startsWith(auth.id + "=")))
 
-                users.push(`${auth.id}=${auth.token}`)
+                users.push(app.cookieLogin? auth.id: `${auth.id}=${auth.token}`)
 
                 setAuth(users.join(":"))
-
                 return true
             },
 
             list(){
-                return __auth.split(":").map(token => {
-                    let user = token.slice(0, token.indexOf("="));
-                    if(user && user.length > 0) return +user;
-                    return null
+                return __authString.split(":").map(login => {
+                    const tokenIndex = login.indexOf("=");
+
+                    let user_id = tokenIndex !== -1? login.slice(0, tokenIndex): login;
+
+                    if(user_id && user_id.length > 0) return parseInt(user_id); else return null
                 }).filter(garbage => garbage !== null)
             },
 
@@ -85,7 +179,6 @@ addEventListener("load", () => {
 
                 if(list.includes(+id)) {
                     app.user.current = +id
-                    app.user.fragment = null
                     return true
                 }
 
@@ -105,7 +198,10 @@ addEventListener("load", () => {
             /*
                 User fragments
                 Contain information about users where user ID is the key.
-                The data available vary on request (can be fetched later)
+                The data available vary on request (can be fetched during a session)
+                
+                Note that the fragment doesnt necesarry have to be the current
+                active user - fragments collect all the information known about all fetched users.
             */
 
             fragments: new Map,
@@ -119,9 +215,7 @@ addEventListener("load", () => {
                 if(list.length < 1) return false;
 
                 try {
-                    users = await(
-                        await app.fetch(app.api + "/v2/auth/get/" + list.join())
-                    ).json()
+                    users = await app.get(app.api + "/v2/auth/get/" + list.join()).json()
                 } catch(e) {
                     console.error(e);
                     return false
@@ -139,22 +233,17 @@ addEventListener("load", () => {
             async fetch(){
                 if(app.user.current === null) return false;
 
-                let user;
+                let fragment;
 
                 try {
-                    user = await(
-                        await app.fetch(app.api + "/v2/auth/me")
-                    ).json();
+                    fragment = await app.get(app.api + "/v2/auth/me").json();
                 } catch(e) {
                     console.error(e);
                     return false
                 }
-
-                if(user.success) {
-                    app.user.fragment = user
-                }
-
-                return user
+                
+                if(fragment && fragment.success) app.user.fragments.set(fragment.id, fragment);
+                return fragment
             },
 
             getProfilePictureView(source = app.user.current, quality = 128){
@@ -166,12 +255,16 @@ addEventListener("load", () => {
                 })
             },
 
-            logout(){
+            async logout(){
                 if(typeof app.user.current !== "number") return;
 
-                setAuth(__auth.split(":").filter(token => !token.startsWith(app.user.current + "=")).join(":"))
+                if(app.cookieLogin){
+                    await app.get()
+                }
 
-                app.user.current = app.user.fragment = null
+                setAuth(__authString.split(":").filter(token => !token.startsWith(app.user.current + "=")).join(":"))
+
+                app.user.current = null
 
                 LS.invoke("before-logout")
                 setTimeout(() => location.reload(), 8)
@@ -181,27 +274,40 @@ addEventListener("load", () => {
         },
 
         fetch(url, options = {}){
+            const trustedOrigin = url.startsWith(app.api);
+
+            if(trustedOrigin && app.authStyle === "cookies") options.credentials = 'include';
+
             return fetch(url, {
                 ...options,
-                ...url.startsWith(app.api) && typeof app.user.current == "number" ? {
-                    headers: {
-                        credentials: 'include',
-                        // authorization: __auth.split(":").find(token => token.startsWith(app.user.current + "=")).split("=")[1],
-                        ...options.headers && options.headers
-                    }
-                }: {}
+                headers: {
+                    ...url.startsWith(app.api) && typeof app.user.current == "number" && (
+                        app.authStyle === "token" ?
+                            { "Authorization": __auth.split(":").find(token => token.startsWith(app.user.current + "=")).split("=")[1] }:
+                            { "Data-Auth-Identifier": String(app.user.current) }
+                    ),
+
+                    ...options.headers
+                }
             })
         },
 
-        get(endpoint, body, options){
+        get(endpoint, options = {}){
             let response;
+
+            // Backwards comp.
+            if(arguments[2]){
+                console.warn("Deprecated usage of app.get");
+                options = arguments[2]
+                options.body = arguments[1]
+            }
 
             async function execute(){
                 if(response) return response;
 
                 return response = await app.fetch(endpoint.startsWith("http")? endpoint : `${app.api}/v${app.apiVersion}/${endpoint}`, {
-                    ...body && { method: "POST", body: typeof body == "string"? body : JSON.stringify(body) },
-                    ...options
+                    ...options,
+                    ...options.body && { method: "POST", body: typeof options.body == "string"? options.body : JSON.stringify(options.body) },
                 });
             }
 
@@ -239,10 +345,6 @@ addEventListener("load", () => {
                     return response
                 },
             }
-        },
-
-        post(endpoint, body, options){
-            return app.get(endpoint, body, options)
         },
 
         set theme(value){
@@ -291,153 +393,63 @@ addEventListener("load", () => {
             Q("#headerButtons > button.open").all().class("open", 0);
         },
 
-        async navigate(path = "/", options = {}){
-            if(!path || typeof path !== "string") return false;
+        async setPage(path, options = {}){
+            let page;
 
-            if(!options.refetch && !options.reload && app.currentPage == path){
+            if(path instanceof Page) { page = path; path = page.path } else
+            if(typeof path === "string") page = app.pages.get(path);
+
+            if(app.page.requiresReload && path !== app.page.path) {
+                return location.href = path;
+            }
+
+            if(!page) {
+                page = new RemotePage(path)
+            }
+
+            path = page.path;
+
+            if(!options.browserTriggered && app.currentPage === path){
                 return true
             }
 
-            path = app.util.normalizePath("/" + path.replace("index.html", "").replace(".html", ""));
+            app.currentPage = page.path
 
-            if(app.page && app.page.manifest.alias && app.page.manifest.alias.split(",").find(alias => path.endsWith(alias))){
-                if (!options.browserTriggered) {
-                    history.pushState({ path }, document.title, path);
-                }
-                return true
-            }
-
+            document.title = `LSTV | ${page.title || "Web"}`;
+            
             app.viewport.getAll("style").all(style => style.disabled = true)
-            Q(".page").all().applyStyle({display: "none"});
-            O("#loading_page").style.display = "block";
-
-            let title = "LSTV | Error";
-
-            let result = await (async () => {
-                if(options.reload){
-                    app.expireSession();
-
-                    if(options.replace){
-                        return location.replace(location.origin + path)
-                    }
-
-                    return location.href = path
-                }
-
-                let content = app.pages.get(path) ? app.pages.get(path).content : null;
-    
-                if(!content || options.refetch) {
-                    let response;
-    
-                    try {
-                        response = await fetch("/static" + path);
-    
-                        content = N("div", {
-                            inner: await response.text(),
-                            id: btoa(path).replaceAll("=", "-"),
-                            class: "page"
-                        })
-
-                        app.pages.set(path, {
-                            content,
-                            manifest: content.has("ls-manifest")? content.get("ls-manifest").attr(): {},
-                            path
-                        })
-
-                        content.getAll("script").all(script => {
-                            if(script.parentElement !== content) return;
-
-                            if(!app.pages.get(path).moduleName) app.pages.get(path).moduleName = app.pages.get(path).manifest.module || null;
-
-                            content.add(N("script", script.innerText))
-                            script.remove()
-                        })
-    
-                    } catch (e) {
-    
-                        console.error(e);
-                        return false
-    
-                    }
-    
-                    if(response.status > 399){
-                        // TODO: An error page here
-                        console.log(response.status);
-                        return false
-                    }
-                }
-
-                if(content.has("ls-manifest")) content.get("ls-manifest").remove();
-
-                if(!O(`#${btoa(path).replaceAll("=", "-")}`)){
-                    app.viewport.add(content)
-                }
-
-                if(app.pages.get(path).moduleName){
-                    setTimeout(()=>{
-                        if(!definedModules.includes(app.pages.get(path).moduleName)){
-                            console.error(`[Secutity Violation] A page with the module name of "${app.pages.get(path).moduleName}" did not register a function within 20ms from its initial load - further attempts at registering a function have been blocked to eliminate security concerns.`)
-                            definedModules.push(app.pages.get(path).moduleName)
-                        }
-                    }, 20)
-                }
-
-                content.getAll("style").all(style => style.disabled = false)
-
-                title = "LSTV" + (app.pages.get(path).manifest.title? " | " + app.pages.get(path).manifest.title : "");
-                O('.headerText').set(app.pages.get(path).manifest.header || "");
-                O('.headerTitle').style.fontWeight = app.pages.get(path).manifest.header? "600" : "400";
-
-                return true
-            })();
             
-            if(options.reload){
-                return
-            }
+            for(let element of Q(".page")) element.style.display = "none";
+            for(let element of Q(".page.active")) element.class("active", false);
             
-            O("#loading_page").style.display = "none";
-
-            
-            if(!result){
-                O("#error_page").style.display = "flex";
-            } else {
-                Q(".page.active").all().class("active", false);
-
-                let contentElement = (app.pages.get(path)? app.pages.get(path).content : null) || O(`#${btoa(path).replaceAll("=", "-")}`);
-
-                contentElement.style.display = app.pages.get(path).manifest.display || "block";
-                contentElement.class("active")
-            }
-
-            O(`title`).set(title)
-
             if (!options.browserTriggered) {
-                history.pushState({ path }, title, path);
+                history.pushState({ path }, document.title, path);
             }
 
             console.log("[app] Changed page to", path);
-            app.currentPage = path;
 
-            return result
-        },
-        
-        async refresh(){
-            await app.navigate(app.currentPage, {refetch: true})
+            const success = await page.contentRequested()
+
+            if(!success) return false;
+            
+            page.contentElement.style.display = "block"
+            app.viewport.add(page.contentElement)
+
+            // O('.headerText').set(app.pages.get(path).manifest.header || "");
+            // O('.headerTitle').style.fontWeight = app.pages.get(path).manifest.header? "600" : "400";
         },
 
-        expireSession(){
+        _about_to_redirect(){
             app.container.class("expired").set("<h1><i class=bi-hourglass-split></i></h1><br><h2>Redirecting...</h2>Please wait up to a few seconds while we redirect you to your target page.")
 
-            global.app = null;
-            app = null;
+            app = window.app = null;
 
             return setTimeout(() => {
-                app.container.add("<br><br>Did you get stuck here unexpectedly or nothing is happening?<br>Your browser might have reverted to this page on accident.<br>Try reloading the page to continue browsing!<br><br><span style=color:gray>(This session has became invalid as something critical happened, eg. logged in/out.)</span>")
-            }, 2000);
+                app.container.add("<br><br>Did you get stuck here unexpectedly or nothing is happening?<br>Your browser might have reverted to this page on accident.<br>Try reloading the page to continue browsing!")
+            }, 2500);
         }
     }
 
-    // Enables single-page app behavior
     M.on('click', function (event) {
         const targetElement = event.target.closest("a");
 
@@ -449,7 +461,7 @@ addEventListener("load", () => {
 
             if(targetElement.href.startsWith(origin) && !targetElement.href.endsWith("?") && !targetElement.href.startsWith(origin + ":")){
                 event.preventDefault();
-                app.navigate(targetElement.getAttribute('href'));
+                app.setPage(targetElement.getAttribute('href'));
                 app.toolbarClose()
             }
         }
@@ -459,61 +471,68 @@ addEventListener("load", () => {
     window.addEventListener('popstate', function (event) {
         // if(!event.state) return;
 
-        app.navigate(event.state? event.state.path: "/", {browserTriggered: true});
+        app.setPage(event.state? event.state.path: "/", { browserTriggered: true });
     });
 
-    global.app = {
+
+    function loadModule(internal, name, init){
+        let page = app.pages.get(app.currentPage);
+
+        if(!internal){
+            if(!page) {
+                throw new Error(`[Security Violation] No page found with a matching module name "${name}"`);
+            }
+    
+            if(definedModules.has(name)) {
+                throw new Error(`[Security Violation] Duplicate module name "${name}"`);
+            }
+        }
+
+        // page.setModule
+        definedModules.set(name, init(app, page, page.contentElement))
+    }
+
+
+    window.app = {
         module(name, init){
-            let source = app.pages.values().find(page => page.moduleName == name);
-
-            if(!source) {
-                throw new Error(`[Security Violation] Module "${name}" has not been found on this page or does not have permission to access the global object`);
-            }
-
-            if(definedModules.includes(name)) {
-                throw new Error(`[Security Violation] Module "${name}" already had a script registered`);
-            }
-
-            definedModules.push(name)
-
-            init(app, source, source.content)
+            loadModule(false, name, init)
         }
     };
 
-    __auth = localStorage.token || "";
-
-    function setAuth(data){
-        // TODO: Make something better again
-        localStorage.token = data
-    }
 
     LS.once("body-available", async () => {
         LS.Color.on("theme-changed", () => {
+            // This is correct, just poor coding skills
             app.theme = null
         })
-    
-        // Set the theme based on user preffered scheme and add an listener to when this changes to apply automatically:
+
+        // Listen to preffered theme changes
         LS.Color.adaptiveTheme()
         LS.Color.on("scheme-changed", LS.Color.adaptiveTheme)
 
-        app.events = new(LS.EventResolver())(app);
+        app.events = LS.EventHandler(app);
 
-        app.navigate(location.pathname, {browserTriggered: true})
+        // Load the initial page
+        const page = new Page(location.pathname)
+        app.currentPage = page.path
 
+        page.contentElement = O("#initial_page");
+
+        if(window._preloaded_module) loadModule(true, ...window._preloaded_module)
+        app.setPage(page, { browserTriggered: true })
+
+
+        // Display content
+        document.querySelector(".loaderContainer").style.display = "none"
         app.container.style.display = "flex"
+
 
         let userList = app.user.list();
 
         if(userList.length > 0){
             app.user.use(localStorage.hasOwnProperty("currentUser")? +localStorage.currentUser : userList[0])
-            await app.user.fetchAll()
-
-            app.invoke("users-available");
-
-            app.events.prepare({
-                name: "users-available",
-                completed: true
-            })
+            await app.user.fetch()
+            app.events.completed("users-available");
         }
 
         let user = app.user.fragment;
@@ -560,11 +579,11 @@ addEventListener("load", () => {
         app.viewport.on("click", ()=>{
             app.toolbarClose();
         })
-
     })
 
+    // Debugging only!
     if(location.hostname.endsWith("test")){
-        app.module = global.app.module;
-        global.app = app;
+        app.module = window.app.module;
+        window.app = app;
     }
 })

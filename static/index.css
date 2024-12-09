@@ -1,0 +1,299 @@
+.full-height {
+    height: 100%;
+    position: relative;
+}
+
+.center-board {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#logo {
+    width: 60vw;
+    min-width: 120px;
+    max-width: 300px;
+    overflow: visible;
+}
+
+.logo-stripe {
+    transform-origin: center;
+    transform: scaleX(40);
+    opacity: .1;
+}
+
+#chevron {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 16px;
+    animation: jump 1.5s cubic-bezier(.7,0,.175,1) 250ms infinite alternate both;
+    transition: opacity 0.2s;
+    pointer-events: none;
+    opacity: 0;
+    background: var(--elevate-8);
+    color: var(--bg);
+    border-radius: var(--br-big);
+    padding: 8px 20px;
+    white-space: nowrap;
+    z-index: 500;
+}
+
+#chevron.visible {
+    opacity: 1;
+}
+
+@keyframes jump {
+    0% {
+        transform: translateY(0) translateX(-50%)
+    }
+
+    100% {
+        transform: translateY(-10px) translateX(-50%)
+    }
+}
+
+#footer {
+    background-color: var(--elevate);
+}
+
+#footer {
+    position: relative;
+    min-height: 250px;
+    padding: 30px 0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.padding {
+    padding: 3.5em;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    position: relative;
+}
+
+.bga {
+    border: 0;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: .2;
+    object-fit: cover;
+}
+
+h2 {
+    margin: 0;
+}
+
+.guy-lore {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4em;
+    max-width: 60em;
+}
+
+.mono {
+    font-family: 'JetBrains Mono';
+}
+
+.guy-lore > div {
+    flex: 1;
+    min-width: 65%;
+    width: 100%;
+    font-weight: 200;
+}
+
+@media screen and (max-width: 600px) {
+    .padding {
+        padding: 3em 2em;
+    }
+
+    #lore-illustration {
+        width: 250px;
+    }
+
+    .marqueeBar span:nth-child(odd) {
+        display: none;
+    }
+}
+
+.appShowcaseWrap {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+}
+
+#searchBar {
+    display: flex;
+    justify-content: center;
+    margin: 70px 0;
+}
+
+#apps-showcase {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+    max-width: 875px;
+    justify-content: center;
+}
+
+.appItem {
+    display: flex;
+    width: 265px;
+    --color-1: var(--elevate);
+    --color-2: var(--elevate-1);
+    background: radial-gradient(270% 160% at 69% 100%,var(--color-1) 0%,var(--color-2) 100%);
+    border-radius: 15px;
+    overflow: hidden;
+    flex-direction: column;
+    box-shadow: inset 0 0 0 1px #fff2, 0 9px 25px -11px #000;
+    height: fit-content;
+    color: var(--color-fg-light);
+    cursor: pointer;
+
+    outline: 0px solid;
+
+    transition: .2s outline ease-in-out;
+}
+
+
+.appBody {
+    padding: 30px 20px;
+    text-align: center;
+    font-weight: 300;
+}
+
+.appDescription {
+    text-align: left;
+    white-space: pre-wrap;
+}
+
+.appIconContainer {
+    margin-bottom: 15px;
+}
+
+.appIconContainer img {
+    width: 120px;
+    /* border-radius: 8px; */
+    clip-path: inset(0 round 15px);
+    filter: opacity(1);  /* This fixes a weird rendering bug for whatever reason. */
+}
+
+.appName {
+    font-size: 1.4em;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.appTop {
+    text-align: center;
+    color: var(--color-fg);
+    padding: 8px 0;
+}
+
+.appTop, .appBottom {
+    background: var(--transparent-overlay);
+}
+
+.appBottom {
+    display: flex;
+    overflow-x: overlay;
+    padding: 4px 8px;
+}
+
+.appTop span {
+    letter-spacing: 1px;
+    font-weight: 500;
+    font-size: 1.2em;
+    opacity: .9;
+}
+
+.appTag {
+    background: var(--transparent-overlay);
+    padding: 4px 12px !important;
+    white-space: nowrap;
+}
+
+.appItemLight .appTag {
+    background: var(--transparent-overlay-strong);
+}
+
+/* .appItemDark :is(.appBottom, .appTop) {
+    background: #fff1;
+} */
+
+.appItemLight .appBottom {
+    border-top: 1px solid var(--transparent-overlay-dark);
+}
+
+.appItemLight .appTop {
+    border-bottom: 1px solid var(--transparent-overlay-dark);
+}
+
+.appItemLight {
+    color: #111;
+}
+
+#cursorPopout {
+    position: fixed;
+    width: 60px;
+    height: 60px;
+    background: var(--color);
+    color: var(--accent);
+    top: 0;
+    border-radius: 50%;
+    transform: scale(.5) translate(-50%, -50%);
+    opacity: 0;
+    transition: transform .2s, opacity .2s, background .4s;
+    z-index: 500;
+    pointer-events: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#cursorPopout.active {
+    transform: scale(1) translate(-50%, -50%);
+    opacity: 1;
+}
+
+.marqueeBar {
+    background: var(--elevate-5);
+    color: var(--elevate);
+    font-weight: 900;
+    padding: 6px 0;
+    width: 100%;
+    font-size: larger;
+    overflow: hidden;
+}
+
+.marqueeBar div {
+    animation: marquee 8s linear infinite;
+    white-space: nowrap;
+    display: flex;
+    width: 200%;
+}
+
+.marqueeBar span {
+    float: left;
+    width: 50%;
+}
+
+@keyframes marquee {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+ls-box.inline.color {
+    padding: 4px 12px;
+}

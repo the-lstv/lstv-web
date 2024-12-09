@@ -5,7 +5,7 @@
 <div class="wrapper">
     <ls-tabs>
         <ls-tab>
-            Loading accounts...
+            <div .loader></div>
         </ls-tab>
         <ls-tab tab-id="list">
             <ls-modal class="loginForm">
@@ -322,11 +322,9 @@
 
 <script>
     app.module("login", (app, source, container) => {
-
-        // Create tabs
-
         let userList = app.user.list(),
-            initialized = [],
+            initialized = new Set,
+
             tabs = LS.Tabs("login", container.get("ls-tabs"), {
                 list: false
             })
@@ -336,19 +334,14 @@
         // The first time a tab is open, initialize it
 
         tabs.on("tab_changed", (id, tab) => {
-            if(initialized.includes(tab)) return;
-
-            initialized.push(tab);
+            if(initialized.has(tab)) return; else initialized.add(tab);
 
             switch(tab){
                 case "list":
 
-
                     // Account list (inicialization)
 
-
-                    app.once("users-available", ()=>{
-
+                    app.once("users-available", () => {
                         let usersContainer = container.get(".accountList");
 
                         for(let user of userList){
@@ -380,6 +373,8 @@
                         }
                     })
                 break;
+
+
                 case "signup":
                  
                     // Create account (initialization)
@@ -556,6 +551,8 @@
                         O("#completeSignupButton").class('loading', 0);
                     })
                 break;
+
+
                 case "login":
                     
                     
@@ -566,23 +563,29 @@
                         let result, json, started = Date.now();
             
                         O("#loginButton").class('loading');
-                        
-                        try{
-                            result = await fetch(app.api + "/v2/auth/login/cookie", {
+
+                        const username = O("#loginUsername").value;
+                        const password = O("#loginPassword").value;
+
+                        try {
+
+                            result = await fetch(app.api + "/v2/auth/login/" + (app.cookieLogin? "cookie": "token"), {
                                 method: "POST",
+
                                 body: JSON.stringify({
-                                    username: O("#loginUsername").value,
-                                    password: O("#loginPassword").value
-                                })
+                                    username,
+                                    password
+                                }),
+
+                                credentials: "include"
                             })
             
                             if(result) json = await result.json()
-                        } catch (e) {
-                            console.log("Error, ", e);
-                        }
+
+                        } catch (error) { console.error(error) }
             
                         if(!result || typeof json !== "object" || !json){
-                            console.log("Error, not OK");
+
                             LS.Modal.build({
                                 content: "Error: Failed to connect with our API server. Make sure you are connected to the internet and try again later. If this persists, please contact us!",
                                 buttons: [ { text: "OK", color: "auto" } ]
@@ -591,21 +594,22 @@
                             }).show();
             
                             O("#loginButton").class('loading', 0);
+
                             return
                         }
+
+                        if(json.success && (app.cookieLogin? true: json.token)){
+                            // if(Date.now() - started < 420){
+                            //     console.log("[misc] Request was too fast, delaying for a bit ("+ (Date.now() - started) +")", 420 - (Date.now() - started));
             
-                        if(json.success && json.token){
-                            if(Date.now() - started < 420){
-                                console.log("[misc] Request was too fast, delaying for a bit ("+ (Date.now() - started) +")", 420 - (Date.now() - started));
-            
-                                await new Promise(resolve => setTimeout(resolve, 420 - (Date.now() - started)))
-                            }
+                            //     await new Promise(resolve => setTimeout(resolve, 420 - (Date.now() - started)))
+                            // }
             
                             console.log("Login success!");
             
                             let query = LS.Util.params();
 
-                            app.user.add(json)
+                            app.user.add(app.cookieLogin? {id: json.id}: json)
                             app.user.use(json.id)
 
                             if(query.continue) return location.replace(query.continue);
@@ -644,12 +648,13 @@
             }
         })
 
+
         // If the user is already logged in, show the user list instead of a login page
         tabs.setActive(userList.length < 1? "login" : "list");
 
-        function generatePassword(length = 25) {
-            const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789%=-.,!)+$_/&@';
 
+        const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789%=-.,!)+$_/&@';
+        function generatePassword(length = 25) {
             return (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues)
                 ? Array.from(crypto.getRandomValues(new Uint32Array(length))).map((x) => charset[x % charset.length]).join('')
                 : Math.random().toString(36).slice(-10)
