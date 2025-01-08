@@ -1,8 +1,27 @@
 @no-init();
 
 <div .full-height .center-board>
-    <svg %logo xmlns="http://www.w3.org/2000/svg" viewBox="0 0 111 124" fill="none"><path style="transform: translateX(calc(var(--scroll) / 25 * 1px))" fill="#ed6c30" d="M0 16h111v14H0z"/><path class="logo-stripe" fill="#ed6c30" d="M0 16h111v14H0z"/><path fill="#fcc21b" d="M0 35h111v15H0z"/><path class="logo-stripe" fill="#fcc21b" d="M0 35h111v15H0z"/><path style="transform: translateX(calc(var(--scroll) / 25 * -1px))" fill="#40c0e7" d="M0 55h111v14H0z"/><path class="logo-stripe" fill="#40c0e7" d="M0 55h111v14H0z"/><path d="M10.9 118v-14.6h3v11.8h5.9v2.8h-8.9zm31.092.2c-1.027 0-1.92-.173-2.68-.52s-1.347-.833-1.76-1.46-.62-1.367-.62-2.22h3c0 .493.187.887.56 1.18.387.28.907.42 1.56.42.627 0 1.113-.14 1.46-.42.36-.28.54-.667.54-1.16a1.62 1.62 0 0 0-.4-1.1c-.267-.307-.64-.513-1.12-.62l-1.48-.34c-1.24-.293-2.207-.833-2.9-1.62-.68-.8-1.02-1.773-1.02-2.92 0-.853.193-1.593.58-2.22.4-.64.96-1.133 1.68-1.48s1.573-.52 2.56-.52c1.493 0 2.673.373 3.54 1.12.88.733 1.32 1.727 1.32 2.98h-3c0-.467-.167-.833-.5-1.1-.32-.267-.787-.4-1.4-.4-.573 0-1.013.133-1.32.4-.307.253-.46.62-.46 1.1a1.73 1.73 0 0 0 .36 1.1c.253.293.607.493 1.06.6l1.56.36c1.293.293 2.273.827 2.94 1.6.667.76 1 1.733 1 2.92 0 .853-.213 1.607-.64 2.26-.413.653-1 1.16-1.76 1.52-.747.36-1.633.54-2.66.54zm25.492-.2v-11.8h-3.7v-2.8h10.4v2.8h-3.7V118h-3zm26.612 0l-3.62-14.6h3.1l2.02 9.22.24 1.22.24 1.26.2-1.26.22-1.24 1.96-9.2h3.02l-3.58 14.6h-3.8zM56 0l43.301 75H12.699L56 0z" fill="var(--color)"/></svg>
-    
+    <svg viewBox="0 0 111 124" #logo fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0 16H111V30H0V16Z" fill="#ed6c30"/>
+        <path d="M0 16H111V30H0V16Z" fill="#ed6c30"/>
+        <path d="M0 35H111V50H0V35Z" fill="#fcc21b"/>
+        <path d="M0 35H111V50H0V35Z" fill="#fcc21b"/>
+        <path d="M0 55H111V69H0V55Z" fill="#40c0e7"/>
+        <path d="M0 55H111V69H0V55Z" fill="#40c0e7"/>
+
+        <path fill="#ed6c30" d="M0 16h111v14H0z" .logo-stripe></path>
+        <path fill="#fcc21b" d="M0 35h111v15H0z" .logo-stripe></path>
+        <path fill="#40c0e7" d="M0 55h111v14H0z" .logo-stripe></path>
+
+        <image href="/assets/image/prism_light.webp" x="-10px" y="-20" width="130px" height="100%" />
+        <!-- <path d="M56 0L99.301 75H12.699L56 0Z" fill="var(--color)"/> -->
+
+        <path d="M10.8999 103.4V118H19.7999V115.2H13.8999V103.4H10.8999Z" fill="var(--color)"/>
+        <path d="M39.3119 117.68C40.0719 118.027 40.9649 118.2 41.9919 118.2C43.0189 118.2 43.9049 118.02 44.6519 117.66C45.4119 117.3 45.9989 116.793 46.4119 116.14C46.8389 115.487 47.0519 114.733 47.0519 113.88C47.0519 112.693 46.7189 111.72 46.0519 110.96C45.3849 110.187 44.4049 109.653 43.1119 109.36L41.5519 109C41.0989 108.893 40.7449 108.693 40.4919 108.4C40.2492 108.085 40.1221 107.697 40.1319 107.3C40.1319 106.82 40.2849 106.453 40.5919 106.2C40.8989 105.933 41.3389 105.8 41.9119 105.8C42.5249 105.8 42.9919 105.933 43.3119 106.2C43.6449 106.467 43.8119 106.833 43.8119 107.3H46.8119C46.8119 106.047 46.3719 105.053 45.4919 104.32C44.6249 103.573 43.4449 103.2 41.9519 103.2C40.9649 103.2 40.1119 103.373 39.3919 103.72C38.6719 104.067 38.1119 104.56 37.7119 105.2C37.3249 105.827 37.1319 106.567 37.1319 107.42C37.1319 108.567 37.4719 109.54 38.1519 110.34C38.8449 111.127 39.8119 111.667 41.0519 111.96L42.5319 112.3C43.0119 112.407 43.3849 112.613 43.6519 112.92C43.9177 113.224 44.0603 113.616 44.0519 114.02C44.0519 114.513 43.8719 114.9 43.5119 115.18C43.1649 115.46 42.6789 115.6 42.0519 115.6C41.3989 115.6 40.8789 115.46 40.4919 115.18C40.1189 114.887 39.9319 114.493 39.9319 114H36.9319C36.9319 114.853 37.1389 115.593 37.5519 116.22C37.9649 116.847 38.5519 117.333 39.3119 117.68Z" fill="var(--color)"/>
+        <path d="M67.4839 106.2V118H70.4839V106.2H74.1839V103.4H63.7839V106.2H67.4839Z" fill="var(--color)"/>
+        <path d="M90.4759 103.4L94.0959 118H97.8959L101.476 103.4H98.4559L96.4959 112.6L96.2759 113.84L96.0759 115.1L95.8359 113.84L95.5959 112.62L93.5759 103.4H90.4759Z" fill="var(--color)"/>
+    </svg>
+
     <canvas %raysBga style="object-position: bottom center; opacity: .2; z-index: -1" .bga></canvas>
     
     <div %chevron .visible .mono><i class="bi-chevron-down"></i> Scroll down <i class="bi-chevron-down"></i></div>
@@ -11,10 +30,10 @@
 <div style="background: var(--elevate)">
     <div .marqueeBar .mono>
         <div>
-            <span>SUCK AT WHAT YOU DO? JUST  DO IT MORE</span>
-            <span>SUCK AT WHAT YOU DO? JUST  DO IT MORE</span>
-            <span>SUCK AT WHAT YOU DO? JUST  DO IT MORE</span>
-            <span>SUCK AT WHAT YOU DO? JUST  DO IT MORE</span>
+            <span>INSERT A COOL QUOTE HERE</span>
+            <span>INSERT A COOL QUOTE HERE</span>
+            <span>INSERT A COOL QUOTE HERE</span>
+            <span>INSERT A COOL QUOTE HERE</span>
         </div>
     </div>
 
@@ -35,17 +54,18 @@
                 <br>
                 I learn with experience. I think that over-preparing is a bad way to reach your goal - just head right in and find your path along the way. You can always refine later.<br>
                 <br><br>
-                I design and develop software, do sound design, and develop games. Anything from networking, hardware, libraries and utility to creative software that helps with my other areas of interest - video editing, sound composition and design, writing, you name it.<br>
-                My current main areas of expertise in development are optimization, design and graphics/rendering software and networking software.
+                I design and develop software, sound design, and develop games. Anything from networking, hardware, libraries and utility to creative software. I also enjoy video editing, sound composition and design, writing, animating, you name it.<br>
+                My current main area of expertise is software optimization, design and graphics/rendering software and networking software.
                 <br><br>
                 
                 <h1>What's "LSTV"?</h1>
-                LSTV is a community of developers, artists and producers (or just about anyone - you included :D), aiming to provide an open, universal environment as to create awesome high-quality projects.<br><br>
-                <b>Please note:</b> This is a common confusion - Lukas (me, the person) is not <i>called</i> "LSTV" - LSTV is not my nickname. To refer to me, the person behind LSTV, please use my name (Lukas) or one of my aliases. LSTV refers to our community and its projects.
+                LSTV is a community of developers, artists and producers (or just people who enjoy what we make), aiming to provide an open, universal environment as to create awesome high-quality projects.<br><br>
+                <b>Common confusion:</b> Lukas (me, the person behind this site) is not <i>called</i> "LSTV" - LSTV is actually not my nickname. To refer to me, please use my name (Lukas) or one of my aliases. LSTV refers to our community and its projects, not any particular person.
                 <br><br><br>
 
                 <div style="text-align: center">
-                    <a href="https://discord.gg/XyP8aHry4c" target="_blank" .ls-button ls-accent="black" style="padding: 12px 45px; display: inline-flex; align-items: center; border-radius: 100px">
+                    <!-- Use XyP8aHry4c if we lose the vanity link -->
+                    <a href="https://discord.gg/lstv" target="_blank" .ls-button ls-accent="black" style="padding: 12px 45px; display: inline-flex; align-items: center; border-radius: 100px">
                         <i .bi-discord style="font-size: xx-large; margin-right: 20px; display: inline-block"></i>
                         Join our Discord server!
                     </a>
@@ -58,24 +78,18 @@
 
     <div .marqueeBar .mono>
         <div>
-            <span>SUCK AT WHAT YOU DO? JUST  DO IT MORE</span>
-            <span>SUCK AT WHAT YOU DO? JUST  DO IT MORE</span>
-            <span>SUCK AT WHAT YOU DO? JUST  DO IT MORE</span>
-            <span>SUCK AT WHAT YOU DO? JUST  DO IT MORE</span>
+            <span>INSERT A COOL QUOTE HERE</span>
+            <span>INSERT A COOL QUOTE HERE</span>
+            <span>INSERT A COOL QUOTE HERE</span>
+            <span>INSERT A COOL QUOTE HERE</span>
         </div>
     </div>
 </div>
 
 <div style="position: relative">
-
-    
-    <div .appShowcaseBackground>
-        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="428" height="269" fill="none"><path d="M320.594 190.949c2.845-3.133 6.097-5.87 9.671-8.136a23.1 23.1 0 0 0-4.346-.809c-2.946-.221-4.238.479-4.789 1.03s-1.247 1.839-1.03 4.789c.077.943.237 1.988.494 3.126zm79.324 42.458l.911 1.885c2.451 5.252 4.073 10.391 4.423 15.005.345 4.589-.545 9.373-4.016 12.843s-8.255 4.362-12.848 4.017c-4.017-.309-8.43-1.576-12.977-3.517h-.016c-.799-.34-1.592-.696-2.379-1.066-10.469-4.954-22.446-13.667-33.688-24.913-11.231-11.232-19.939-23.199-24.898-33.658a79.46 79.46 0 0 1-1.076-2.384l.005-.01c-1.952-4.558-3.224-8.986-3.527-13.013-.351-4.594.54-9.372 4.016-12.848 3.466-3.471 8.25-4.362 12.843-4.017 4.614.35 9.743 1.972 15.001 4.429a57.86 57.86 0 0 1 1.921.927 46.32 46.32 0 0 1 23.678.246 46.33 46.33 0 0 1 20.463 11.917 46.32 46.32 0 0 1 11.921 20.47 46.33 46.33 0 0 1 .243 23.687zm-5.732 13.353a46.54 46.54 0 0 1-8.116 9.635c1.123.257 2.158.422 3.09.489 2.951.226 4.243-.474 4.789-1.03.556-.546 1.257-1.839 1.03-4.789a22.97 22.97 0 0 0-.793-4.305zm-71.975 8.033a46.31 46.31 0 0 1-11.751-19.874c-2.177-7.511-2.416-15.45-.695-23.078 5.571 10.196 13.929 21.113 24.099 31.283 10.181 10.181 21.103 18.539 31.31 24.115-7.63 1.723-15.571 1.485-23.084-.692a46.3 46.3 0 0 1-19.879-11.754z" fill="url(#A)" fill-opacity=".09"/><path d="M127.846 137.448l-4.733 1.997-.066.034c-3.242 1.397-6.956 2.995-11.01 4.486-8.161 3.022-17.925 5.724-28.769 5.724-12.068 0-21.32-3.235-28.735-6.789-2.862-1.371-5.518-2.829-7.854-4.107l-1.811-.999c-2.862-1.544-5.085-2.655-7.069-3.281a109.22 109.22 0 0 0-23.896-4.506 105.81 105.81 0 0 0-9.672-.32l-.513.02h-.14l-1.012.053c3.801 13.221 11.602 24.94 22.332 33.548a66.59 66.59 0 0 0 37.593 14.524c13.73.843 27.385-2.587 39.086-9.818a66.6 66.6 0 0 0 26.267-30.566zM8.239 79.319l1.977 2.01.02.027.126.12.572.539a54.87 54.87 0 0 0 2.396 2.063c2.13 1.731 5.292 4.06 9.346 6.39 8.114 4.686 19.629 9.292 33.481 9.292 9.146 0 16.148-2.623 22.086-5.724 2.363-1.238 4.493-2.51 6.61-3.774l1.831-1.085c2.609-1.544 5.392-3.115 8.214-4.087a99 99 0 0 1 22.572-4.946c2.555-.247 5.121-.363 7.688-.346a66.55 66.55 0 0 0-58.589-34.952A66.55 66.55 0 0 0 8.239 79.319z" fill="url(#B)" fill-opacity=".09"/><path opacity=".5" d="M131.63 125.504c1.001-4.633 1.503-9.359 1.498-14.098a66.49 66.49 0 0 0-3.495-21.34l-3.507-.253h-.074l-.339-.02a64.91 64.91 0 0 0-7.295.286 89.05 89.05 0 0 0-20.282 4.46c-1.751.599-3.748 1.677-6.377 3.228l-1.651.985c-2.143 1.285-4.593 2.749-7.242 4.127-6.856 3.588-15.463 6.863-26.705 6.863-16.095 0-29.334-5.345-38.473-10.624a82.14 82.14 0 0 1-10.65-7.295 62.07 62.07 0 0 1-3.195-2.762C.354 98.931-.781 109.479.528 119.866l2.563-.133h.073l.18-.007a57.53 57.53 0 0 1 2.995-.04c2.017.014 4.879.093 8.34.366 6.903.533 16.288 1.844 26.113 4.939 2.995.939 5.984 2.483 8.833 4.027l1.99 1.085c2.303 1.265 4.639 2.55 7.235 3.794 6.523 3.129 14.271 5.798 24.415 5.798 9.206 0 17.719-2.29 25.307-5.099 3.801-1.397 7.315-2.915 10.59-4.326l.12-.047c3.162-1.358 6.237-2.682 8.939-3.581l3.408-1.138z" fill="url(#C)" fill-opacity=".09"/><path fill-rule="evenodd" d="M337.481 44.846C337.481 20.078 357.559 0 382.328 0a44.63 44.63 0 0 1 25.647 8.054 30.28 30.28 0 0 0-6.19 13.981c-.834 5.113-.341 10.355 1.43 15.223a30.28 30.28 0 0 0 22.412 19.32c-5.158 19.078-22.594 33.114-43.299 33.114a45.21 45.21 0 0 1-8.378-.78 30.27 30.27 0 0 0 2.477-17.003 30.28 30.28 0 0 0-7.178-15.612 30.27 30.27 0 0 0-31.7-8.998 45.61 45.61 0 0 1-.068-2.453zm62.785 17.938c0 1.189-.472 2.33-1.313 3.171s-1.982 1.314-3.171 1.314-2.33-.473-3.172-1.314-1.313-1.982-1.313-3.171.472-2.33 1.313-3.171 1.982-1.314 3.172-1.314 2.33.472 3.171 1.314 1.313 1.982 1.313 3.171zm-24.665-22.423c2.973 0 5.825-1.181 7.928-3.284s3.283-4.954 3.283-7.928-1.181-5.825-3.283-7.928-4.955-3.284-7.928-3.284a11.21 11.21 0 0 0-11.212 11.212 11.21 11.21 0 0 0 11.212 11.212z" fill="url(#D)" fill-opacity=".09"/><path d="M408.114 26.908c0-5.521 1.897-10.588 5.072-14.602 5.056 4.779 8.927 10.672 11.305 17.21s3.199 13.541 2.395 20.452c-5.303-1.099-10.066-3.993-13.485-8.193a23.55 23.55 0 0 1-5.287-14.867zm-40.775 60.22c-7.241-2.575-13.701-6.965-18.762-12.751s-8.552-12.772-10.141-20.292l.498-.166c4.41-1.488 9.162-1.636 13.655-.425a23.55 23.55 0 0 1 11.593 7.23c3.064 3.503 5.022 7.835 5.626 12.45s-.175 9.305-2.235 13.478l-.234.475z" fill="url(#E)" fill-opacity=".09"/><defs><linearGradient id="A" x1="356.976" y1="171.662" x2="356.976" y2="268.376" xlink:href="#F"><stop stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient><linearGradient id="B" x1="65.207" y1="44.846" x2="65.207" y2="177.957" xlink:href="#F"><stop stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient><linearGradient id="C" x1="66.564" y1="89.061" x2="66.564" y2="139.695" xlink:href="#F"><stop stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient><linearGradient id="D" x1="381.554" y1="0" x2="381.554" y2="89.693" xlink:href="#F"><stop stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient><linearGradient id="E" x1="382.811" y1="12.306" x2="382.811" y2="87.128" xlink:href="#F"><stop stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient><linearGradient id="F" gradientUnits="userSpaceOnUse"/></defs></svg>
-    </div>
+    <canvas #noiseBga .bga></canvas>
     
     <div style="position: relative">
-        <h1 style="text-align: center;"><i class="bi-cone-striped"></i> Work in progress</h1>
-
         <div %cursorPopout>
             <i class="bi-box-arrow-up-right"></i>
         </div>
@@ -88,24 +102,6 @@
             <div %apps-showcase></div>
         </div>
     </div>
-
-    <style>
-        .appShowcaseBackground {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            display: flex;
-            justify-content: center;
-            z-index: 0;
-            overflow: hidden;
-        }
-
-        .appShowcaseBackground svg {
-            will-change: transform;
-        }
-    </style>
 </div>
 
 <h3 style="text-align: center; color: var(--color); padding: 10px;">
