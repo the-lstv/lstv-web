@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: 
+Disallow: /statistics/
+
+Sitemap: https://lstv.space/sitemap.xml
