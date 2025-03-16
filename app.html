@@ -1,28 +1,18 @@
 <head>
 
-    @dynamic(true);
+    @use (ls:5.0.0[flat, tooltips, toast, reactive], bootstrap-icons, google-fonts[Rubik, Poppins, "JetBrains Mono"]);
+    @use (/assets/css/main.css, /assets/js/app.js);
 
-    @manifest {
+    @page {
         title: "LSTV";
 
-        style: "flat";
-        theme: "dark";
-        accent: "blue";
+        style: flat;
+        theme: dark;
+        accent: white;
 
-        favicon: /assets/favicon.svg;
-    }
+        font: Rubik, sans-serif;
 
-    @resources {
-        ls-js: tiny, select, tooltips, modal, tabs, color, toast;
-        ls-css: base, select, ls-flat, tooltips, loader, modal, tabs, toast;
-        ls-version: 4.0.0;
-
-        bootstrap-icons;
-
-        fonts: Rubik, Poppins, "JetBrains Mono";
-
-        css: /assets/main.css;
-        js: /assets/app.js, /assets/js/ping.js;
+        favicon: /assets/image/favicon.svg;
     }
 
     <style>
@@ -76,14 +66,15 @@
 <body>
 
     <div .loaderContainer>
-        <div .loader></div>
+        <div .loader/>
     </div>
 
-    <div #app hidden>
-        <nav ls-accent="auto">
 
-            <a href="/">
-                <span .headerTitle>LSTV</span><span .headerText></span>
+    <div #app hidden>
+        <nav .level-1>
+
+            <a href="/" .homeButton>
+                <span .headerTitle>LSTV</span><span .headerText/>
             </a>
 
             <div #headerButtons>
@@ -92,12 +83,11 @@
                 </button>
 
                 <button ls-tooltip="Manage profiles" #accountsButton for="toolbarLogin" .pill.elevated ls-accent="gray-light">
-                    <span .text>Loading</span>
+                    {{ user.username ?? 'Log-In' }}
 
                     <div #profilePicturePreview .load-noBackground load>
                         <i .bi-person-fill></i>
                     </div>
-
                 </button>
 
                 <button ls-tooltip="Dark/Light theme" #themeButton .pill.elevated>
@@ -105,7 +95,7 @@
                 </button>
             </div>
 
-            <div #toolbars hidden ls-accent="blue">
+            <div #toolbars hidden>
 
                 <div #toolbarApps>
                     <h3>Applications</h3>
@@ -124,7 +114,7 @@
                         </div>
                     </div>
                     <div #profileWrap>
-                        <button #returnButton onclick="O('#toolbarAccount').class('selecting', 0)" .pill.small.elevated ls-accent="auto"><i .bi-arrow-return-left></i> Return</button>
+                        <button #returnButton onclick="O('#toolbarAccount').class('selecting', 0)" .pill.small.elevated><i .bi-arrow-return-left></i> Return</button>
                         
                         <div style="line-height: 1em; margin: 1.2rem 0">
                             <h2 #profileDisplayname></h2>
@@ -132,8 +122,8 @@
                         </div>
 
                         <div .hButtonGroup>
-                            <a href="/account" .pill.ls-button.elevated ls-accent="auto">Manage account</a>
-                            <button .pill.elevated ls-accent="auto">Edit profile</button>
+                            <a href="/account" .pill.ls-button.elevated>Manage account</a>
+                            <button .pill.elevated>Edit profile</button>
                             <button .pill.elevated ls-accent="red" #logOutButton>Log out</button>
                         </div>
 
@@ -144,7 +134,7 @@
                 <div #toolbarLogin>
                     <div #loginPopupOverlay>
                         <div>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="45" height="27" fill="none"><rect y="27" width="10" height="30" rx="5" transform="rotate(270 0 27)" fill="#fcc21b"/><rect x="15" y="10" width="10" height="30" rx="5" transform="rotate(270 15 10)" fill="#ed6c30"/><g fill="#40c0e7"><rect y="10" width="10" height="10" rx="5" transform="rotate(270 0 10)"/><rect x="35" y="27" width="10" height="10" rx="5" transform="rotate(270 35 27)"/></g></svg>
+                            <svg width="45" height="27" fill="none"><rect y="17" width="30" height="10" rx="5" fill="#fcc21b"/><rect x="15" width="30" height="10" rx="5" fill="#ed6c30"/><g fill="#40c0e7"><rect width="10" height="10" rx="5"/><rect x="35" y="17" width="10" height="10" rx="5"/></g></svg>
                             
                             <h2>Log-In!</h2>
 
@@ -153,23 +143,25 @@
                             </span>
 
                             <div .buttons>
-                                <a href="/login" .ls-button.pill.elevated ls-accent="auto">Log-In</a>
+                                <a href="/login" .ls-button.pill.elevated>Log-In</a>
                                 <a href="/sign-up" .ls-button.pill.elevated>Create account</a>
                             </div>
                         </div>
                     </div>
                 </div>
+
             </div>
+
         </nav>
 
-
-        <div #viewport>
+        <main #viewport>
             <div #initial_page .page>
-                @dynamicImport("static/$original_path");
+                <!-- @dynamicImport("static/$original_path"); -->
+                @import ("static/index.html");
             </div>
 
             <div #error_page .page></div>
-        </div>
+        </main>
     </div>
 
 </body>

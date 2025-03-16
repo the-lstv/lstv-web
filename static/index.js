@@ -154,7 +154,7 @@ app.module("static.home", (app, page, container) => {
                             item.icon? N({class: "appIconContainer", inner: N("img", {crossOrigin: "Anonymous", loading: "lazy", src: app.cdn + "/file/" + item.icon + (item.icon.endsWith("svg")? "": "?size=120"), onload(){
                                 let override = typeof customColor[item.id] == "string"? [C(customColor[item.id])]: Array.isArray(customColor[item.id])? customColor[item.id].map(color => typeof color == "string"? C(color) : null) : [];
                                 
-                                let color = override[0] || LS.Color.getAverageRGB(this);
+                                let color = override[0] || LS.Color.fromImage(this);
 
                                 element.appColor = color.rgb;
                                 element.style.setProperty("--color-1", (override[1] || color.saturation(80).darken(15)).rgb)
@@ -184,15 +184,15 @@ app.module("static.home", (app, page, container) => {
 
                 class: "appItem",
 
-                onmouseenter(){
-                    updatePopout()
+                onmouseenter(event){
+                    updatePopout(event.clientX, event.clientY)
                     cursorPopout.style.setProperty("--accent", element.appColor || "#444")
                     cursorPopout.style.setProperty("--color", element.fgColor || "#fff")
                     cursorPopout.class("active")
                 },
 
-                onmousemove(){
-                    updatePopout()
+                onmousemove(event){
+                    updatePopout(event.clientX, event.clientY)
                 },
                 
                 onmouseleave(){
@@ -200,9 +200,9 @@ app.module("static.home", (app, page, container) => {
                 }
             });
 
-            function updatePopout(){
-                cursorPopout.style.left = M.x + "px"
-                cursorPopout.style.top = M.y + "px"
+            function updatePopout(x, y){
+                cursorPopout.style.left = x + "px"
+                cursorPopout.style.top = y + "px"
             }
 
             O("#apps-showcase").add(element)

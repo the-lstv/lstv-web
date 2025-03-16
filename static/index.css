@@ -50,9 +50,9 @@ body[ls-theme="dark"] {
     transition: opacity 0.2s;
     pointer-events: none;
     opacity: 0;
-    background: var(--elevate-8);
-    color: var(--bg);
-    border-radius: var(--br-big);
+    background: var(--accent);
+    color: var(--on-accent);
+    border-radius: 25px;
     padding: 8px 20px;
     white-space: nowrap;
     z-index: 500;
@@ -214,13 +214,14 @@ h2 {
 }
 
 .appTop, .appBottom {
-    background: var(--transparent-overlay);
+    background: #fff1;
 }
 
 .appBottom {
     display: flex;
     overflow-x: overlay;
-    padding: 4px 8px;
+    padding: 8px 12px;
+    gap: 8px;
 }
 
 .appTop span {
@@ -231,25 +232,23 @@ h2 {
 }
 
 .appTag {
-    background: var(--transparent-overlay);
+    background: #fff1;
     padding: 4px 12px !important;
     white-space: nowrap;
+    outline: none !important;
+    border-radius: var(--border-radius) !important;
 }
 
 .appItemLight .appTag {
-    background: var(--transparent-overlay-strong);
+    background: #fff2;
 }
 
-/* .appItemDark :is(.appBottom, .appTop) {
-    background: #fff1;
-} */
-
 .appItemLight .appBottom {
-    border-top: 1px solid var(--transparent-overlay-dark);
+    border-top: 1px solid #0001;
 }
 
 .appItemLight .appTop {
-    border-bottom: 1px solid var(--transparent-overlay-dark);
+    border-bottom: 1px solid #0001;
 }
 
 .appItemLight {
@@ -280,8 +279,8 @@ h2 {
 }
 
 .marqueeBar {
-    background: var(--elevate-5);
-    color: var(--elevate);
+    background: var(--elevate-9);
+    color: var(--elevate-2);
     font-weight: 900;
     padding: 6px 0;
     width: 100%;

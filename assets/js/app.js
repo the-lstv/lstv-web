@@ -9,8 +9,8 @@
 */
 
 
-window.addEventListener("load", () => {
-    if(!window.LS || typeof LS !== "object") throw new Error("Application could not start (missing LS in the global scope)! Aborting.");
+window.addEventListener("DOMContentLoaded", async () => {
+    if(!window.LS || typeof LS !== "object") throw new Error("Fatal error: Missing LS! Make sure it was loaded properly! Aborting.");
 
     console.log(
         '%c LSTV %c\nWelcome to the LSTV web!\n\nPlease beware:\n%cIF SOMEONE TOLD YOU TO PASTE SOMETHING HERE,\nTHEY MIGHT BE TRYING TO SCAM YOU.\nDO NOT USE THE CONSOLE IF YOU DON\'T KNOW\nWHAT YOU ARE DOING.\n\n',
@@ -64,7 +64,7 @@ window.addEventListener("load", () => {
 
                     this.contentElement.pageObject = this
 
-                    this.contentElement.getAll("script").all(script => {
+                    this.contentElement.getAll("script").forEach(script => {
                         if(script.parentElement !== this.contentElement) return;
 
                         // if(!app.pages.get(this.path).moduleName) app.pages.get(this.path).moduleName = app.pages.get(this.path).manifest.module || null;
@@ -77,7 +77,7 @@ window.addEventListener("load", () => {
                         script.remove()
                     })
 
-                    this.contentElement.getAll('link[rel="stylesheet"]').all(link => {
+                    this.contentElement.getAll('link[rel="stylesheet"]').forEach(link => {
                         if(link.parentElement !== this.contentElement) return;
 
                         this.contentElement.add(N("link", { href: link.href, rel: "stylesheet" }))
@@ -373,7 +373,7 @@ window.addEventListener("load", () => {
 
             if(!view) return;
 
-            Q("#toolbars > div").all().applyStyle({display: "none"});
+            Q("#toolbars > div").forEach(element => element.applyStyle({display: "none"}));
             O("#toolbars").style.display = "block"
 
             view.style.display = "block";
@@ -382,7 +382,7 @@ window.addEventListener("load", () => {
 
             app.headerWindowCurrent = id;
 
-            Q("#headerButtons > button.open").all().class("open", 0);
+            Q("#headerButtons > button.open").forEach(element => element.class("open", false));
             button.class("open");
         },
 
@@ -390,7 +390,7 @@ window.addEventListener("load", () => {
             O("#toolbars").style.display = "none"
             LS.invoke("toolbar-close");
 
-            Q("#headerButtons > button.open").all().class("open", 0);
+            Q("#headerButtons > button.open").forEach(element => element.class("open", false));
         },
 
         async setPage(path, options = {}){
@@ -417,7 +417,7 @@ window.addEventListener("load", () => {
 
             document.title = `LSTV | ${page.title || "Web"}`;
             
-            app.viewport.getAll("style").all(style => style.disabled = true)
+            app.viewport.getAll("style").forEach(style => style.disabled = true)
             
             for(let element of Q(".page")) element.style.display = "none";
             for(let element of Q(".page.active")) element.class("active", false);
@@ -500,86 +500,84 @@ window.addEventListener("load", () => {
     };
 
 
-    LS.once("body-available", async () => {
-        LS.Color.on("theme-changed", () => {
-            // This is correct, just poor coding skills
-            app.theme = null
-        })
-
-        // Listen to preffered theme changes
-        LS.Color.adaptiveTheme()
-        LS.Color.on("scheme-changed", LS.Color.adaptiveTheme)
-
-        app.events = LS.EventHandler(app);
-
-        // Load the initial page
-        const page = new Page(location.pathname)
-        app.currentPage = page.path
-
-        page.contentElement = O("#initial_page");
-
-        if(window._preloaded_module) loadModule(true, ...window._preloaded_module)
-        app.setPage(page, { browserTriggered: true })
-
-
-        // Display content
-        document.querySelector(".loaderContainer").style.display = "none"
-        app.container.style.display = "flex"
-
-
-        let userList = app.user.list();
-
-        if(userList.length > 0){
-            app.user.use(localStorage.hasOwnProperty("currentUser")? +localStorage.currentUser : userList[0])
-            await app.user.fetch()
-            app.events.completed("users-available");
-        }
-
-        let user = app.user.fragment;
-
-        O("#profilePicturePreview").delAttr("load");
-
-        if(!user || typeof app.user.current !== "number") {
-
-            // No user is logged in
-            O("#accountsButton").attrAssign({"ls-accent": "auto"})
-            O("#accountsButton").get(".text").set("Log-In")
-
-
-        } else {
-
-            // Yippe! Someone is logged in
-            O("#accountsButton").attrAssign({"ls-accent": "auto"})
-            O("#accountsButton").get(".text").set(user.displayname || user.username)
-            O("#appsButton").style.display = "inline"
-
-            O("#profileWrap").prepend(app.user.getProfilePictureView(user))
-            
-            O("#profileDisplayname").innerText = user.displayname || user.username;
-            O("#profileUsername").innerText = "@" + user.username;
-
-        }
-
-        O("#themeButton").on("click", ()=>{
-            app.theme = app.theme == "light"? "dark": "light";
-        })
-
-        O("#accountsButton").on("click", function (){
-            app.toolbarOpen((user && typeof app.user.current === "number")? "toolbarAccount" : "toolbarLogin", true, this)
-        })
-
-        O("#logOutButton").on("click", function (){
-            app.user.logout()
-        })
-
-        O("#appsButton").on("click", function (){
-            app.toolbarOpen("toolbarApps", true, this)
-        })
-
-        app.viewport.on("click", ()=>{
-            app.toolbarClose();
-        })
+    LS.Color.on("theme-changed", () => {
+        // This is correct, just poor coding skills
+        app.theme = null
     })
+
+    // Listen to preffered theme changes
+    LS.Color.autoScheme();
+
+    app.events = new LS.EventHandler(app);
+
+    // Load the initial page
+    const page = new Page(location.pathname)
+    app.currentPage = page.path
+
+    page.contentElement = O("#initial_page");
+
+    if(window._preloaded_module) loadModule(true, ...window._preloaded_module)
+    app.setPage(page, { browserTriggered: true })
+
+
+    // Display content
+    document.querySelector(".loaderContainer").style.display = "none"
+    app.container.style.display = "flex"
+
+
+    let userList = app.user.list();
+
+    if(userList.length > 0){
+        app.user.use(localStorage.hasOwnProperty("currentUser")? +localStorage.currentUser : userList[0])
+        await app.user.fetch()
+        app.events.completed("users-available");
+    }
+
+    let user = LS.Reactive.wrap("user", app.user.fragment || {});
+
+    window.user = user;
+
+    O("#profilePicturePreview").delAttr("load");
+
+    if(typeof app.user.current !== "number") {
+
+        // No user is logged in
+        O("#accountsButton").attrAssign({"ls-accent": "auto"})
+
+    } else {
+
+        // Yippe! Someone is logged in
+        O("#accountsButton").attrAssign({"ls-accent": "auto"})
+        O("#accountsButton").get(".text").set(user.displayname || user.username)
+        O("#appsButton").style.display = "inline"
+
+        O("#profileWrap").prepend(app.user.getProfilePictureView(user))
+        
+        O("#profileDisplayname").innerText = user.displayname || user.username;
+        O("#profileUsername").innerText = "@" + user.username;
+
+    }
+
+    O("#themeButton").on("click", ()=>{
+        app.theme = app.theme == "light"? "dark": "light";
+    })
+
+    O("#accountsButton").on("click", function (){
+        app.toolbarOpen((user && typeof app.user.current === "number")? "toolbarAccount" : "toolbarLogin", true, this)
+    })
+
+    O("#logOutButton").on("click", function (){
+        app.user.logout()
+    })
+
+    O("#appsButton").on("click", function (){
+        app.toolbarOpen("toolbarApps", true, this)
+    })
+
+    app.viewport.on("click", ()=>{
+        app.toolbarClose();
+    })
+
 
     // Debugging only!
     if(location.hostname.endsWith("test")){

@@ -1,9 +1,3 @@
-
-/* Part: Main */
-:root {
-    --font: Rubik, sans-serif;
-}
-
 html, body {
     overflow: hidden;
     margin: 0;
@@ -11,9 +5,6 @@ html, body {
     width: 100vw;
     height: 100vh;
     height: 100dvh;
-
-    position: fixed;
-    inset: 0;
 }
 
 body {
@@ -38,7 +29,7 @@ body {
 
 /* Part: Header */
 nav {
-    background: var(--ui);
+    background: var(--elevate-2);
     padding: 8px 14px;
     display: flex;
     justify-content: space-between;
@@ -56,12 +47,16 @@ nav {
 }
 
 #headerButtons button.open {
-    background: rgb(var(--accent-raw), 25%);
+    background: var(--elevate-0);
     outline: 2px solid var(--transparent-overlay);
 }
 
 #accountsButton {
     padding-right: 45px;
+}
+
+#accountsButton:is(:hover, :focus) #profilePicturePreview {
+    background: var(--elevate-4);
 }
 
 #profilePicturePreview {
@@ -73,7 +68,7 @@ nav {
     justify-content: center;
     align-items: center;
     overflow: hidden;
-    background: rgb(var(--accent-raw), 10%);
+    background: var(--elevate-3);
     width: 36px;
     border-radius: 20px;
     --load-width: calc(2 / 16 * 1em);
@@ -93,7 +88,7 @@ nav > a {
     top: calc(100% + 10px);
     right: 10px;
     width: 300px;
-    background: var(--ui-bg-1);
+    background: var(--background);
     outline: 1px solid var(--transparent-overlay);
     border-radius: 20px;
     box-shadow: 0 10px 20px 0 #0002;
@@ -144,6 +139,7 @@ button.solid::before {
     flex-direction: column;
     align-items: center;
     padding: 0 20px;
+    gap: 10px;
 }
 
 #loginPopupOverlay {
@@ -158,12 +154,6 @@ button.solid::before {
 
 #loginPopupOverlay span {
     color: gray;
-}
-
-#toolbarLogin {
-    background-size: 130%;
-    background-position: center;
-    background-repeat: no-repeat;
 }
 
 #toolbarApps > div {
