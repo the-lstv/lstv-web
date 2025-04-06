@@ -1,0 +1,158 @@
+label {
+    margin: 4px 0;
+    display: block;
+}
+
+.loginForm {
+    width: 64vw;
+    max-width: 32em;
+    margin: auto;
+    margin-top: 2em;
+    --font: Poppins;
+    font-family: var(--font);
+    -webkit-user-select: none;
+    user-select: none;
+    text-align: left;
+    margin-bottom: 0;
+}
+
+.loginForm :is(button, input) {
+    width: 100%;
+    margin: .4em 0;
+}
+
+.loginButtonWrapper button {
+    margin: 0 !important;
+}
+
+.loginButtonWrapper {
+    position: relative;
+    padding: 3px;
+    border-radius: 12px;
+    overflow: hidden;
+    z-index: 0;
+}
+
+.loginButtonWrapper::before {
+    content: '';
+    position: absolute;
+    z-index: -2;
+    inset: 0;
+    background-color: var(--accent-dark);
+}
+
+.loginButtonWrapper.loading::before {
+    inset: unset;
+    left: -50%;
+    top: -450%;
+    width: 200%;
+    height: 1000%;
+    background-repeat: no-repeat;
+    background-image: conic-gradient(#ed6c30 0,#ed6c30 33%,#fcc21b 33%,#fcc21b 66%,#40c0e7 66%,#40c0e7 100%);
+    animation: rotate 4s linear infinite;
+}
+
+.switchPages {
+    display: block;
+    margin-top: 3em;
+    margin-bottom: 2em;
+}
+
+.loginButtonWrapper.loading button {
+    background: #111;
+}
+
+.loginButtonWrapper.loading .text {
+    display: none;
+}
+
+.loginButtonWrapper.loading .buttonDots {
+    display: inline-block;
+}
+
+.buttonDots {
+    position: relative;
+    display: none;
+}
+
+.buttonDot {
+    visibility: hidden;
+    width: .5em;
+    height: .5em;
+    background-color: #eee;
+    border-radius: 50%;
+    animation: moveLeftRight 1.5s ease-in-out infinite;
+    position: absolute;
+    top: -.5em;
+}
+
+.wrapper {
+    text-align: center;
+    padding: 0 1em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.loginForm ls-modal-body {
+    white-space: normal
+}
+
+ls-group {
+    --br: var(--br-lg);
+}
+
+.loginForm ls-group[join] button {
+    padding: 0 1em;
+}
+
+ls-tabs {
+    width: 100%;
+}
+
+@media only screen and (max-height: 600px) {
+    .switchPages {
+        display: block;
+        margin-top: 2em;
+        margin-bottom: 1em;
+    }
+}
+
+@keyframes moveLeftRight {
+    0%, 100% {
+        visibility: visible;
+        transform: translateX(-800%);
+    }
+    50% {
+        transform: translateX(600%);
+    }
+}
+
+@keyframes rotate {
+    100% {
+        transform: rotate(1turn);
+    }
+}
+
+@media only screen and (max-width: 600px) {
+    .loginForm {
+        width: unset;
+        margin-top: 1em;
+    }
+
+    .wrapper {
+        justify-content: flex-start;
+    }
+
+    .accountList button.userListItem {
+        padding: .8em 1em;
+        --pfp-size: 2em;
+        gap: .5em;
+    }
+}
+
+.inputError {
+    color: #ed3d30, #f52f2f
+}

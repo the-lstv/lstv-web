@@ -50,8 +50,6 @@ body[ls-theme="dark"] {
     transition: opacity 0.2s;
     pointer-events: none;
     opacity: 0;
-    background: var(--accent);
-    color: var(--on-accent);
     border-radius: 25px;
     padding: 8px 20px;
     white-space: nowrap;
@@ -279,8 +277,6 @@ h2 {
 }
 
 .marqueeBar {
-    background: var(--elevate-9);
-    color: var(--elevate-2);
     font-weight: 900;
     padding: 6px 0;
     width: 100%;

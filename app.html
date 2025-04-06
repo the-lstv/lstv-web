@@ -1,6 +1,6 @@
 <head>
 
-    @use (ls:5.0.0[flat, tooltips, toast, reactive], bootstrap-icons, google-fonts[Rubik, Poppins, "JetBrains Mono"]);
+    @use (ls:5.0.0[flat, tooltips, toast, reactive, tabs], bootstrap-icons, google-fonts[Poppins, "JetBrains Mono", "IBM Plex Mono:wght@300;400;700;800"]);
     @use (/assets/css/main.css, /assets/js/app.js);
 
     @page {
@@ -10,7 +10,7 @@
         theme: dark;
         accent: white;
 
-        font: Rubik, sans-serif;
+        font: Poppins, sans-serif;
 
         favicon: /assets/image/favicon.svg;
     }
@@ -38,7 +38,7 @@
             aspect-ratio: 1;
             border-radius: 50%;
             border: 8px solid;
-            border-color: #fff #0000;
+            border-color: var(--surface-top, #fff) #0000;
             animation: l1 1s infinite;
         }
 
@@ -48,6 +48,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            flex-direction: column;
         }
 
         @keyframes l1 { to { transform: rotate(.5turn) } }
@@ -55,8 +56,8 @@
 
     <script>
         window.app = {
-            module(){
-                window._preloaded_module = arguments
+            secure(script, callback) {
+                window.__init = callback;
             }
         }
     </script>
@@ -67,6 +68,9 @@
 
     <div .loaderContainer>
         <div .loader/>
+        <noscript>
+            <h1>You need to enable JavaScript to be able to access this website!</h1>
+        </noscript>
     </div>
 
 
@@ -74,15 +78,15 @@
         <nav .level-1>
 
             <a href="/" .homeButton>
-                <span .headerTitle>LSTV</span><span .headerText/>
+                <span>LSTV</span><span .headerText/>
             </a>
 
             <div #headerButtons>
-                <button ls-tooltip="Applications" hidden for="toolbarApps" #appsButton .pill.elevated>
+                <button ls-tooltip="Applications" hidden for="toolbarApps" .level-1 #appsButton .pill .elevated>
                     <i .bi-grid-fill></i> <span .label>Apps</span>
                 </button>
 
-                <button ls-tooltip="Manage profiles" #accountsButton for="toolbarLogin" .pill.elevated ls-accent="gray-light">
+                <button disabled ls-tooltip="Manage profiles" #accountsButton .level-1 .pill .elevated>
                     {{ user.username ?? 'Log-In' }}
 
                     <div #profilePicturePreview .load-noBackground load>
@@ -90,12 +94,16 @@
                     </div>
                 </button>
 
-                <button ls-tooltip="Dark/Light theme" #themeButton .pill.elevated>
+                <button ls-tooltip="Assistant" #assistantButton .pill.elevated>
+                    <i .bi-stars></i>
+                </button>
+
+                <button ls-tooltip="Theme" #themeButton .pill.elevated>
                     <i .bi-sun-fill></i>
                 </button>
             </div>
 
-            <div #toolbars hidden>
+            <div #toolbars hidden .level-0>
 
                 <div #toolbarApps>
                     <h3>Applications</h3>
@@ -113,6 +121,7 @@
                             <button .pill.small><i .bi-plus></i> Add account</button>
                         </div>
                     </div>
+
                     <div #profileWrap>
                         <button #returnButton onclick="O('#toolbarAccount').class('selecting', 0)" .pill.small.elevated><i .bi-arrow-return-left></i> Return</button>
                         
@@ -155,6 +164,37 @@
         </nav>
 
         <main #viewport>
+
+            <div #assistant-overlay hidden>
+                <div #assistant ls-accent="blue">
+                    <div .loading>
+                        <div .loader></div>
+                    </div>
+
+                    <div .buttons ls-accent="white">
+                        <button ls-tooltip="Fullscreen" .square.clear class="button-fullscren"><i .bi-fullscreen></i></button>
+                        <button ls-tooltip="Close assistant" .square.clear class="button-close"><i .bi-x-lg></i></button>
+                    </div>
+
+                    <div .content hidden>
+                        <div .title>
+                            <h1>Assistant</h1>
+                            <span>Powered by <a href="">Arisen</a></span>
+                        </div>
+        
+                        <div .generated-content></div>
+        
+                        <div .input-container>
+                            <div .input>
+                                <input type="text" name="Assistant input" id="assistant-input" placeholder="Ask me anything...">
+                                <button ls-tooltip="Send" .send .circle><i .bi-arrow-up-short></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
             <div #initial_page .page>
                 <!-- @dynamicImport("static/$original_path"); -->
                 @import ("static/index.html");

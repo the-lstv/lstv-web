@@ -7,6 +7,10 @@ html, body {
     height: 100dvh;
 }
 
+#app {
+    --header-height: 50px;
+}
+
 body {
     display: flex;
     flex-direction: column;
@@ -24,6 +28,7 @@ body {
     height: 100%;
     flex: 1;
     overflow: hidden;
+    position: relative;
 }
 
 
@@ -38,6 +43,7 @@ nav {
     -webkit-user-select: none;
     user-select: none;
     z-index: 50;
+    height: var(--header-height);
 }
 
 #headerButtons button {
@@ -48,7 +54,7 @@ nav {
 
 #headerButtons button.open {
     background: var(--elevate-0);
-    outline: 2px solid var(--transparent-overlay);
+    outline: 3px solid var(--accent-mix-10);
 }
 
 #accountsButton {
@@ -56,7 +62,7 @@ nav {
 }
 
 #accountsButton:is(:hover, :focus) #profilePicturePreview {
-    background: var(--elevate-4);
+    background: var(--elevate-3);
 }
 
 #profilePicturePreview {
@@ -68,7 +74,7 @@ nav {
     justify-content: center;
     align-items: center;
     overflow: hidden;
-    background: var(--elevate-3);
+    background: var(--elevate-2);
     width: 36px;
     border-radius: 20px;
     --load-width: calc(2 / 16 * 1em);
@@ -89,7 +95,7 @@ nav > a {
     right: 10px;
     width: 300px;
     background: var(--background);
-    outline: 1px solid var(--transparent-overlay);
+    outline: 1px solid var(--accent-mix-20);
     border-radius: 20px;
     box-shadow: 0 10px 20px 0 #0002;
     overflow: hidden;
@@ -162,8 +168,8 @@ button.solid::before {
     border-radius: 1.5em 1.5em 0 0;
 }
 
-#themeButton {
-    padding: .4em .8em;
+#themeButton, #assistantButton {
+    padding: 8px 12px;
 }
 
 
@@ -188,6 +194,10 @@ button.solid::before {
 @media only screen and (max-width: 350px) {
     #headerButtons .label {
         display: none;
+    }
+
+    #assistantButton {
+        display: none !important;
     }
 }
 
@@ -378,4 +388,165 @@ button.solid::before {
 .userEmail {
     font-size: .9em;
     color: var(--elevate-4);
+}
+
+
+/*
+ * Assistant
+*/
+
+#assistant {
+    width: 670px;
+    height: 300px;
+    background: var(--surface-n3);
+    color: var(--accent-90);
+    border-radius: var(--border-radius-large);
+    pointer-events: auto;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    --font: "IBM Plex Mono", "JetBrains Mono", monospace;
+    font-family: var(--font);
+    overflow: hidden;
+    outline: 1px solid var(--surface-3);
+    box-shadow: 0 4px 40px 5px #0002;
+    padding: var(--padding-content-h);
+    left: 50%;
+    top: 50%;
+    transition: opacity 0.2s;
+    opacity: 0;
+}
+
+#assistant .loading {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#assistant > .content {
+    flex-direction: column;
+    text-align: center;
+    height: 100%;
+    width: 100%;
+}
+
+#assistant.shown {
+    opacity: 1;
+}
+
+#assistant > .buttons {
+    display: flex;
+    position: absolute;
+    right: 0;
+    flex-direction: row;
+}
+
+@media (max-width: 700px) {
+    #assistant {
+        width: unset;
+        height: unset;
+        border-radius: 0;
+        top: 0;
+        left: 0;
+        right: 0;
+        transform: translate(0px, 0px);
+    }
+
+    #assistant > .content {
+        min-height: 60vh;
+    }
+}
+
+[ls-theme="light"] #assistant {
+    color: #234B78;
+}
+
+#assistant .title {
+    width: 100%;
+}
+
+#assistant .title h1 {
+    font-size: 3em;
+    margin: 0;
+}
+
+#assistant .title span {
+    font-weight: 300;
+}
+
+#assistant .generated-content {
+    flex: 1;
+    padding: var(--padding-content-h);
+    overflow-y: auto;
+    height: 100%;
+    width: 100%;
+}
+
+#assistant .input-container {
+    background: linear-gradient(90deg, #A1D8FF, #786199);
+    position: relative;
+    height: 50px;
+    border-radius: 50px;
+    margin: 10px;
+    margin-top: 0;
+    box-shadow: 0 4px 20px 0 #0001;
+}
+
+#assistant .input {
+    background: var(--surface-n2);
+    position: absolute;
+    inset: 2px;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+}
+
+#assistant.fullscreen {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    transform: translate(0);
+    inset: 0;
+}
+
+#assistant.fullscreen .bi-fullscreen::before {
+    content: "\F3DE";
+}
+
+#assistant .send {
+    --padding-control-v: 2px;
+    font-size: xx-large;
+    margin-right: 6px;
+}
+
+#assistant input {
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: var(--font);
+    flex: 1;
+    padding: 0 var(--padding-content-h);
+    min-width: 0;
+}
+
+#assistant .background {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    z-index: -1;
+    object-fit: cover;
+}
+
+#assistant-overlay {
+    position: fixed;
+    pointer-events: none;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: var(--header-height);
+    z-index: 800;
 }

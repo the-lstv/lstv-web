@@ -9,6 +9,8 @@
 */
 
 
+
+const thisScript = document.currentScript;
 window.addEventListener("DOMContentLoaded", async () => {
     if(!window.LS || typeof LS !== "object") throw new Error("Fatal error: Missing LS! Make sure it was loaded properly! Aborting.");
 
@@ -16,14 +18,20 @@ window.addEventListener("DOMContentLoaded", async () => {
         '%c LSTV %c\nWelcome to the LSTV web!\n\nPlease beware:\n%cIF SOMEONE TOLD YOU TO PASTE SOMETHING HERE,\nTHEY MIGHT BE TRYING TO SCAM YOU.\nDO NOT USE THE CONSOLE IF YOU DON\'T KNOW\nWHAT YOU ARE DOING.\n\n',
         'font-size:4em;padding:10px;background:linear-gradient(to bottom,#3498db, #3498db 33%, #f39c12 33%,#f39c12 66%,#e74c3c 66%,#e74c3c);border-radius:1em;color:white;font-weight:900;margin:1em;-webkit-text-stroke:2px #111','font-size:1.5em;font-weight:400','font-size:2em;font-weight:400;color:#ed6c30;font-weight:bold'
     );
+    
+    window.cacheKey = "?mtime=" + thisScript.src.split("?mtime=")[1];
 
-    let definedModules = new Map;
+    const trustedScripts = new Set;
 
     let __authString = localStorage.account || "";
 
     // TODO: Make something better again
     function setAuth(data){
         __authString = localStorage.account = data
+    }
+
+    function generateIdentifier(){
+        return crypto.getRandomValues(new Uint32Array(1))[0].toString(36) + Date.now().toString(36)
     }
 
 
@@ -64,17 +72,26 @@ window.addEventListener("DOMContentLoaded", async () => {
 
                     this.contentElement.pageObject = this
 
+                    for(let script of this.contentElement.getAll("script")) {
+                        if(script.parentElement !== this.contentElement) return;
+
+                        const newScript = script.src
+                            ? N("script", { src: script.src })
+                            : N("script", { textContent: script.textContent });
+
+                        const identifier = generateIdentifier();
+                        newScript.setAttribute("data-identifier", identifier);
+
+                        trustedScripts.add(identifier);
+                        this.contentElement.add(newScript);
+
+                        script.remove()
+                    }
+
                     this.contentElement.getAll("script").forEach(script => {
                         if(script.parentElement !== this.contentElement) return;
 
                         // if(!app.pages.get(this.path).moduleName) app.pages.get(this.path).moduleName = app.pages.get(this.path).manifest.module || null;
-
-                        const newScript = N("script", script.src? { src: script.src }: { inner: script.innerText })
-
-                        newScript.async = true;
-                        this.contentElement.add(newScript)
-
-                        script.remove()
                     })
 
                     this.contentElement.getAll('link[rel="stylesheet"]').forEach(link => {
@@ -475,27 +492,21 @@ window.addEventListener("DOMContentLoaded", async () => {
     });
 
 
-    function loadModule(internal, name, init){
+    function loadModule(init){
+        // TODO: Get the actual page
         let page = app.pages.get(app.currentPage);
-
-        if(!internal){
-            if(!page) {
-                throw new Error(`[Security Violation] No page found with a matching module name "${name}"`);
-            }
-    
-            if(definedModules.has(name)) {
-                throw new Error(`[Security Violation] Duplicate module name "${name}"`);
-            }
-        }
-
-        // page.setModule
-        definedModules.set(name, init(app, page, page.contentElement))
+        init(app, page, page.contentElement);
     }
 
 
     window.app = {
-        module(name, init){
-            loadModule(false, name, init)
+        secure(script, init){
+            const identifier = script.getAttribute("data-identifier");
+
+            if(trustedScripts.has(identifier)){
+                loadModule(init)
+                trustedScripts.delete(identifier)
+            }
         }
     };
 
@@ -516,7 +527,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
     page.contentElement = O("#initial_page");
 
-    if(window._preloaded_module) loadModule(true, ...window._preloaded_module)
+    if(window.__init) loadModule(__init)
     app.setPage(page, { browserTriggered: true })
 
 
@@ -538,13 +549,9 @@ window.addEventListener("DOMContentLoaded", async () => {
     window.user = user;
 
     O("#profilePicturePreview").delAttr("load");
+    O("#accountsButton").disabled = false;
 
-    if(typeof app.user.current !== "number") {
-
-        // No user is logged in
-        O("#accountsButton").attrAssign({"ls-accent": "auto"})
-
-    } else {
+    if(typeof app.user.current === "number") {
 
         // Yippe! Someone is logged in
         O("#accountsButton").attrAssign({"ls-accent": "auto"})
@@ -558,12 +565,36 @@ window.addEventListener("DOMContentLoaded", async () => {
 
     }
 
-    O("#themeButton").on("click", ()=>{
+    O("#themeButton").on("click", () => {
         app.theme = app.theme == "light"? "dark": "light";
     })
 
     O("#accountsButton").on("click", function (){
         app.toolbarOpen((user && typeof app.user.current === "number")? "toolbarAccount" : "toolbarLogin", true, this)
+    })
+
+    O("#assistantButton").on("click", function (){
+        if(!window.__assistantLoading) {
+            window._assistantCallback = null;
+            window.__assistantLoading = true;
+            
+            const container = O("#assistant");
+            
+            container.parentElement.removeAttribute("hidden");
+            setTimeout(() => {
+                container.class("shown");
+
+                M.Script("/assets/js/assistant.js" + window.cacheKey, (error) => {
+                    if(error || typeof window._assistantCallback !== "function") {
+                        console.error(error || window._assistantCallback);
+                        LS.Toast.show("Sorry, assistant failed to load. Please try again later.")
+                        return;
+                    }
+    
+                    window._assistantCallback(app);
+                })
+            }, 0);
+        }
     })
 
     O("#logOutButton").on("click", function (){
@@ -579,9 +610,9 @@ window.addEventListener("DOMContentLoaded", async () => {
     })
 
 
-    // Debugging only!
-    if(location.hostname.endsWith("test")){
-        app.module = window.app.module;
-        window.app = app;
-    }
+    // // Debugging only!
+    // if(location.hostname.endsWith("test")){
+    //     app.module = window.app.module;
+    //     window.app = app;
+    // }
 })
