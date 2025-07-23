@@ -46,6 +46,11 @@ nav {
     height: var(--header-height);
 }
 
+.homeButton svg {
+    margin: 0 5px;
+    color: var(--base-50);
+}
+
 #headerButtons button {
     margin: 0;
     font-size: .9rem;

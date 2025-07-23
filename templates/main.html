@@ -1,7 +1,7 @@
 <head>
 
-    @use (ls:5.0.0[flat, tooltips, toast, reactive, tabs], bootstrap-icons, google-fonts[Poppins, "JetBrains Mono", "IBM Plex Mono:wght@300;400;700;800"]);
-    @use (/assets/css/main.css, /assets/js/app.js);
+    @use (ls:5.0.2[flat, tooltips, toast, reactive, tabs], bootstrap-icons, google-fonts[Poppins, "JetBrains Mono", "IBM Plex Mono:wght@300;400;700;800"]);
+    @use (~/assets/css/main.css, ~/assets/js/app.js, ~/assets/js/auth.js);
 
     @page {
         title: "LSTV";
@@ -28,18 +28,9 @@
                 color: #222;
             }
 
-            .loader {
+            .ui-loader {
                 border-color: #111 #0000;
             }
-        }
-
-        .loader {
-            width: 50px;
-            aspect-ratio: 1;
-            border-radius: 50%;
-            border: 8px solid;
-            border-color: var(--surface-top, #fff) #0000;
-            animation: l1 1s infinite;
         }
 
         .loaderContainer {
@@ -52,6 +43,34 @@
         }
 
         @keyframes l1 { to { transform: rotate(.5turn) } }
+
+        .loader {
+            --b: 25%;
+            height: 80px;
+            aspect-ratio: 1/cos(30deg);
+            position: relative;
+            clip-path: polygon(50% 0,100% 100%,0 100%,50% 0,50% var(--b),calc(var(--b)*cos(30deg)) calc(100% - var(--b)/2),calc(100% - var(--b)*cos(30deg)) calc(100% - var(--b)/2),50% var(--b));
+            filter: blur(12px);
+        }
+
+        .loader:before {
+            content: "";
+            position: absolute;
+            inset: -8% 0;
+            background: conic-gradient(#0000 35%,#0B486B,#0000 65%);
+            animation: l5 2s linear infinite;
+        }
+
+        .ui-loader {
+            width: 50px;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            border: 8px solid;
+            border-color: var(--surface-top, #fff) #0000;
+            animation: l1 1s infinite;
+        }
+
+        @keyframes l5 { to {rotate: 1turn} }
     </style>
 
     <script>
@@ -78,6 +97,7 @@
         <nav .level-1>
 
             <a href="/" .homeButton>
+                <svg xmlns="http://www.w3.org/2000/svg" width="21" height="15" fill="none"><path d="M19.1689 12.3682V13.7529H19.1182L18.3242 12.3682H19.1689ZM14.9346 13.7529H2.3457L8.63965 2.81445L14.9346 13.7529ZM19.1689 6.82617V8.48926H16.0996L15.1465 6.82617H19.1689ZM19.1689 1.5625V2.94727H12.9219L12.1279 1.5625H19.1689Z" stroke="currentColor" stroke-width="2.494"/></svg>
                 <span>LSTV</span><span .headerText/>
             </a>
 
@@ -177,6 +197,7 @@
                     </div>
 
                     <div .content hidden>
+
                         <div .title>
                             <h1>Assistant</h1>
                             <span>Powered by <a href="">Arisen</a></span>
@@ -196,8 +217,7 @@
             </div>
 
             <div #initial_page .page>
-                <!-- @dynamicImport("static/$original_path"); -->
-                @import ("static/index.html");
+                <template::content />
             </div>
 
             <div #error_page .page></div>

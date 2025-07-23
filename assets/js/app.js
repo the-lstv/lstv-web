@@ -11,19 +11,19 @@
 
 
 const thisScript = document.currentScript;
+window.cacheKey = "?mtime=" + thisScript.src.split("?mtime=")[1];
+
+console.log(
+    '%c LSTV %c\nWelcome to the LSTV web!\n\nPlease beware:\n%cIF SOMEONE TOLD YOU TO PASTE SOMETHING HERE,\nTHEY MIGHT BE TRYING TO SCAM YOU.\nDO NOT USE THE CONSOLE IF YOU DON\'T KNOW\nWHAT YOU ARE DOING.\n\n',
+    'font-size:4em;padding:10px;background:linear-gradient(to bottom,#3498db, #3498db 33%, #f39c12 33%,#f39c12 66%,#e74c3c 66%,#e74c3c);border-radius:1em;color:white;font-weight:900;margin:1em;-webkit-text-stroke:2px #111','font-size:1em;font-weight:400','font-size:1.5em;font-weight:400;color:#ed6c30;font-weight:bold'
+);
+
 window.addEventListener("DOMContentLoaded", async () => {
     if(!window.LS || typeof LS !== "object") throw new Error("Fatal error: Missing LS! Make sure it was loaded properly! Aborting.");
 
-    console.log(
-        '%c LSTV %c\nWelcome to the LSTV web!\n\nPlease beware:\n%cIF SOMEONE TOLD YOU TO PASTE SOMETHING HERE,\nTHEY MIGHT BE TRYING TO SCAM YOU.\nDO NOT USE THE CONSOLE IF YOU DON\'T KNOW\nWHAT YOU ARE DOING.\n\n',
-        'font-size:4em;padding:10px;background:linear-gradient(to bottom,#3498db, #3498db 33%, #f39c12 33%,#f39c12 66%,#e74c3c 66%,#e74c3c);border-radius:1em;color:white;font-weight:900;margin:1em;-webkit-text-stroke:2px #111','font-size:1.5em;font-weight:400','font-size:2em;font-weight:400;color:#ed6c30;font-weight:bold'
-    );
-    
-    window.cacheKey = "?mtime=" + thisScript.src.split("?mtime=")[1];
-
     const trustedScripts = new Set;
-
     let __authString = localStorage.account || "";
+
 
     // TODO: Make something better again
     function setAuth(data){
@@ -63,7 +63,12 @@ window.addEventListener("DOMContentLoaded", async () => {
                 let response;
 
                 try {
-                    response = await fetch("/static" + this.path);
+                    response = await fetch(this.path, {
+                        headers: {
+                            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                            "Akeno-Content-Only": "true"
+                        }
+                    });
 
                     this.contentElement = N("div", {
                         class: "page",
@@ -130,7 +135,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
         currentPage: "",
 
-        api: location.protocol + (location.hostname.endsWith("test")? "//api.extragon.test": "//api.extragon.cloud"),
+        api: location.protocol + (location.hostname.endsWith("localhost")? "//api.extragon.localhost": "//api.extragon.cloud"),
 
         apiVersion: 2,
 
@@ -467,7 +472,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
-    M.on('click', function (event) {
+    window.addEventListener('click', function (event) {
         const targetElement = event.target.closest("a");
 
         if (targetElement && targetElement.tagName === 'A') {
@@ -499,16 +504,22 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
 
 
-    window.app = {
-        secure(script, init){
-            const identifier = script.getAttribute("data-identifier");
-
-            if(trustedScripts.has(identifier)){
-                loadModule(init)
-                trustedScripts.delete(identifier)
+    // Debugging only!
+    if(location.hostname.endsWith("localhost")){
+        app.module = window.app.module;
+        window.app = app;
+    } else {
+        window.app = {
+            secure(script, init){
+                const identifier = script.getAttribute("data-identifier");
+    
+                if(trustedScripts.has(identifier)){
+                    loadModule(init)
+                    trustedScripts.delete(identifier)
+                }
             }
-        }
-    };
+        };
+    }
 
 
     LS.Color.on("theme-changed", () => {
@@ -574,6 +585,8 @@ window.addEventListener("DOMContentLoaded", async () => {
     })
 
     O("#assistantButton").on("click", function (){
+        console.log("Assistant button clicked");
+        
         if(!window.__assistantLoading) {
             window._assistantCallback = null;
             window.__assistantLoading = true;
@@ -581,10 +594,10 @@ window.addEventListener("DOMContentLoaded", async () => {
             const container = O("#assistant");
             
             container.parentElement.removeAttribute("hidden");
-            setTimeout(() => {
-                container.class("shown");
+            container.class("shown");
 
-                M.Script("/assets/js/assistant.js" + window.cacheKey, (error) => {
+            setTimeout(async () => {
+                M.LoadScript("/~/assets/js/assistant.js" + window.cacheKey, (error) => {
                     if(error || typeof window._assistantCallback !== "function") {
                         console.error(error || window._assistantCallback);
                         LS.Toast.show("Sorry, assistant failed to load. Please try again later.")
@@ -608,11 +621,4 @@ window.addEventListener("DOMContentLoaded", async () => {
     app.viewport.on("click", ()=>{
         app.toolbarClose();
     })
-
-
-    // // Debugging only!
-    // if(location.hostname.endsWith("test")){
-    //     app.module = window.app.module;
-    //     window.app = app;
-    // }
 })
