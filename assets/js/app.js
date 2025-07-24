@@ -37,10 +37,10 @@ window.addEventListener("DOMContentLoaded", async () => {
 
     class Page {
         constructor(path, options = {}){
-            this.path = app.util.normalizePath(path)
-            this.options = options
+            this.path = app.util.normalizePath(path);
+            this.options = options;
 
-            app.pages.set(path, this)
+            app.pages.set(path, this);
         }
 
         contentRequested(){
@@ -136,8 +136,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         currentPage: "",
 
         api: location.protocol + (location.hostname.endsWith("localhost")? "//api.extragon.localhost": "//api.extragon.cloud"),
-
-        apiVersion: 2,
+        apiVersion: 3,
 
         cdn: "https://cdn.extragon.cloud",
 
@@ -371,7 +370,8 @@ window.addEventListener("DOMContentLoaded", async () => {
 
         set theme(value){
             if(value !== null){
-                LS.Color.setTheme(value)
+                LS.Color.setTheme(value);
+                localStorage.setItem("ls-theme", value);
             }
 
             O("#themeButton i").className = "bi-" + (app.theme == "light"? "moon-stars-fill": "sun-fill")
@@ -381,47 +381,52 @@ window.addEventListener("DOMContentLoaded", async () => {
             return O().attr("ls-theme")
         },
 
-        get isToolbarOpen(){
-            return O("#toolbars").style.display !== "none"
-        },
+        isToolbarOpen: false,
 
         toolbarOpen(id, toggle, button){
             if(app.headerWindowCurrent == id && app.isToolbarOpen) {
-                if(toggle) app.toolbarClose()
-                return
+                if(toggle) app.toolbarClose();
+                return;
             }
 
-            let view = O("#toolbars > #" + id);
-
+            const view = document.getElementById(id);
             if(!view) return;
 
-            Q("#toolbars > div").forEach(element => element.applyStyle({display: "none"}));
-            O("#toolbars").style.display = "block"
+            const oldElement = O(".toolbar.visible");
 
-            view.style.display = "block";
+            LS.Animation.slideInToggle(view, oldElement);
+
+            if (!app.isToolbarOpen) LS.Animation.fadeIn(O("#toolbars"));
+            app.isToolbarOpen = true;
 
             LS.invoke("toolbar-open", id);
 
             app.headerWindowCurrent = id;
 
-            Q("#headerButtons > button.open").forEach(element => element.class("open", false));
-            button.class("open");
+            Q("#headerButtons > button.open").forEach(element => element.classList.remove("open"));
+            if (button) button.classList.add("open");
         },
 
         toolbarClose(){
-            O("#toolbars").style.display = "none"
+            LS.Animation.fadeOut(O("#toolbars"));
             LS.invoke("toolbar-close");
 
-            Q("#headerButtons > button.open").forEach(element => element.class("open", false));
+            app.isToolbarOpen = false;
+
+            Q("#headerButtons > button.open").forEach(element => element.classList.remove("open"));
         },
 
         async setPage(path, options = {}){
             let page;
+            
+            if(path instanceof Page) {
+                page = path; path = page.path;
+            } else if(typeof path === "string") {
+                path = app.util.normalizePath(path);
+                page = app.pages.get(path);
+            }
 
-            if(path instanceof Page) { page = path; path = page.path } else
-            if(typeof path === "string") page = app.pages.get(path);
-
-            if(app.page.requiresReload && path !== app.page.path) {
+            if((app.page.requiresReload || path === "/") && path !== app.page.path) {
                 return location.href = path;
             }
 
@@ -432,7 +437,7 @@ window.addEventListener("DOMContentLoaded", async () => {
             path = page.path;
 
             if(!options.browserTriggered && app.currentPage === path){
-                return true
+                return true;
             }
 
             app.currentPage = page.path
@@ -496,7 +501,6 @@ window.addEventListener("DOMContentLoaded", async () => {
         app.setPage(event.state? event.state.path: "/", { browserTriggered: true });
     });
 
-
     function loadModule(init){
         // TODO: Get the actual page
         let page = app.pages.get(app.currentPage);
@@ -526,9 +530,6 @@ window.addEventListener("DOMContentLoaded", async () => {
         // This is correct, just poor coding skills
         app.theme = null
     })
-
-    // Listen to preffered theme changes
-    LS.Color.autoScheme();
 
     app.events = new LS.EventHandler(app);
 
@@ -564,24 +565,24 @@ window.addEventListener("DOMContentLoaded", async () => {
 
     if(typeof app.user.current === "number") {
 
-        // Yippe! Someone is logged in
-        O("#accountsButton").attrAssign({"ls-accent": "auto"})
-        O("#accountsButton").get(".text").set(user.displayname || user.username)
-        O("#appsButton").style.display = "inline"
+        // Someone is logged in
+        O("#accountsButton").attrAssign({"ls-accent": "auto"});
+        O("#accountsButton").get(".text").set(user.displayname || user.username);
+        O("#appsButton").style.display = "inline";
 
-        O("#profileWrap").prepend(app.user.getProfilePictureView(user))
+        O("#profileWrap").prepend(app.user.getProfilePictureView(user));
         
         O("#profileDisplayname").innerText = user.displayname || user.username;
         O("#profileUsername").innerText = "@" + user.username;
 
     }
 
-    O("#themeButton").on("click", () => {
-        app.theme = app.theme == "light"? "dark": "light";
+    O("#themeButton").on("click", function (){
+        app.toolbarOpen("toolbarTheme", true, this);
     })
 
     O("#accountsButton").on("click", function (){
-        app.toolbarOpen((user && typeof app.user.current === "number")? "toolbarAccount" : "toolbarLogin", true, this)
+        app.toolbarOpen((user && typeof app.user.current === "number")? "toolbarAccount" : "toolbarLogin", true, this);
     })
 
     O("#assistantButton").on("click", function (){
@@ -594,7 +595,7 @@ window.addEventListener("DOMContentLoaded", async () => {
             const container = O("#assistant");
             
             container.parentElement.removeAttribute("hidden");
-            container.class("shown");
+            LS.Animation.fadeIn(container);
 
             setTimeout(async () => {
                 M.LoadScript("/~/assets/js/assistant.js" + window.cacheKey, (error) => {
@@ -611,11 +612,11 @@ window.addEventListener("DOMContentLoaded", async () => {
     })
 
     O("#logOutButton").on("click", function (){
-        app.user.logout()
+        app.user.logout();
     })
 
     O("#appsButton").on("click", function (){
-        app.toolbarOpen("toolbarApps", true, this)
+        app.toolbarOpen("toolbarApps", true, this);
     })
 
     app.viewport.on("click", ()=>{

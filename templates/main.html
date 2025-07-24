@@ -1,6 +1,6 @@
 <head>
 
-    @use (ls:5.0.2[flat, tooltips, toast, reactive, tabs], bootstrap-icons, google-fonts[Poppins, "JetBrains Mono", "IBM Plex Mono:wght@300;400;700;800"]);
+    @use (ls:5.0.2[flat, tooltips, toast, reactive, tabs, animation], bootstrap-icons, google-fonts[Poppins, "JetBrains Mono", "IBM Plex Mono:wght@300;400;700;800"]);
     @use (~/assets/css/main.css, ~/assets/js/app.js, ~/assets/js/auth.js);
 
     @page {
@@ -74,6 +74,8 @@
     </style>
 
     <script>
+        LS.Color.autoScheme();
+
         window.app = {
             secure(script, callback) {
                 window.__init = callback;
@@ -123,18 +125,24 @@
                 </button>
             </div>
 
-            <div #toolbars hidden .level-0>
+            <div #toolbars>
 
-                <div #toolbarApps>
+                <div .toolbar #toolbarApps>
                     <h3>Applications</h3>
                     <div>
-                        <ls-info>
-                            <ls-info-close></ls-info-close>
-                        </ls-info>
                     </div>
                 </div>
 
-                <div #toolbarAccount>
+                <div .toolbar #toolbarTheme>
+                    <h3>Theme</h3>
+                    <ls-box .elevated .inline>
+                        <button .elevated ls-tooltip="Dark theme" onclick="app.theme = 'dark'"> <i class="bi-moon-stars-fill" /> </button>
+                        <button .elevated ls-tooltip="Light theme" onclick="app.theme = 'light'"> <i class="bi-sun-fill" /> </button>
+                        <button .elevated ls-tooltip="Set to system default" onclick='localStorage.removeItem("ls-theme"); LS.Color.setAdaptiveTheme()'> <i class="bi-arrow-clockwise" /> </button>
+                    </ls-box>
+                </div>
+
+                <div .toolbar #toolbarAccount>
                     <div #profileListWrap>
                         <h2>Your accounts</h2>
                         <div>
@@ -160,7 +168,7 @@
                     </div>
                 </div>
 
-                <div #toolbarLogin>
+                <div .toolbar #toolbarLogin>
                     <div #loginPopupOverlay>
                         <div>
                             <svg width="45" height="27" fill="none"><rect y="17" width="30" height="10" rx="5" fill="#fcc21b"/><rect x="15" width="30" height="10" rx="5" fill="#ed6c30"/><g fill="#40c0e7"><rect width="10" height="10" rx="5"/><rect x="35" y="17" width="10" height="10" rx="5"/></g></svg>

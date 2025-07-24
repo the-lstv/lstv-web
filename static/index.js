@@ -201,7 +201,7 @@ app.secure(document.currentScript, (app, page, container) => {
             let scroll = container.parentElement.scrollTop;
     
             window.requestAnimationFrame(() => {
-                container.style.maxWidth = (1360 + scroll) + "px"
+                container.style.maxWidth = Math.min(1360 + scroll, 2000) + "px"
                 // svgElement.style.transform = `translateY(${(scroll - 1000) / 2}px) scale(${(scroll + 1000) / 2000}) rotate(${(scroll - 2500) / 100}deg)`;
             })
     

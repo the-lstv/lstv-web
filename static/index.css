@@ -269,27 +269,6 @@ h2 {
     opacity: 1;
 }
 
-.marqueeBar {
-    font-weight: 900;
-    padding: 6px 0;
-    width: 100%;
-    font-size: larger;
-    overflow: hidden;
-}
-
-.marqueeBar div {
-    animation: marquee 8s linear infinite;
-    white-space: nowrap;
-    display: flex;
-    width: 200%;
-}
-
-.marqueeBar span {
-    float: left;
-    width: 50%;
-}
-
-
 @media screen and (max-width: 600px) {
     .padding {
         padding: 3em 2em;
@@ -310,15 +289,6 @@ h2 {
     }
 }
 
-
-@keyframes marquee {
-    0% {
-        transform: translateX(0);
-    }
-    100% {
-        transform: translateX(-50%);
-    }
-}
 
 ls-box.inline.color {
     padding: 4px 12px;

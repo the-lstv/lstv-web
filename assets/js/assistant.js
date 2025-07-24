@@ -22,20 +22,13 @@ window._assistantCallback = (app) => {
     function show(){
         if(!hidden) return;
 
-        // if(showTimeout) clearTimeout(showTimeout);
-
-        // showTimeout = setTimeout(() => {
-        container.class("shown");
-        // }, 200);
-
-        container.parentElement.removeAttribute("hidden");
+        LS.Animation.fadeIn(container);
         container.get("input").focus();
         hidden = false;
     }
 
     function hide(){
-        container.class("shown", false);
-        // container.parentElement.setAttribute("hidden", "");
+        LS.Animation.fadeOut(container);
         hidden = true;
     }
 

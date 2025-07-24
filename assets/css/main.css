@@ -95,33 +95,71 @@ nav > a {
 }
 
 #toolbars {
+    /* -webkit-user-select: none;
+    user-select: none; */
+    --font: Poppins, Rubik, sans-serif;
+    font-family: Poppins, Rubik, sans-serif;
+    z-index: 2000;
+
     position: absolute;
     top: calc(100% + 10px);
     right: 10px;
-    width: 300px;
+}
+
+.toolbar {
+    text-align: center;
     background: var(--background);
     outline: 1px solid var(--accent-mix-20);
+    min-height: 20rem;
+    max-height: 32rem;
+    width: 300px;
     border-radius: 20px;
     box-shadow: 0 10px 20px 0 #0002;
     overflow: hidden;
-    min-height: 20rem;
-    max-height: 32rem;
-    -webkit-user-select: none;
-    user-select: none;
-    --font: Poppins, Rubik, sans-serif;
-    font-family: Poppins, Rubik, sans-serif;
-    z-index: 1000;
+
+    position: absolute;
+    right: 0;
+
+    /* height: 20rem; */
+
+    --background: var(--surface-0);
+    --elevate-0: var(--surface-n1);
+    --elevate-n1: var(--surface-n2);
+    --elevate: var(--surface-1);
+    --elevate-1: var(--surface-2);
+    --elevate-2: var(--surface-3);
+    --elevate-3: var(--surface-4);
+
+    background: var(--background);
+    color: var(--color);
+
+    opacity: 0;
+    transform: translateX(20px);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+    z-index: 1;
+}
+
+
+
+.toolbar.visible {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+    z-index: 2;
+}
+
+.toolbar.leaving {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-20px);
+    z-index: 1;
 }
 
 #headerButtons {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
-}
-
-#toolbars > div {
-    text-align: center;
-    /* height: 20rem; */
 }
 
 .buttons :is(button, a) {
@@ -396,6 +434,36 @@ button.solid::before {
 }
 
 
+.marqueeBar {
+    font-weight: 900;
+    padding: 6px 0;
+    width: 100%;
+    font-size: larger;
+    overflow: hidden;
+}
+
+.marqueeBar div {
+    animation: marquee 8s linear infinite;
+    white-space: nowrap;
+    display: flex;
+    width: 200%;
+}
+
+.marqueeBar span {
+    float: left;
+    width: 50%;
+}
+
+@keyframes marquee {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+
 /*
  * Assistant
 */
@@ -434,10 +502,6 @@ button.solid::before {
     text-align: center;
     height: 100%;
     width: 100%;
-}
-
-#assistant.shown {
-    opacity: 1;
 }
 
 #assistant > .buttons {
