@@ -12,7 +12,7 @@ const about = LS.Reactive.wrap("about", {
 });
 
 
-app.secure(document.currentScript, (app, page, container) => {
+app.module(document.currentScript, (app, page, container) => {
     let bgaSpeedFactor = .001, cloudsCanvas = O("#glCanvas"), raysCanvas = O("#raysBga"), cloudsRenderer, blurRenderer, noiseRenderer;
 
     page.title = "Home";
@@ -83,7 +83,7 @@ app.secure(document.currentScript, (app, page, container) => {
     let types = ["Application", "Application", "Game", "Service", "Authentication", "Utility", "Website", "Finance"], list, elements = {};
 
     async function loadApps(limit = appsPageSize, offset = (appsOffset * appsPageSize)) {
-        list = await app.get(`${app.api}/v2/apps/list/home?limit=${limit}&offset=${offset}`).json()
+        list = await app.auth.fetch(`${app.api}/v2/apps/list/home?limit=${limit}&offset=${offset}`).json()
 
         if(list.length < limit) appsAtBottom = true;
 
@@ -201,7 +201,7 @@ app.secure(document.currentScript, (app, page, container) => {
             let scroll = container.parentElement.scrollTop;
     
             window.requestAnimationFrame(() => {
-                container.style.maxWidth = Math.min(1360 + scroll, 2000) + "px"
+                container.style.maxWidth = Math.min(1360 + scroll, 1920) + "px"
                 // svgElement.style.transform = `translateY(${(scroll - 1000) / 2}px) scale(${(scroll + 1000) / 2000}) rotate(${(scroll - 2500) / 100}deg)`;
             })
     

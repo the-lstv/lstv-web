@@ -2,67 +2,51 @@
 
 <ls-manifest title="Log-In with LSTV" hidden module="sso"></ls-manifest>
 
-<div class="wrapper">
-    <ls-tabs>
-        <ls-tab>
-            <div ls-accent="auto" ls-load .load-noBackground style="position: absolute; height: 2em; width: 2em; top: calc(50%); left: calc(50% - 1em); --load-width: calc(2 / 16 * 1em); transition: 1s; z-index: 30000"></div>
-        </ls-tab>
+<div>
+    <div style="text-align: center">
+        <span style="box-shadow: 0 -170px 100px 195px var(--accent)"></span>
+    </div>
 
-        <ls-tab tab-id="sso" style="display: none">
-            <ls-modal .loginForm>
-                <ls-modal-body>
-                    <div style="text-align: center">
-                        <span style="box-shadow: 0 -170px 100px 195px var(--accent-transparent)"></span>
-                    </div>
+    <div style="text-align: center; color: var(--elevate-4)">
+        <div .sso-icons>
+            <div {{ user.pfp:ProfilePicture(64px) }} />
+            <ls-box .linkIcon> <i .bi-link /> </ls-box>
+            <div {{ sso.icon:ProfilePicture(64px) }} />
+        </div>
 
-                    <div style="text-align: center; color: var(--elevate-4)">
-                        <div style="display: flex;" .sso-icons>
-                            <div %sso-avatar></div>
-                            <ls-box .linkIcon><i class="bi-link"></i></ls-box>
-                            <div %sso-icon>
-                                <div .pfpWrap>
-                                    <img .profilePicture alt="Application icon">
-                                </div>
-                            </div>
-                        </div> <br> <br>
+        An external application
+        <h1 {{ sso.app_name }}></h1>
+        wants to connect with your account.
 
-                        An extrenal application
-                        <h1 %appName></h1>
-                        wants to connect with your account.
-
-
-                    </div>
-
-                    <hr>
+        <hr>
                     
-                    <div style="text-align: center; font-size: smaller">
-                        You are logged in as <b %sso-user></b>.<br><a href="#" onclick="sso_changeAccount()">Change account</a>
-                    </div>
+        <div style="text-align: center; font-size: smaller">
+            You are logged in as <b {{ user.username }} />.
+            <br>
+            <a href="#" onclick="sso_changeAccount()">Change account</a>
+        </div>
 
-                    <br>
+        <br>
 
-                    <span style="text-align: center; display: block">
-                        This will allow the application to do the following:<br>
-                        <div .hButtonGroup %sso-permissions ls-accent="auto"></div>
-                    </span>
+        <span style="text-align: center; display: block">
+            This will allow the application to do the following:<br>
+            <div .hButtonGroup #sso-permissions ls-accent="auto"></div>
+        </span>
 
-                    <br>
+        <br>
 
-                    <div style="color: var(--elevate-3); font-size: smaller">
-                        <i class="bi-link-45deg"></i> You will be taken to <b %sso-domain></b>. <br>
-                        <i class="bi-shield-fill-check"></i> The application will only gain access to the things mentioned above. It can't log-in to your account.
-                    </div>
+        <div style="color: var(--elevate-3); font-size: smaller">
+            <i class="bi-link-45deg"></i> You will be taken to <b #sso-domain></b>. <br>
+            <i class="bi-shield-fill-check"></i> The application will only gain access to the things mentioned above. It can't log-in to your account.
+        </div>
 
-                    <hr>
+        <hr>
 
-                    <div style="display: flex; gap: 1em; margin: 0 20px">
-                        <button %cancel .elevated ls-accent="auto">Cancel</button>
-                        <button %authorize>Authorize</button>
-                    </div>
-                </ls-modal-body>
-            </ls-modal>
-        </ls-tab>
-    </ls-tabs>
+        <div style="display: flex; gap: 1em; margin: 0 20px">
+            <button #cancel .elevated ls-accent="auto">Cancel</button>
+            <button #authorize>Authorize</button>
+        </div>
+    </div>
 </div>
 
 <style>
@@ -155,7 +139,6 @@
 </style>
 
 <script>
-
     function sso_changeAccount(){
         location.replace("/login?continue=" + encodeURIComponent(location.href))
     }
@@ -292,6 +275,5 @@
                 location.replace(query.ref + "?result=canceled")
             })
         })
-
     })
 </script>

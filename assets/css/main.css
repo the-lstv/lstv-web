@@ -44,17 +44,20 @@ nav {
     user-select: none;
     z-index: 50;
     height: var(--header-height);
+    overflow: hidden;
+}
+
+.homeButton {
+    color: var(--base-50);
 }
 
 .homeButton svg {
     margin: 0 5px;
-    color: var(--base-50);
 }
 
 #headerButtons button {
     margin: 0;
     font-size: .9rem;
-    overflow: hidden;
 }
 
 #headerButtons button.open {
@@ -62,12 +65,25 @@ nav {
     outline: 3px solid var(--accent-mix-10);
 }
 
+#headerButtons button::after {
+    content: "";
+    transition: box-shadow 0.2s;
+    z-index: -1;
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+}
+
+#headerButtons button.open::after {
+    box-shadow: 0 0 60px 0px var(--accent-40);
+}
+
 #accountsButton {
     padding-right: 45px;
 }
 
-#accountsButton:is(:hover, :focus) #profilePicturePreview {
-    background: var(--elevate-3);
+#accountsButton:is(:hover, :focus, .open) #profilePicturePreview {
+    background: var(--accent-mix-80);
 }
 
 #profilePicturePreview {
@@ -79,15 +95,11 @@ nav {
     justify-content: center;
     align-items: center;
     overflow: hidden;
-    background: var(--elevate-2);
+    background: var(--accent-mix-60);
     width: 36px;
-    border-radius: 20px;
+    border-radius: var(--border-radius-full);
     --load-width: calc(2 / 16 * 1em);
     --load-size: 1em;
-}
-
-#profilePicturePreview[load] * {
-    display: none;
 }
 
 nav > a {
@@ -102,7 +114,8 @@ nav > a {
     z-index: 2000;
 
     position: absolute;
-    top: calc(100% + 10px);
+    /* top: calc(100% + 10px); */
+    top: 60px;
     right: 10px;
 }
 
@@ -110,29 +123,45 @@ nav > a {
     text-align: center;
     background: var(--background);
     outline: 1px solid var(--accent-mix-20);
-    min-height: 20rem;
-    max-height: 32rem;
+    max-height: calc(100vh - 90px);
     width: 300px;
-    border-radius: 20px;
+    border-radius: var(--border-radius-xlarge);
     box-shadow: 0 10px 20px 0 #0002;
-    overflow: hidden;
+    overflow: auto;
 
-    position: absolute;
     right: 0;
 
     /* height: 20rem; */
 
-    --background: var(--surface-0);
+    /* --background: var(--surface-0);
     --elevate-0: var(--surface-n1);
     --elevate-n1: var(--surface-n2);
     --elevate: var(--surface-1);
     --elevate-1: var(--surface-2);
     --elevate-2: var(--surface-3);
-    --elevate-3: var(--surface-4);
+    --elevate-3: var(--surface-4); */
 
     background: var(--background);
     color: var(--color);
+}
 
+.toolbar input {
+    width: 100%;
+}
+
+.toolbar form {
+    text-align: left;
+    margin-bottom: 15px;
+}
+
+#toolbarLogin label {
+    margin: 4px 0;
+    margin-top: 14px;
+    display: block;
+}
+
+.login-toolbar-page, .toolbar {
+    position: absolute;
     opacity: 0;
     transform: translateX(20px);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -140,20 +169,70 @@ nav > a {
     z-index: 1;
 }
 
-
-
-.toolbar.visible {
+.login-toolbar-page.visible, .toolbar.visible {
     opacity: 1;
     transform: translateX(0);
     pointer-events: auto;
     z-index: 2;
 }
 
-.toolbar.leaving {
+.login-toolbar-page.visible {
+    position: relative;
+}
+
+.login-toolbar-page.leaving, .toolbar.leaving {
     opacity: 0;
     pointer-events: none;
     transform: translateX(-20px);
     z-index: 1;
+}
+
+.login-popout-title {
+    font-weight: 700 !important;
+    letter-spacing: 2px;
+}
+
+#toolbarLogin {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    width: 340px;
+}
+
+#loginPopup {
+    padding: 36px 30px;
+}
+
+form > button {
+    width: 100%;
+    margin-top: 20px !important;
+}
+
+.login-toolbar-page {
+    padding: 5px 20px;
+    padding-bottom: 25px;
+    top: 0;
+    left: 0;
+    right: 0;
+}
+
+.profile-picture {
+    -webkit-user-drag: none;
+    border-radius: var(--border-radius-circle);
+}
+
+.error-message {
+    display: inline-block;
+    margin: 4px;
+    color: var(--ls-color-red);
+}
+
+input[aria-invalid] {
+    outline: 3px solid var(--accent-mix-60) !important;
+}
+
+#pfp {
+    width: 100px;
+    margin-top: 20px;
 }
 
 #headerButtons {
@@ -170,19 +249,6 @@ nav > a {
     margin: 0;
 }
 
-button.solid {
-    position: relative;
-}
-
-button.solid::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: var(--br);
-    background: var(--background);
-    z-index: -1;
-}
-
 .buttons {
     display: flex;
     flex-direction: column;
@@ -191,54 +257,72 @@ button.solid::before {
     gap: 10px;
 }
 
-#loginPopupOverlay {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 5;
-    position: relative;
-    padding: 3em 30px;
-    height: 100%;
-}
 
-#loginPopupOverlay span {
+#loginPopup span {
     color: gray;
 }
 
-#toolbarApps > div {
-    background: var(--ui-bg-0);
-    height: calc(100% - 22px - 1em);
-    border-radius: 1.5em 1.5em 0 0;
-}
-
-#themeButton, #assistantButton {
+#themeButton {
     padding: 8px 12px;
 }
 
+#themeButton > i:first-child {
+    border-right: 1px solid var(--surface-4);
+    padding-right: 12px;
+    margin-right: 10px;
+}
 
-/* Mobile */
+.accentButton {
+    width: 30px;
+    height: 30px;
+    padding: 0 !important;
+}
+
+#accentButtons {
+    display: flex;
+    width: 80%;
+    margin: 26px auto;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+
+/* Responsive */
 @media only screen and (max-width: 600px) {
     #toolbars {
         left: 10px;
         width: unset;
     }
-}
-
-@media only screen and (max-width: 430px) {
-    .headerText {
-        display: none;
-    }
 
     .headerTitle {
         font-weight: 400 !important;
     }
-}
 
-@media only screen and (max-width: 350px) {
-    #headerButtons .label {
+    .headerText {
         display: none;
     }
 
+    .toolbar {
+        right: 0;
+        width: 100% !important;
+    }
+}
+
+@media only screen and (max-width: 490px) {
+    .headerTitle {
+        display: none;
+    }
+
+    #themeButton>i:first-child {
+        display: none;
+    }
+
+    #headerButtons .label {
+        display: none;
+    }
+}
+
+@media only screen and (max-width: 350px) {
     #assistantButton {
         display: none !important;
     }
@@ -260,103 +344,6 @@ button.solid::before {
     padding: 2px 20px;
     --br: 10px;
     --br-lg: 10px;
-}
-
-#profileWrap {
-    background: var(--ui-bg-0);
-    border-radius: 20px 20px 0 0;
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-}
-
-#profileListWrap {
-    opacity: 0;
-    transition-duration: .2s;
-    display: flex;
-    flex-direction: column;
-}
-
-#profileWrap .pfpWrap {
-    transform: translateY(-50%);
-    margin: auto;
-    margin-bottom: -2.5em;
-    padding: .4em;
-    transition-duration: .2s;
-}
-
-.pfpWrap {
-    background: var(--elevate-1);
-    border-radius: 50%;
-    min-width: var(--pfp-size, 5em);
-    min-height: var(--pfp-size, 5em);
-    width: var(--pfp-size, 5em);
-    height: var(--pfp-size, 5em);
-    overflow: hidden;
-}
-
-.profilePicture {
-    width: 100%;
-    height: 100%;
-    min-width: 100%;
-    min-height: 100%;
-    display: flex;
-    border-radius: 50%;
-    background: var(--elevate-2);
-    overflow: hidden;
-    justify-content: center;
-    align-items: center;
-    font-size: calc(var(--pfp-size, 5em) / 2);
-}
-
-#profileUsername {
-    color: gray;
-    font-size: 1rem;
-}
-
-#toolbarAccount {
-    background: var(--background);
-    min-height: 23em;
-}
-
-#returnButton::before {
-    inset: 1px;
-    border-radius: 9px;
-}
-
-#returnButton {
-    position: absolute;
-    margin: 0;
-    top: 0;
-    left: 2em;
-    transform: translateY(-50%);
-    opacity: 0;
-    transition-duration: .2s;
-}
-
-#toolbarAccount.selecting #returnButton {
-    opacity: 1;
-}
-
-#toolbarAccount.selecting #profileWrap {
-    border-radius: 15px 15px 0 0;
-    bottom: -70%;
-}
-
-#toolbarAccount.selecting .pfpWrap {
-    --pfp-size: 3em;
-    margin-right: 1em;
-    margin-bottom: -1em;
-    padding: .3rem;
-}
-
-#toolbarAccount.selecting #profileListWrap {
-    opacity: 1;
-}
-
-#profileWrap :is(h1, h2, h3) {
-    margin: 0;
 }
 
 .page {
@@ -382,57 +369,6 @@ button.solid::before {
     padding: 0 5em;
     text-align: center;
 }
-
-.hButtonGroup {
-    display: flex;
-    flex-direction: column;
-    margin: 0 20px;
-}
-
-.hButtonGroup :is(a, button, .ls-button) {
-    border-radius: 5px !important;
-    margin: 3px 0;
-    width: 100%;
-}
-
-.hButtonGroup > :is(a, button, .ls-button):first-child, .userListItem:first-child {
-    border-radius: 15px 15px 5px 5px !important;
-}
-
-.hButtonGroup > :is(a, button, .ls-button):last-child, .userListItem:last-child {
-    border-radius: 5px 5px 15px 15px !important;
-}
-
-.hButtonGroup > :is(a, button, .ls-button):only-child, .userListItem:only-child {
-    border-radius: 15px !important;
-}
-
-.accountList {
-    display: flex;
-    flex-direction: column;
-    gap: .5em;
-}
-
-.accountList button.userListItem {
-    width: 100%;
-    /* background: var(--elevate-1); */
-    display: flex;
-    cursor: pointer;
-    padding: .8em 1.2em;
-    --pfp-size: 2.5em;
-    border-radius: 5px;
-    gap: .8em;
-    line-height: 1em;
-    align-items: center;
-    margin: 0;
-    text-align: left;
-}
-
-.userEmail {
-    font-size: .9em;
-    color: var(--elevate-4);
-}
-
 
 .marqueeBar {
     font-weight: 900;
@@ -468,28 +404,18 @@ button.solid::before {
  * Assistant
 */
 
-#assistant {
-    width: 670px;
+#toolbarAssistant {
+    width: 500px;
     height: 300px;
     background: var(--surface-n3);
     color: var(--accent-90);
     border-radius: var(--border-radius-large);
-    pointer-events: auto;
-    position: absolute;
-    transform: translate(-50%, -50%);
     --font: "IBM Plex Mono", "JetBrains Mono", monospace;
     font-family: var(--font);
-    overflow: hidden;
-    outline: 1px solid var(--surface-3);
-    box-shadow: 0 4px 40px 5px #0002;
     padding: var(--padding-content-h);
-    left: 50%;
-    top: 50%;
-    transition: opacity 0.2s;
-    opacity: 0;
 }
 
-#assistant .loading {
+#toolbarAssistant .loading {
     height: 100%;
     width: 100%;
     display: flex;
@@ -497,54 +423,32 @@ button.solid::before {
     justify-content: center;
 }
 
-#assistant > .content {
+#toolbarAssistant > .content {
+    display: flex;
     flex-direction: column;
     text-align: center;
     height: 100%;
     width: 100%;
 }
 
-#assistant > .buttons {
-    display: flex;
-    position: absolute;
-    right: 0;
-    flex-direction: row;
+[ls-theme="light"] #toolbarAssistant {
+    color: var(--accent);
 }
 
-@media (max-width: 700px) {
-    #assistant {
-        width: unset;
-        height: unset;
-        border-radius: 0;
-        top: 0;
-        left: 0;
-        right: 0;
-        transform: translate(0px, 0px);
-    }
-
-    #assistant > .content {
-        min-height: 60vh;
-    }
-}
-
-[ls-theme="light"] #assistant {
-    color: #234B78;
-}
-
-#assistant .title {
+#toolbarAssistant .title {
     width: 100%;
 }
 
-#assistant .title h1 {
+#toolbarAssistant .title h1 {
     font-size: 3em;
     margin: 0;
 }
 
-#assistant .title span {
+#toolbarAssistant .title span {
     font-weight: 300;
 }
 
-#assistant .generated-content {
+#toolbarAssistant .generated-content {
     flex: 1;
     padding: var(--padding-content-h);
     overflow-y: auto;
@@ -552,8 +456,8 @@ button.solid::before {
     width: 100%;
 }
 
-#assistant .input-container {
-    background: linear-gradient(90deg, #A1D8FF, #786199);
+#toolbarAssistant .input-container {
+    background: linear-gradient(140deg, var(--accent-80), var(--accent-30));
     position: relative;
     height: 50px;
     border-radius: 50px;
@@ -562,7 +466,7 @@ button.solid::before {
     box-shadow: 0 4px 20px 0 #0001;
 }
 
-#assistant .input {
+#toolbarAssistant .input {
     background: var(--surface-n2);
     position: absolute;
     inset: 2px;
@@ -571,25 +475,13 @@ button.solid::before {
     align-items: center;
 }
 
-#assistant.fullscreen {
-    width: 100%;
-    height: 100%;
-    border-radius: 0;
-    transform: translate(0);
-    inset: 0;
-}
-
-#assistant.fullscreen .bi-fullscreen::before {
-    content: "\F3DE";
-}
-
-#assistant .send {
+#toolbarAssistant .send {
     --padding-control-v: 2px;
     font-size: xx-large;
     margin-right: 6px;
 }
 
-#assistant input {
+#toolbarAssistant input {
     background: transparent;
     border: none;
     outline: none;
@@ -599,23 +491,28 @@ button.solid::before {
     min-width: 0;
 }
 
-#assistant .background {
+#toolbarAssistant .background {
     position: absolute;
     inset: 0;
     pointer-events: none;
     width: 100%;
     height: 100%;
     background: transparent;
-    z-index: -1;
+    z-index: -2;
     object-fit: cover;
 }
 
-#assistant-overlay {
-    position: fixed;
+#toolbarAssistant .content::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--accent-10);
+    mix-blend-mode: color;
+    z-index: -1;
     pointer-events: none;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    top: var(--header-height);
-    z-index: 800;
+}
+
+.text-tag {
+    background: var(--accent-mix-60);
+    font-size: small;
 }

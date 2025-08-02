@@ -21,23 +21,53 @@ body[ls-theme="dark"] {
     position: relative;
 }
 
-.center-board {
+.logo-board {
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-direction: column;
+    gap: 60px;
+}
+
+.logo_text {
+    font-family: "JetBrains Mono";
+    font-weight: 800;
+    letter-spacing: 40px;
+    font-size: xxx-large;
+    margin-right: -40px;
 }
 
 #logo {
-    width: 60vw;
-    min-width: 120px;
-    max-width: 340px;
-    overflow: visible;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-.logo-stripe {
-    transform-origin: center;
-    transform: scaleX(40);
-    opacity: .1;
+.stripe-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: absolute;
+    z-index: -1;
+}
+
+.stripe-container div {
+    width: 100%;
+    height: 40px;
+    background: linear-gradient(90deg, transparent, rgba(var(--c), 34%), transparent);
+    position: relative;
+}
+
+.stripe-container div::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    height: 100%;
+    width: 350px;
+    background: rgb(var(--c));
+    transform: translateX(-50%);
 }
 
 #chevron {
@@ -106,10 +136,6 @@ body[ls-theme="dark"] {
 
 .vfx-loaded .bga {
     opacity: .25;
-}
-
-h2 {
-    margin: 0;
 }
 
 .guy-lore {
