@@ -11,6 +11,9 @@ console.log(
 window.addEventListener("DOMContentLoaded", async () => {
     if(!window.LS || typeof LS !== "object") throw new Error("Fatal error: Missing LS! Make sure it was loaded properly! Aborting.");
 
+    // Watch for device theme changes
+    LS.Color.autoScheme();
+
     const isLocalhost = location.hostname.endsWith("localhost");
     const trustedScripts = new Set;
 
@@ -201,14 +204,14 @@ window.addEventListener("DOMContentLoaded", async () => {
         userFragment: LS.Reactive.wrap("user", {}),
 
         async loadUser() {
-            const isLoggedIn = await app.auth.isLoggedIn();
+            const isLoggedIn = await auth.isLoggedIn();
 
             app.isLoggedIn = isLoggedIn;
             O("#accountsButton").disabled = false;
             O("#accountsButton").ls_tooltip = isLoggedIn ? "Manage profiles": "Log in";
 
             if (isLoggedIn) {
-                const user = await app.auth.getUserFragment();
+                const user = await auth.getUserFragment();
                 Object.assign(app.userFragment, user);
             } else {
                 LS.Reactive.wrap("user", {});
@@ -238,17 +241,15 @@ window.addEventListener("DOMContentLoaded", async () => {
 
             app.currentPage = page.path;
             document.title = `LSTV | ${page.title || "Web"}`;
-            app.viewport.getAll("style").forEach(style => style.disabled = true);
 
-            for(let element of Q(".page")) element.style.display = "none";
-            for(let element of Q(".page.active")) element.classList.remove("active");
+            app.viewport.getAll("style").forEach(style => style.disabled = true);
 
             if (!options.browserTriggered) {
                 history.pushState({ path }, document.title, path);
             }
-            
+
             page.contentElement.style.display = "block";
-            app.viewport.add(page.contentElement);
+            app.viewport.replaceChildren(page.contentElement);
 
             if (!success) return false;
         },
@@ -278,8 +279,16 @@ window.addEventListener("DOMContentLoaded", async () => {
         getProfilePictureView(source, args) {
             const filename = (source && typeof source === "object")? source.pfp: source;
 
+            let IMAGE_RESOLUTION = 128;
+            if (args && args[0]) {
+                const requested = typeof args[0] === "number" ? args[0] : parseInt(args[0], 10);
+                IMAGE_RESOLUTION = [32, 64, 128, 256].reduce((prev, curr) =>
+                    Math.abs(curr - requested) < Math.abs(prev - requested) ? curr : prev
+                );
+            }
+
             const img = N("img", {
-                src: filename? 'https://cdn.extragon.cloud/file/' + (typeof source === "object"? source.pfp: source): "/assets/image/default.svg",
+                src: filename? 'https://cdn.extragon.cloud/file/' + (typeof source === "object"? source.pfp: source) + "?size=" + IMAGE_RESOLUTION: "/assets/image/default.svg",
                 alt: "Profile Picture",
                 class: "profile-picture",
                 draggable: false,
@@ -291,17 +300,19 @@ window.addEventListener("DOMContentLoaded", async () => {
         },
 
         fetch(url, options = {}, callback) {
-            return app.auth.fetch(url, options, callback);
+            return auth.fetch(url, options, callback);
         }
     }
 
     app.events = new LS.EventHandler(app);
 
     LS.Reactive.registerType("ProfilePicture", app.getProfilePictureView);
+    // LS.Reactive.registerType("ProfileBanner"); // TBA
+    LS.Reactive.registerType("DisplayName", source => source ? source : (app.userFragment.displayname || app.userFragment.username || "Anonymous"));
 
     const nonce = Math.random().toString(36).substring(2);
 
-    app.auth = new class Auth extends LS.EventHandler {
+    const auth = new class Auth extends LS.EventHandler {
         constructor() {
             super();
 
@@ -381,7 +392,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         }
 
         logout(callback) {
-            return postMessage('logout', null, callback);
+            return this.postMessage('logout', null, callback);
         }
 
         getUserFragment(callback) {
@@ -398,6 +409,14 @@ window.addEventListener("DOMContentLoaded", async () => {
 
         patch(patch, callback) {
             return this.postMessage('patch', { patch }, callback);
+        }
+
+        fetch(url, options = {}, callback) {
+            return this.postMessage('fetch', { url, options }, callback);
+        }
+
+        getIntentToken(scope, intents, callback) {
+            return this.postMessage('getIntentToken', { scope, intents }, callback);
         }
     }
 
@@ -445,6 +464,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     } else {
         // Debugging only!
         window.app = app;
+        app.auth = auth;
     }
 
     LS.Color.on("theme-changed", () => {
@@ -455,7 +475,8 @@ window.addEventListener("DOMContentLoaded", async () => {
     const page = new Page(location.pathname);
     app.currentPage = page.path;
 
-    page.contentElement = O("#initial_page");
+    // TODO: Use document collection instead
+    page.contentElement = O("main > div");
 
     if (window.__init) app.module(__initOrigin, __init);
     app.setPage(page, { browserTriggered: true });
@@ -466,7 +487,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
     app.loadUser();
 
-    app.auth.on("user-updated", (patch) => {
+    auth.on("user-updated", (patch) => {
         if (patch) {
             Object.assign(app.userFragment, patch);
         }
@@ -478,7 +499,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     });
 
     O("#logOutButton").on("click", function (){
-        app.auth.logout(() => {
+        auth.logout(() => {
             LS.Toast.show("Logged out successfully.");
             app.toolbarClose();
             location.reload();
@@ -524,7 +545,7 @@ window.addEventListener("DOMContentLoaded", async () => {
             return;
         }
 
-        app.auth.login(username, password, (error, result) => {
+        auth.login(username, password, (error, result) => {
             if (error) {
                 displayLoginError(error.message || error.error || "An error occurred while logging in");
                 return;
@@ -559,7 +580,7 @@ window.addEventListener("DOMContentLoaded", async () => {
             return;
         }
 
-        app.auth.register({ email, username, password, displayname: displayName || null }, (error, result) => {
+        auth.register({ email, username, password, displayname: displayName || null }, (error, result) => {
             if (error) {
                 app.loginTabs.set('register');
                 console.log(error, (error.code === 4 || error.code === 5)? O("#regEmail"): (error.code === 3 || error.code === 6)? O("#regUsername"): error.code === 7? O("#regPassword"): null);
@@ -574,6 +595,8 @@ window.addEventListener("DOMContentLoaded", async () => {
         return false;
     });
 
+    app.loginTabs.set(location.pathname.startsWith("/login") ? "login" : location.pathname.startsWith("/sign-up") ?  "register" : "default");
+
     app.loginTabs.on("changed", (tab, old) => {
         const view = app.loginTabs.currentElement();
         const oldElement = app.loginTabs.tabs.get(old)?.element;
@@ -581,14 +604,12 @@ window.addEventListener("DOMContentLoaded", async () => {
         clearLoginError();
     
         LS.Animation.slideInToggle(view, oldElement);
-        O("#toolbarLogin").style.height = view.clientHeight + "px";
+        O("#toolbarLogin").style.height = view.offsetHeight + "px";
 
         setTimeout(() => {
             O("#toolbarLogin").style.height = "auto";
         });
     });
-
-    app.loginTabs.set(location.pathname.startsWith("/login") ? "login" : location.pathname.startsWith("/sign-up") ?  "register" : "default");
 
     O("#appsButton").on("click", function (){
         app.toolbarOpen("toolbarApps", true, this);
@@ -597,6 +618,24 @@ window.addEventListener("DOMContentLoaded", async () => {
     O("#themeButton").on("click", function (){
         app.toolbarOpen("toolbarTheme", true, this);
     })
+
+    function generateSecurePassword(length = 12) {
+        const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?";
+        const array = new Uint32Array(length);
+        window.crypto.getRandomValues(array);
+        let password = "";
+        for (let i = 0; i < length; i++) {
+            password += charset[array[i] % charset.length];
+        }
+        return password;
+    }
+
+    O("#randomPassword").on("click", function (){
+        const password = generateSecurePassword(12);
+        O("#regPassword").value = password;
+        O("#regPassword").dispatchEvent(new Event("input"));
+        alert("Your generated password: " + password);
+    });
 
     for(let accent of ["white","blue","pastel-indigo","lapis","pastel-teal","aquamarine","green","lime","neon","yellow","orange","deep-orange","red","rusty-red","pink","hotpink","purple","soap","burple"]) {
         O("#accentButtons").add(N("button", {
@@ -643,12 +682,11 @@ window.addEventListener("DOMContentLoaded", async () => {
             setTimeout(async () => {
                 M.LoadScript("/~/assets/js/assistant.js" + window.cacheKey, (error) => {
                     if(error || typeof window._assistantCallback !== "function") {
-                        console.error(error || window._assistantCallback);
                         LS.Toast.show("Sorry, assistant failed to load. Please try again later.")
                         return;
                     }
     
-                    window._assistantCallback(app);
+                    window._assistantCallback(app, auth);
                 })
             }, 0);
         }

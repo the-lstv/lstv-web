@@ -166,6 +166,7 @@ nav > a {
     transform: translateX(20px);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     pointer-events: none;
+    will-change: transform;
     z-index: 1;
 }
 
@@ -204,7 +205,14 @@ nav > a {
 
 form > button {
     width: 100%;
-    margin-top: 20px !important;
+}
+
+form input::placeholder {
+    text-transform: none;
+}
+
+#regUsername {
+    text-transform: lowercase;
 }
 
 .login-toolbar-page {
@@ -215,15 +223,11 @@ form > button {
     right: 0;
 }
 
-.profile-picture {
-    -webkit-user-drag: none;
-    border-radius: var(--border-radius-circle);
-}
-
 .error-message {
     display: inline-block;
-    margin: 4px;
     color: var(--ls-color-red);
+    margin: 4px;
+    margin-bottom: 8px;
 }
 
 input[aria-invalid] {
@@ -346,8 +350,7 @@ input[aria-invalid] {
     --br-lg: 10px;
 }
 
-.page {
-    display: none;
+main > div {
     height: 100%;
     width: 100%;
     overflow: auto;
@@ -406,7 +409,6 @@ input[aria-invalid] {
 
 #toolbarAssistant {
     width: 500px;
-    height: 300px;
     background: var(--surface-n3);
     color: var(--accent-90);
     border-radius: var(--border-radius-large);
@@ -454,41 +456,59 @@ input[aria-invalid] {
     overflow-y: auto;
     height: 100%;
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 500px;
+    margin: 15px 0;
 }
 
 #toolbarAssistant .input-container {
-    background: linear-gradient(140deg, var(--accent-80), var(--accent-30));
-    position: relative;
-    height: 50px;
-    border-radius: 50px;
-    margin: 10px;
-    margin-top: 0;
-    box-shadow: 0 4px 20px 0 #0001;
-}
-
-#toolbarAssistant .input {
     background: var(--surface-n2);
-    position: absolute;
-    inset: 2px;
-    border-radius: 50px;
+    position: relative;
+    border-radius: var(--border-radius-xxlarge);
     display: flex;
     align-items: center;
+    margin: 10px;
+    margin-top: 0;
+    padding: 5px 0;
+}
+
+#toolbarAssistant .input-container::before {
+    content: "";
+    background: linear-gradient(194deg, var(--accent-80), var(--accent-30));
+    position: absolute;
+    border-radius: 25px;
+    box-shadow: 0 4px 20px 0 #0001;
+    inset: -2px;
+    z-index: -1;
+}
+
+#toolbarAssistant .input-wrapper {
+    max-height: 300px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+#assistant-input {
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: var(--font);
+    padding: 0 var(--padding-content-h);
+    min-width: 0;
+    resize: none;
+    width: 100%;
+}
+
+#toolbarAssistant.generating .input-container {
+    opacity: .2;
 }
 
 #toolbarAssistant .send {
     --padding-control-v: 2px;
     font-size: xx-large;
     margin-right: 6px;
-}
-
-#toolbarAssistant input {
-    background: transparent;
-    border: none;
-    outline: none;
-    font-family: var(--font);
-    flex: 1;
-    padding: 0 var(--padding-content-h);
-    min-width: 0;
 }
 
 #toolbarAssistant .background {
@@ -512,7 +532,170 @@ input[aria-invalid] {
     pointer-events: none;
 }
 
+.assistant-intro {
+    font-size: smaller;
+    background: var(--surface-n3);
+    display: block;
+    padding: 8px 12px;
+    border-radius: var(--border-radius-medium);
+    text-align: left;
+}
+
+.assistant-examples {
+    display: flex;
+    overflow-x: auto;
+    white-space: nowrap;
+    margin-left: 10px;
+    gap: 0.5rem;
+    padding: 5px 0;
+    margin-top: 5px;
+    margin-bottom: 14px;
+    will-change: transform;
+}
+
+.assistant-examples button {
+    display: inline-block;
+    flex: 0 0 auto;
+}
+
+.message {
+    padding: 8px 20px;
+    border-radius: 25px;
+    white-space: pre-wrap;
+    text-align: left;
+}
+
+.message-user .message {
+    background: var(--elevate-1);
+    max-width: 400px;
+}
+
+.message-assistant .message {
+    max-width: 400px;
+    background: var(--accent-20);
+    color: var(--on-accent);
+}
+
+.message-container {
+    display: flex;
+    gap: 20px;
+}
+
+.message-container.message-user {
+    justify-content: flex-end;
+}
+
 .text-tag {
     background: var(--accent-mix-60);
     font-size: small;
+}
+
+.profile {
+    padding: 0;
+    padding-bottom: 10px;
+}
+
+.profile-banner {
+    height: 160px;
+	max-height: 160px;
+    min-height: 160px;
+    overflow: visible;
+    z-index: 0;
+    position: relative;
+	background: var(--custom-color-0,var(--elevate-1));
+	-webkit-mask: radial-gradient(circle at 50% 105px,transparent 80px,#fff 0);
+    mask: radial-gradient(circle at 50% 105px,transparent 80px,#fff 0);
+}
+
+.profile-banner::after {
+    content: "";
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    right: 0;
+    height: 90px;
+    background: linear-gradient(0, var(--background) 10px, transparent);
+}
+
+.profile-banner :is(video, img) {
+	width: 100%;
+    height: 160px;
+    min-height: 160px;
+    object-fit: cover;
+}
+
+.profile-avatar {
+    position: absolute;
+    top: 45px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.profile-picture {
+    -webkit-user-drag: none;
+    border-radius: var(--border-radius-circle);
+    object-fit: cover;
+}
+
+.profile-username {
+    color: var(--surface-8);
+}
+
+#toolbars > #toolbarLogin:not(.visible) .login-toolbar-page {
+    display: none;
+}
+
+.profile-buttons {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    margin: 18px 30px;
+}
+
+.profile-buttons :is(button, .ls-button) {
+    --padding-control-v: 12px;
+    --padding-control-h: 20px;
+    text-align: left;
+}
+
+.profile-buttons :is(button, .ls-button) > i {
+    margin-right: 10px !important;
+    -webkit-text-stroke-width: 0.4px;
+}
+
+.profile-buttons :is(button, .ls-button) {
+    border-radius: 0 !important;
+    border-bottom: 1px solid var(--accent-mix-40) !important;
+}
+
+.profile-buttons :is(button, .ls-button):first-child {
+    border-radius: var(--border-radius-xxlarge) var(--border-radius-xxlarge) 0 0 !important;
+}
+
+.profile-buttons :is(button, .ls-button):last-child {
+    border-radius: 0 0 var(--border-radius-xxlarge) var(--border-radius-xxlarge) !important;
+    border-bottom: none !important;
+}
+
+.profile-buttons :is(button, .ls-button):only-child {
+    border-radius: var(--border-radius-xxlarge) !important;
+    border-bottom: none !important;
+}
+
+ls-text-input .ls-text-input-bar {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    --padding-control-h: 12px;
+    --padding-control-v: 4px;
+    font-size: small;
+}
+
+ls-text-input {
+    position: relative;
+    display: block;
 }

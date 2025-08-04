@@ -14,34 +14,7 @@ const about = LS.Reactive.wrap("about", {
 
 app.module(document.currentScript, (app, page, container) => {
     let bgaSpeedFactor = .001, cloudsCanvas = O("#glCanvas"), raysCanvas = O("#raysBga"), cloudsRenderer, blurRenderer, noiseRenderer;
-
-    page.title = "Home";
     page.requiresReload = true;
-
-    let initialLoadApps = false, appsOffset = 0, appsAtBottom = false, cursorPopout = container.get("#cursorPopout");
-
-    let customOrder = [2, 3, 4, 5, 10, 1, 8, 9, 7, 31, 11, 6],
-        customBackOrder = [36, 27, 28, 29, 15, 26],
-        customGroups = [
-            [13, 19, 14]
-        ],
-
-        customColor = {
-            7: ["#fff", "#eee", "#222"],
-            16: ["#fff", "#eee", "#222"],
-            13: ["#155676", "#030405", "#8fd2ff"],
-            22: ["#ffffff", "#fbb8ff", "#320c35"],
-            23: [null, null, "#fff"],
-            42: ["#65243b", "#000"],
-            28: [null, null, "#fff"],
-            5: "#004ba6",
-            10: "#0a0822",
-            1: "#07436d",
-            8: ["#ffe50e", "#c77c00", "#222"]
-        }
-    ;
-
-    let appsPageSize = 100;
 
     function customSort(arr) {
         // Create a map for quick lookup of customOrder positions
@@ -80,128 +53,16 @@ app.module(document.currentScript, (app, page, container) => {
         });
     }
 
-    let types = ["Application", "Application", "Game", "Service", "Authentication", "Utility", "Website", "Finance"], list, elements = {};
-
-    async function loadApps(limit = appsPageSize, offset = (appsOffset * appsPageSize)) {
-        list = await app.auth.fetch(`${app.api}/v2/apps/list/home?limit=${limit}&offset=${offset}`).json()
-
-        if(list.length < limit) appsAtBottom = true;
-
-        customSort(list)
-
-        drawApps()
-    }
-
-    function drawApps(filter){
-        for(let item of list){
-
-            if(typeof filter === "function" && !filter(item)) {
-                if(elements[item.id]) elements[item.id].hide();
-                continue
-            }
-
-            if(elements[item.id]) {
-                elements[item.id].show()
-                continue
-            }
-
-            if(item.tags) item.tags = item.tags.split(",");
-
-            let element = elements[item.id] = N({
-                accent: item.accent,
-                inner: [
-                    N({
-                        class: "appTop",
-                        inner: N("span", {
-                            innerText: item.displayname//types[item.type]
-                        })
-                    }),
-
-                    // .darken(16)
-                    // .saturation(80)
-                    // .substract(20, 20, 20)
-
-                    N({
-                        class: "appBody",
-                        inner: [
-                            item.icon? N({class: "appIconContainer", inner: N("img", {crossOrigin: "Anonymous", loading: "lazy", src: app.cdn + "/file/" + item.icon + (item.icon.endsWith("svg")? "": "?size=120"), onload(){
-                                let override = typeof customColor[item.id] == "string"? [C(customColor[item.id])]: Array.isArray(customColor[item.id])? customColor[item.id].map(color => typeof color == "string"? C(color) : null) : [];
-                                
-                                let color = override[0] || LS.Color.fromImage(this);
-
-                                element.appColor = color.rgb;
-                                element.style.setProperty("--color-1", (override[1] || color.saturation(80).darken(15)).rgb)
-                                element.style.setProperty("--color-2", element.appColor)
-                                
-                                let isDark = color.isDark;
-
-                                element.fgColor = (override[2] || (isDark? color.lighten(60).saturation(80): color.darken(20).saturation(50))).rgb;
-                                element.style.setProperty("--color-fg", element.fgColor)
-                                element.style.setProperty("--color-fg-light", color.lighten(60).saturation(25).rgb)
-
-                                element.class(isDark? "appItemDark" : "appItemLight")
-                            }})}): "",
-
-                            item.icon? N("br"): "",
-    
-                            // N("span", {innerText: item.displayname, class: "appName"}),
-                            N({innerText: item.description, class: "appDescription"}),
-                        ]
-                    }),
-
-                    item.tags? N({
-                        class: "appBottom",
-                        inner: item.tags.map(tag => N("ls-box", {innerText: tag.toUpperCase(), class: "inline appTag"}))
-                    }): "",
-                ],
-
-                class: "appItem",
-
-                onmouseenter(event){
-                    updatePopout(event.clientX, event.clientY)
-                    cursorPopout.style.setProperty("--accent", element.appColor || "#444")
-                    cursorPopout.style.setProperty("--color", element.fgColor || "#fff")
-                    cursorPopout.class("active")
-                },
-
-                onmousemove(event){
-                    updatePopout(event.clientX, event.clientY)
-                },
-                
-                onmouseleave(){
-                    cursorPopout.class("active", 0)
-                }
-            });
-
-            function updatePopout(x, y){
-                cursorPopout.style.left = x + "px"
-                cursorPopout.style.top = y + "px"
-            }
-
-            O("#apps-showcase").add(element)
-        }
-    }
-
-    function fuzz(string){
-        return string.toLowerCase().trim().replace(/[\s\n\t\r:|_]/g, "")
-    }
-
-    O("#searchInput").on("input", () => {
-        let value = fuzz(O("#searchInput").value);
-
-        drawApps(item => {
-            return fuzz(item.name).includes(value) || fuzz(item.description).includes(value);
-        })
-    })
+    const contentContainer = container.get(".content");
 
     setTimeout(() => {
-        let lastScroll = 0;
+        let lastScroll = 0, initialLoadApps = false;
 
         const onScroll = () => {
-            let scroll = container.parentElement.scrollTop;
+            let scroll = container.scrollTop;
     
             window.requestAnimationFrame(() => {
-                container.style.maxWidth = Math.min(1360 + scroll, 1920) + "px"
+                contentContainer.style.maxWidth = Math.min(1360 + scroll, 1920) + "px"
                 // svgElement.style.transform = `translateY(${(scroll - 1000) / 2}px) scale(${(scroll + 1000) / 2000}) rotate(${(scroll - 2500) / 100}deg)`;
             })
     
@@ -210,9 +71,9 @@ app.module(document.currentScript, (app, page, container) => {
     
                 if(!initialLoadApps && scroll > 600) {
                     initialLoadApps = true
-                    loadApps()
+                    // loadApps()
                 }
-    
+
                 if(cloudsCanvas.isInView()){
                     cloudsRenderer.resume();
                 } else cloudsRenderer.paused = true;
@@ -220,7 +81,7 @@ app.module(document.currentScript, (app, page, container) => {
                 if(raysCanvas.isInView()){
                     blurRenderer.resume();
                 } else blurRenderer.paused = true;
-    
+
                 lastScroll = scroll;
             }
         }
@@ -261,6 +122,6 @@ app.module(document.currentScript, (app, page, container) => {
         onScroll();
         container.classList.add("vfx-loaded");
 
-        container.parentElement.addEventListener("scroll", onScroll);
+        container.addEventListener("scroll", onScroll);
     }, 50);
 });

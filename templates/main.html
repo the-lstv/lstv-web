@@ -1,20 +1,5 @@
 <head>
 
-    @use (ls:5.0.2[flat, tooltips, toast, reactive, tabs, animation], bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800", "IBM Plex Mono:wght@300;400;800"]);
-    @use (~/assets/css/main.css, ~/assets/js/app.js);
-
-    @page {
-        title: "LSTV";
-
-        style: flat;
-        theme: dark;
-        accent: white;
-
-        font: Poppins, sans-serif;
-
-        favicon: /~/assets/image/favicon.svg;
-    }
-
     <style>
         body {
             /* Eye-saver! */
@@ -74,8 +59,6 @@
     </style>
 
     <script>
-        LS.Color.autoScheme();
-
         window.app = {
             module(script, callback) {
                 window.__initOrigin = script;
@@ -84,10 +67,22 @@
         }
     </script>
 
+    @use (ls:5.0.2[flat, tooltips, toast, reactive, tabs, animation], bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800", "IBM Plex Mono:wght@400;600;800"]);
+    @use (~/assets/css/main.css, ~/assets/js/app.js[defer]);
+
+    @page {
+        style: flat;
+        theme: dark;
+        accent: white;
+
+        font: Poppins, sans-serif;
+
+        favicon: /~/assets/image/favicon.svg;
+    }
+
 </head>
 
 <body>
-
     <div .loaderContainer>
         <div .loader/>
         <noscript>
@@ -95,17 +90,21 @@
         </noscript>
     </div>
 
+    <script>
+        // Apply theme based on user preference
+        document.body.setAttribute("ls-theme", localStorage.getItem("ls-theme") || (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches? "light": "dark"));
+    </script>
 
     <div #app hidden>
         <nav .level-1>
 
-            <a href="/" .homeButton>
+            <a href="/" .homeButton aria-label="LSTV Home">
                 <svg xmlns="http://www.w3.org/2000/svg" width="21" height="15" fill="none"><path d="M19.1689 12.3682V13.7529H19.1182L18.3242 12.3682H19.1689ZM14.9346 13.7529H2.3457L8.63965 2.81445L14.9346 13.7529ZM19.1689 6.82617V8.48926H16.0996L15.1465 6.82617H19.1689ZM19.1689 1.5625V2.94727H12.9219L12.1279 1.5625H19.1689Z" stroke="currentColor" stroke-width="2.494"/></svg>
                 <span .headerTitle>LSTV</span> <span .headerText />
             </a>
 
             <div #headerButtons>
-                <button disabled ls-tooltip="Log in" #accountsButton .level-1 .pill .elevated>
+                <button disabled ls-tooltip="Log in" #accountsButton .level-1 .pill .elevated aria-label="Log in or view profile">
                     {{ user.username ?? 'Log-In' }}
 
                     <div #profilePicturePreview>
@@ -113,15 +112,15 @@
                     </div>
                 </button>
 
-                <button ls-tooltip="Applications" .level-1 #appsButton .pill .elevated>
+                <button ls-tooltip="Applications" .level-1 #appsButton .pill .elevated aria-label="View applications">
                     <i .bi-grid-fill /> <span .label>Apps</span>
                 </button>
 
-                <button ls-tooltip="Assistant" #assistantButton .pill.elevated>
+                <button ls-tooltip="Assistant" #assistantButton .pill.elevated aria-label="Open Assistant">
                     <i .bi-stars />
                 </button>
 
-                <button ls-tooltip="Customize" #themeButton .pill.elevated>
+                <button ls-tooltip="Customize" #themeButton .pill.elevated aria-label="Customize the site appearance">
                     <i .bi-sun-fill /> <i .bi-palette-fill />
                 </button>
             </div>
@@ -139,22 +138,22 @@
             <div .toolbar #toolbarTheme>
                 <h3>Customize</h3>
                 <ls-box .elevated .inline>
-                    <button .elevated ls-tooltip="Dark theme" onclick="app.theme = 'dark'"> <i class="bi-moon-stars-fill" /> </button>
-                    <button .elevated ls-tooltip="Light theme" onclick="app.theme = 'light'"> <i class="bi-sun-fill" /> </button>
-                    <button .elevated ls-tooltip="Set to system default" onclick='localStorage.removeItem("ls-theme"); LS.Color.setAdaptiveTheme()'> <i class="bi-arrow-clockwise" /> </button>
+                    <button .elevated ls-tooltip aria-label="Dark theme" onclick="app.theme = 'dark'"> <i class="bi-moon-stars-fill" /> </button>
+                    <button .elevated ls-tooltip aria-label="Light theme" onclick="app.theme = 'light'"> <i class="bi-sun-fill" /> </button>
+                    <button .elevated ls-tooltip aria-label="Set to system default" onclick='localStorage.removeItem("ls-theme"); LS.Color.setAdaptiveTheme()'> <i class="bi-arrow-clockwise" /> </button>
                 </ls-box>
 
                 <br>
 
                 <ls-box .elevated .inline #accentButtons>
-                    <button .accentButton ls-tooltip="Custom color" onclick="this.querySelector('input[type=color]').click()">
+                    <button .accentButton ls-tooltip aria-label="Custom color" onclick="this.querySelector('input[type=color]').click()">
                         <input type="color" style="visibility: hidden; position: absolute" value="#ffffff">
                         <i .bi-eyedropper />
                     </button>
                 </ls-box>
             </div>
 
-            <div .toolbar #toolbarAssistant>
+            <div .toolbar .level-n1 #toolbarAssistant>
                 <div .loading>
                     <div .loader></div>
                 </div>
@@ -166,18 +165,29 @@
                     </div>
     
                     <div .generated-content></div>
+
+                    <ls-div .assistant-intro .margin-h-small>
+                        <i .bi-info-circle />
+                        Assistant can help you navigate the site, answer questions, or just chat with you. It has access to your profile and data & memories you set on Arisen chat. Chats you start here will also appear in Arisen chat. If you wish to opt out from this feature, you can do so in your account settings. 
+                    </ls-div>
+
+                    <ls-div .assistant-examples>
+                        <button .pill .elevated onclick="O('#assistant-input').value='Hello! Who are you?'">Say hi</button>
+                        <button .pill .elevated onclick="O('#assistant-input').value='Check my saved reminders.'">Check reminders</button>
+                        <button .pill .elevated onclick="O('#assistant-input').value='I want to report a bug or suggest a feature related to lstv.space.'">Report a bug</button>
+                    </ls-div>
     
-                    <div .input-container>
-                        <div .input>
-                            <input type="text" name="Assistant input" id="assistant-input" placeholder="Ask me anything..." aria-label="Assistant input">
-                            <button ls-tooltip="Send" .send .circle aria-label="Send message"><i .bi-arrow-up-short></i></button>
+                    <form .input-container name="assistantForm" onsubmit="return false">
+                        <div .input-wrapper>
+                            <textarea rows="1" .clear name="Assistant input" id="assistant-input" placeholder="Type a message..." aria-label="Assistant input" required></textarea>
                         </div>
-                    </div>
+                        <button type="submit" ls-tooltip aria-label="Send message" .send .circle><i .bi-arrow-up-short></i></button>
+                    </form>
                 </div>
             </div>
 
             <div .toolbar #toolbarLogin  .level-1>
-                <div .login-toolbar-page tab-id="default" #loginPopup>
+                <div .login-toolbar-page .visible tab-id="default" #loginPopup>
                     <svg width="45" height="37" fill="none"><rect y="17" width="30" height="10" rx="5" fill="#fcc21b"/><rect x="15" width="30" height="10" rx="5" fill="#ed6c30"/><g fill="#40c0e7"><rect width="10" height="10" rx="5"/><rect x="35" y="17" width="10" height="10" rx="5"/></g></svg>
 
                     <h2>Log-In!</h2>
@@ -197,9 +207,9 @@
 
                     <form name="loginForm">
                         <label for="username">Username or email</label>
-                        <input name="username" #username placeholder="Your username or email" required autocomplete="username email" spellcheck="false">
+                        <input #username name="username" placeholder="Your username or email" required autocomplete="username email" spellcheck="false">
                         <label for="password">Password</label>
-                        <input type="password" name="password" #password placeholder="Your password" required autocomplete="current-password" spellcheck="false">
+                        <input #password type="password" name="password" placeholder="Your password" required autocomplete="current-password" spellcheck="false">
                         <span .error-message></span>
                         <button .pill.elevated type="submit">Log in</button>
                     </form>
@@ -211,12 +221,24 @@
                     <h2 .login-popout-title>Sign Up</h2>
 
                     <form name="registerForm">
-                        <label for="email">Email</label>
-                        <input type="email" name="email" #regEmail placeholder="Your email" required autocomplete="email" spellcheck="false">
-                        <label for="username">Username</label>
-                        <input name="username" #regUsername placeholder="Your username" required autocomplete="username" spellcheck="false">
-                        <label for="password">Password</label>
-                        <input type="password" name="password" #regPassword placeholder="********" required autocomplete="new-password" spellcheck="false">
+                        <label for="regEmail">Email</label>
+                        <ls-text-input>
+                            <input #regEmail type="email" name="email" placeholder="Your email" required autocomplete="email" spellcheck="false">
+                        </ls-text-input>
+
+                        <label for="regUsername">Username</label>
+                        <ls-text-input>
+                            <input #regUsername type="text" name="username" placeholder="Your username" required autocomplete="username" spellcheck="false" minlength="2" maxlength="35" autocapitalize="none">
+                        </ls-text-input>
+
+                        <label for="regPassword">Password</label>
+                        <ls-text-input>
+                            <input #regPassword type="password" name="password" placeholder="********" required autocomplete="new-password" spellcheck="false" minlength="8" pattern="^(?=.*[^a-zA-Z]).{8,}$">
+                            <div .ls-text-input-bar>
+                                <button .elevated type="button" #randomPassword><i .bi-dice-5-fill /></button>
+                            </div>
+                        </ls-text-input>
+
                         <span .error-message></span>
                         <button .pill.elevated type="submit">Continue</button>
                     </form>
@@ -227,43 +249,46 @@
                 <div .login-toolbar-page tab-id="register-step2">
                     <h2 .login-popout-title>Complete</h2>
 
-                    <form name="registerStep2Form">
+                    <form name="registerStep2Form" .margin-h-medium>
                         <label for="displayname">Display name <ls-box .inline .text-tag>Optional</ls-box></label>
-                        <input type="text" name="displayname" placeholder="Your display name" autocomplete="off" spellcheck="false">
+                        <input #displayname type="text" name="displayname" placeholder="Your display name" autocomplete="nickname name" spellcheck="false" maxlength="45">
                         <span .error-message></span>
 
                         <div .margin-top-medium style="text-align: center">
-                            You can customize your profile later<br>
-
                             <div .margin-v-medium style="font-size: smaller; color: var(--elevate-3)">
                                 By signing up, you agree to our <a href="/tos" target="_blank">Terms of Service</a> and <a href="/pp" target="_blank">Privacy Policy</a>. <br>
                             </div>
 
-                            <button .pill.elevated type="submit">Create account</button>
+                            <button .pill style="box-shadow: 0px 12px 60px 0 var(--accent-mix-80); width: 100%; margin-top: 20px" type="submit">Create account</button>
                         </div>
                     </form>
 
                 </div>
 
-                <div .login-toolbar-page tab-id="account">
-                    <div .margin-top-large {{ user.pfp:ProfilePicture(100px) }} />
+                <div .login-toolbar-page tab-id="account" .profile>
+                    <div .profile-banner {{ user.banner:ProfileBanner }} />
+                    <div .profile-avatar {{ user.pfp:ProfilePicture(120px) }} />
+                    <h2 {{ user.displayname:DisplayName }} style="margin-bottom: 0; font-weight: 700" />
 
-                    <h2 .login-popout-title {{ user.displayname }} />
+                    <span .profile-username>&#64;{{ user.username }}</span>
 
-                    {{ user.username }}
+                    <ls-div .profile-buttons>
+                        <a .ls-button .elevated href="/profile" class="profile-link">
+                            <i .bi-gear-fill /><span>Manage</span>
+                        </a>
+                    </ls-div>
 
-                    <br>
-
-                    <button .pill.elevated #logOutButton>Log out</button>
+                    <ls-div .profile-buttons>
+                        <button .elevated onclick="app.loginTabs.set('login')"><i .bi-arrow-left-right /><span>Switch accounts</span></button>
+                        <button .elevated #logOutButton><i .bi-box-arrow-right /><span>Log out</span></button>
+                    </ls-div>
                 </div>
             </div>
 
         </div>
 
         <main #viewport>
-            <div #initial_page .page>
-                <template::content />
-            </div>
+            <div><template::content /></div>
         </main>
     </div>
 

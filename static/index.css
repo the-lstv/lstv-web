@@ -2,18 +2,10 @@ body[ls-theme="dark"] {
     background: black !important;
 }
 
-#viewport#viewport {
-    overflow: auto;
-}
-
-#initial_page {
-    overflow: unset;
-    max-width: 1360px;
+.content {
     margin: auto;
-}
-
-#initial_page > div {
-    overflow: hidden;
+    height: 100%;
+    max-width: 1360px;
 }
 
 .full-height {
@@ -32,9 +24,23 @@ body[ls-theme="dark"] {
 .logo_text {
     font-family: "JetBrains Mono";
     font-weight: 800;
-    letter-spacing: 40px;
+    letter-spacing: 0;
     font-size: xxx-large;
-    margin-right: -40px;
+    opacity: 0;
+    animation: logoTextFadeIn 2s ease forwards;
+}
+
+@keyframes logoTextFadeIn {
+    0% {
+        opacity: 0;
+        letter-spacing: 15px;
+        margin-right: -15px;
+    }
+    100% {
+        opacity: 1;
+        letter-spacing: 40px;
+        margin-right: -40px;
+    }
 }
 
 #logo {
@@ -58,6 +64,7 @@ body[ls-theme="dark"] {
     height: 40px;
     background: linear-gradient(90deg, transparent, rgba(var(--c), 34%), transparent);
     position: relative;
+    overflow: hidden;
 }
 
 .stripe-container div::after {
@@ -154,145 +161,6 @@ body[ls-theme="dark"] {
     min-width: 65%;
     width: 100%;
     font-weight: 200;
-}
-
-.appShowcaseWrap {
-    display: flex;
-    width: 100%;
-    justify-content: center;
-}
-
-#searchBar {
-    display: flex;
-    justify-content: center;
-    margin: 70px 0;
-}
-
-#apps-showcase {
-    display: flex;
-    gap: 40px;
-    flex-wrap: wrap;
-    max-width: 875px;
-    justify-content: center;
-}
-
-.appItem {
-    display: flex;
-    width: 265px;
-    --color-1: var(--elevate);
-    --color-2: var(--elevate-1);
-    background: radial-gradient(270% 160% at 69% 100%,var(--color-1) 0%,var(--color-2) 100%);
-    border-radius: 15px;
-    overflow: hidden;
-    flex-direction: column;
-    box-shadow: inset 0 0 0 1px #fff2, 0 9px 25px -11px #000;
-    height: fit-content;
-    color: var(--color-fg-light);
-    cursor: pointer;
-
-    outline: 0px solid;
-
-    transition: .2s outline ease-in-out;
-}
-
-
-.appBody {
-    padding: 30px 20px;
-    text-align: center;
-    font-weight: 300;
-}
-
-.appDescription {
-    text-align: left;
-    white-space: pre-wrap;
-}
-
-.appIconContainer {
-    margin-bottom: 15px;
-}
-
-.appIconContainer img {
-    width: 120px;
-    /* border-radius: 8px; */
-    clip-path: inset(0 round 15px);
-    filter: opacity(1);  /* This fixes a weird rendering bug for whatever reason. */
-}
-
-.appName {
-    font-size: 1.4em;
-    display: block;
-    margin-bottom: 10px;
-}
-
-.appTop {
-    text-align: center;
-    color: var(--color-fg);
-    padding: 8px 0;
-}
-
-.appTop, .appBottom {
-    background: #fff1;
-}
-
-.appBottom {
-    display: flex;
-    overflow-x: overlay;
-    padding: 8px 12px;
-    gap: 8px;
-}
-
-.appTop span {
-    letter-spacing: 1px;
-    font-weight: 500;
-    font-size: 1.2em;
-    opacity: .9;
-}
-
-.appTag {
-    background: #fff1;
-    padding: 4px 12px !important;
-    white-space: nowrap;
-    outline: none !important;
-    border-radius: var(--border-radius) !important;
-}
-
-.appItemLight .appTag {
-    background: #fff2;
-}
-
-.appItemLight .appBottom {
-    border-top: 1px solid #0001;
-}
-
-.appItemLight .appTop {
-    border-bottom: 1px solid #0001;
-}
-
-.appItemLight {
-    color: #111;
-}
-
-#cursorPopout {
-    position: fixed;
-    width: 60px;
-    height: 60px;
-    background: var(--color);
-    color: var(--accent);
-    top: 0;
-    border-radius: 50%;
-    transform: scale(.5) translate(-50%, -50%);
-    opacity: 0;
-    transition: transform .2s, opacity .2s, background .4s;
-    z-index: 500;
-    pointer-events: none;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-#cursorPopout.active {
-    transform: scale(1) translate(-50%, -50%);
-    opacity: 1;
 }
 
 @media screen and (max-width: 600px) {
