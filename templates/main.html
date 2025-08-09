@@ -67,7 +67,7 @@
         }
     </script>
 
-    @use (ls:5.0.2[flat, tooltips, toast, reactive, tabs, animation], bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800", "IBM Plex Mono:wght@400;600;800"]);
+    @use (ls:5.2.0[flat, tooltips, toast, reactive, tabs, animation, modal], bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800", "IBM Plex Mono:wght@400;600;800"]);
     @use (~/assets/css/main.css, ~/assets/js/app.js[defer]);
 
     @page {
@@ -127,7 +127,7 @@
 
         </nav>
 
-        <div #toolbars .level-1 style="display: none">
+        <div #toolbars .level-1 .ls-slide-animation style="display: none">
 
             <div .toolbar #toolbarApps>
                 <h3>Applications</h3>
@@ -186,7 +186,7 @@
                 </div>
             </div>
 
-            <div .toolbar #toolbarLogin  .level-1>
+            <div .toolbar #toolbarLogin .level-1 .ls-slide-animation>
                 <div .login-toolbar-page .visible tab-id="default" #loginPopup>
                     <svg width="45" height="37" fill="none"><rect y="17" width="30" height="10" rx="5" fill="#fcc21b"/><rect x="15" width="30" height="10" rx="5" fill="#ed6c30"/><g fill="#40c0e7"><rect width="10" height="10" rx="5"/><rect x="35" y="17" width="10" height="10" rx="5"/></g></svg>
 
@@ -235,7 +235,7 @@
                         <ls-text-input>
                             <input #regPassword type="password" name="password" placeholder="********" required autocomplete="new-password" spellcheck="false" minlength="8" pattern="^(?=.*[^a-zA-Z]).{8,}$">
                             <div .ls-text-input-bar>
-                                <button .elevated type="button" #randomPassword><i .bi-dice-5-fill /></button>
+                                <button .elevated type="button" #randomPassword ls-tooltip aria-label="Random password"><i .bi-dice-5-fill /></button>
                             </div>
                         </ls-text-input>
 
@@ -265,20 +265,24 @@
 
                 </div>
 
-                <div .login-toolbar-page tab-id="account" .profile>
+                <div .login-toolbar-page tab-id="account" .profile style="padding-bottom: 10px">
                     <div .profile-banner {{ user.banner:ProfileBanner }} />
                     <div .profile-avatar {{ user.pfp:ProfilePicture(120px) }} />
                     <h2 {{ user.displayname:DisplayName }} style="margin-bottom: 0; font-weight: 700" />
 
+                    <a .ls-button .elevated .circle ls-tooltip aria-label="Edit profile" #editProfileButton href="/home/profile">
+                        <i .bi-pencil-fill />
+                    </a>
+
                     <span .profile-username>&#64;{{ user.username }}</span>
 
-                    <ls-div .profile-buttons>
-                        <a .ls-button .elevated href="/profile" class="profile-link">
+                    <ls-div .profile-buttons .grouped-buttons>
+                        <a .ls-button .elevated href="/home/account" class="profile-link">
                             <i .bi-gear-fill /><span>Manage</span>
                         </a>
                     </ls-div>
 
-                    <ls-div .profile-buttons>
+                    <ls-div .profile-buttons .grouped-buttons>
                         <button .elevated onclick="app.loginTabs.set('login')"><i .bi-arrow-left-right /><span>Switch accounts</span></button>
                         <button .elevated #logOutButton><i .bi-box-arrow-right /><span>Log out</span></button>
                     </ls-div>

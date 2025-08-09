@@ -48,7 +48,9 @@ nav {
 }
 
 .homeButton {
-    color: var(--base-50);
+    --color: var(--accent-60);
+    color: var(--color) !important;
+    font-size: 1.2rem;
 }
 
 .homeButton svg {
@@ -102,8 +104,14 @@ nav {
     --load-size: 1em;
 }
 
-nav > a {
-    font-size: 1.2rem;
+#editProfileButton {
+    --padding-control-v: 12px;
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 #toolbars {
@@ -117,11 +125,11 @@ nav > a {
     /* top: calc(100% + 10px); */
     top: 60px;
     right: 10px;
+    background: none;
 }
 
 .toolbar {
     text-align: center;
-    background: var(--background);
     outline: 1px solid var(--accent-mix-20);
     max-height: calc(100vh - 90px);
     width: 300px;
@@ -158,34 +166,6 @@ nav > a {
     margin: 4px 0;
     margin-top: 14px;
     display: block;
-}
-
-.login-toolbar-page, .toolbar {
-    position: absolute;
-    opacity: 0;
-    transform: translateX(20px);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    pointer-events: none;
-    will-change: transform;
-    z-index: 1;
-}
-
-.login-toolbar-page.visible, .toolbar.visible {
-    opacity: 1;
-    transform: translateX(0);
-    pointer-events: auto;
-    z-index: 2;
-}
-
-.login-toolbar-page.visible {
-    position: relative;
-}
-
-.login-toolbar-page.leaving, .toolbar.leaving {
-    opacity: 0;
-    pointer-events: none;
-    transform: translateX(-20px);
-    z-index: 1;
 }
 
 .login-popout-title {
@@ -408,7 +388,7 @@ main > div {
 */
 
 #toolbarAssistant {
-    width: 500px;
+    width: 600px;
     background: var(--surface-n3);
     color: var(--accent-90);
     border-radius: var(--border-radius-large);
@@ -571,9 +551,17 @@ main > div {
 }
 
 .message-assistant .message {
-    max-width: 400px;
-    background: var(--accent-20);
+    max-width: 100%;
+    --background: var(--accent-20);
+    background: var(--background);
     color: var(--on-accent);
+    overflow: auto;
+}
+
+.reasoning-container {
+    background: var(--accent-mix-20);
+    border-radius: var(--border-radius);
+    padding: 6px 14px;
 }
 
 .message-container {
@@ -585,6 +573,19 @@ main > div {
     justify-content: flex-end;
 }
 
+.profile-bio {
+    max-height: 100px;
+    padding: 6px 8px;
+    overflow: auto;
+    white-space: pre-wrap;
+}
+
+.profile-bio code {
+    background: var(--elevate-n1);
+    border-radius: var(--border-radius-small);
+    padding: 0 4px;
+}
+
 .text-tag {
     background: var(--accent-mix-60);
     font-size: small;
@@ -592,7 +593,20 @@ main > div {
 
 .profile {
     padding: 0;
-    padding-bottom: 10px;
+    --avatar-x: 50%;
+    --avatar-y: 35px;
+    --avatar-mask-offset: 15px;
+    --avatar-size: 120px;
+}
+
+.profile-block {
+    outline: 1px solid var(--accent-mix-20);
+    box-shadow: 0 10px 20px 0 #0002;
+    width: 340px;
+    position: relative;
+    border-radius: var(--border-radius-xxlarge);
+    overflow: hidden;
+    height: fit-content;
 }
 
 .profile-banner {
@@ -603,8 +617,11 @@ main > div {
     z-index: 0;
     position: relative;
 	background: var(--custom-color-0,var(--elevate-1));
-	-webkit-mask: radial-gradient(circle at 50% 105px,transparent 80px,#fff 0);
-    mask: radial-gradient(circle at 50% 105px,transparent 80px,#fff 0);
+    --h: calc(var(--avatar-size) / 2);
+	/* -webkit-mask: radial-gradient(circle at calc(var(--avatar-x) + var(--h)) calc(var(--avatar-y) + var(--h)),transparent calc(var(--avatar-mask-offset) + (var(--avatar-size)) / 2),#fff 0);
+    mask: radial-gradient(circle at calc(var(--avatar-x) + var(--h)) calc(var(--avatar-y) + var(--h)),transparent calc(var(--avatar-mask-offset) + (var(--avatar-size)) / 2),#fff 0); */
+	-webkit-mask: radial-gradient(circle at 50% calc(var(--avatar-y) + var(--h)),transparent calc(var(--avatar-mask-offset) + (var(--avatar-size)) / 2),#fff 0);
+    mask: radial-gradient(circle at 50% calc(var(--avatar-y) + var(--h)),transparent calc(var(--avatar-mask-offset) + (var(--avatar-size)) / 2),#fff 0);
 }
 
 .profile-banner::after {
@@ -613,7 +630,7 @@ main > div {
     bottom: -10px;
     left: 0;
     right: 0;
-    height: 90px;
+    height: 150px;
     background: linear-gradient(0, var(--background) 10px, transparent);
 }
 
@@ -624,66 +641,107 @@ main > div {
     object-fit: cover;
 }
 
-.profile-avatar {
-    position: absolute;
-    top: 45px;
-    left: 50%;
-    transform: translateX(-50%);
-}
-
 .profile-picture {
     -webkit-user-drag: none;
     border-radius: var(--border-radius-circle);
     object-fit: cover;
 }
 
+.profile-avatar {
+    position: absolute;
+    top: var(--avatar-y);
+    left: var(--avatar-x);
+    transform: translateX(-50%);
+}
+
 .profile-username {
     color: var(--surface-8);
 }
 
-#toolbars > #toolbarLogin:not(.visible) .login-toolbar-page {
-    display: none;
-}
-
 .profile-buttons {
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
     margin: 18px 30px;
 }
 
-.profile-buttons :is(button, .ls-button) {
+.links-container {
+    display: flex;
+    overflow-x: overlay;
+    white-space: nowrap;
+    gap: .4rem;
+    margin-top: 5px;
+    will-change: transform;
+    --scrollbar-size: 1px;
+}
+
+.links-container a {
+    display: inline-flex;
+    align-items: center;
+}
+
+.links-container a > :is(i, img) {
+    margin-right: 8px !important;
+}
+
+.links-container a > img {
+    height: 1em;
+    display: inline;
+}
+
+.profile-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border-radius: var(--border-radius-medium);
+}
+
+.profile-content h2 {
+    margin: 0 !important;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.grouped-buttons {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.grouped-buttons :is(button, .ls-button) {
     --padding-control-v: 12px;
     --padding-control-h: 20px;
     text-align: left;
 }
 
-.profile-buttons :is(button, .ls-button) > i {
+.grouped-buttons :is(button, .ls-button) > i:first-child {
     margin-right: 10px !important;
     -webkit-text-stroke-width: 0.4px;
 }
 
-.profile-buttons :is(button, .ls-button) {
+.grouped-buttons :is(button, .ls-button) {
     border-radius: 0 !important;
     border-bottom: 1px solid var(--accent-mix-40) !important;
 }
 
-.profile-buttons :is(button, .ls-button):first-child {
+.grouped-buttons :is(button, .ls-button):first-child {
     border-radius: var(--border-radius-xxlarge) var(--border-radius-xxlarge) 0 0 !important;
 }
 
-.profile-buttons :is(button, .ls-button):last-child {
+.grouped-buttons :is(button, .ls-button):last-child {
     border-radius: 0 0 var(--border-radius-xxlarge) var(--border-radius-xxlarge) !important;
     border-bottom: none !important;
 }
 
-.profile-buttons :is(button, .ls-button):only-child {
+.grouped-buttons :is(button, .ls-button):only-child {
     border-radius: var(--border-radius-xxlarge) !important;
     border-bottom: none !important;
 }
 
-ls-text-input .ls-text-input-bar {
+ls-text-input .ls-text-input-bar, ls-text-input .ls-text-input-label {
     position: absolute;
+}
+
+ls-text-input .ls-text-input-bar {
     right: 5px;
     top: 5px;
     bottom: 5px;
@@ -695,7 +753,27 @@ ls-text-input .ls-text-input-bar {
     font-size: small;
 }
 
+ls-text-input .ls-text-input-label {
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: var(--surface-9);
+}
+
+ls-text-input.has-textarea .ls-text-input-label {
+    right: 12px;
+    bottom: 12px;
+    top: unset;
+    transform: none;
+}
+
 ls-text-input {
     position: relative;
     display: block;
+}
+
+ls-text-input.has-textarea {
+    width: 100%;
+    max-width: 400px;
 }

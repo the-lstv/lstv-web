@@ -1,0 +1,294 @@
+.page {
+    --background: var(--surface-n2);
+    background: var(--background);
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 50px;
+    overflow: hidden;
+}
+
+.width-container {
+    width: 100%;
+    max-width: 1360px;
+    margin: auto;
+}
+
+.container {
+    display: flex;
+    border-radius: var(--border-radius-xxlarge);
+    min-height: 200px;
+    flex: 1;
+    position: relative;
+    outline: 1px solid var(--accent-mix-20);
+    box-shadow: 0 10px 20px 0 #0002;
+    overflow: hidden;
+}
+
+.top {
+    height: 250px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.top > .width-container {
+    padding-left: 20px;
+}
+
+.menu {
+    width: 320px;
+    overflow: auto;
+    padding: 15px;
+    border-radius: var(--border-radius-xxlarge);
+    --scrollbar-size: 3px;
+}
+
+.menu-button {
+    position: absolute !important;
+    left: 20px;
+    bottom: 20px;
+    font-size: x-large;
+    display: none;
+}
+
+.menu-category-title {
+    margin: 4px 0;
+    margin-left: 8px;
+    margin-top: 18px;
+    color: var(--accent);
+    display: block;
+}
+
+.sidebar-content {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    padding: 30px;
+    position: relative;
+}
+
+.sidebar-content hr {
+    max-width: 500px;
+}
+
+.sidebar-content ls-tab {
+    left: 30px;
+    right: 30px;
+}
+
+[data-tab-id] {
+    transition: padding-left 0.2s ease-in-out;
+}
+
+[data-tab-id].active {
+    font-weight: 600;
+    padding-left: 30px !important;
+}
+
+[data-tab-id]::before {
+    content: "";
+    position: absolute;
+    top: 15px;
+    bottom: 15px;
+    width: 5px;
+    left: 18px;
+    background: var(--accent);
+    border-radius: var(--border-radius-full);
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+}
+
+[data-tab-id].active::before {
+    opacity: 1;
+}
+
+.external-indicator {
+    font-size: smaller;
+    float: right;
+    margin: 0 !important;
+    color: var(--surface-6);
+}
+
+[ls-theme="light"] .menu .grouped-buttons > :is(button, .ls-button) {
+    background-color: var(--accent-mix-10);
+    --accent-mix-40: var(--accent-mix-20); /* Hacky */
+}
+
+.sidebar-content h2 {
+    margin-bottom: 8px;
+    margin-top: 36px;
+}
+
+.sidebar-content h3 {
+    margin-bottom: 8px;
+    margin-top: 24px;
+}
+
+.profile-editor-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 40px;
+}
+
+.profile-editor-container .profile[ls-theme="light"] a {
+    --on-background: var(--accent-40)!important;
+    --on-accent: var(--accent-90)!important;
+    --on-transparent: var(--accent-30)!important;
+}
+
+.profile-editor-confirm-buttons {
+    position: absolute;
+    bottom: 30px;
+    display: flex;
+    gap: 10px;
+    left: 40px;
+    right: 40px;
+    padding: 10px;
+    padding-left: 30px;
+    border-radius: var(--border-radius-xxlarge);
+    justify-content: space-between;
+    align-items: center;
+    outline: 1px solid var(--accent-mix-20);
+    box-shadow: 0 10px 20px 0 #0002;
+    flex-wrap: wrap;
+    transform: translateY(10px);
+    opacity: 0;
+    transition: opacity .2s, transform .2s;
+    pointer-events: none;
+}
+
+.profile-editor-confirm-buttons.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+textarea#profile-about {
+    resize: vertical;
+    min-height: 150px;
+    max-height: 400px;
+    width: 100%;
+}
+
+.ls-button {
+    display: inline-block;
+}
+
+.settings-subtext {
+    font-size: medium;
+    color: var(--surface-6);
+    display: block;
+    margin-bottom: 8px;
+}
+
+@media screen and (max-width: 1360px) {
+    .width-container {
+        border-radius: var(--border-radius-xxlarge) var(--border-radius-xxlarge) 0 0;
+    }
+
+    .top > .width-container {
+        padding-left: 0;
+        text-align: center;
+    }
+
+    .page {
+        padding-bottom: 0;
+    }
+}
+
+@media screen and (max-width: 1080px) {
+    .profile-editor-container {
+        flex-direction: column-reverse;
+    }
+}
+
+@media screen and (max-width: 760px) {
+    .menu {
+        position: absolute;
+        max-width: 360px;
+        width: unset;
+        inset: 0;
+        border-radius: var(--border-radius-xxlarge) var(--border-radius-xxlarge) 0 0;
+
+        --background: var(--surface-1);
+        background: var(--background);
+        --elevate-0: var(--surface-0);
+        --elevate-n1: var(--surface-n1);
+        --elevate: var(--surface-2);
+        --elevate-1: var(--surface-3);
+        --elevate-2: var(--surface-4);
+        --elevate-3: var(--surface-5);
+
+        transform: translateX(-10px);
+        pointer-events: none;
+        opacity: 0;
+        transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
+        z-index: 1000;
+        outline: 1px solid var(--accent-mix-20);
+        box-shadow: 0 10px 20px 0 #0002;
+    }
+
+    .menu::before {
+        content: "";
+        position: absolute;
+        top: -10px;
+        left: 0;
+        width: 100%;
+        height: 10px;
+        background: linear-gradient(to bottom, transparent, var(--surface-1));
+    }
+
+    .sidebar-menu-visible .menu {
+        transform: translateX(0);
+        pointer-events: auto;
+        opacity: 1;
+    }
+
+    .container::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: 100;
+        pointer-events: none;
+        transition: opacity 0.2s ease-in-out;
+        background-color: #0008;
+        opacity: 0;
+    }
+    
+    .container.sidebar-menu-visible::before {
+        opacity: 1;
+    }
+
+    .top {
+        height: 200px;
+    }
+
+    .menu-button {
+        display: block;
+    }
+
+    .profile-editor-confirm-buttons button {
+        width: 100%;
+    }
+    
+    .profile-editor-confirm-buttons {
+        padding-left: 10px !important;
+        flex-direction: column;
+        right: 30px;
+        left: 30px;
+    }
+    
+    .profile-editor-confirm-buttons > div {
+        width: 100%;
+        display: flex;
+        gap: 8px;
+    }
+}
+
+@media screen and (max-width: 500px) {
+    .profile-editor-confirm-buttons > div {
+        flex-direction: column;
+    }
+}

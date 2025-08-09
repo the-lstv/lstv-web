@@ -17,6 +17,8 @@ window.addEventListener("DOMContentLoaded", async () => {
     const isLocalhost = location.hostname.endsWith("localhost");
     const trustedScripts = new Set;
 
+    const SPAExtensions = [];
+
     class Page extends LS.EventHandler {
         constructor(path, options = {}){
             super();
@@ -37,6 +39,10 @@ window.addEventListener("DOMContentLoaded", async () => {
                 this.contentElement.pageObject = this
                 return true
             } else return false
+        }
+
+        registerSPAExtension(path, handler) {
+            SPAExtensions.push([path || this.path, handler]);
         }
     }
 
@@ -110,6 +116,8 @@ window.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
+    const CDN_URL = "https://cdn.extragon." + (isLocalhost? "localhost": "cloud");
+
     let app = {
         container: O("#app"),
         viewport: O("#viewport"),
@@ -122,12 +130,12 @@ window.addEventListener("DOMContentLoaded", async () => {
             return app.pages.get(app.currentPage);
         },
 
-        cdn: "https://cdn.extragon.cloud",
+        cdn: CDN_URL,
 
         originalQuery: LS.Util.params(),
 
         util: {
-            normalizePath(path) {
+            normalizePath(path, isAbsolute = null) {
                 // Replace backslashes with forward slashes
                 path = "/" + path.replace("index.html", "").replace(".html", "").replace(/\\/g, '/');
 
@@ -144,7 +152,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
                 const normalizedPath = normalizedParts.join('/');
 
-                const isAbsolute = path.startsWith('/');
+                if(isAbsolute === null) isAbsolute = path.startsWith('/');
                 return (isAbsolute ? '/' : '') + normalizedPath;
             },
 
@@ -217,7 +225,7 @@ window.addEventListener("DOMContentLoaded", async () => {
                 LS.Reactive.wrap("user", {});
             }
 
-            app.emit("user-loaded", [app.userFragment]);
+            app.events.completed("user-loaded");
         },
 
         async setPage(page, options = {}) {
@@ -248,9 +256,7 @@ window.addEventListener("DOMContentLoaded", async () => {
                 history.pushState({ path }, document.title, path);
             }
 
-            page.contentElement.style.display = "block";
             app.viewport.replaceChildren(page.contentElement);
-
             if (!success) return false;
         },
 
@@ -287,8 +293,10 @@ window.addEventListener("DOMContentLoaded", async () => {
                 );
             }
 
+            const src = filename? filename.startsWith("blob:")? filename : app.cdn + '/file/' + filename + "?size=" + IMAGE_RESOLUTION: "/assets/image/default.svg";
+
             const img = N("img", {
-                src: filename? 'https://cdn.extragon.cloud/file/' + (typeof source === "object"? source.pfp: source) + "?size=" + IMAGE_RESOLUTION: "/assets/image/default.svg",
+                src,
                 alt: "Profile Picture",
                 class: "profile-picture",
                 draggable: false,
@@ -299,16 +307,113 @@ window.addEventListener("DOMContentLoaded", async () => {
             return img;
         },
 
+        getBannerView(source, args) {
+            const filename = (source && typeof source === "object")? source.banner: source;
+
+            
+            if(filename) {
+                const src = filename.startsWith("blob:")? filename : app.cdn + '/file/' + filename;
+
+                const img = N("img", {
+                    src,
+                    alt: "Banner Picture",
+                    class: "banner-media",
+                    draggable: false,
+                    onerror() { this.remove() }
+                });
+
+                return img;
+            } else return null;
+        },
+
+        getLinksView(source, args, element) {
+            const links = source && (Array.isArray(source) ? source : Array.isArray(source.profileLinks) ? source.profileLinks : []);
+            element.style.display = links && links.length ? "block" : "none";
+
+            if (!links || !links.length) return;
+
+            return N("div", {
+                class: "links-container",
+                inner: links.map(link => {
+                    const linkInfo = app.LINKS[link.type.toUpperCase()];
+
+                    return N("a", {
+                        href: link.type === "url" ? link.link : linkInfo.scheme + link.link,
+                        target: "_blank",
+                        rel: "noopener noreferrer",
+                        class: "ls-button pill elevated",
+                        accent: link.color || linkInfo.color || null,
+                        inner: [
+                            link.type === "url"? N("img", {
+                                src: `https://favicone.com/${new URL(link.link).hostname}?s=32`
+                            }): N("i", { class: "bi-" + (linkInfo?.icon || "globe-americas") }),
+                            N("span", {
+                                textContent: link.label || (link.type === "url"? new URL(link.link).hostname : link.link)
+                            })
+                        ]
+                    });
+                })
+            });
+        },
+
+        getBioView(source, args, element) {
+            const bio = source && (typeof source === "object" ? source.bio : source).trim();
+            element.style.display = bio ? "block" : "none";
+
+            if (!bio) return;
+
+            return N({
+                class: "profile-bio",
+                innerHTML: basicMarkDown(bio)
+            })
+        },
+
         fetch(url, options = {}, callback) {
             return auth.fetch(url, options, callback);
+        },
+
+        handleSPAExtension(href, extension, targetElement) {
+            const [path, handler] = extension;
+            if (typeof handler !== "function") {
+                return;
+            }
+
+            if (targetElement) {
+                history.pushState({ path: href }, document.title, href);
+            }
+
+            const extendedPath = app.util.normalizePath(href.replace(path, ""), false);
+            handler(extendedPath, targetElement);
+        },
+
+        ACCENT_COLORS: ["white", "blue", "pastel-indigo", "lapis", "pastel-teal", "aquamarine", "green", "lime", "neon", "yellow", "orange", "deep-orange", "red", "rusty-red", "pink", "hotpink", "purple", "soap", "burple"],
+
+        LINKS: {
+            URL: { id: "url", icon: "globe-americas", color: null },
+            DISCORD: { id: "discord", icon: "discord", color: "burple", scheme: "https://discord.gg/" },
+            TWITTER: { id: "twitter", icon: "twitter-x", color: "black", scheme: "https://twitter.com/" },
+            REDDIT: { id: "reddit", icon: "reddit", color: "orange", scheme: "https://reddit.com/u/" },
+            TIKTOK: { id: "tiktok", icon: "tiktok", color: "black", scheme: "https://www.tiktok.com/@" },
+            YOUTUBE: { id: "youtube", icon: "youtube", color: "red", scheme: "https://youtube.com/@" },
+            INSTAGRAM: { id: "instagram", icon: "instagram", color: "orange", scheme: "https://instagram.com/" },
+            TWITCH: { id: "twitch", icon: "twitch", color: "purple", scheme: "https://twitch.tv/" },
+            LINKEDIN: { id: "linkedin", icon: "linkedin", color: "blue", scheme: "https://linkedin.com/in/" },
+            CRYPTO: { id: "crypto", icon: "currency-bitcoin", color: "orange", scheme: "bitcoin:" },
+            XBOX: { id: "xbox", icon: "xbox", color: "green", scheme: "https://account.xbox.com/en-us/profile?gamertag=" },
+            PLAYSTATION: { id: "playstation", icon: "playstation", color: "blue", scheme: "https://my.playstation.com/profile/" },
+            STEAM: { id: "steam", icon: "steam", color: "blue", scheme: "https://steamcommunity.com/id/" },
+            PAYPAL: { id: "paypal", icon: "paypal", color: "blue", scheme: "https://paypal.me/" },
+            GITHUB: { id: "github", icon: "github", color: "black", scheme: "https://github.com/" }
         }
     }
 
     app.events = new LS.EventHandler(app);
 
     LS.Reactive.registerType("ProfilePicture", app.getProfilePictureView);
-    // LS.Reactive.registerType("ProfileBanner"); // TBA
-    LS.Reactive.registerType("DisplayName", source => source ? source : (app.userFragment.displayname || app.userFragment.username || "Anonymous"));
+    LS.Reactive.registerType("ProfileBanner", app.getBannerView);
+    LS.Reactive.registerType("ProfileLinks", app.getLinksView);
+    LS.Reactive.registerType("ProfileBio", app.getBioView);
+    LS.Reactive.registerType("DisplayName", (value, args, element, source) => value || source.displayname || source.username || "Anonymous");
 
     const nonce = Math.random().toString(36).substring(2);
 
@@ -424,22 +529,45 @@ window.addEventListener("DOMContentLoaded", async () => {
         const targetElement = event.target.closest("a");
 
         if (targetElement && targetElement.tagName === 'A') {
-            
             if(targetElement.hasAttribute("target")) return;
-
             if(targetElement.href.endsWith("#")) return event.preventDefault();
 
-            if(targetElement.href.startsWith(origin) && !targetElement.href.endsWith("?") && !targetElement.href.startsWith(origin + ":")){
-                event.preventDefault();
-                app.setPage(targetElement.getAttribute('href'));
-                app.toolbarClose()
+            const link = targetElement.href;
+            const href = targetElement.getAttribute('href');
+
+            if(link.startsWith(origin) && !link.endsWith("?") && !link.startsWith(origin + ":")){
+                const SPAExtension = SPAExtensions.find(([path]) => (href + "/").startsWith(path));
+                if (SPAExtension) {
+                    event.preventDefault();
+                    if(location.href === link) {
+                        return;
+                    }
+
+                    app.handleSPAExtension(href, SPAExtension, targetElement);
+                } else {
+                    // Temporarily disabled
+                    // event.preventDefault();
+                    // app.setPage(href);
+                    // app.toolbarClose();
+                }
+
             }
         }
     });
 
+    const originalState = location.pathname;
+
     // Event listener for back/forward buttons (for single-page app behavior)
     window.addEventListener('popstate', function (event) {
-        app.setPage(event.state? event.state.path: "/", { browserTriggered: true });
+        const href = event.state? event.state.path: originalState;
+
+        const SPAExtension = SPAExtensions.find(([path]) => (href + "/").startsWith(path));
+        if (SPAExtension) {
+            app.handleSPAExtension(href, SPAExtension, null);
+        } else {
+            // Temporarily disabled
+            // app.setPage(href, { browserTriggered: true });
+        }
     });
 
     if(!isLocalhost){
@@ -602,12 +730,11 @@ window.addEventListener("DOMContentLoaded", async () => {
         const oldElement = app.loginTabs.tabs.get(old)?.element;
 
         clearLoginError();
-    
+
         LS.Animation.slideInToggle(view, oldElement);
-        O("#toolbarLogin").style.height = view.offsetHeight + "px";
 
         setTimeout(() => {
-            O("#toolbarLogin").style.height = "auto";
+            O("#toolbarLogin").style.height = view.offsetHeight + "px";
         });
     });
 
@@ -637,7 +764,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         alert("Your generated password: " + password);
     });
 
-    for(let accent of ["white","blue","pastel-indigo","lapis","pastel-teal","aquamarine","green","lime","neon","yellow","orange","deep-orange","red","rusty-red","pink","hotpink","purple","soap","burple"]) {
+    for(let accent of app.ACCENT_COLORS) {
         O("#accentButtons").add(N("button", {
             class: "accentButton",
             inner: accent === "white" ? N("i", { class: "bi-x-circle-fill" }) : null,
@@ -696,3 +823,68 @@ window.addEventListener("DOMContentLoaded", async () => {
         app.toolbarClose();
     })
 })
+
+function basicMarkDown(text) {
+    text = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+    // URLs: [text](url)
+    text = text.replace(
+        /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
+        '<a href="$2" target="_blank" rel="noopener" data-md-link="1">$1</a>'
+    );
+
+    // Only replace URLs not already inside an <a> tag
+    text = text.replace(
+        /(^|[^"'>])((https?:\/\/[^\s<]+))/g,
+        function(match, prefix, url) {
+            // If the URL is already inside a markdown link, skip
+            if (prefix.endsWith('data-md-link="1">')) return match;
+            return prefix + '<a href="' + url + '" target="_blank" rel="noopener">' + url + '</a>';
+        }
+    );
+
+    // Horizontal rule: --- or ***
+    text = text.replace(/^(?:---|\*\*\*)$/gm, "<hr>");
+
+    // Remove the marker attribute from markdown links
+    text = text.replace(/ data-md-link="1"/g, "");
+
+    // Lists: unordered (-, *, +) and ordered (1. 2. ...)
+    // Unordered lists
+    text = text.replace(
+        /(^|\n)((?:\s*[-*+]\s[^\n]+\n?)+)/g,
+        function(match, pre, list) {
+            const items = list.trim().split(/\n/).map(line =>
+                line.replace(/^\s*[-*+]\s/, '').trim()
+            );
+            return pre + '<ul>' + items.map(item => '<li>' + item + '</li>').join('') + '</ul>';
+        }
+    );
+    // Ordered lists
+    text = text.replace(
+        /(^|\n)((?:\s*\d+\.\s[^\n]+\n?)+)/g,
+        function(match, pre, list) {
+            const items = list.trim().split(/\n/).map(line =>
+                line.replace(/^\s*\d+\.\s/, '').trim()
+            );
+            return pre + '<ol>' + items.map(item => '<li>' + item + '</li>').join('') + '</ol>';
+        }
+    );
+
+    // Bold: **text**
+    text = text.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+
+    // Italics: *text*
+    text = text.replace(/(^|[^*])\*([^*]+)\*(?!\*)/g, '$1<em>$2</em>');
+
+    // Underline: __text__
+    text = text.replace(/__([^_]+)__/g, "<u>$1</u>");
+
+    // Strikethrough: ~~text~~
+    text = text.replace(/~~(.+?)~~/g, "<del>$1</del>");
+
+    // Inline code: `text`
+    text = text.replace(/`([^`]+)`/g, "<code>$1</code>");
+
+    return text;
+}
