@@ -82,7 +82,7 @@
 
 </head>
 
-<body>
+<body class="level-0">
     <div .loaderContainer>
         <div .loader/>
         <noscript>
@@ -187,7 +187,7 @@
             </div>
 
             <div .toolbar #toolbarLogin .level-1 .ls-slide-animation>
-                <div .login-toolbar-page .visible tab-id="default" #loginPopup>
+                <div .login-toolbar-page tab-id="default" #loginPopup>
                     <svg width="45" height="37" fill="none"><rect y="17" width="30" height="10" rx="5" fill="#fcc21b"/><rect x="15" width="30" height="10" rx="5" fill="#ed6c30"/><g fill="#40c0e7"><rect width="10" height="10" rx="5"/><rect x="35" y="17" width="10" height="10" rx="5"/></g></svg>
 
                     <h2>Log-In!</h2>
@@ -229,6 +229,9 @@
                         <label for="regUsername">Username</label>
                         <ls-text-input>
                             <input #regUsername type="text" name="username" placeholder="Your username" required autocomplete="username" spellcheck="false" minlength="2" maxlength="35" autocapitalize="none">
+                            <div .ls-text-input-bar>
+                                <button .elevated type="button" #randomUsername ls-tooltip aria-label="Random username"><i .bi-dice-5-fill /></button>
+                            </div>
                         </ls-text-input>
 
                         <label for="regPassword">Password</label>
@@ -274,7 +277,7 @@
                         <i .bi-pencil-fill />
                     </a>
 
-                    <span .profile-username>&#64;{{ user.username }}</span>
+                    {{ user.username:ProfileUsername }}
 
                     <ls-div .profile-buttons .grouped-buttons>
                         <a .ls-button .elevated href="/home/account" class="profile-link">
@@ -286,6 +289,9 @@
                         <button .elevated onclick="app.loginTabs.set('login')"><i .bi-arrow-left-right /><span>Switch accounts</span></button>
                         <button .elevated #logOutButton><i .bi-box-arrow-right /><span>Log out</span></button>
                     </ls-div>
+    
+                    <span hidden {{ user.profile_style:ProfileEffects(style) }} />
+                    <span hidden {{ user.fullscreen_banner:ProfileEffects(fullscreen-banner) }} />
                 </div>
             </div>
 

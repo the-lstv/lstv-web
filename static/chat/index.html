@@ -1,0 +1,156 @@
+#template /templates/main.html
+
+<head>
+    @use (/chat/index.css, /chat/index.js);
+
+    @page {
+        title: "LSTV | Chat";
+        description: "";
+        keywords: "LSTV, chat, community, support";
+    }
+</head>
+
+<div #chat-main>
+    <div>
+        
+    </div>
+
+    <div #mainArea>
+        <ls-tab #chatTab tab-id="chat">
+            <div #messageAreaWrapper>
+                <div #messageArea>
+                    <div .channelStart>
+                        <div .channelCircularBadge />
+                        <h2>Welcome to <ls-box .inline .color>#{{ currentChannel.name }}</ls-box>!</h2>
+                        <h3>This is the beginning of the channel.</h3>
+                        <hr>
+                    </div>
+                    <div #messageContainer />
+                </div>
+            </div>
+        </ls-tab>
+    </div>
+
+    <div #memberList>
+
+    </div>
+</div>
+
+
+
+<!-- legacy: -->
+<!-- <main #main message-style="channel" .mainContentTabs>
+    <ls-tab #home>
+        <div #list>
+            <div #channelOrganizer>
+                <div #serverList ls-accent="auto">
+                    <div .serverIcon .directMessageListButton onclick="app.channelTabSwitcher.setActive('directMessageList')">
+                        <i .bi-house-fill></i>
+                    </div>
+
+                    <div .selected ls-tooltip="Public channels" .serverIcon .publicChannelListButton onclick="app.channelTabSwitcher.setActive('publicChannelList')">
+                        <i .bi-list-task></i>
+                    </div>
+
+                    <hr>
+
+                    <div #myServerList></div>
+
+                    <div ls-accent="green" ls-tooltip="Join new servers/channels" onclick="app.joinServerModal.show()" .serverIcon>
+                        <i .bi-plus-lg></i>
+                    </div>
+                </div>
+                <ls-tabs #channelList>
+                    <ls-tab .list-items #publicChannelList>
+                        
+                    </ls-tab>
+                    <ls-tab .list-items #directMessageList>
+                        
+                    </ls-tab>
+                    <ls-tab .list-items #serverChannelList>
+                        
+                    </ls-tab>
+                </ls-tabs>
+            </div>
+
+            <div #profileBar>
+                <div .list-item onclick='app.showProfile(app.client.user.id, this.getBoundingClientRect().left + 15, this.getBoundingClientRect().top - (O("#profilePopup").getBoundingClientRect().height || 480) - 15)'>
+                    <div .list-avatar></div>
+                    <span .profileBarName></span>
+                </div>
+                <div .profileBarButtons>
+                    <div ls-tooltip="Settings" onclick="app.screen.setActive('settings')" .list-item><i .bi-gear-fill></i></div>
+                </div>
+            </div>
+        </div>
+
+        <ls-tabs #homeContents .mainContentTabs>
+            <ls-tab #noChannel>
+                <i .bi-chat-dots></i>
+                <br>
+                <h3>Select a channel to start chatting!</h3>
+            </ls-tab>
+
+            <ls-tab #room>
+                <div #messageLoader>
+                    <div .messageLoader></div>
+                </div>
+                
+                
+                <div #messageArea>
+                    <div #mesageDisplayContainer>
+                        <div .channelStart>
+                            <div .channelCircularBadge></div>
+                            <h2>Welcome to <ls-box .inline .color ls-accent="auto">#<span .channelName></span></ls-box>!</h2>
+                            <h3>This is the beginning of the channel.</h3>
+                            <hr>
+                        </div>
+                        <div #messageContainer></div>
+                    </div>
+                </div>
+
+                <div #messageButtons hidden>
+                    <div onclick='LS.Toast.show("This feature is not implemented yet!", {accent: "red", timeout: 2000})' .messageButton ls-tooltip="React" .messageReactButton><i .bi-emoji-smile-fill></i></div>
+                    <div onclick='app.ui.activeMessageReply()' .messageButton ls-tooltip="Reply" .messageReplyButton><i .bi-reply-fill></i></div>
+                    <div onclick="app.ui.activeMessageCopy()" .messageButton ls-tooltip="Copy text" .messageCopyButton><i .bi-clipboard-fill></i></div>
+                    <div onclick="app.ui.activeMessageCopyID()" .messageButton ls-tooltip="Copy message ID" .messageCopyButton><i .bi-clipboard-data></i></div>
+                    <div .messageButtonGroup .ownMessageButtons>
+                        <div onclick="app.ui.activeMessageEdit()" .messageButton ls-tooltip="Edit" .messageEditButton><i .bi-pencil-fill></i></div>
+                        <div onclick="app.ui.activeMessageDelete()" .messageButton ls-tooltip="Delete" .messageDeleteButton><i .bi-trash-fill></i></div>
+                    </div>
+                </div>
+
+                <div #writingArea>
+                    <div #typingUsers .hidden>
+                        <div .typingDots></div>
+                        <div .typingUsersText></div>
+                    </div>
+
+                    <ls-group join #messageBox>
+                        <div .replyingMessage style="display: none">
+                            <div>Replying to <b></b></div>
+                            <div role="button" style="cursor: pointer" onclick="app.replyingMessage = null"><i .bi-x-circle-fill></i></div>
+                        </div>
+                        <div .messageEditorContainer>
+                            <div role="button" .messageBoxButton>
+                                <i .bi-plus-circle-fill></i>
+                            </div>
+    
+                            <div #messageContent></div>
+    
+                            <div title="Emoji picker" role="button" onclick="app.ui.emojiPicker()" .messageBoxButton>
+                                <i .bi-emoji-laughing-fill></i>
+                            </div>
+    
+                            <div title="Send message" role="button" onclick="app.ui.send()" .messageBoxButton .sendButton>
+                                <i .bi-send-fill></i>
+                            </div>
+                        </div>
+                    </ls-group>
+                </div>
+    
+            </ls-tab>
+
+        </ls-tabs>
+    </ls-tab>
+</main> -->

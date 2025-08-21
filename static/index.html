@@ -89,36 +89,38 @@
             </div>
         </div>
     </div>
-    
-    <ls-box .inline .elevated>
-        <button .elevated>
-            <i .bi-box-seam-fill />
-            Projects
-        </button>
-    
-        <button .elevated>
-            <i .bi-image />
-            Designs
-        </button>
-    
-        <button .elevated>
-            <i .bi-music-note-beamed />
-            Music
-        </button>
-    </ls-box>
-    
-    <div style="position: relative">
-        <div style="position: relative">
-            <div #cursorPopout>
-                <i class="bi-box-arrow-up-right"></i>
-            </div>
+
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 20px 0">
+        <ls-box .inline .elevated>
+            <button .elevated>
+                <i .bi-box-seam-fill />
+                Projects
+            </button>
         
-            <div #searchBar>
-                <input type="text" placeholder="Search" #searchInput>
-            </div>
-    
-            <div .appShowcaseWrap>
-                <div #apps-showcase></div>
+            <button .elevated>
+                <i .bi-image />
+                Designs
+            </button>
+        
+            <button .elevated>
+                <i .bi-music-note-beamed />
+                Music
+            </button>
+        </ls-box>
+        
+        <div style="position: relative">
+            <div style="position: relative">
+                <div #cursorPopout>
+                    <i class="bi-box-arrow-up-right"></i>
+                </div>
+            
+                <div #searchBar>
+                    <input type="text" placeholder="Search" #searchInput>
+                </div>
+        
+                <div .appShowcaseWrap>
+                    <div #apps-showcase></div>
+                </div>
             </div>
         </div>
     </div>

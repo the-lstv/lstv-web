@@ -123,7 +123,8 @@
 
                     <ls-div .margin-v-xlarge>
                         <h3>Avatar</h3>
-                        <input type="file" hidden name="avatar" #profile-avatar accept="image/*">
+                        <span .settings-subtext>Supported animated formats: WebM, mp4, or gif*</span>
+                        <input type="file" hidden name="avatar" #profile-avatar accept="image/*,video/*">
                         <label for="profile-avatar" .ls-button .elevated>
                             <i .bi-image></i> Change Avatar
                         </label>
@@ -134,13 +135,27 @@
 
                     <ls-div .margin-v-xlarge>
                         <h3>Profile Banner</h3>
+                        <span .settings-subtext>Supported animated formats: WebM, mp4, or gif*</span>
                         <span .settings-subtext>Recommended size: 680x320 pixels</span>
-                        <input type="file" hidden name="banner" #profile-banner accept="image/*">
+                        <input type="file" hidden name="banner" #profile-banner accept="image/*,video/*">
                         <label for="profile-banner" .ls-button .elevated>
                             <i .bi-image></i> Change Banner
                         </label>
+
                         <button .clear #profile-remove-banner>Remove banner</button>
+
+                        <br>
+                        <br>
+
+                        <label .ls-checkbox>
+                            <input type="checkbox" id="fullscreen-banner" name="fullscreen-banner" {{ editingUser.fullscreen_banner }}>
+                            Fullscreen banner
+                            <span />
+                        </label>
                     </ls-div>
+
+
+                    <span style="display: inline" .settings-subtext ls-tooltip="Some GIFs may break.<br>We convert GIFs to WebM anyway, so using MP4/WebM directly may be better.<br>Note that GIF is now an outdated, low quality format and has inconsistent support." ls-tooltip-detached>*GIF is not recommended <i .bi-info-circle /></span>
 
                     <hr>
 
@@ -155,17 +170,19 @@
 
                     <hr>
 
-                    <ls-div .margin-v-xlarge>
-                        <h3>Profile Links</h3>
-                        <span .settings-subtext>Links to your social media or personal website.</span>
-                        <div .ls-table-wrap style="max-width: 400px">
-                            <table>
-                                <thead><tr><th>Platform</th><th>Link</th></tr></thead>
-                                <tbody #links></tbody>
-                            </table>
-                            <div role="caption" .ls-tfoot>
-                                <button .square .clear ls-tooltip aria-label="Add Link" #add-link style="height: 24px"><i .bi-plus-lg /></button>
-                                <button .square .clear ls-tooltip aria-label="Remove all" #clear-links style="height: 24px"><i .bi-trash-fill /></button>
+                    <ls-div .margin-v-xlarge style="opacity: .5" ls-tooltip="This feature is not yet available to everyone" ls-tooltip-detached>
+                        <div style="pointer-events: none">
+                            <h3>Profile Links</h3>
+                            <span .settings-subtext>Links to your social media or personal website.</span>
+                            <div .ls-table-wrap style="max-width: 400px">
+                                <table>
+                                    <thead><tr><th>Platform</th><th>Link</th></tr></thead>
+                                    <tbody #links></tbody>
+                                </table>
+                                <div role="caption" .ls-tfoot>
+                                    <button .square .clear ls-tooltip aria-label="Add Link" #add-link style="height: 24px"><i .bi-plus-lg /></button>
+                                    <button .square .clear ls-tooltip aria-label="Remove all" #clear-links style="height: 24px"><i .bi-trash-fill /></button>
+                                </div>
                             </div>
                         </div>
                     </ls-div>
@@ -173,8 +190,19 @@
                     <hr>
 
                     <ls-div .margin-v-xlarge>
+                        <h3>Glossy style <ls-box .inline .text-tag>LIMITED EDITION</ls-box></h3>
+                        <span .settings-subtext>Limited edition glossy style for your profile.</span>
+
+                        <label .ls-checkbox>
+                            <input type="checkbox" id="secret-glossy-style" name="secret-glossy-style" {{ editingUser.profile_style }}>
+                            Enable
+                            <span />
+                        </label>
+                    </ls-div>
+
+                    <ls-div .margin-v-xlarge>
                         <h3>Mature Content</h3>
-                        <span .settings-subtext>If your profile media or content contains mature content, you must check this. Your profile will be hidden from some people.</span>
+                        <span .settings-subtext>If your profile media or content contains mature content, you must check this. Your profile will be hidden from some people. Remember to see our ToS to see what's allowed.</span>
 
                         <label .ls-checkbox>
                             <input type="checkbox" id="mature-content" name="mature-content" {{ editingUser.nsfw }}>
@@ -185,25 +213,30 @@
                 </div>
 
                 <div>
-                    <div .profile .profile-block .level-1>
-                        <div .profile-banner .editable {{ editingUser.banner:ProfileBanner }} />
-                        <div .profile-avatar .editable {{ editingUser.pfp:ProfilePicture(120px) }} />
+                    <div style="position: sticky; top: 10px">
+                        <div .profile .profile-block .level-1>
+                            <div .profile-banner .editable {{ editingUser.banner:ProfileBanner }} />
+                            <div .profile-avatar .editable {{ editingUser.pfp:ProfilePicture(120px) }} />
+        
+                            <div .profile-content>
+                                <ls-box .contained .level-2 style="border-radius: var(--border-radius-large)">
+                                    <h2 {{ editingUser.displayname:DisplayName }} style="margin-bottom: 0; font-weight: 700" />
+                                    {{ editingUser.username:ProfileUsername }}
+                                </ls-box>
+        
+                                {{ editingUser.bio:ProfileBio(true) }}
+                                {{ editingUser.profileLinks:ProfileLinks }}
+                            </div>
     
-                        <div .profile-content>
-                            <ls-box .contained .level-2 style="border-radius: var(--border-radius-large)">
-                                <h2 {{ editingUser.displayname:DisplayName }} style="margin-bottom: 0; font-weight: 700" />
-                                <span .profile-username>&#64;{{ editingUser.username }}</span>
-                            </ls-box>
-    
-                            {{ editingUser.bio:ProfileBio(true) }}
-                            {{ editingUser.profileLinks:ProfileLinks }}
+                            <span hidden {{ editingUser.profile_style:ProfileEffects(style) }} />
+                            <span hidden {{ editingUser.fullscreen_banner:ProfileEffects(fullscreen-banner) }} />
                         </div>
+
+                        <ls-div>
+                            <button .pill .elevated onclick="this.parentElement.parentElement.children[0].setAttribute('ls-theme', 'light')"><i .bi-sun-fill /> Try light mode</button>
+                            <button .pill .elevated onclick="this.parentElement.parentElement.children[0].setAttribute('ls-theme', 'dark')"><i .bi-moon-stars-fill /> Try dark mode</button>
+                        </ls-div>
                     </div>
-    
-                    <ls-div>
-                        <button .pill .elevated onclick="this.parentElement.parentElement.children[0].setAttribute('ls-theme', 'light')"><i .bi-sun-fill /> Try light mode</button>
-                        <button .pill .elevated onclick="this.parentElement.parentElement.children[0].setAttribute('ls-theme', 'dark')"><i .bi-moon-stars-fill /> Try dark mode</button>
-                    </ls-div>
                 </div>
             </div>
         </ls-tab>

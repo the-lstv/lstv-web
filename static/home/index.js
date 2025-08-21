@@ -1,6 +1,13 @@
 app.module('home', function(app, page, container) {
     page.title = "User Settings";
 
+    app.once("user-loaded", () => {
+        if(!app.isLoggedIn) {
+            location.replace("/login?continue=" + encodeURIComponent(location.pathname));
+            return;
+        }
+    })
+
     page.registerSPAExtension("/home/", (page) => {
         container.get('.container').classList.remove('sidebar-menu-visible');
         tabs.set(page || "home");
@@ -48,7 +55,8 @@ app.module('home', function(app, page, container) {
                         width: 256,
                         height: 256,
                         shape: "circle",
-                        field: "pfp"
+                        field: "pfp",
+                        animated: true
                     });
                 }
 
@@ -62,13 +70,19 @@ app.module('home', function(app, page, container) {
             O("#profile-banner").on("change", function() {
                 const file = this.files[0];
 
+                const fullscreenBanner = O(".profile-editor-container .profile").classList.contains("fullscreen-banner");
+
+                const width = fullscreenBanner ? 170 : 340;
+                const height = fullscreenBanner ? 240 : 160;
+
                 if (file) {
                     openCropper(file, {
-                        width: 340,
-                        height: 160,
-                        finalWidth: 340 * 2,
-                        finalHeight: 160 * 2,
-                        field: "banner"
+                        width,
+                        height,
+                        finalWidth: width * 2,
+                        finalHeight: height * 2,
+                        field: "banner",
+                        animated: true
                     });
                 }
 
@@ -96,16 +110,16 @@ app.module('home', function(app, page, container) {
                 resetProfile();
             });
 
-            O("#add-link").on("click", function() {
-                
-            });
-
-            // O("#profile-remove-links").on("click", function() {
-            //     editingUser.external_links = [];
-            // });
-
             O("#mature-content").on("change", function() {
                 editingUser.nsfw = this.checked;
+            });
+
+            O("#fullscreen-banner").on("change", function() {
+                editingUser.fullscreen_banner = this.checked;
+            });
+
+            O("#secret-glossy-style").on("change", function() {
+                editingUser.profile_style = this.checked ? "glossy" : null;
             });
 
             const links_table = O("#links");
@@ -123,10 +137,24 @@ app.module('home', function(app, page, container) {
             function openCropper(file, options) {
                 const cropper = new LS.ImageCropper(file, {
                     ...options,
+                    createURL: true,
 
-                    async onResult(blob) {
-                        blobs[options.field] = { blob, url: URL.createObjectURL(blob) };
+                    async onResult(result) {
+                        modal.close();
+                        blobs[options.field] = result;
+                        editingUser[`__animated_${options.field}`] = result.animated;
                         editingUser[options.field] = blobs[options.field].url;
+                    },
+
+                    onError(){
+                        LS.Modal.buildEphemeral({
+                            title: "Crop failed",
+                            content: "Sorry, an error occurred while cropping or loading your image. Please try again later.",
+                            buttons: [
+                                { label: "Ok" }
+                            ]
+                        });
+                        modal.close();
                     }
                 });
 
@@ -139,7 +167,6 @@ app.module('home', function(app, page, container) {
                             label: "Crop",
                             onClick() {
                                 cropper.crop();
-                                modal.close();
                             }
                         }
                     ]
@@ -161,8 +188,8 @@ app.module('home', function(app, page, container) {
                     // First, we need to upload the cropped image to the CDN file bucket. The API allows us to upload both at once.
                     try {
                         const formData = new FormData();
-                        if (blobs.pfp) formData.append("file", blobs.pfp.blob, "avatar.png");
-                        if (blobs.banner) formData.append("file", blobs.banner.blob, "banner.png");
+                        if (blobs.pfp) formData.append("file", blobs.pfp.blob, "avatar." + (editingUser.__animated_pfp ? "webm" : "webp"));
+                        if (blobs.banner) formData.append("file", blobs.banner.blob, "banner." + (editingUser.__animated_banner ? "webm" : "webp"));
 
                         const response = await fetch(app.cdn + "/upload", {
                             method: "POST",

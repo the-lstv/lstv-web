@@ -282,7 +282,7 @@ window.addEventListener("DOMContentLoaded", async () => {
             styled: false
         }),
 
-        getProfilePictureView(source, args) {
+        getProfilePictureView(source, args, element, user) {
             const filename = (source && typeof source === "object")? source.pfp: source;
 
             let IMAGE_RESOLUTION = 128;
@@ -294,32 +294,50 @@ window.addEventListener("DOMContentLoaded", async () => {
             }
 
             const src = filename? filename.startsWith("blob:")? filename : app.cdn + '/file/' + filename + "?size=" + IMAGE_RESOLUTION: "/assets/image/default.svg";
+            const isAnimated = user.__animated_pfp || filename && filename.endsWith(".webm");
 
-            const img = N("img", {
+            const img = N(isAnimated ? "video" : "img", {
                 src,
                 alt: "Profile Picture",
                 class: "profile-picture",
                 draggable: false,
-                onerror() { this.src = "/assets/image/default.svg" }
+                onerror() { this.src = "/assets/image/default.svg" },
+                ...isAnimated && {
+                    autoplay: true,
+                    loop: true,
+                    muted: true
+                }
+            });
+
+            const wrapper = N("div", {
+                class: "profile-picture-wrapper" + (user.username === "admin" ? " secret-frame-experiment" : ""),
+                inner: img
             });
 
             if (args && args[0]) img.style.width = img.style.height = typeof args[0] === "number" ? args[0] + "px" : args[0];
-            return img;
+            wrapper.style.height = img.style.height;
+            wrapper.style.width = img.style.width;
+            return wrapper;
         },
 
-        getBannerView(source, args) {
+        getBannerView(source, args, element, user) {
             const filename = (source && typeof source === "object")? source.banner: source;
-
             
             if(filename) {
                 const src = filename.startsWith("blob:")? filename : app.cdn + '/file/' + filename;
+                const isAnimated = user.__animated_banner || filename.endsWith(".webm");
 
-                const img = N("img", {
+                const img = N(isAnimated? "video" : "img", {
                     src,
                     alt: "Banner Picture",
                     class: "banner-media",
                     draggable: false,
-                    onerror() { this.remove() }
+                    onerror() { this.remove() },
+                    ...isAnimated && {
+                        autoplay: true,
+                        loop: true,
+                        muted: true
+                    }
                 });
 
                 return img;
@@ -413,7 +431,41 @@ window.addEventListener("DOMContentLoaded", async () => {
     LS.Reactive.registerType("ProfileBanner", app.getBannerView);
     LS.Reactive.registerType("ProfileLinks", app.getLinksView);
     LS.Reactive.registerType("ProfileBio", app.getBioView);
-    LS.Reactive.registerType("DisplayName", (value, args, element, source) => value || source.displayname || source.username || "Anonymous");
+    LS.Reactive.registerType("DisplayName", (value, args, element, user) => {
+        return value || user.displayname || user.username || "Anonymous";
+    });
+
+    LS.Reactive.registerType("ProfileUsername", (value, args, element, user) => {
+        if(value === "admin") {
+            const profile = element.closest(".profile");
+
+            if(profile) {
+                profile.classList.add("admin");
+                profile.setAttribute("ls-accent", "pastel-teal");
+            }
+        }
+
+        element.classList.add("profile-username");
+        return "@" + (value || (user && user.username) || "anonymous");
+    });
+
+    LS.Reactive.registerType("ProfileEffects", (value, args, element, user) => {
+        const profile = element.closest(".profile");
+
+        if(args[0] === "style") {
+            if(profile && value) {
+                profile.setAttribute("profile-style", value);
+            } else {
+                profile.removeAttribute("profile-style");
+            }
+        }
+
+        if (args[0] === "fullscreen-banner") {
+            profile.classList.toggle("fullscreen-banner", !!user.fullscreen_banner);
+        }
+
+        return null;
+    });
 
     const nonce = Math.random().toString(36).substring(2);
 
@@ -622,7 +674,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     });
 
     O("#accountsButton").on("click", function (){
-        app.loginTabs.set(app.isLoggedIn? "account": "default");
+        app.loginTabs.set(app.isLoggedIn? "account": "default", true);
         app.toolbarOpen("toolbarLogin", true, this);
     });
 
@@ -659,7 +711,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
 
     function redirectAfterLogin() {
-        location.replace(app.originalQuery.continue || (location.pathname.startsWith("/login") || location.pathname.startsWith("/sign-up"))? "/": location.href);
+        location.replace(app.originalQuery.continue || ((location.pathname.startsWith("/login") || location.pathname.startsWith("/sign-up"))? "/": location.href));
     }
 
     document.forms["loginForm"].addEventListener("submit", (event) => {
@@ -723,8 +775,6 @@ window.addEventListener("DOMContentLoaded", async () => {
         return false;
     });
 
-    app.loginTabs.set(location.pathname.startsWith("/login") ? "login" : location.pathname.startsWith("/sign-up") ?  "register" : "default");
-
     app.loginTabs.on("changed", (tab, old) => {
         const view = app.loginTabs.currentElement();
         const oldElement = app.loginTabs.tabs.get(old)?.element;
@@ -737,6 +787,8 @@ window.addEventListener("DOMContentLoaded", async () => {
             O("#toolbarLogin").style.height = view.offsetHeight + "px";
         });
     });
+
+    app.loginTabs.set(location.pathname.startsWith("/login") ? "login" : location.pathname.startsWith("/sign-up") ?  "register" : "default");
 
     O("#appsButton").on("click", function (){
         app.toolbarOpen("toolbarApps", true, this);
@@ -757,11 +809,50 @@ window.addEventListener("DOMContentLoaded", async () => {
         return password;
     }
 
+    const generateUsername = () => {
+        const adjectives = [
+            "Swift", "Neon", "Crimson", "Silent", "Lunar", "Cyber", "Fuzzy", "Vivid",
+            "Glitchy", "Quantum", "Fractal", "Shattered", "Prismatic", "Static",
+            "Hyper", "Zero", "Binary", "Pixelated", "Chromatic", "Noisy", "Psycho",
+            "Turbo", "Aero", "Sonic", "Electric", "Holo", "Infra", "Ultra", "Nano",
+            "Mega", "Giga", "Omega", "Rapid", "Frozen", "Burning", "Radiant", "Dark",
+            "Void", "Spectral", "Phase", "Echoing", "Warped", "Distorted", "Jagged",
+            "Sharp", "Blazing", "Icy", "Molten", "Toxic", "Viral", "Encrypted",
+            "Obsidian", "Aurora", "Shiny", "Cursed", "Blessed", "Chaotic", "Lucid"
+        ];
+
+        const nouns = [
+            "Falcon", "Pixel", "Nova", "Echo", "Shadow", "Circuit", "Pulse", "Glitch",
+            "Fragment", "Spectrum", "Core", "Drive", "Signal", "Frame", "Loop",
+            "Phase", "Drop", "Blast", "Surge", "Wave", "Stream", "Flow", "Beat",
+            "Rhythm", "Synth", "Bass", "Kick", "Snare", "Lead", "Pad", "Drone",
+            "Sample", "Track", "Mix", "Layer", "Chain", "Patch", "Bit", "Byte",
+            "Packet", "Node", "Port", "Link", "Grid", "Mesh", "Axis", "Vector",
+            "Pulsewave", "Overdrive", "Underflow", "Overflow", "Crash", "Stack",
+            "Buffer", "Kernel", "Thread", "Process", "Cluster", "Shard", "Crystal",
+            "Prism", "Mirror", "Lens", "Scope", "Ray", "Beam", "Flash", "Spark",
+            "Bolt", "Storm", "Tempest", "Cyclone", "Vortex", "Tornado", "Quake"
+        ];
+
+        return (
+            adjectives[Math.floor(Math.random() * adjectives.length)] +
+            nouns[Math.floor(Math.random() * nouns.length)] +
+            Math.floor(Math.random() * 1000)
+        );
+    };
+
     O("#randomPassword").on("click", function (){
         const password = generateSecurePassword(12);
         O("#regPassword").value = password;
         O("#regPassword").dispatchEvent(new Event("input"));
         alert("Your generated password: " + password);
+    });
+
+    O("#randomUsername").on("click", function (){
+        const username = generateUsername();
+        O("#regUsername").value = username.toLowerCase();
+        O("#regUsername").dispatchEvent(new Event("input"));
+        O("#displayname").value = username;
     });
 
     for(let accent of app.ACCENT_COLORS) {
