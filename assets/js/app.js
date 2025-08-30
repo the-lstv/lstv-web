@@ -644,8 +644,10 @@ window.addEventListener("DOMContentLoaded", async () => {
     } else {
         // Debugging only!
         window.app = app;
-        app.auth = auth;
     }
+
+    // TODO: Separate this, currently some parts rely on it
+    app.auth = auth;
 
     LS.Color.on("theme-changed", () => {
         O("#themeButton i").className = "bi-" + (app.theme == "light"? "moon-stars-fill": "sun-fill");
