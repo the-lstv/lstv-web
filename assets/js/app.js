@@ -301,7 +301,6 @@ window.addEventListener("DOMContentLoaded", async () => {
                 alt: "Profile Picture",
                 class: "profile-picture",
                 draggable: false,
-                onerror() { this.src = "/assets/image/default.svg" },
                 ...isAnimated && {
                     autoplay: true,
                     loop: true,
