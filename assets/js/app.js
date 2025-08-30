@@ -293,7 +293,7 @@ window.addEventListener("DOMContentLoaded", async () => {
                 );
             }
 
-            const isAnimated = user.__animated_pfp || filename && filename.endsWith(".webm");
+            const isAnimated = filename && user.__animated_pfp || filename && filename.endsWith(".webm");
             const src = filename? filename.startsWith("blob:")? filename : app.cdn + '/file/' + filename + (!isAnimated? "?size=" + IMAGE_RESOLUTION: ""): "/assets/image/default.svg";
 
             const img = N(isAnimated ? "video" : "img", {
@@ -301,6 +301,18 @@ window.addEventListener("DOMContentLoaded", async () => {
                 alt: "Profile Picture",
                 class: "profile-picture",
                 draggable: false,
+                onerror() {
+                    if (this.tagName.toLowerCase() === "video") {
+                        this.replaceWith(N("img", {
+                            src: "/assets/image/default.svg",
+                            alt: "Profile Picture",
+                            class: "profile-picture",
+                            draggable: false
+                        }));
+                        return;
+                    }
+                    this.src = "/assets/image/default.svg"
+                },
                 ...isAnimated && {
                     autoplay: true,
                     loop: true,
