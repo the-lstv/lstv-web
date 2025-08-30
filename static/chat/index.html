@@ -1,7 +1,8 @@
 #template /templates/main.html
 
 <head>
-    @use (/chat/index.css, /chat/index.js);
+    @use (/chat/index.css, /chat/index.js[defer]);
+    @use (ls.js.Resize:5.2.0);
 
     @page {
         title: "LSTV | Chat";
@@ -11,11 +12,13 @@
 </head>
 
 <div #chat-main>
-    <div>
-        
+    <div #chat-left-area>
+        <div #server-list>
+
+        </div>
     </div>
 
-    <div #mainArea>
+    <div #chat-main-area>
         <ls-tab #chatTab tab-id="chat">
             <div #messageAreaWrapper>
                 <div #messageArea>
@@ -31,10 +34,24 @@
         </ls-tab>
     </div>
 
-    <div #memberList>
-
+    <div #chat-right-area>
+        
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

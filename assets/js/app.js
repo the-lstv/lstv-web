@@ -293,8 +293,8 @@ window.addEventListener("DOMContentLoaded", async () => {
                 );
             }
 
-            const src = filename? filename.startsWith("blob:")? filename : app.cdn + '/file/' + filename + "?size=" + IMAGE_RESOLUTION: "/assets/image/default.svg";
             const isAnimated = user.__animated_pfp || filename && filename.endsWith(".webm");
+            const src = filename? filename.startsWith("blob:")? filename : app.cdn + '/file/' + filename + (!isAnimated? "?size=" + IMAGE_RESOLUTION: ""): "/assets/image/default.svg";
 
             const img = N(isAnimated ? "video" : "img", {
                 src,
