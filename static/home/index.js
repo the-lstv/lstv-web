@@ -191,7 +191,7 @@ app.module('home', function(app, page, container) {
                         if (blobs.pfp) formData.append("file", blobs.pfp.blob, "avatar." + (editingUser.__animated_pfp ? "webm" : "webp"));
                         if (blobs.banner) formData.append("file", blobs.banner.blob, "banner." + (editingUser.__animated_banner ? "webm" : "webp"));
 
-                        const response = await fetch(app.cdn + "/upload", {
+                        const response = await fetch(app.cdn + "/upload?intent=avatar&origin_id=" + editingUser.id, {
                             method: "POST",
                             body: formData
                         });

@@ -303,12 +303,15 @@ window.addEventListener("DOMContentLoaded", async () => {
                 draggable: false,
                 onerror() {
                     if (this.tagName.toLowerCase() === "video") {
-                        this.replaceWith(N("img", {
+                        const image = N("img", {
                             src: "/assets/image/default.svg",
                             alt: "Profile Picture",
                             class: "profile-picture",
-                            draggable: false
-                        }));
+                            draggable: false,
+                        });
+
+                        this.replaceWith(image);
+                        if (args && args[0]) image.style.width = image.style.height = typeof args[0] === "number" ? args[0] + "px" : args[0];
                         return;
                     }
                     this.src = "/assets/image/default.svg"
