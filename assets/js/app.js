@@ -116,7 +116,8 @@ window.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
-    const CDN_URL = "https://cdn.extragon." + (isLocalhost? "localhost": "cloud");
+    // const CDN_URL = "https://cdn.extragon." + (isLocalhost? "localhost": "cloud");
+    const CDN_URL = "https://cdn.extragon.cloud";
 
     let app = {
         container: O("#app"),
