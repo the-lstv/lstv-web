@@ -186,6 +186,8 @@ window.addEventListener("DOMContentLoaded", async () => {
 
             const oldElement = O(".toolbar.visible");
 
+            view.style.transition = (!app.isToolbarOpen || !oldElement)? "none" : "";
+
             LS.Animation.slideInToggle(view, oldElement);
 
             if (!app.isToolbarOpen) LS.Animation.fadeIn(O("#toolbars"), null, "up");
@@ -644,6 +646,8 @@ window.addEventListener("DOMContentLoaded", async () => {
 
             loginTabs: app.loginTabs,
 
+            cdn: app.cdn,
+
             on: app.events.on.bind(app.events),
             once: app.events.once.bind(app.events),
             off: app.events.off.bind(app.events),
@@ -797,6 +801,8 @@ window.addEventListener("DOMContentLoaded", async () => {
         const oldElement = app.loginTabs.tabs.get(old)?.element;
 
         clearLoginError();
+
+        view.style.transition = (!app.isToolbarOpen || !oldElement)? "none" : "";
 
         LS.Animation.slideInToggle(view, oldElement);
 

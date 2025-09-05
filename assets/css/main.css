@@ -599,7 +599,7 @@ main > div {
     --avatar-size: 120px;
 }
 
-.profile-picture-wrapper.secret-frame-experiment::after {
+/* .profile-picture-wrapper.secret-frame-experiment::after {
     content: "";
     background-image: url(https://cdn.extragon.localhost/file/fa.gif);
     background-size: contain;
@@ -608,7 +608,7 @@ main > div {
     opacity: 0.4;
     filter: grayscale(0.8) hue-rotate(160deg);
     background-repeat: no-repeat;
-}
+} */
 
 .profile-picture-wrapper {
     position: relative;
@@ -642,7 +642,7 @@ main > div {
     pointer-events: none;
 }
 
-[profile-style=glossy]::before {
+/* [profile-style=glossy]::before {
     content: "";
     background-image: url(https://cdn.extragon.localhost/file/2d5adcc7e074cd03.jpg);
     inset: 0;
@@ -651,7 +651,7 @@ main > div {
     mix-blend-mode: color-dodge;
     filter: grayscale(1);
     pointer-events: none;
-}
+} */
 
 [profile-style=glossy] ls-box::after {
     height: 50%;
