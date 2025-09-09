@@ -1,0 +1,101 @@
+#template /templates/main.html
+
+<head>
+    @use (/docs/index.css, /docs/index.js[defer]);
+    @use (hljs[lang:javascript, lang:nginx], marked);
+
+    @page {
+        title: "";
+        description: "";
+        keywords: "docs, documentation, api, api docs, usage, help";
+    }
+</head>
+
+<body><h2>Configuration</h2>
+<p>The main configuration file is in the <code>config</code> file in where you have installed Akeno (usually <code>/usr/lib/akeno</code>).</p>
+<p>The syntax follows the <a href="https://github.com/the-lstv/atrium">Atrium</a> format (I plan to add multiple formats in the future eg. <code>json</code>, similarly to how Caddy does it).</p>
+<blockquote>
+<p>[!NOTE]
+ In many places, the type is number/string, but mutiple values are supported (eg. ports and domains) - you can simply do &quot;port: 1, 2, 3&quot; for multiple values.</p>
+</blockquote>
+<p>Overview of blocks (incomplete):</p>
+<ul>
+<li><code>system</code><ul>
+<li><code>mode:enum</code>: development, production (default), testing or maintenance</li>
+<li><code>logLevel:int</code>: Number 0 to 5 - 0 only logs critical errors, 5 logs everything including verbose messages. Defaults to 5 in development mode, 2 in production mode.</li>
+</ul>
+</li>
+<li><code>protocols</code><ul>
+<li><code>ipc</code> IPC<ul>
+<li><code>enabled:bool</code>: Whether to enable IPC (needed when using as a global server - usually not needed for dedicated servers)</li>
+<li><code>path:string</code>: The path to the IPC socket (default: /tmp/akeno.backend.sock)</li>
+<li><code>windowsPipeName:string</code>: Named pipe to use on Windows systems (default: akeno.backend.sock)</li>
+<li><code>openPermissions:bool</code>: If true, the socket will be open to all users (so it can be used without sudo).</li>
+</ul>
+</li>
+<li><code>http</code> HTTP<ul>
+<li><code>enabled:bool</code>: Whether to enable HTTP</li>
+<li><code>port:number</code>: Port (or a list of ports) to listen on.</li>
+<li><code>websockets:bool</code>: Whether to enable WebSockets (default: dev-only). &quot;dev-only&quot; disables unsecured WebSockets in production.</li>
+</ul>
+</li>
+<li><code>https</code> HTTPS<ul>
+<li><code>enabled:bool</code>: Whether to enable HTTPS</li>
+<li><code>port:number</code>: Port (or a list of ports) to listen on.</li>
+<li><code>websockets:bool</code>: Whether to enable WebSockets (default: true).</li>
+</ul>
+</li>
+<li><code>h3</code> HTTP/3 protocol (experimental)<ul>
+<li><code>enabled:bool</code>: Whether to enable HTTP/3</li>
+<li><code>port:number</code>: Port (or a list of ports) to listen on.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>[!NOTE]
+TIP: If you are using certbot, the default config should simply just work out of the box.
+[!WARNING]
+There currently isn&#39;t an API for per-domain certificates - it is planned, but currently it is recommended to simply use certBase and keyBase. It is planned to be added sometime in 1.6.8.</p>
+</blockquote>
+<ul>
+<li><code>ssl</code> Configure SSL certificates for HTTPS and H3.<ul>
+<li><code>key:string</code>: Default private key.</li>
+<li><code>cert:string</code>: Default certificate.</li>
+<li><code>domains:string</code>: List of domains to load certificates for (you can use wildcards eg. <code>*.example.com</code>).</li>
+<li><code>certBase:string</code>: Base path to certificates, <code>{domain}</code> will be replaced with the domain name.</li>
+<li><code>keyBase:string</code>: Base path to private keys, <code>{domain}</code> will be replaced with the domain name.</li>
+<li><code>autoAddDomains:bool</code>: If true, Akeno will automatically add new domains it encounters.</li>
+</ul>
+</li>
+<li><code>web</code> Configure web server settings.<ul>
+<li><code>locations:string</code>: List of folders/locations to serve. Wildcards are supported (eg. <code>/www/sites/*</code> will load folders inside as websites if they contain an <code>app.conf</code> file).</li>
+<li><code>compress:bool</code>: Enable compression (brotli, gzip, etc.)</li>
+<li><code>compress-code:bool</code>: Enable code compression (js, css, html and inline scripts/styles, etc.)</li>
+</ul>
+</li>
+</ul>
+<h3>Example server config:</h3>
+<pre class="pd-code lang-nginx"><code class="hljs"><span class="hljs-attribute">system</span> mode: development;
+
+<span class="hljs-section">protocols</span> {
+    <span class="hljs-section">ipc</span> {
+        enabled;
+        path: &quot;/tmp/akeno.backend.sock&quot;;
+    }
+
+    <span class="hljs-section">http</span> {
+        port: 80, 8080;
+    }
+
+    <span class="hljs-section">https</span> {
+        port: 443;
+    }
+}
+
+<span class="hljs-section">web</span> {
+    compress;
+    compress-code;
+    locations: &quot;/www/sites/*&quot;, &quot;/home/user/my_site&quot;;
+}</code></pre></body>

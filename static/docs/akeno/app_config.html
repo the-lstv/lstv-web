@@ -1,0 +1,72 @@
+#template /templates/main.html
+
+<head>
+    @use (/docs/index.css, /docs/index.js[defer]);
+    @use (hljs[lang:javascript, lang:nginx], marked);
+
+    @page {
+        title: "";
+        description: "";
+        keywords: "docs, documentation, api, api docs, usage, help";
+    }
+</head>
+
+<body><h2>App configuration file</h2>
+<p>For web apps using <code>Units.WebApp</code> (eg. websites defined in the config file in <code>locations</code>), there is a <code>app.conf</code> file that contains configuration specific to the app.
+The syntax is the same as the server config, but the blocks are different.
+Here is a basic overview:</p>
+<ul>
+<li><code>server</code> - Configuration for the app server.<ul>
+<li><code>domains:string</code>: List of domains to serve the app on (you can use wildcards (* for one segment and ** for all - eg. <code>subdomain.*.com</code> or <code>**.com</code>) and groups (eg. <code>example.{com,net}</code>), and optional matching (<code>{sub,}.example.com</code>)).</li>
+<li><code>canonical:string</code>: Optional - canonical (primary) domain. This does not affect the server but may be used in some cases.</li>
+<li><code>root:string</code>: Optional - root directory override for the app files (defaults to the location of the app.conf file). You can reference the original root by prefixing paths with &quot;<del>&quot; (eg. `</del>/my_app`).</li>
+<li><code>redirect_https:bool</code>: If true, all HTTP requests will be redirected to HTTPS.</li>
+<li><code>redirect_www:bool</code>: If true, requests to <code>www.**</code> will be redirected to <code>**</code>.</li>
+</ul>
+</li>
+</ul>
+<p><em>(in the future, i plan to allow multiple server blocks - currently, there can only be one)</em></p>
+<ul>
+<li><code>location(...path)</code> - Sets options for specific locations. Supports wildcards (* and **, eg. <code>/*</code> matches only files in &quot;/&quot;, <code>/**</code> matches files in all subdirectories as well).<ul>
+<li><code>alias:string</code>: Serve files from a different location (eg. <code>location(favicon.ico) alias: /assets/icon.svg</code> will serve from <code>/assets/icon.svg</code> at <code>/favicon.ico</code>).</li>
+<li><code>deny:boolean</code>: If true, access to this location will be denied.</li>
+<li><code>redirect:string</code>: Set a redirect to a different URL at this location.</li>
+</ul>
+</li>
+<li><code>redirect(...path)</code> - Same as location.redirect, set a redirect.<ul>
+<li><code>to:string</code>: The target URL to redirect to.</li>
+</ul>
+</li>
+<li><code>browserSupport</code> - Specifies the minimum browser versions that the app supports - if a browser does not match, a message will be shown instead.<ul>
+<li><code>chrome:number</code>: Minimum Chrome version.</li>
+<li><code>firefox:number</code>: Minimum Firefox version.</li>
+<li><code>safari:number</code>: Minimum Safari version.</li>
+<li><code>edge:number</code>: Minimum Edge version.</li>
+</ul>
+</li>
+<li><code>errors</code> - Define error pages.<ul>
+<li><code>[error-code]:string</code>: Path to the error page for the given error code (eg. <code>404: /errors/404.html</code>).</li>
+<li><code>default:string</code>: Fallback path to the default error page for all codes</li>
+</ul>
+</li>
+</ul>
+<h3>Example</h3>
+<p>Here is a basic example of an app.conf file:</p>
+<pre class="pd-code lang-nginx"><code class="hljs"><span class="hljs-section">server</span> {
+    domains: example.{com, net, localhost};
+}
+
+<span class="hljs-comment"># Deny access to node_modules</span>
+<span class="hljs-section">location</span>(/node_modules/**) deny;
+
+<span class="hljs-comment"># Route /home and /settings to /index.html</span>
+<span class="hljs-section">location</span>(/{home, settings}) alias: /index.html;
+
+redirect(/example) to: &quot;https://www.example.com&quot;;
+
+<span class="hljs-attribute">errors</span> <span class="hljs-number">404</span>: /errors/<span class="hljs-number">404</span>.html;
+
+<span class="hljs-section">browserSupport</span> {
+    chrome: 90;
+    firefox: 80;
+}</code></pre></body>

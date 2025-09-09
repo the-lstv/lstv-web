@@ -1,0 +1,76 @@
+#template /templates/main.html
+
+<head>
+    @use (/docs/index.css, /docs/index.js[defer]);
+    @use (hljs[lang:javascript, lang:nginx], marked);
+
+    @page {
+        title: "";
+        description: "";
+        keywords: "docs, documentation, api, api docs, usage, help";
+    }
+</head>
+
+<body><h1>WebSockets examples</h1>
+<p>WebSockets are a core part of Akeno and work seamlessly alongside HTTP/S - where you can host HTTP, you can also easily setup a websocket.</p>
+<p>To setup a WebSocket, all you need is:</p>
+<pre class="pd-code lang-js"><code class="hljs">server.<span class="hljs-title function_">route</span>(<span class="hljs-string">&quot;localhost&quot;</span>, {
+    <span class="hljs-attr">websocket</span>: {
+        <span class="hljs-title function_">open</span>(<span class="hljs-params">ws</span>) {
+            <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&quot;Client connected!&quot;</span>);
+        },
+
+        <span class="hljs-title function_">message</span>(<span class="hljs-params">ws, message, isBinary</span>) {
+            <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&quot;Received message:&quot;</span>, message);
+        },
+
+        <span class="hljs-title function_">close</span>(<span class="hljs-params">ws</span>) {
+            <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&quot;Client disconnected!&quot;</span>);
+        }
+    }
+});
+
+<span class="hljs-comment">// You can now connect to ws://localhost and wss://localhost.</span></code></pre><p>You can easily setup WebSockets alongside an existing HTTP/S route:</p>
+<pre class="pd-code lang-js"><code class="hljs"><span class="hljs-comment">// --- For simple HTTP handlers: ---</span>
+server.<span class="hljs-title function_">route</span>(<span class="hljs-string">&quot;localhost&quot;</span>, {
+    <span class="hljs-title function_">onRequest</span>(<span class="hljs-params">req, res</span>) {
+        res.<span class="hljs-title function_">end</span>(<span class="hljs-string">&quot;Hello from HTTP server!&quot;</span>);
+    },
+
+    <span class="hljs-comment">// Seamlessly integrate WebSocket handlers</span>
+    <span class="hljs-attr">websocket</span>: {
+        <span class="hljs-title function_">open</span>(<span class="hljs-params">ws</span>) {
+            <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&quot;Client connected!&quot;</span>);
+        }
+    }
+});
+
+<span class="hljs-comment">// http://localhost now works as a HTTP server, and ws://localhost works as a WebSocket server.</span>
+<span class="hljs-comment">// That is all the configuration you need!</span></code></pre><pre class="pd-code lang-js"><code class="hljs"><span class="hljs-comment">// -- Or for any other handler, including path matchers, other routers, file servers... --</span>
+
+<span class="hljs-keyword">const</span> myServer = <span class="hljs-keyword">new</span> akeno.<span class="hljs-title class_">FileServer</span>(); <span class="hljs-comment">// Can be any kind of handler</span>
+
+<span class="hljs-comment">// Set websocket handlers</span>
+myServer.<span class="hljs-title function_">ws</span>({
+    <span class="hljs-title function_">open</span>(<span class="hljs-params">ws</span>) { ... }
+})
+
+server.<span class="hljs-title function_">route</span>(<span class="hljs-string">&quot;localhost&quot;</span>, myServer);</code></pre><p>Custom upgrade handlers are as simple as adding an <code>upgrade</code> handler function (which will override the default upgrade logic):</p>
+<pre class="pd-code lang-js"><code class="hljs">server.<span class="hljs-title function_">route</span>(<span class="hljs-string">&quot;localhost&quot;</span>, {
+    <span class="hljs-attr">websocket</span>: {
+        <span class="hljs-title function_">upgrade</span>(<span class="hljs-params">res, req, wsContext</span>) {
+            <span class="hljs-comment">// Perform any custom upgrade logic here (see uWebSockets.js upgrade handler)</span>
+        }
+    }
+});</code></pre><pre class="pd-code lang-js"><code class="hljs"><span class="hljs-comment">// -- Or: you can also handle WebSocket connections inside regular HTTP handlers! --</span>
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">myHandler</span>(<span class="hljs-params">req, res, wsContext</span>) {
+    <span class="hljs-comment">// Here you can perform logic for both HTTP and WS requests</span>
+
+    <span class="hljs-keyword">if</span>(wsContext) {
+        <span class="hljs-comment">// Perform upgrade here</span>
+        <span class="hljs-keyword">return</span>;
+    }
+}
+
+myHandler.<span class="hljs-property">__includeWebSocketUpgrades</span> = <span class="hljs-literal">true</span>; <span class="hljs-comment">// Forwards upgrade requests to the handler</span>
+server.<span class="hljs-title function_">route</span>(<span class="hljs-string">&quot;localhost&quot;</span>, myHandler);</code></pre></body>

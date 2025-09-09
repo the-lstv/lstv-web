@@ -1,0 +1,37 @@
+#template /templates/main.html
+
+<head>
+    @use (/docs/index.css, /docs/index.js[defer]);
+    @use (hljs[lang:javascript, lang:nginx], marked);
+
+    @page {
+        title: "";
+        description: "";
+        keywords: "docs, documentation, api, api docs, usage, help";
+    }
+</head>
+
+<body><h1>Simple HTTP server examples</h1>
+<h2>Simple handler</h2>
+<p>The simplest way to setup a simple HTTP server is with a simple function:</p>
+<pre class="pd-code lang-js"><code class="hljs">server.<span class="hljs-title function_">route</span>(<span class="hljs-string">&quot;localhost&quot;</span>, <span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> {
+    res.<span class="hljs-title function_">end</span>(<span class="hljs-string">&quot;Hello world!&quot;</span>);
+});
+
+<span class="hljs-comment">// http://localhost now responds with &quot;Hello world!&quot; - if you enabled https, it will work seamlessly - no further config needed.</span></code></pre><h2>Static file server</h2>
+<p>Automatically handles compression, cache management, etc.</p>
+<pre class="pd-code lang-js"><code class="hljs"><span class="hljs-comment">// -- Method 1: Full automatic file server ---</span>
+<span class="hljs-keyword">const</span> fileServer = <span class="hljs-keyword">new</span> akeno.<span class="hljs-title class_">FileServer</span>({
+    <span class="hljs-attr">root</span>: __dirname, <span class="hljs-comment">// Directory to serve files from</span>
+    <span class="hljs-attr">automatic</span>: <span class="hljs-literal">true</span>
+});
+
+<span class="hljs-comment">// Simply point to the fileServer, and all files will be served automatically</span>
+server.<span class="hljs-title function_">route</span>(<span class="hljs-string">&quot;localhost&quot;</span>, fileServer);</code></pre><pre class="pd-code lang-js"><code class="hljs"><span class="hljs-comment">// --- Method 2: Manual instance (for full control) ---</span>
+<span class="hljs-keyword">const</span> fileServer = <span class="hljs-keyword">new</span> akeno.<span class="hljs-title class_">FileServer</span>();
+fileServer.<span class="hljs-title function_">add</span>(<span class="hljs-string">&quot;/path/to/file.txt&quot;</span>); <span class="hljs-comment">// Add, preload and cache a file manually</span>
+
+server.<span class="hljs-title function_">route</span>(<span class="hljs-string">&quot;localhost&quot;</span>, <span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> {
+    <span class="hljs-comment">// Serve from the fileServer manually at any point</span>
+    fileServer.<span class="hljs-title function_">serve</span>(req, res, <span class="hljs-string">&quot;/path/to/file.txt&quot;</span>);
+});</code></pre></body>

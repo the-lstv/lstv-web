@@ -1,0 +1,22 @@
+#template /templates/main.html
+
+<head>
+    @use (/docs/index.css, /docs/index.js[defer]);
+    @use (hljs[lang:javascript, lang:nginx], marked);
+
+    @page {
+        title: "";
+        description: "";
+        keywords: "docs, documentation, api, api docs, usage, help";
+    }
+</head>
+
+<body><h1>Getting started</h1>
+<p>Akeno can be used in many ways at once - you can use it as a global server and host sites from configured paths via a config file (like Nginx), interact with it via an API, or create the server itself within your application.</p>
+<p>To install Akeno, you can run the installation script - installs to <code>/usr/lib/akeno</code> by default:</p>
+<pre class="pd-code lang-sh"><code class="hljs">curl -o- https://run.extragon.cloud/akeno | bash</code></pre><p>On Windows: Akeno is currently not supported on Windows natively - you can try running it in WSL (Windows Subsystem for Linux), or try cloning the repo manually and build <code>/core/native/</code>. I will create Windows builds if enough interest is shown - but Linux is better for these applications, anyway. For development, WSL is an option.</p>
+<p>Then you can run it with:</p>
+<pre class="pd-code lang-sh"><code class="hljs">akeno start</code></pre><p>Or under PM2 (to keep it running in the background and after reboots, all platforms)</p>
+<pre class="pd-code lang-sh"><code class="hljs">akeno pm2-setup</code></pre><p>Or as a service via systemd (Linux)</p>
+<pre class="pd-code lang-sh"><code class="hljs">akeno systemd-setup
+systemctl <span class="hljs-built_in">enable</span> --now akeno</code></pre></body>

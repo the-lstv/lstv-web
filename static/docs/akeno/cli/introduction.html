@@ -1,0 +1,25 @@
+#template /templates/main.html
+
+<head>
+    @use (/docs/index.css, /docs/index.js[defer]);
+    @use (hljs[lang:javascript, lang:nginx], marked);
+
+    @page {
+        title: "";
+        description: "";
+        keywords: "docs, documentation, api, api docs, usage, help";
+    }
+</head>
+
+<body><h2>CLI</h2>
+<p>Akeno features a full CLI for easy management of your applications, modules, and server.</p>
+<p>ℹ To display help for all commands, simply do:</p>
+<pre class="pd-code lang-sh"><code class="hljs">akeno -h</code></pre><p>Some basic commands include:</p>
+<ul>
+<li><code>akeno ls</code> - List apps.</li>
+<li><code>akeno reload &lt;app&gt;</code> - Hot-reload apps and config, optionally only a single app with zero downtime.</li>
+<li><code>akeno restart</code> - (PM2 only), reload the server (full restart, with downtime).</li>
+<li><code>akeno update</code> - Check for updates and pull updates when available - also restarts the server!</li>
+</ul>
+<p>...And many more.</p>
+</body>

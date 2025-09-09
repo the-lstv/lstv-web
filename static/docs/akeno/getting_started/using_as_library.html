@@ -1,0 +1,36 @@
+#template /templates/main.html
+
+<head>
+    @use (/docs/index.css, /docs/index.js[defer]);
+    @use (hljs[lang:javascript, lang:nginx], marked);
+
+    @page {
+        title: "";
+        description: "";
+        keywords: "docs, documentation, api, api docs, usage, help";
+    }
+</head>
+
+<body><h2>Using as a library</h2>
+<p>Akeno is usually used as a single global server and then interacted via an API, but it also supports being run as any other server library.</p>
+<pre class="pd-code lang-js"><code class="hljs"><span class="hljs-keyword">const</span> akeno = <span class="hljs-built_in">require</span>(<span class="hljs-string">&quot;akeno-lib&quot;</span>);
+
+<span class="hljs-comment">// Using a global server instance</span>
+akeno.<span class="hljs-title function_">connect</span>().<span class="hljs-title function_">then</span>(<span class="hljs-function"><span class="hljs-params">server</span> =&gt;</span> {
+    server.<span class="hljs-title function_">route</span>(<span class="hljs-string">&quot;localhost&quot;</span>, <span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> {
+        res.<span class="hljs-title function_">end</span>(<span class="hljs-string">&quot;Hello from your first Akeno server!&quot;</span>);
+    });
+});</code></pre><pre class="pd-code lang-js"><code class="hljs"><span class="hljs-keyword">const</span> akeno = <span class="hljs-built_in">require</span>(<span class="hljs-string">&quot;akeno-lib&quot;</span>);
+
+<span class="hljs-comment">// Using a dedicated in-process server with a config (same as app.conf)</span>
+<span class="hljs-keyword">const</span> server = <span class="hljs-keyword">new</span> akeno.<span class="hljs-title function_">dedicatedServer</span>(<span class="hljs-string">`
+protocols {
+    http {
+        port: 80;
+    }
+}
+`</span>);
+
+server.<span class="hljs-title function_">route</span>(<span class="hljs-string">&quot;localhost&quot;</span>, <span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> {
+    res.<span class="hljs-title function_">end</span>(<span class="hljs-string">&quot;Hello from your first Akeno server!&quot;</span>);
+});</code></pre></body>

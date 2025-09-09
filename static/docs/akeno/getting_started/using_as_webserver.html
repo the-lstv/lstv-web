@@ -1,0 +1,26 @@
+#template /templates/main.html
+
+<head>
+    @use (/docs/index.css, /docs/index.js[defer]);
+    @use (hljs[lang:javascript, lang:nginx], marked);
+
+    @page {
+        title: "";
+        description: "";
+        keywords: "docs, documentation, api, api docs, usage, help";
+    }
+</head>
+
+<body><h2>Using as a webserver (without scripting)</h2>
+<p>You can use Akeno without scripting or code, similarly to how you define Nginx server blocks and host static files.<br>
+Simply make a folder for your website in a location defined in the config.<br>
+Akeno will create an <!--pd:ref(units/WebApp)--><code>Units.WebApp</code> instance for you, which will automatically handle things like caching, compression, routing, and more.</p>
+<p>The basic file structure:</p>
+<div class="pd-folder"><div class="pd-file-item">my_site/</div><div class="pd-folder-content"><div class="pd-file-item"><i class="bi-gear-fill"></i> app.conf</div><div class="pd-file-item"><i class="bi-code"></i> index.html</div></div></div><p>This is enough for a simple website.</p>
+<p>In app.conf, you place configuration for the site.
+To get a website running, you only need to define the domains (or simply <code>*</code> to catch all):</p>
+<pre class="pd-code lang-nginx"><code class="hljs"><span class="hljs-section">server</span> {
+    domains: localhost, example.{com, net}, ...;
+}</code></pre><p>Then after running <code>akeno reload</code>, your index.html should be live on <a href="http://localhost/">http://localhost/</a>.<br>
+As simple as that! There is a lot more that can be placed in app.conf - see <a href="/app-config">app configuration files</a>.</p>
+</body>
