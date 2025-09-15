@@ -40,7 +40,7 @@ This does not mean that the site is 100% bulletproof - if you are able to find a
 4. Start Akeno: `akeno start` or using a PM (eg. `akeno pm2-setup`).
 5. Open the website in your browser at http://lstv.localhost.
 
-**Note:** `lstv.localhost` will only work on Linux. If you are on Windows, you will need to either edit your `hosts` file, or configure a different domain/port in `app.conf`.
+**Note:** `lstv.localhost` may only work on Linux. If you are on Windows, you may need to edit your `hosts` file, or configure a different domain/port in `app.conf`. (Edit: I tested it on Windows and it worked too)
 
 ## 🖥️ How to run offline/without Akeno
 You need Akeno to be able to compose the website, but you can bundle it into an offline copy by running `akeno bundle --auto` in the root of the repository.
