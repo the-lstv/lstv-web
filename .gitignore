@@ -1,5 +1,5 @@
 .vscode
 api
-api/node_modulse
+api/node_modules
 api/pnpm-lock.yaml
 api/package-lock.json
