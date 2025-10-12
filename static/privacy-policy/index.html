@@ -8,54 +8,11 @@
     }
 </head>
 
-<pre>
-<h1>PRIVACY POLICY</h1>
+@import("./privacy-policy/text.html");
 
-<p>Last updated: July 29, 2025</p>
-
-At LSTV, we are committed to protecting your privacy. This Privacy Policy explains how we collect, use, and disclose your personal information when you use our services. 
-
-<p>
-<strong>Information We Collect:</strong>
-We do not collect any personal data unless it is provided voluntarily by you. The only personal information we collect is your email address when you create an account with LSTV. Additionally, we may collect information that you input based on the specific service or feature you are using.
-</p>
-
-<p>
-<strong>Use of Information:</strong>
-We use your email address to create and maintain your account, provide you with access to our services, communicate with you about your account, and respond to your inquiries. We may also use the information you input based on the service you are using to customize your experience and improve our services.
-</p>
-
-<p>
-<strong>Data Sharing:</strong>
-We do not share your personal information with third parties, except as necessary to provide our services or as required by law.
-</p>
-
-<p>
-<strong>Data Security:</strong>
-We take reasonable measures to protect your personal information from unauthorized access, use, or disclosure. However, no method of transmission over the internet or electronic storage is 100% secure, and we cannot guarantee the absolute security of your information.
-</p>
-
-<p>
-<strong>Data Retention:</strong>
-We retain your personal information for as long as necessary to fulfill the purposes for which it was collected, unless a longer retention period is required or permitted by law.
-</p>
-
-<p>
-<strong>Children's Privacy:</strong>
-Our services are not directed to children under the age of 13, and we do not knowingly collect personal information from children under the age of 13. If you are a parent or guardian and believe that your child has provided us with personal information, please contact us so that we can take proper measures.
-</p>
-
-<p>
-<strong>Changes to Privacy Policy:</strong>
-We may update or modify this Privacy Policy from time to time. Any changes will be effective immediately upon posting the revised Privacy Policy on our website. Your continued use of our services after the posting of the revised Privacy Policy constitutes your acceptance of the changes.
-</p>
-
-<p>
-<strong>Contact Us:</strong>
-If you have any questions or concerns about this Privacy Policy, please contact us at lstv&#64;mail.com.
-</p>
-
-</pre>
+<div class="open-plain">
+    <a href="/privacy-policy/text.html" target="_blank" class="ls-button">Open plaintext version</a>
+</div>
 
 <style>
     pre {
@@ -67,9 +24,40 @@ If you have any questions or concerns about this Privacy Policy, please contact 
         font-weight: 200;
         background: var(--surface-n1);
         padding: 20px 40px;
+        border-radius: 0 0 20px 20px;
     }
 
+    p > span {
+        margin-left: 16px;
+        display: inline-block;
+    }
+    
     strong {
         font-weight: 800;
+        display: inline-block;
+        background: var(--accent-mix-10);
+        border-radius: var(--border-radius-full);
+        padding: 2px 16px;
+        margin: 16px 0;
+        font-size: large;
+    }
+
+    strong.section-title {
+        margin-bottom: 0;
+        background: var(--accent-mix-20);
+        width: 100%;
+        padding: 6px 16px;
+        font-size: larger;
+    }
+
+    .open-plain {
+        padding: 80px 0;
+        text-align: center;
+    }
+
+    section {
+        margin-left: 20px;
+        border-left: 1px solid var(--accent-mix-20);
+        padding-left: 16px;
     }
 </style>

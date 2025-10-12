@@ -1,5 +1,8 @@
 .vscode
 api
 api/node_modules
-api/pnpm-lock.yaml
+api/pnpm-*
 api/package-lock.json
+
+static/simple-uploader.html
+assets/js/.test.editor-mode.js
