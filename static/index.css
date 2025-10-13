@@ -37,6 +37,7 @@ body[ls-theme="dark"] {
         margin-right: -15px;
         filter: blur(10px);
     }
+
     100% {
         opacity: 1;
         letter-spacing: 40px;
@@ -188,4 +189,161 @@ body[ls-theme="dark"] {
 
 ls-box.inline.color {
     padding: 4px 12px;
+}
+
+.poppable-link {
+    border-radius: var(--border-radius-full);
+    transition: .2s background-color, .2s color, .5s padding ease;
+    color: var(--color) !important;
+    position: relative;
+    padding: 2px 0;
+}
+
+.poppable-link:is(:hover, :focus) {
+    background: var(--accent);
+    padding-left: 10px;
+    padding-right: 10px;
+    color: var(--hover-color, var(--surface-0)) !important;
+    text-decoration: none !important;
+}
+
+.poppable-link.has-icon:is(:hover, :focus) {
+    padding-left: 34px;
+}
+
+.poppable-link.has-icon:is(:hover, :focus) i {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.poppable-link i {
+    position: absolute;
+    transition: .5s opacity ease, .5s transform ease;
+    transform: translateX(2px);
+    left: 10px;
+    opacity: 0;
+}
+
+.underline-link {
+    text-decoration: underline !important;
+}
+
+.koba-button:after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-position: bottom right;
+    background-repeat: no-repeat;
+    filter: brightness(.5);
+    pointer-events: none;
+    z-index: 50;
+    opacity: 0;
+    transition: opacity 1s;
+    background-size: 500px;
+}
+
+.koba-button:is(:hover, :focus):after {
+    opacity: .5;
+    background-image: url(https://cdn.extragon.cloud/file/c96029a73c5f647e.webp);
+}
+
+@media screen and (max-width: 1000px) {
+    .koba-button:after {
+        background-size: 250px;
+        background-position: bottom right -40px;
+    }
+}
+
+#showcase-projects {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+}
+
+.showcase-item::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--elevate-0);
+    background-image: radial-gradient(at 0 0, var(--accent-70), transparent), radial-gradient(at 100% 100%, var(--accent-20), transparent);
+    z-index: -1;
+    opacity: .5;
+}
+
+.showcase-item {
+    width: 500px;
+    display: flex;
+    flex-direction: row;
+    padding: 20px;
+    border-radius: var(--border-radius-xlarge);
+    position: relative;
+    overflow: auto;
+    outline: 1px solid var(--accent-mix-20);
+    box-shadow: 0 10px 20px 0 #0002;
+}
+
+.showcase-buttons {
+    border-radius: var(--border-radius-full) !important;
+    font-size: 1.4rem;
+    --padding-control-v: 10px;
+    --padding-control-h-pill: 30px;
+    margin-top: 20px;
+    margin-bottom: 60px;
+}
+
+#animated-word > span {
+    display: inline-block;
+}
+
+.showcase-intro-text {
+    height: 90px;
+    margin-bottom: -80px;
+    margin-top: 60px;
+}
+
+/* Temporary: */
+.ls-slide-animation>:not(.visible):not(.leaving):not(.entering) {
+    display: none !important;
+}
+
+.showcase-gallery-item {
+    outline: 1px solid var(--accent-mix-20);
+    border-radius: var(--border-radius-xlarge);
+    box-shadow: 0 10px 20px 0 #0002;
+    display: inline-flex;
+    overflow: hidden;
+    position: relative;
+    flex-direction: column;
+}
+
+.showcase-gallery-item > div {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    padding: 14px;
+    background: linear-gradient(360deg, #000b, transparent);
+    right: 0;
+    color: #fff;
+    height: 100px;
+    display: flex;
+    align-items: flex-end;
+}
+
+#showcase-gallery {
+    display: flex;
+    gap: 25px;
+    flex-wrap: wrap;
+    max-width: 1240px;
+    width: 100vw;
+    padding: 0 20px;
+    align-items: center;
+}
+
+#showcase-tabs {
+    margin-bottom: 40px;
+}
+
+.showcase-gallery-item img {
+    max-height: 500px;
+    min-width: 200px;
 }
