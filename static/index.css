@@ -306,29 +306,6 @@ ls-box.inline.color {
     display: none !important;
 }
 
-.showcase-gallery-item {
-    outline: 1px solid var(--accent-mix-20);
-    border-radius: var(--border-radius-xlarge);
-    box-shadow: 0 10px 20px 0 #0002;
-    display: inline-flex;
-    overflow: hidden;
-    position: relative;
-    flex-direction: column;
-}
-
-.showcase-gallery-item > div {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    padding: 14px;
-    background: linear-gradient(360deg, #000b, transparent);
-    right: 0;
-    color: #fff;
-    height: 100px;
-    display: flex;
-    align-items: flex-end;
-}
-
 #showcase-gallery {
     display: flex;
     gap: 25px;
@@ -339,6 +316,32 @@ ls-box.inline.color {
     align-items: center;
 }
 
+.showcase-gallery-item {
+    outline: 1px solid var(--accent-mix-20);
+    border-radius: var(--border-radius-xlarge);
+    box-shadow: 0 10px 20px 0 #0002;
+    display: inline-flex;
+    overflow: hidden;
+    position: relative;
+    flex-direction: column;
+    background: var(--elevate);
+    cursor: pointer;
+}
+
+.showcase-gallery-item > div {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    padding: 14px;
+    background: linear-gradient(360deg, #0008, transparent);
+    right: 0;
+    color: #fff;
+    height: 120px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+}
+
 #showcase-tabs {
     margin-bottom: 40px;
 }
@@ -346,4 +349,13 @@ ls-box.inline.color {
 .showcase-gallery-item img {
     max-height: 500px;
     min-width: 200px;
+    min-height: 200px;
+}
+
+.showcase-gallery-item button {
+    --color: #fff;
+    color: var(--color)!important;
+    display: flex;
+    gap: 8px;
+    padding: 8px 13px !important;
 }
