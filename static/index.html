@@ -89,41 +89,6 @@
             </div>
         </div>
     </div>
-
-    <div style="display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 20px 0">
-        <ls-box .inline .elevated>
-            <button .elevated>
-                <i .bi-box-seam-fill />
-                Projects
-            </button>
-        
-            <button .elevated>
-                <i .bi-image />
-                Designs
-            </button>
-        
-            <button .elevated>
-                <i .bi-music-note-beamed />
-                Music
-            </button>
-        </ls-box>
-        
-        <div style="position: relative">
-            <div style="position: relative">
-                <div #cursorPopout>
-                    <i class="bi-box-arrow-up-right"></i>
-                </div>
-            
-                <div #searchBar>
-                    <input type="text" placeholder="Search" #searchInput>
-                </div>
-        
-                <div .appShowcaseWrap>
-                    <div #apps-showcase></div>
-                </div>
-            </div>
-        </div>
-    </div>
     
     <div #footer .level-1>
 
@@ -167,53 +132,6 @@ const about = LS.Reactive.wrap("about", {
     location: "Czech Republic",
     github: "https://github.com/the-lstv"
 });
-
-const data = {
-    projects: [
-        { title: "Akeno", icon: "f2eeab33bc9b7873.svg", description: "Akeno is a very fast, modular, and extensive webserver/backend framework handling various protocols. Akeno makes it easy to manage projects of any scale and includes everything a modern web application needs, with world-class performance.", link: "https://github.com/the-lstv/akeno" },
-        { title: "LS", icon: "dbe4a5375f5d72f3.webp", description: "A lightweight and modern framework for web applications with tons of high-quality features and a clean API, fast and light reactivity, color system, and more. Used in all of our web projects.", link: "https://github.com/the-lstv/LS" },
-        { title: "Atrium", icon: "e663bce787d37541.svg", description: "A pure JS, fast and very flexible parser used to parse configs etc.", link: "https://github.com/the-lstv/Atrium" },
-        { title: "ExtraGon", icon: "eedc54a7c1bcaf67.png", description: "ExtraGon is our cloud services and hosting platform, offering features from managed storage, accelerated webhosting, VPS, DNS management, APIs, and more.", link: "https://extragon.cloud" },
-        { title: "FOSSHome", icon: "b9e3e4e22dbacd30.png", description: "FOSSHome is a cloud-synced \"WebOS\" launchpad environment with a Linux-like shell and a sleek interface and an extensive window/widget framework, to make you feel right at home. Currently abandoned (for over a year now...) until I work on it again.", link: "https://github.com/the-lstv/fosshome" },
-        { title: "Getrox", icon: "fd3114d28bfeb619.png", description: "Our crypto-like currency and community platform, used as a token across our services and cloud platform.", link: "" },
-        { title: "Unifya", icon: "b28d371fec0dae44.png", description: "Unifya is an universal data flow framework used across our software to ensure seamless integration.", link: "https://unifya.com" },
-        
-    ],
-
-    music: [
-        { title: "ID - ?", track: "", cover: "", album: "ID", genre: "Speedcore, Metal" },
-        { title: "ID - 85", track: "", cover: "", album: "ID", genre: "Speed Eurobeat" },
-        { title: "teascramble hardcore", track: "", cover: "", album: "", genre: "Speedcore, Schranz" },
-        { title: "ID - 81", track: "", cover: "", album: "ID", genre: "" },
-        { title: "hate song", track: "", cover: "", album: "9a17397a31f588c7.webp", genre: "Speedcore" },
-        { title: "Subtile Confinement", track: "", cover: "", album: "", genre: "" },
-        { title: "Perplexed Projectile", track: "", cover: "fa67922220db2a31.webp", album: "", genre: "Chiptune, Speedcore" },
-        { title: "triage colony", track: "", cover: "", album: "", genre: "Rock" },
-        { title: "All shapes! feat. Nogako", track: "", cover: "", album: "", genre: "Chiptune, Speedcore, Jazz" },
-        { title: "Calm", track: "", cover: "", album: "", genre: "" },
-        { title: "Traceback", track: "", cover: "", album: "", genre: "" },
-        { title: "argumented cloud feat. xnizrun", track: "", cover: "", album: "", genre: "" },
-        { title: "dfglkjdfgklserlhj24", track: "", cover: "", album: "", genre: "" },
-        { title: "Axel L", track: "", cover: "", album: "", genre: "Speedcore" },
-        { title: "Blocky", track: "", cover: "", album: "", genre: "Chiptune" },
-        { title: "Random orchestra", track: "", cover: "", album: "", genre: "Orchestral" },
-        { title: "Skibidi aah", track: "", cover: "", album: "", genre: "Piano" },
-
-        { title: "td-1", track: "", cover: "", album: "", genre: "Speedcore" },
-        { title: "violin-1 (edit)", track: "", cover: "", album: "", genre: "Speedcore" },
-
-        { title: "Departure", track: "", cover: "", album: "", genre: "Abstract" },
-        { title: "San Andreas", track: "", cover: "", album: "", genre: "Abstract" },
-        { title: "Uneasy Calm", track: "", cover: "", album: "", genre: "Abstract" },
-
-        { title: "dj toenail ambulance beat - thelstv remix", track: "", cover: "", album: "", genre: "Random" },
-    ],
-
-    art: [
-        { title: "", artist: "", year: "", link: "" }
-    ]
-}
-
 
 app.module(document.currentScript, (app, page, container) => {
     let bgaSpeedFactor = .001, cloudsCanvas = O("#glCanvas"), raysCanvas = O("#raysBga"), cloudsRenderer, blurRenderer, noiseRenderer;
