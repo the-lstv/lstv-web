@@ -124,7 +124,7 @@
         <ls-tabs #showcase-tabs .ls-slide-animation>
             <ls-tab style="position: relative" tab-id="showcase-projects" #showcase-projects></ls-tab>
             <ls-tab style="position: relative" tab-id="showcase-gallery" #showcase-gallery>
-                <h3>This is a rough collection of some of my designs and illustrations that I may update over time.</h3>
+                <div .ui-loader style="margin: auto" />
             </ls-tab>
             <ls-tab style="position: relative" tab-id="showcase-music" #showcase-music></ls-tab>
         </ls-tabs>
@@ -175,11 +175,11 @@ const data = {
     projects: [
         { title: "Akeno", icon: "f2eeab33bc9b7873.svg", description: "Akeno is a very fast, modular, and extensive webserver/backend framework handling various protocols. Akeno makes it easy to manage projects of any scale and includes everything a modern web application needs, with world-class performance.", link: "https://github.com/the-lstv/akeno" },
         { title: "LS", icon: "884695036cdc8c27.webp", description: "A lightweight and modern framework for web applications with tons of high-quality features and a clean API, fast and light reactivity, color system, and more. Used in all of our web projects.", link: "https://github.com/the-lstv/LS" },
-        { title: "Atrium", icon: "e663bce787d37541.svg", description: "A pure JS, fast and very flexible parser used to parse configs etc.", link: "https://github.com/the-lstv/Atrium" },
-        { title: "ExtraGon", icon: "eedc54a7c1bcaf67.png", description: "ExtraGon is our cloud services and hosting platform, offering features from managed storage, accelerated webhosting, VPS, DNS management, APIs, and more.", link: "https://extragon.cloud" },
-        { title: "FOSSHome", icon: "b9e3e4e22dbacd30.png", description: "FOSSHome is a cloud-synced \"WebOS\" launchpad environment with a Linux-like shell and a sleek interface and an extensive window/widget framework, to make you feel right at home. Currently abandoned (for over a year now...) until I work on it again.", link: "https://github.com/the-lstv/fosshome" },
-        { title: "Getrox", icon: "fd3114d28bfeb619.png", description: "Our crypto-like currency and community platform, used as a token across our services and cloud platform.", link: "" },
-        { title: "Unifya", icon: "b28d371fec0dae44.png", description: "Unifya is an universal data flow framework used across our software to ensure seamless integration.", link: "https://unifya.com" },
+        { title: "Atrium", icon: "78320d16cbc51b33.svg", description: "A pure JS, fast and very flexible parser used to parse configs etc.", link: "https://github.com/the-lstv/Atrium" },
+        { title: "ExtraGon", icon: "83ab407476b84f97.webp", description: "ExtraGon is our cloud services and hosting platform, offering features from managed storage, accelerated webhosting, VPS, DNS management, APIs, and more.", link: "https://extragon.cloud" },
+        { title: "FOSSHome", icon: "8a61a157e6c85819.webp", description: "FOSSHome is a cloud-synced \"WebOS\" launchpad environment with a Linux-like shell and a sleek interface and an extensive window/widget framework, to make you feel right at home. Currently abandoned (for over a year now...) until I work on it again.", link: "https://github.com/the-lstv/fosshome" },
+        { title: "Getrox", icon: "d11562ce585e205b.svg", description: "Our crypto-like currency and community platform, used as a token across our services and cloud platform.", link: "" },
+        { title: "Unifya", icon: "d550e99584fdb8b3.webp", description: "Unifya is an universal data flow framework used across our software to ensure seamless integration.", link: "https://unifya.com" },
         
     ],
 
@@ -212,80 +212,122 @@ const data = {
         { title: "dj toenail ambulance beat - thelstv remix", track: "", cover: "", album: "", genre: "Random" },
     ],
 
-    art: [
-        { title: "Frutiger Aero Desktop Mockup (Aurora)", author: "Lukas", year: "2024", link: "5ecda65ac03898dd.webp" },
-        { title: "Frutiger Aero Desktop Mockup (Eco)", author: "Lukas", year: "2024", link: "40801d4b1a04f1d1.webp" },
-        { title: "Frutiger Aero Mobile Mockup (Aurora)", author: "Lukas", year: "2024", link: "cd7fd08a76140ac6.webp" },
-        { title: "Frutiger Aero Mobile Mockup (Eco)", author: "Lukas", year: "2024", link: "f7972863a827cbf4.webp" },
-        { title: "Frutiger Aero \"DreamZone\" Mockup", author: "Lukas", year: "2024", link: "ca577bac35ba0607.webp" },
-        { title: "LiOS 12 Desktop Design Mockup", author: "Lukas", year: "2023", link: "82088f2660fd6d32.webp" },
-        { title: "Getrox mobile app mockup design", author: "Lukas", year: "2022", link: "58a2d20d8d73c02.webp" },
-        { title: "Store screenshot design for samsung gear calculator", author: "Lukas", year: "2023", link: "eeca7d6bd9fe3bd9.webp" },
-        { title: "New experience", author: "Lukas", year: "2025", link: "a08efe33ddbe083a.webp" },
-        { title: "LiOS 12 Desktop Design Mockup", author: "Lukas", year: "2023", link: "5641aff63b4efc67.webp" },
-        { title: "Unifya Intro Document", author: "Lukas", year: "2024", link: "7108ed5fb5674000.webp" },
-        { title: "Portfolio site", author: "Lukas", year: "2024", link: "9a46dda9bcaad16e.webp" },
-        { title: "ArcTerm", author: "Lukas", year: "2025", link: "ec5a3032bb47c1a7.webp" },
-        { title: "Music streaming mobile app mockup design", author: "Lukas", year: "2023", link: "2925c929a1b0b126.webp" },
-        { title: "Yet Another VPS dashboard", author: "Lukas", year: "2023", link: "989206badacd26ef.webp" },
-        { title: "Visualizer for Nogako", author: "Lukas", year: "2025", link: "9cc9f1eb64bc0d31.webp" },
-        { title: "Random visualizer", author: "Lukas", year: "2024", link: "ef738e1d8780e703.webp" },
-        { title: "Random visualizer", author: "Lukas", year: "2024", link: "3b50a3fa326a5e7e.webp" },
-        { title: "ExtraGon Aero", author: "Lukas", year: "2023", link: "9d465b5fef40b623.webp" },
-        { title: "LSTV Orb", author: "Lukas", year: "2007", link: "9b1b5a1564cb4a58.webp" },
-        { title: "Create lika a Pro", author: "Lukas", year: "2022", link: "197d54892ee90d59.webp" },
-        { title: "Cover", author: "Lukas", year: "2022", link: "7953ac3d933bd347.webp" },
-        { title: "Frutiger Aero Getrox Card", author: "Lukas", year: "2024", link: "ae32f0581b9f9c36.webp" },
+    // art: [
         // { title: "Open-Source security software presentation (Czech)", author: "Lukas", year: "2025", link: "62a9029caca59438.webp" },
         // { title: "Streak", author: "Lukas", year: "2025", link: "fe07e416bf46c720.webp" },
-        { title: "[glitch] Last spaceship", author: "Lukas", year: "2025", link: "bcc927da5478cd31.webp" },
-        { title: "[glitch] Euphoria", author: "Lukas", year: "2024", link: "c7ee3b5716c4f6e4.webp" },
-        { title: "[glitch] Atonexis", author: "Lukas", year: "2025", link: "92a8aae5cebd9051.webp" },
-        { title: "[glitch] Walled city", author: "Lukas", year: "2025", link: "945e26557848e1d8.webp" },
-        { title: "[glitch] Innocence", author: "Lukas", year: "2025", link: "a8c623f435dc6e35.webp" },
-        { title: "[glitch] Insanity", author: "Lukas", year: "2025", link: "3f4bfc0c53c89314.webp" },
         // { title: "[glitch] Freedom", author: "Lukas", year: "2025", link: "c50819fea178e005.webp" },
         // { title: "[glitch] Glow", author: "Lukas", year: "2025", link: "361429ee764408dd.webp" },
-        { title: "TurboWarp Fluent Design Mockup", author: "Lukas", year: "2020", link: "815fb0f1b3791887.webp" },
-        { title: "ExtraGon V3 Homepage prototype (old)", author: "Lukas", year: "2023", link: "dafae280604f17db.webp" },
-        { title: "Fantale Instagram post", author: "Lukas", year: "2020", link: "5c525c52a8d89a2e.webp" },
-        { title: "Legend", author: "Lukas", year: "2022", link: "a47c163b16a72e38.webp" },
-    ]
+    // ]
 }
 
 app.module(document.currentScript, (app, page, container) => {
-    class ShowcaseProject {
+    class ItemPreview {
+        updateLikedStatus(liked) {
+            const likeIcon = this.container.querySelector("i");
+            if (liked) {
+                likeIcon.classList.remove("bi-heart");
+                likeIcon.classList.add("bi-heart-fill");
+            } else {
+                likeIcon.classList.remove("bi-heart-fill");
+                likeIcon.classList.add("bi-heart");
+            }
+        }
+
+        playHeartAnimation(){
+            const heart = N("i", {
+                class: "bi-heart-fill",
+                style: {
+                    position: "absolute",
+                    left: "0",
+                    top: "0",
+                    color: "#ed6c30",
+                    pointerEvents: "none"
+                }
+            }).addTo(this.container.querySelector("i")).animate([
+                { transform: "scale(1) translate(0, 0)", opacity: 1, offset: 0 },
+                { transform: "scale(1.5) translate(10px, -10px)", opacity: 1, offset: 0.3 },
+                { transform: "scale(2) translate(-5px, -25px) rotate(10deg)", opacity: 0.2, offset: 0.7 },
+                { transform: "scale(2.2) translate(10px, -30px) rotate(20deg)", opacity: 0, offset: 1 }
+            ], {
+                duration: 1200,
+                easing: "ease-in-out"
+            }).effect.target;
+
+            setTimeout(() => heart.remove(), 1100);
+        }
+
+        playDislikeAnimation(){
+            const heart = N("i", {
+                class: "bi-heartbreak-fill",
+                style: {
+                    position: "absolute",
+                    left: "0",
+                    top: "0",
+                    color: "gray",
+                    pointerEvents: "none"
+                }
+            }).addTo(this.container.querySelector("i")).animate([
+                { transform: "scale(1.2) translate(0, 0)", opacity: 1 },
+                { transform: "scale(.8) translate(0, 30px)", opacity: 0 },
+            ], {
+                duration: 1200,
+                easing: "ease-out"
+            }).effect.target;
+
+            setTimeout(() => heart.remove(), 1100);
+        }
+    }
+
+    class ShowcaseProject extends ItemPreview {
         constructor(project) {
+            super();
             const icon = app.cdn + "/file/" + project.icon + (!project.icon.endsWith(".svg") ? "?size=128" : "");
             const _this = this;
             this.container = N({
                 class: "showcase-item",
                 inner: [
-                    N("img", { src: icon, width: "128", height: "128", crossOrigin: "anonymous", alt: project.title, onload() {
-                        LS.Color.apply(_this.container, LS.Color.fromImage(this));
-                    } }),
+                    N({
+                        class: "showcase-item-header",
+                        inner: [
+                            N({ class: "showcase-item-title", inner: project.title }),
+                        ]
+                    }),
 
-                    N([
-                        N({ class: "showcase-item-title", inner: project.title }),
-                        N({ class: "showcase-item-description", inner: project.description }),
-                    ])
+                    N({
+                        class: "showcase-item-content",
+                        inner: [
+                            N("img", { class: "showcase-item-icon", src: icon, width: "128", height: "128", crossOrigin: "anonymous", alt: project.title, onload() {
+                                LS.Color.apply(_this.container, LS.Color.fromImage(this));
+                            } }),
+        
+                            N([
+                                N({ class: "showcase-item-description", inner: project.description }),
+                            ])
+                        ]
+                    }),
+
+                    N({
+                        class: "showcase-item-tags"
+                    })
                 ]
             });
         }
     }
 
-    class ShowcaseGalleryItem {
+    class ShowcaseGalleryItem extends ItemPreview {
         constructor(art) {
+            super();
+            const _this = this;
             this.container = N({
                 class: "showcase-gallery-item",
 
                 onclick(event) {
                     if(event.target.tagName.toLowerCase() === "button" || event.target.closest("button")) return;
-                    window.open(app.cdn + "/file/" + art.link, "_blank");
+                    window.open(app.cdn + "/file/" + art.media, "_blank");
                 },
 
                 inner: [
-                    N("img", { src: app.cdn + "/file/" + art.link, crossOrigin: "anonymous", alt: art.title }),
+                    N("img", { src: app.cdn + "/file/" + art.media, crossOrigin: "anonymous", alt: art.title, loading: "lazy" }),
 
                     N([
                         N([
@@ -293,39 +335,50 @@ app.module(document.currentScript, (app, page, container) => {
                         ]),
 
                         N([
-                            N("button", { tooltip: "Like", class: "pill clear", inner: [N("i", { class: "bi-heart" }), (art.likes ? String(art.likes) || "0": "0")], onclick() {
+                            N("button", { tooltip: "Like", class: "pill clear", inner: [N("i", { class: "bi-heart" }), (art.likes? String(art.likes): "0")], onclick() {
                                 if(app.isLoggedIn) {
-                                    app.auth.fetch("/showcase/like?id=" + art.id).then(res => res.json()).then(data => {
+                                    this.disabled = true;
+                                    app.auth.fetch("/showcase/like?id=" + art._id).then(data => {
+                                        this.disabled = false;
+
                                         if(data.success) {
-                                            const likeIcon = this.querySelector("i");
-                                            if(data.liked) {
-                                                likeIcon.classList.remove("bi-heart");
-                                                likeIcon.classList.add("bi-heart-fill");
-                                                art.likes = (art.likes || 0) + 1;
-                                                this.lastChild.textContent = String(art.likes);
-                                            } else {
-                                                likeIcon.classList.remove("bi-heart-fill");
-                                                likeIcon.classList.add("bi-heart");
+                                            if(data.unliked) {
                                                 art.likes = Math.max((art.likes || 1) - 1, 0);
-                                                this.lastChild.textContent = String(art.likes);
+                                                _this.playDislikeAnimation();
+                                            } else {
+                                                art.likes = (art.likes || 0) + 1;
+
+                                                _this.playHeartAnimation();
+                                                setTimeout(() => _this.playHeartAnimation(), 300);
+                                                setTimeout(() => _this.playHeartAnimation(), 600);
                                             }
+
+                                            this.lastChild.textContent = String(art.likes);
+                                            _this.updateLikedStatus(data.liked);
                                         } else {
                                             LS.Toast.show(data.message || "An error occurred.", { timeout: 2000 });
                                         }
                                     }).catch(err => {
                                         console.error(err);
+                                        this.disabled = false;
                                         LS.Toast.show("An error occurred while trying to like post.", { timeout: 2000 });
                                     });
                                 } else {
                                     LS.Toast.show("You need to be logged in to like artworks.", { timeout: 2000 });
-                                    app.toolbarOpen("toolbarLogin", true, document.getElementById("accountsButton"));
-                                    app.loginTabs.set("default");
+                                    
+                                    setTimeout(() => {
+                                        const loginButton = document.getElementById("accountsButton");
+                                        loginButton.focus();
+                                        loginButton.click();
+                                    }, 100);
                                 }
                             } }),
                         ])
                     ])
                 ]
             });
+
+            if(art.liked) this.updateLikedStatus(art.liked);
         }
     }
 
@@ -425,8 +478,19 @@ app.module(document.currentScript, (app, page, container) => {
                 if(!gallery_loaded) {
                     gallery_loaded = true;
 
-                    data.art.forEach((art, index) => {
-                        O("#showcase-gallery").add((new ShowcaseGalleryItem(art)).container);
+                    app.auth.fetch("/showcase/list?type=1&limit=100", { auth: app.isLoggedIn }).then(data => {
+                        O("#showcase-gallery .ui-loader").remove();
+                        O("#showcase-gallery").add(N("h3", "This is a rough collection of some of my designs and illustrations that I may update over time."));
+
+                        data.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+                        data.forEach((art, index) => {
+                            O("#showcase-gallery").add((new ShowcaseGalleryItem(art)).container);
+                        });
+                    }).catch(err => {
+                        console.error(err);
+                        O("#showcase-gallery .ui-loader").remove();
+                        O("#showcase-gallery").add(N("h3", { innerText: "An error occurred while loading artworks." }));
                     });
                 }
                 break;
