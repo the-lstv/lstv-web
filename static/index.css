@@ -294,7 +294,7 @@ ls-box.inline.color {
     overflow: auto;
 }
 
-.showcase-item-title {
+.showcase-item .showcase-item-title {
     font-size: 1.5rem;
     font-weight: 600;
     color: var(--accent-60);
