@@ -33,6 +33,12 @@ All of the website's internal code is isolated and only trusted sources are allo
 
 This does not mean that the site is 100% bulletproof - if you are able to find a vulnerability, please report it to me! Maybe you will receive a prize :)
 
+## 🚀 How do we make the site so efficient?
+LSTV.space is unique in that it is built from the ground up with the idea that the software should only perform what is necesarry for it's task.
+We implement subtle but noticeable optimizations (eg. when the user logs in, the user fragment is included inside the login response itself and cached client side - meaning the client does not have to fetch anything again - in a single request, the user logs in and keeps all information it needs), among many more.
+
+This may sound redundant to you - but we believe that all optimizations add up and contribute to a smoother user experience, and smaller load on our servers, which not only reduces costs and allows us to scale way beyond traditional servers, but reduces server latency on it's own.
+
 ## 🖥️ How to run locally
 1. Clone the repository.
 2. Install [Akeno](https://github.com/the-lstv/Akeno).

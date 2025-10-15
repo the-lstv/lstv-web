@@ -214,19 +214,26 @@ window.addEventListener("DOMContentLoaded", async () => {
 
         userFragment: LS.Reactive.wrap("user", {}),
 
+        isLoggedIn: false,
+
         async loadUser() {
-            const isLoggedIn = await auth.isLoggedIn();
+            let isLoggedIn = await auth.isLoggedIn();
+
+            if (isLoggedIn) {
+                try {
+                    const user = await auth.getUserFragment();
+                    Object.assign(app.userFragment, user);
+                } catch (error) {
+                    console.error("Failed to load user fragment:", error);
+                    isLoggedIn = false;
+                }
+            } else {
+                LS.Reactive.wrap("user", {});
+            }
 
             app.isLoggedIn = isLoggedIn;
             O("#accountsButton").disabled = false;
             O("#accountsButton").ls_tooltip = isLoggedIn ? "Manage profiles": "Log in";
-
-            if (isLoggedIn) {
-                const user = await auth.getUserFragment();
-                Object.assign(app.userFragment, user);
-            } else {
-                LS.Reactive.wrap("user", {});
-            }
 
             app.events.completed("user-loaded");
         },
