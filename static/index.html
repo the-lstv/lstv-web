@@ -81,6 +81,17 @@
                             </div>
                         </ls-div>
                     </ls-div>
+
+                    <ls-div .margin-top-xxlarge>
+                        <a href="https://endof10.org/" ls-accent="blue" target="_blank" .ad-link>
+                            <ls-box>
+                                <button .ad-close .circle><i .bi-x-lg></i></button>
+                                Tired of bloat and spyware? Being forced to use Windows 11? Linux is really good nowadays! Give it a try and see if it works for you.<br>
+                                If you need help or want to discuss anything, you can reach out to me directly (I have been a full-time Linux user for a couple of years), and also check out EnfOf10.org.
+                                <span>This is not a sponsored message.</span>
+                            </ls-box>
+                        </a>
+                    </ls-div>
     
                 </div>
             </div>
@@ -158,6 +169,8 @@
 -->
 
 <script>
+window.LOW_PERFORMANCE_MODE = true;
+
 const year = new Date().getFullYear();
 
 const about = LS.Reactive.wrap("about", {
@@ -556,31 +569,26 @@ app.module(document.currentScript, (app, page, container) => {
     let showcase_loaded = false;
 
     setTimeout(() => {
-        let lastScroll = 0, initialLoadApps = false;
+        let lastScroll = 0;
 
         const onScroll = () => {
             let scroll = container.scrollTop;
-    
-            window.requestAnimationFrame(() => {
-                contentContainer.style.maxWidth = Math.min(1360 + scroll, 1920) + "px"
-                // svgElement.style.transform = `translateY(${(scroll - 1000) / 2}px) scale(${(scroll + 1000) / 2000}) rotate(${(scroll - 2500) / 100}deg)`;
-            })
-    
-            if (Math.abs(scroll - lastScroll) > 10) {
-                container.get("#chevron").class("visible", scroll < 60)
-    
-                if(!initialLoadApps && scroll > 600) {
-                    initialLoadApps = true
-                    // loadApps()
-                }
 
-                if(cloudsCanvas.isInView()){
-                    cloudsRenderer.resume();
-                } else cloudsRenderer.paused = true;
-    
-                if(raysCanvas.isInView()){
-                    blurRenderer.resume();
-                } else blurRenderer.paused = true;
+            const frameWidth = 1360 + scroll;
+            if(frameWidth <= 1920) contentContainer.style.maxWidth = Math.min(frameWidth, 1920) + "px";
+
+            if (Math.abs(scroll - lastScroll) > 10) {
+                container.get("#chevron").class("visible", scroll < 60);
+
+                if(!window.LOW_PERFORMANCE_MODE) {
+                    if(cloudsCanvas.isInView()){
+                        cloudsRenderer.resume();
+                    } else cloudsRenderer.paused = true;
+        
+                    if(raysCanvas.isInView()){
+                        blurRenderer.resume();
+                    } else blurRenderer.paused = true;
+                }
 
                 lastScroll = scroll;
             }
@@ -595,37 +603,40 @@ app.module(document.currentScript, (app, page, container) => {
             }
         }
 
-        cloudsRenderer = new CombinedShaderRenderer(cloudsCanvas);
+        if(!window.LOW_PERFORMANCE_MODE) {
+            cloudsRenderer = new CombinedShaderRenderer(cloudsCanvas);
+    
+            cloudsRenderer.addShaderContext(ShaderSource.clouds(cloudsRenderer.gl), {
+                u_time: { type: "uniform1f", value: time => [time * bgaSpeedFactor] },
+                u_resolution: { type: "uniform2f", value: () => [cloudsCanvas.width, cloudsCanvas.height] },
+                u_speed: { type: "uniform1f", value: [0.196] },
+                u_scale: { type: "uniform1f", value: [0] },
+                u_colors: { type: "uniform4fv", value: [[1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0]] },
+                light: { type: "uniform1f", value: [0.5] },
+                shadow: { type: "uniform1f", value: [0.5] },
+                tint: { type: "uniform1f", value: [0.5] },
+                coverage: { type: "uniform1f", value: [0.3] },
+                alpha: { type: "uniform1f", value: [1.0] },
+            })
+    
+            blurRenderer = new CombinedShaderRenderer(raysCanvas);
+    
+            blurRenderer.addShaderContext(ShaderSource.blurredColors(blurRenderer.gl), {
+                u_time: { type: "uniform1f", value: time => [(time * bgaSpeedFactor) + 1000] },
+                u_resolution: { type: "uniform2f", value: () => [cloudsCanvas.width, cloudsCanvas.height] },
+                u_speed: { type: "uniform1f", value: [0.196] },
+                u_scale: { type: "uniform1f", value: [4] },
+                u_colors: { type: "uniform4fv", value: [[0.25098039215686274,0.7529411764705882,0.9058823529411765,1,0.9882352941176471,0.7607843137254902,0.10588235294117647,1,0.9294117647058824,0.4235294117647059,0.18823529411764706,1,0,0,0,0]] },
+                u_blur: { type: "uniform1f", value: [1] },
+                u_animate: { type: "uniform1f", value: [1] },
+                u_animate_speed: { type: "uniform1f", value: [1] },
+                u_frequency: { type: "uniform1f", value: [0] },
+                alpha: { type: "uniform1f", value: [1] },
+            })
+    
+            blurRenderer.resume();
+        }
 
-        cloudsRenderer.addShaderContext(ShaderSource.clouds(cloudsRenderer.gl), {
-            u_time: { type: "uniform1f", value: time => [time * bgaSpeedFactor] },
-            u_resolution: { type: "uniform2f", value: () => [cloudsCanvas.width, cloudsCanvas.height] },
-            u_speed: { type: "uniform1f", value: [0.196] },
-            u_scale: { type: "uniform1f", value: [0] },
-            u_colors: { type: "uniform4fv", value: [[1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0]] },
-            light: { type: "uniform1f", value: [0.5] },
-            shadow: { type: "uniform1f", value: [0.5] },
-            tint: { type: "uniform1f", value: [0.5] },
-            coverage: { type: "uniform1f", value: [0.3] },
-            alpha: { type: "uniform1f", value: [1.0] },
-        })
-
-        blurRenderer = new CombinedShaderRenderer(raysCanvas);
-
-        blurRenderer.addShaderContext(ShaderSource.blurredColors(blurRenderer.gl), {
-            u_time: { type: "uniform1f", value: time => [(time * bgaSpeedFactor) + 1000] },
-            u_resolution: { type: "uniform2f", value: () => [cloudsCanvas.width, cloudsCanvas.height] },
-            u_speed: { type: "uniform1f", value: [0.196] },
-            u_scale: { type: "uniform1f", value: [4] },
-            u_colors: { type: "uniform4fv", value: [[0.25098039215686274,0.7529411764705882,0.9058823529411765,1,0.9882352941176471,0.7607843137254902,0.10588235294117647,1,0.9294117647058824,0.4235294117647059,0.18823529411764706,1,0,0,0,0]] },
-            u_blur: { type: "uniform1f", value: [1] },
-            u_animate: { type: "uniform1f", value: [1] },
-            u_animate_speed: { type: "uniform1f", value: [1] },
-            u_frequency: { type: "uniform1f", value: [0] },
-            alpha: { type: "uniform1f", value: [1] },
-        })
-
-        blurRenderer.resume();
 
         onScroll();
         container.classList.add("vfx-loaded");
