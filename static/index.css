@@ -145,7 +145,7 @@ body[ls-theme="dark"] {
 }
 
 .vfx-loaded .bga {
-    opacity: .25;
+    opacity: 1;
 }
 
 .guy-lore {

@@ -631,7 +631,7 @@ app.module(document.currentScript, (app, page, container) => {
                 u_animate: { type: "uniform1f", value: [1] },
                 u_animate_speed: { type: "uniform1f", value: [1] },
                 u_frequency: { type: "uniform1f", value: [0] },
-                alpha: { type: "uniform1f", value: [1] },
+                alpha: { type: "uniform1f", value: [0.25] },
             })
 
             blurRenderer.addShaderContext(new ShaderSource(blurRenderer.gl, `attribute vec2 a_position; varying vec2 vUV; void main() { vUV = (a_position + 1.0) / 2.0; gl_Position = vec4(a_position, 0.0, 1.0); }`, `
@@ -686,7 +686,7 @@ float sparkleContribution(vec2 cellPos, vec2 fragPos, float tMove, float tEffect
     float speed = mix(0.08, 0.24, rand.x);
     vec2 center = fract(rand + dir * tMove * speed);
     vec2 diff = (cellPos + center) - fragPos;
-    float size = mix(0.01, 0.12, rand.y);
+    float size = mix(0.005, 0.10, rand.y);
     float spark = exp(-pow(length(diff) / size, 6.5));
     float life = fract(tEffect * mix(0.5, 1.2, rand.x) + rand.y);
     float fade = smoothstep(0.0, 0.2, life) * (1.0 - smoothstep(0.75, 1.0, life));
@@ -788,7 +788,7 @@ void main() {
             {
                 time: { type: "uniform1f", value: time => [time * bgaSpeedFactor] },
                 resolution: { type: "uniform2f", value: () => [innerWidth, innerHeight] },
-                areaBounds: { type: "uniform4f", value: [0.5, 0.0, 1.0, 0.2] },
+                areaBounds: { type: "uniform4f", value: [0.5, 0.0, 0.6, 0.6] },
                 areaFeather: { type: "uniform1f", value: [1.0] },
                 areaInvert: { type: "uniform1f", value: [0.0] },
             })
