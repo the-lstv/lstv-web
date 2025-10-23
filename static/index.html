@@ -39,7 +39,7 @@
         </div>
     
         <div .padding>
-            <canvas #glCanvas .bga />
+            <canvas #glCanvas .bga.clouds />
     
             <div .guy-lore .mono .padding>
                 <div style="z-index: 5">
@@ -686,8 +686,8 @@ float sparkleContribution(vec2 cellPos, vec2 fragPos, float tMove, float tEffect
     float speed = mix(0.08, 0.24, rand.x);
     vec2 center = fract(rand + dir * tMove * speed);
     vec2 diff = (cellPos + center) - fragPos;
-    float size = mix(0.005, 0.10, rand.y);
-    float spark = exp(-pow(length(diff) / size, 6.5));
+    float size = mix(0.001, 0.1, rand.y);
+    float spark = exp(-pow(length(diff) / size, 16.5));
     float life = fract(tEffect * mix(0.5, 1.2, rand.x) + rand.y);
     float fade = smoothstep(0.0, 0.2, life) * (1.0 - smoothstep(0.75, 1.0, life));
 
@@ -788,7 +788,7 @@ void main() {
             {
                 time: { type: "uniform1f", value: time => [time * bgaSpeedFactor] },
                 resolution: { type: "uniform2f", value: () => [innerWidth, innerHeight] },
-                areaBounds: { type: "uniform4f", value: [0.5, 0.0, 0.6, 0.6] },
+                areaBounds: { type: "uniform4f", value: [0.5, 0.5, 0.6, 0.2] },
                 areaFeather: { type: "uniform1f", value: [1.0] },
                 areaInvert: { type: "uniform1f", value: [0.0] },
             })

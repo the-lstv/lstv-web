@@ -148,6 +148,10 @@ body[ls-theme="dark"] {
     opacity: 1;
 }
 
+.vfx-loaded .bga.clouds {
+    opacity: 0.25;
+}
+
 .guy-lore {
     display: flex;
     flex-wrap: wrap;
