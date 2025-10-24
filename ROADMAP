@@ -1,0 +1,31 @@
+--- ROADMAP
+
+[ ] = Planned
+[-] = Work in progress
+[!] = Bug
+[x] = Early beta, attention needed
+[/] = Functional, but not fully polished
+[*] = Completed
+
+- [-] Projects showcase
+- [ ] Music showcase
+- [ ] Store page
+- [-] App integration & apps
+- [ ] Chat platform
+- [ ] Blog
+- [ ] Better introduction
+- [ ] Sitewide navigation
+- [ ] Bring back SPA design
+- [ ] Reason of insanity
+- [x] Design gallery
+- [/] Profile editor
+- [ ] Instant login where supported (login hooks)
+- [ ] Clean kernel APIs (currently its very messy)
+- [ ] Realtime intergration
+- [ ] Optimize for low-end devices
+- [ ] Site history showcase/wayback
+- [ ] Cloud dashboard
+- [ ] Notifications center
+- [ ] Account switcher
+
+

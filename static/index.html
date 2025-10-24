@@ -37,34 +37,33 @@
                 <span>Welcome to LSTV.space</span>
             </div>
         </div>
-    
+
         <div .padding>
             <canvas #glCanvas .bga.clouds />
-    
+
             <div .guy-lore .mono .padding>
                 <div style="z-index: 5">
-    
+
                     <h1>Who is Lukas?</h1>
-    
+
                     <ls-div .margin-bottom-xxlarge>
                         <ls-div>
                             My name is <b>{{ about.name }} / {{ about.name_alt }}</b>.<br>
                             I am an {{ about.age }} years old student in IT, with about {{ about.coding_years }} years of coding experience, {{ about.design_years }} years of design experience, and ~{{ about.music_years }} year of sound design experience, all self-taught. (More information on my <a target="_blank" .poppable-link .underline-link .has-icon style="--accent: #000; --hover-color: #fff" href="https://github.com/the-lstv"><i .bi-github /> Github profile</a>).
                         </ls-div>
-    
+
                         <ls-div>
                             I design and develop software, attempt making music, and develop games. I do all kinds of things from networking, hardware, libraries and utility to creative software. I also enjoy video editing, sound composition and design, writing, animating, you name it.<br>
                             My current main area of expertise is software optimization, design, graphics/rendering software, and networking software. I'm a bit of a perfectionist.
                         </ls-div>
-    
+
                         <ls-div>
                             <b>Note:</b> LSTV is actuallly not my nickname. To refer to me, please use my name or an alias.<br><br>
                             On this website I showcase my works and write blogs, but it is also the center of LSTV's services and products, not just my personal website. There is a lot more to explore!<br>
                             My favorite artists: <a target="_blank" .poppable-link .underline-link .koba-button style="--accent: #6817eb" href="https://www.youtube.com/@Kobaryo">Kobaryo</a>, <a target="_blank" .poppable-link .underline-link style="--accent: #a81446" href="https://www.youtube.com/channel/UCV4ggxLd_Vz-I-ePGSKfFog">Camellia</a>.<br>
-                            If you want to know more about me or my current status, ---
                         </ls-div>
                     </ls-div>
-    
+
                     <ls-div>
                         <ls-div>
                             <h1>What's LSTV?</h1>
@@ -81,22 +80,10 @@
                             </div>
                         </ls-div>
                     </ls-div>
-
-                    <ls-div .margin-top-xxlarge>
-                        <a href="https://endof10.org/" ls-accent="blue" target="_blank" .ad-link>
-                            <ls-box>
-                                <button .ad-close .circle><i .bi-x-lg></i></button>
-                                Tired of bloat and spyware? Being forced to use Windows 11? Linux is really good nowadays! Give it a try and see if it works for you.<br>
-                                If you need help or want to discuss anything, you can reach out to me directly (I have been a full-time Linux user for a couple of years), and also check out EnfOf10.org.
-                                <span>This is not a sponsored message.</span>
-                            </ls-box>
-                        </a>
-                    </ls-div>
-    
                 </div>
             </div>
         </div>
-    
+
         <div .marqueeBar .mono .level-3>
             <div>
                 <span>Welcome to LSTV.space</span>
@@ -131,19 +118,21 @@
                 Music
             </button>
         </ls-box>
-        
+
         <ls-tabs #showcase-tabs .ls-slide-animation>
             <ls-tab style="position: relative" tab-id="showcase-projects" #showcase-projects></ls-tab>
             <ls-tab style="position: relative" tab-id="showcase-gallery" #showcase-gallery>
                 <div .ui-loader style="margin: auto" />
             </ls-tab>
-            <ls-tab style="position: relative" tab-id="showcase-music" #showcase-music></ls-tab>
+            <ls-tab style="position: relative" tab-id="showcase-music" #showcase-music>
+                <div .ui-loader style="margin: auto" />
+            </ls-tab>
         </ls-tabs>
     </div>
-    
+
     <div #footer .level-1>
         <svg style="width: 300px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 290 95" fill="none"><path d="M101.84 73V20.44h10.8v42.48h21.24V73h-32.04zm65.132.72c-3.696 0-6.912-.624-9.648-1.872s-4.848-3-6.336-5.256-2.232-4.92-2.232-7.992h10.8c0 1.776.672 3.192 2.016 4.248 1.392 1.008 3.264 1.512 5.616 1.512 2.256 0 4.008-.504 5.256-1.512 1.296-1.008 1.944-2.4 1.944-4.176 0-1.536-.48-2.856-1.44-3.96s-2.304-1.848-4.032-2.232l-5.328-1.224c-4.464-1.056-7.944-3-10.44-5.832-2.448-2.88-3.672-6.384-3.672-10.512 0-3.072.696-5.736 2.088-7.992 1.44-2.304 3.456-4.08 6.048-5.328s5.664-1.872 9.216-1.872c5.376 0 9.624 1.344 12.744 4.032 3.168 2.64 4.752 6.216 4.752 10.728h-10.8c0-1.68-.6-3-1.8-3.96-1.152-.96-2.832-1.44-5.04-1.44-2.064 0-3.648.48-4.752 1.44-1.104.912-1.656 2.232-1.656 3.96 0 1.536.432 2.856 1.296 3.96.912 1.056 2.184 1.776 3.816 2.16l5.616 1.296c4.656 1.056 8.184 2.976 10.584 5.76 2.4 2.736 3.6 6.24 3.6 10.512 0 3.072-.768 5.784-2.304 8.136-1.488 2.352-3.6 4.176-6.336 5.472-2.688 1.296-5.88 1.944-9.576 1.944zm44.972-.72V30.52h-13.32V20.44h37.44v10.08h-13.32V73h-10.8zm49.004 0l-13.032-52.56h11.16l7.272 33.192.864 4.392c.384 1.776.672 3.288.864 4.536l.72-4.536.792-4.464 7.056-33.12h10.872L274.628 73h-13.68z" fill="url(#TC)"/><path d="M40.321 20H78v14H48.348l-8.027-14z" fill="#ed6c30"/><path d="M51.215 39H78v15H59.816l-8.601-15z" fill="#fcc21b"/><path d="M62.683 59H78v14h-7.29l-8.027-14z" fill="#40c0e7"/><path d="M12.483 68L35 29l22.517 39H12.483z" stroke="var(--color)" stroke-width="9"/><defs><linearGradient id="TC" x1="95" y1="-48.5" x2="279.5" y2="63.5" gradientUnits="userSpaceOnUse"><stop stop-color="#fcc21b"/><stop offset=".465" stop-color="#fcc21b"/><stop offset=".465" stop-color="#ed6c30"/><stop offset=".725" stop-color="#ed6c30"/><stop offset=".725" stop-color="#40c0e7"/></linearGradient></defs></svg>
-    
+
         <div ls-accent="auto" style="line-height: 1.6em; text-align: center">
             <a href="/tos">Terms of Service</a> · <a href="/pp">Privacy Policy</a> <br>
             <a style="font-weight: 100" href="https://github.com/the-lstv/lstv-web"><i class="bi-github"></i> Website GitHub</a>
@@ -151,32 +140,16 @@
     </div>
 </div>
 
-<!--
-
---- ROADMAP
-
-- [ ] Projects showcase
-- [ ] Music showcase
-- [ ] Store page
-- [ ] App integration
-- [ ] Chat platform
-- [ ] Blog
-- [ ] Better introduction
-- [ ] Sitewide navigation
-- [ ] Bring back SPA design
-- [ ] Reason of insanity
-
--->
-
 <script>
 // window.LOW_PERFORMANCE_MODE = true;
 
 const year = new Date().getFullYear();
 
+// About me
 const about = LS.Reactive.wrap("about", {
     coding_years: year - 2016,
     design_years: year - 2021,
-    music_years: year - 2024,
+    music_years: year - 2024, // Technically 2023, but I won't count that
     age: year - 2007,
     name: "Lukáš",
     name_alt: "Lukas",
@@ -193,44 +166,33 @@ const data = {
         { title: "FOSSHome", icon: "8a61a157e6c85819.webp", description: "FOSSHome is a cloud-synced \"WebOS\" launchpad environment with a Linux-like shell and a sleek interface and an extensive window/widget framework, to make you feel right at home. Currently abandoned (for over a year now...) until I work on it again.", link: "https://github.com/the-lstv/fosshome" },
         { title: "Getrox", icon: "d11562ce585e205b.svg", description: "Our crypto-like currency and community platform, used as a token across our services and cloud platform.", link: "" },
         { title: "Unifya", icon: "ff153edceb4394d1.webp", description: "Unifya is an universal data flow framework used across our software to ensure seamless integration.", link: "https://unifya.com" },
-        
     ],
 
     music: [
-        { title: "ID - ?", track: "", cover: "", album: "ID", genre: "Speedcore, Metal" },
-        { title: "ID - 85", track: "", cover: "", album: "ID", genre: "Speed Eurobeat" },
-        { title: "teascramble hardcore", track: "", cover: "", album: "", genre: "Speedcore, Schranz" },
-        { title: "ID - 81", track: "", cover: "", album: "ID", genre: "" },
-        { title: "hate song", track: "", cover: "", album: "9a17397a31f588c7.webp", genre: "Speedcore" },
-        { title: "Subtile Confinement", track: "", cover: "", album: "", genre: "" },
-        { title: "Perplexed Projectile", track: "", cover: "fa67922220db2a31.webp", album: "", genre: "Chiptune, Speedcore" },
-        { title: "triage colony", track: "", cover: "", album: "", genre: "Rock" },
-        { title: "All shapes! feat. Nogako", track: "", cover: "", album: "", genre: "Chiptune, Speedcore, Jazz" },
-        { title: "Calm", track: "", cover: "", album: "", genre: "" },
-        { title: "Traceback", track: "", cover: "", album: "", genre: "" },
-        { title: "argumented cloud feat. xnizrun", track: "", cover: "", album: "", genre: "" },
-        { title: "dfglkjdfgklserlhj24", track: "", cover: "", album: "", genre: "" },
-        { title: "Axel L", track: "", cover: "", album: "", genre: "Speedcore" },
-        { title: "Blocky", track: "", cover: "", album: "", genre: "Chiptune" },
-        { title: "Random orchestra", track: "", cover: "", album: "", genre: "Orchestral" },
-        { title: "Skibidi aah", track: "", cover: "", album: "", genre: "Piano" },
-
-        { title: "td-1", track: "", cover: "", album: "", genre: "Speedcore" },
-        { title: "violin-1 (edit)", track: "", cover: "", album: "", genre: "Speedcore" },
-
-        { title: "Departure", track: "", cover: "", album: "", genre: "Abstract" },
-        { title: "San Andreas", track: "", cover: "", album: "", genre: "Abstract" },
-        { title: "Uneasy Calm", track: "", cover: "", album: "", genre: "Abstract" },
-
-        { title: "dj toenail ambulance beat - thelstv remix", track: "", cover: "", album: "", genre: "Random" },
-    ],
-
-    // art: [
-        // { title: "Open-Source security software presentation (Czech)", author: "Lukas", year: "2025", link: "62a9029caca59438.webp" },
-        // { title: "Streak", author: "Lukas", year: "2025", link: "fe07e416bf46c720.webp" },
-        // { title: "[glitch] Freedom", author: "Lukas", year: "2025", link: "c50819fea178e005.webp" },
-        // { title: "[glitch] Glow", author: "Lukas", year: "2025", link: "361429ee764408dd.webp" },
-    // ]
+        { type: 2, title: "ID - ?", media: "", cover: "", album: "ID", genre: "Speedcore, Metal" },
+        { type: 2, title: "ID - 85", media: "", cover: "", album: "ID", genre: "Speed Eurobeat" },
+        { type: 2, title: "teascramble hardcore", media: "", cover: "", album: "", genre: "Speedcore, Schranz" },
+        { type: 2, title: "ID - 81", media: "", cover: "", album: "ID", genre: "" },
+        { type: 2, title: "hate song", media: "", cover: "", album: "9a17397a31f588c7.webp", genre: "Speedcore" },
+        { type: 2, title: "Subtile Confinement", media: "", cover: "", album: "", genre: "" },
+        { type: 2, title: "Perplexed Projectile", media: "", cover: "fa67922220db2a31.webp", album: "", genre: "Chiptune, Speedcore" },
+        { type: 2, title: "triage colony", media: "", cover: "", album: "", genre: "Rock" },
+        { type: 2, title: "All shapes! feat. Nogako", media: "", cover: "", album: "", genre: "Chiptune, Speedcore, Jazz" },
+        { type: 2, title: "Calm", media: "", cover: "", album: "", genre: "" },
+        { type: 2, title: "Traceback", media: "", cover: "", album: "", genre: "" },
+        { type: 2, title: "argumented cloud feat. xnizrun", media: "", cover: "", album: "", genre: "" },
+        { type: 2, title: "dfglkjdfgklserlhj24", media: "", cover: "", album: "", genre: "" },
+        { type: 2, title: "Axel L", media: "", cover: "", album: "", genre: "Speedcore" },
+        { type: 2, title: "Blocky", media: "", cover: "", album: "", genre: "Chiptune" },
+        { type: 2, title: "Random orchestra", media: "", cover: "", album: "", genre: "Orchestral" },
+        { type: 2, title: "Skibidi aah", media: "", cover: "", album: "", genre: "Piano" },
+        { type: 2, title: "td-1", media: "", cover: "", album: "", genre: "Speedcore" },
+        { type: 2, title: "violin-1 (edit)", media: "", cover: "", album: "", genre: "Speedcore" },
+        { type: 2, title: "Departure", media: "", cover: "", album: "", genre: "Abstract" },
+        { type: 2, title: "San Andreas", media: "", cover: "", album: "", genre: "Abstract" },
+        { type: 2, title: "Uneasy Calm", media: "", cover: "", album: "", genre: "Abstract" },
+        { type: 2, title: "dj toenail ambulance beat - thelstv remix", media: "", cover: "", album: "", genre: "Random" },
+    ]
 }
 
 app.module(document.currentScript, (app, page, container) => {
@@ -413,7 +375,7 @@ app.module(document.currentScript, (app, page, container) => {
             // First, handle customBackOrder by placing those IDs at the end
             const aInBackOrder = customBackOrder.indexOf(a.id) !== -1;
             const bInBackOrder = customBackOrder.indexOf(b.id) !== -1;
-            
+
             if (aInBackOrder && !bInBackOrder) return 1;
             if (!aInBackOrder && bInBackOrder) return -1;
             if (aInBackOrder && bInBackOrder) return customBackOrder.indexOf(a.id) - customBackOrder.indexOf(b.id);
@@ -511,6 +473,20 @@ app.module(document.currentScript, (app, page, container) => {
             case "showcase-music":
                 if(!music_loaded) {
                     music_loaded = true;
+
+                    app.auth.fetch("/showcase/list?type=2&limit=100", { auth: app.isLoggedIn }).then(data => {
+                        O("#showcase-music .ui-loader").remove();
+
+                        data.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+                        data.forEach((art, index) => {
+                            O("#showcase-music").add((new ShowcaseGalleryItem(art)).container);
+                        });
+                    }).catch(err => {
+                        console.error(err);
+                        O("#showcase-music .ui-loader").remove();
+                        O("#showcase-music").add(N("h3", { innerText: "An error occurred while loading artworks." }));
+                    });
                 }
                 break;
         }
@@ -567,6 +543,8 @@ app.module(document.currentScript, (app, page, container) => {
     })();
 
     let showcase_loaded = false;
+
+    const logoBoard = container.get(".logo-board");
 
     setTimeout(() => {
         let lastScroll = 0;
@@ -792,7 +770,7 @@ void main() {
                 areaFeather: { type: "uniform1f", value: [1.0] },
                 areaInvert: { type: "uniform1f", value: [0.0] },
             })
-    
+
             blurRenderer.resume();
         }
 
