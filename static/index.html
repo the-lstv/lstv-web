@@ -601,7 +601,7 @@ app.module(document.currentScript, (app, page, container) => {
 
             blurRenderer.addShaderContext(ShaderSource.blurredColors(blurRenderer.gl), {
                 u_time: { type: "uniform1f", value: time => [(time * bgaSpeedFactor) + 1000] },
-                u_resolution: { type: "uniform2f", value: () => [cloudsCanvas.width, cloudsCanvas.height] },
+                u_resolution: { type: "uniform2f", value: () => [introCanvas.width, introCanvas.height] },
                 u_speed: { type: "uniform1f", value: [0.196] },
                 u_scale: { type: "uniform1f", value: [4] },
                 u_colors: { type: "uniform4fv", value: [[0.25098039215686274,0.7529411764705882,0.9058823529411765,1,0.9882352941176471,0.7607843137254902,0.10588235294117647,1,0.9294117647058824,0.4235294117647059,0.18823529411764706,1,0,0,0,0]] },
@@ -665,7 +665,7 @@ float sparkleContribution(vec2 cellPos, vec2 fragPos, float tMove, float tEffect
     vec2 center = fract(rand + dir * tMove * speed);
     vec2 diff = (cellPos + center) - fragPos;
     float size = mix(0.001, 0.1, rand.y);
-    float spark = exp(-pow(length(diff) / size, 16.5));
+    float spark = exp(-pow(length(diff) / size, 10.5));
     float life = fract(tEffect * mix(0.5, 1.2, rand.x) + rand.y);
     float fade = smoothstep(0.0, 0.2, life) * (1.0 - smoothstep(0.75, 1.0, life));
 
@@ -702,35 +702,6 @@ float ovalMask(vec2 uv) {
     return mix(mask, 1.0 - mask, clamp(areaInvert, 0.0, 1.0));
 }
 
-// vec4 getStripeColor(vec2 pixelCoord) {
-//     float stripeHeight = 40.0;
-//     float gap = 20.0;
-//     float totalHeight = stripeHeight * 3.0 + gap * 2.0;
-//     float centerY = resolution.y * 0.5;
-//     float startY = centerY - totalHeight * 0.5;
-    
-//     float y = pixelCoord.y;
-    
-//     // Stripe 1: rgb(237, 108, 48)
-//     if (y >= startY && y < startY + stripeHeight) {
-//         return vec4(237.0/255.0, 108.0/255.0, 48.0/255.0, 1.0);
-//     }
-    
-//     // Stripe 2: rgb(252, 194, 27)
-//     float stripe2Start = startY + stripeHeight + gap;
-//     if (y >= stripe2Start && y < stripe2Start + stripeHeight) {
-//         return vec4(252.0/255.0, 194.0/255.0, 27.0/255.0, 1.0);
-//     }
-    
-//     // Stripe 3: rgb(64, 192, 231)
-//     float stripe3Start = stripe2Start + stripeHeight + gap;
-//     if (y >= stripe3Start && y < stripe3Start + stripeHeight) {
-//         return vec4(64.0/255.0, 192.0/255.0, 231.0/255.0, 1.0);
-//     }
-    
-//     return vec4(0.0);
-// }
-
 void main() {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec2 fragPos = uv * vec2(50.0, 28.0);
@@ -748,25 +719,19 @@ void main() {
             glow += sparkleContribution(cell, fragPos, tMove, tEffect, density);
         }
     }
+
     float areaMask = ovalMask(uv);
     glow = clamp(glow * areaMask, 0.0, 1.0);
     vec3 color = vec3(1.0) * glow;
     float alpha = glow * 0.85;
-
-    // // Add stripes
-    // vec4 stripeColor = getStripeColor(gl_FragCoord.xy);
-    // if (stripeColor.a > 0.0) {
-    //     color = stripeColor.rgb;
-    //     alpha = 1.0;
-    // }
     
     gl_FragColor = vec4(color, alpha);
 }
 `),
             {
                 time: { type: "uniform1f", value: time => [time * bgaSpeedFactor] },
-                resolution: { type: "uniform2f", value: () => [innerWidth, innerHeight] },
-                areaBounds: { type: "uniform4f", value: [0.5, 0.5, 0.6, 0.2] },
+                resolution: { type: "uniform2f", value: () => [introCanvas.width * 1.9, introCanvas.height] },
+                areaBounds: { type: "uniform4f", value: [0.5, 0.5, 0.6, 0.1] },
                 areaFeather: { type: "uniform1f", value: [1.0] },
                 areaInvert: { type: "uniform1f", value: [0.0] },
             })

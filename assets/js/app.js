@@ -465,7 +465,6 @@ window.addEventListener("DOMContentLoaded", async () => {
 
             if(profile) {
                 profile.classList.add("admin");
-                profile.setAttribute("ls-accent", "pastel-teal");
             }
         }
 
