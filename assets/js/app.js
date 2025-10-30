@@ -333,7 +333,6 @@ window.addEventListener("DOMContentLoaded", async () => {
     // TODO: Use document collection instead
     page.contentElement = O("main > div");
 
-    if (window.__init) app.module(__initOrigin, __init);
     app.setPage(page, { browserTriggered: true });
 
     // Display content

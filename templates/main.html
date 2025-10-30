@@ -60,9 +60,14 @@
 
     <script>
         window.app = {
-            module(script, callback) {
-                window.__initOrigin = script;
-                window.__init = callback;
+            /**
+             * Requests scoped access. This is required to access the website APIs.
+             * @param {HTMLScriptElement|string} script - The script tag or unique identifier.
+             * @param {Function} callback - The initialization callback function.
+             */
+            register(script, callback) {
+                if(!window.__init) window.__init = [];
+                window.__init.push({ script, callback });
             }
         }
     </script>
