@@ -475,17 +475,6 @@ window.addEventListener("DOMContentLoaded", async () => {
         app.toolbarOpen("toolbarTheme", true, this);
     })
 
-    function generateSecurePassword(length = 12) {
-        const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?";
-        const array = new Uint32Array(length);
-        window.crypto.getRandomValues(array);
-        let password = "";
-        for (let i = 0; i < length; i++) {
-            password += charset[array[i] % charset.length];
-        }
-        return password;
-    }
-
     O("#randomPassword").on("click", function (){
         const password = generateSecurePassword(12);
         O("#regPassword").value = password;
