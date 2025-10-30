@@ -355,6 +355,18 @@ window._assistantCallback = async (app, auth) => {
         }
     });
 
+    const exampleContainer = container.querySelector(".assistant-examples");
+
+    if (exampleContainer) {
+        for(let [value, text] of [["Hello! Who are you?", "Say hi"], ["Check my saved reminders.", "Check reminders"], ["I want to report a bug or suggest a feature related to lstv.space.", "Report a bug"]]) {
+            exampleContainer.add(N("button", {
+                class: "pill elevated",
+                onclick() { chatInput.value = value; },
+                inner: text
+            }))
+        }
+    }
+
     document.forms["assistantForm"].addEventListener("submit", async (event) => {
         event.preventDefault();
         const message = chatInput.value.trim();
@@ -371,8 +383,7 @@ window._assistantCallback = async (app, auth) => {
             const infoBar = O(".assistant-intro");
             if (infoBar) infoBar.remove();
 
-            const infoBarExamples = O(".assistant-examples");
-            if (infoBarExamples) infoBarExamples.style.display = "none";
+            if (exampleContainer) exampleContainer.style.display = "none";
 
             app.assistant.generating = true;
 

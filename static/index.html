@@ -11,7 +11,7 @@
 </head>
 
 <div .content>
-    <div .full-height .logo-board>
+    <div .logo-board>
         <div #logo>
             <img src="/assets/image/prism_light.png" fetchpriority="high" srcset="/assets/image/prism_light.png 1x, /assets/image/prism_light_2x.png 2x" alt="LSTV Triangle Logo" draggable="false">
         
@@ -28,8 +28,8 @@
         <div #chevron .visible .mono .level-top><i class="bi-chevron-down"></i> Scroll down <i class="bi-chevron-down"></i></div>
     </div>
     
-    <div .level-0>
-        <div .marqueeBar .mono .level-3>
+    <div .level-0 .lore-section>
+        <div .marqueeBar .mono .level-n2>
             <div>
                 <span>Welcome to LSTV.space</span>
                 <span>Welcome to LSTV.space</span>
@@ -84,7 +84,7 @@
             </div>
         </div>
 
-        <div .marqueeBar .mono .level-3>
+        <div .marqueeBar .mono .level-n2>
             <div>
                 <span>Welcome to LSTV.space</span>
                 <span>Welcome to LSTV.space</span>
@@ -545,6 +545,7 @@ app.register(document.currentScript, (app, page, container) => {
     let showcase_loaded = false;
 
     const logoBoard = container.get(".logo-board");
+    const loreSection = container.get(".lore-section");
 
     setTimeout(() => {
         let lastScroll = 0;
@@ -566,6 +567,8 @@ app.register(document.currentScript, (app, page, container) => {
                     if(introCanvas.isInView()){
                         blurRenderer.resume();
                     } else blurRenderer.paused = true;
+                    
+                    loreSection.style.opacity = Math.min(1, scroll / 800);
                 }
 
                 lastScroll = scroll;

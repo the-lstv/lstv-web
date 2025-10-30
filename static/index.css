@@ -8,17 +8,28 @@ body[ls-theme="dark"] {
     max-width: 1360px;
 }
 
-.full-height {
-    height: 100%;
-    position: relative;
-}
-
 .logo-board {
     display: flex;
     align-items: center;
     justify-content: center;
     flex-direction: column;
     gap: 60px;
+    height: 100%;
+    position: relative;
+}
+
+.logo-board::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 500px;
+    background: linear-gradient(0deg, var(--surface-n3), transparent);
+}
+
+[ls-theme="light"] .logo-board::after {
+    background: linear-gradient(0deg, var(--surface-0), transparent);
 }
 
 .logo_text {
@@ -170,6 +181,13 @@ body[ls-theme="dark"] {
     font-weight: 200;
 }
 
+.lore-section {
+    border-radius: var(--border-radius-xxlarge);
+    overflow: hidden;
+    outline: 1px solid var(--surface-1);
+    margin: 60px;
+}
+
 @media screen and (max-width: 600px) {
     .padding {
         padding: 3em 2em;
@@ -181,6 +199,10 @@ body[ls-theme="dark"] {
 
     .marqueeBar span:nth-child(odd) {
         display: none;
+    }
+
+    .lore-section {
+        margin: 60px 20px;
     }
 }
 

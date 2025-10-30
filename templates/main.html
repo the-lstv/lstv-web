@@ -74,7 +74,7 @@
         }
     </script>
 
-    @use (ls:5.2.1[flat, tooltips, toast, reactive, tabs, animation, modal], bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800", "IBM Plex Mono:wght@400;600;800"]);
+    @use (ls:5.2.2[flat, tooltips, toast, reactive, tabs, animation, modal], bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800", "IBM Plex Mono:wght@400;600;800"]);
     @use (~/assets/css/main.css, ~/assets/js/new.app.js[defer]);
 
     @page {
@@ -93,7 +93,7 @@
     <div .loaderContainer>
         <div .loader/>
         <noscript>
-            <h1>You need to enable JavaScript to be able to access this website!</h1>
+            <h3 style="margin:40px 20px">You need to enable JavaScript to be able to access this website!</h3>
         </noscript>
     </div>
 
@@ -121,6 +121,10 @@
 
                 <button ls-tooltip="Applications" .level-1 #appsButton .pill .elevated aria-label="View applications">
                     <i .bi-grid-fill /> <span .label>Apps</span>
+                </button>
+
+                <button ls-tooltip="Command Palette (Ctrl+Shift+P)" #commandsButton .pill.elevated aria-label="Open Command Palette">
+                    <i .bi-terminal />
                 </button>
 
                 <button ls-tooltip="Assistant" #assistantButton .pill.elevated aria-label="Open Assistant">
@@ -178,11 +182,7 @@
                         Assistant can help with answering questions or just chat with you. It has access to a part of your profile and data & memories you have on Arisen chat. Chats you start here will also appear in Arisen chat. More features and integrations will be added over time! You can opt out from it in settings.
                     </ls-div>
 
-                    <ls-div .assistant-examples>
-                        <button .pill .elevated onclick="O('#assistant-input').value='Hello! Who are you?'">Say hi</button>
-                        <button .pill .elevated onclick="O('#assistant-input').value='Check my saved reminders.'">Check reminders</button>
-                        <button .pill .elevated onclick="O('#assistant-input').value='I want to report a bug or suggest a feature related to lstv.space.'">Report a bug</button>
-                    </ls-div>
+                    <ls-div .assistant-examples />
     
                     <form .input-container name="assistantForm" onsubmit="return false">
                         <div .input-wrapper>

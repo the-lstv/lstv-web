@@ -1,6 +1,8 @@
 app.register('home', function(app, page, container) {
     page.title = "User Settings";
 
+    const auth = app.requestPermission("auth");
+
     app.once("user-loaded", () => {
         if(!app.isLoggedIn) {
             location.replace("/login?continue=" + encodeURIComponent(location.pathname));
@@ -235,7 +237,7 @@ app.register('home', function(app, page, container) {
                     patch.banner = blobs.banner.uploadResult.name;
                 }
 
-                app.auth.patch(patch, (error, response) => {
+                auth.patch(patch, (error, response) => {
                     confirmButtons.getAll("button").forEach(button => {
                         button.removeAttribute("disabled");
                     });
@@ -333,7 +335,7 @@ app.register('home', function(app, page, container) {
 
                             confirmationModal.close();
 
-                            app.auth.patch(patch, (error, response) => {
+                            auth.patch(patch, (error, response) => {
                                 if (error) {
                                     LS.Modal.buildEphemeral({
                                         title: "Update failed",

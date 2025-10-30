@@ -71,12 +71,13 @@ console.log(
     
         fromElement(element){
             this.content = element;
+            element.classList.add("page");
             return this;
         }
     
         fromText(text){
             this.content = N('div', {
-                class: 'page-content',
+                class: 'page page-content',
                 innerHTML: text
             });
             return this;
@@ -224,7 +225,7 @@ console.log(
     
                 return N({
                     class: "profile-bio",
-                    innerHTML: basicMarkDown(bio)
+                    innerHTML: app.utils.basicMarkDown(bio)
                 })
             },
         },
@@ -397,7 +398,18 @@ console.log(
          * Requests permission for a specific feature or API subset.
          */
         requestPermission(permissionName, options) {
-            // TODO:
+            // TODO: THIS IS A TEMPORARY API PLACEHOLDER
+            // Needs to be implemented properly before user-generated apps are supported
+
+            switch(permissionName) {
+                case "auth":
+                    return kernel.auth;
+            }
+        },
+
+        // TODO: Multi-account support
+        get userFragment() {
+            return kernel.userFragment;
         },
 
         loginTabs: new LS.Tabs(O("#toolbarLogin"), {
@@ -769,6 +781,7 @@ console.log(
                     browserTriggered: true
                 });
 
+                this.__loaded = true;
                 if (window.__init) {
                     for (const initEntry of window.__init) {
                         this.registerModule(initEntry.script, initEntry.callback);
@@ -838,7 +851,7 @@ console.log(
          * @param {*} callback Initialization callback
          */
         registerModule(script, callback) {
-            if (window.__init !== null) {
+            if (window.__init !== null && !this.__loaded) {
                 // Still initializing
                 window.__init.push({ script, callback });
                 return;
@@ -999,14 +1012,14 @@ console.log(
             })
 
             O("#randomPassword").on("click", function (){
-                const password = generateSecurePassword(12);
+                const password = app.utils.generateSecurePassword(12);
                 O("#regPassword").value = password;
                 O("#regPassword").dispatchEvent(new Event("input"));
                 alert("Your generated password: " + password);
             });
 
             O("#randomUsername").on("click", function (){
-                const username = generateUsername();
+                const username = app.utils.generateUsername();
                 O("#regUsername").value = username.toLowerCase();
                 O("#regUsername").dispatchEvent(new Event("input"));
                 O("#displayname").value = username;
@@ -1047,8 +1060,8 @@ console.log(
                 }
             }
 
-            O("#assistantButton").on("click", function (){
-                app.toolbarOpen("toolbarAssistant", true, this);
+            O("#assistantButton").on("click", (event) => {
+                app.toolbarOpen("toolbarAssistant", true, event.currentTarget);
 
                 if(!window.__assistantLoading) {
                     window._assistantCallback = null;
