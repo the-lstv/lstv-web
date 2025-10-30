@@ -1,4 +1,4 @@
-app.module('home', function(app, page, container) {
+app.register('home', function(app, page, container) {
     page.title = "User Settings";
 
     app.once("user-loaded", () => {

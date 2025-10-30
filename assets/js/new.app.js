@@ -14,6 +14,7 @@ console.log(
 (() => {
     class LoggerContext {
         constructor(context) {
+            this.logContext = context;
             this.tag = `%c[${context}]%c`;
             this.tagStyle = 'font-weight: bold';
         }
@@ -22,6 +23,7 @@ console.log(
             const isString = typeof message === 'string';
             if(!isString) data.unshift(message);
             func(this.tag + (isString ? " " + message : ''), tagStyle + this.tagStyle, 'color: inherit; font-weight: normal;', ...data);
+            app.emit('global-log-stream', [this.logContext, message, ...data]);
         }
     
         log(...data) {
@@ -41,15 +43,16 @@ console.log(
         }
     }
     
-    class Page extends LS.EventHandler {
+    class ContentContext extends LS.EventHandler {
         constructor(options) {
             super();
             this.content = null;
-    
+
             if(options) {
                 if(options.url) this.fromURL(options.url);
                 else if(options.element) this.fromElement(options.element);
                 else if(options.text) this.fromText(options.text);
+                this.setOptions(options);
             }
         }
     
@@ -78,12 +81,33 @@ console.log(
             });
             return this;
         }
+
+        setOptions(options){
+            if(typeof options !== "object") return;
+
+            // Flag that specifies if the page requires a full reload when navigated to
+            if(options.requiresReload) this.requiresReload = true;
+
+            // Flag that specifies if the page handles logins dynamically (without reload)
+            if(options.dynamicAccount) this.keywords = options.dynamicAccount;
+
+            // Metadata
+            if(options.title) this.title = options.title;
+            if(options.description) this.description = options.description;
+        }
+
+        registerSPAExtension(path, handler) {
+            kernel.SPAExtensions.push([path || this.path, handler]);
+        }
     }
     
     const app = {
+        isLoggedIn: false, // This may not be always synchronized, use auth.isLoggedIn()
         isLocalhost: location.hostname.endsWith("localhost"),
-    
-        Page,
+
+        cdn: "https://cdn.extragon.cloud",
+
+        ContentContext,
     
         views: {
             getProfilePictureView(source, args, element, user) {
@@ -337,55 +361,7 @@ console.log(
                     password += charset[array[i] % charset.length];
                 }
                 return password;
-            },
-
-            set theme(value){
-                if(!value) return;
-
-                LS.Color.setTheme(value);
-                localStorage.setItem("ls-theme", value);
-            },
-
-            get theme(){
-                return document.body.getAttribute("ls-theme") || "dark";
-            },
-
-            toolbarOpen(id, toggle, button) {
-                if(app.headerWindowCurrent == id && app.isToolbarOpen) {
-                    if(toggle) app.toolbarClose();
-                    return;
-                }
-
-                const view = document.getElementById(id);
-                if(!view) return;
-
-                const oldElement = O(".toolbar.visible");
-
-                view.style.transition = (!app.isToolbarOpen || !oldElement)? "none" : "";
-
-                LS.Animation.slideInToggle(view, oldElement);
-
-                if (!app.isToolbarOpen) LS.Animation.fadeIn(O("#toolbars"), null, "up");
-                app.isToolbarOpen = true;
-
-                LS.invoke("toolbar-open", id);
-
-                app.headerWindowCurrent = id;
-
-                Q("#headerButtons > button.open").forEach(element => element.classList.remove("open"));
-                if (button) button.classList.add("open");
-            },
-
-            toolbarClose() {
-                if(!app.isToolbarOpen) return;
-
-                LS.Animation.fadeOut(O("#toolbars"), null, "down");
-                LS.invoke("toolbar-close");
-
-                app.isToolbarOpen = false;
-
-                Q("#headerButtons > button.open").forEach(element => element.classList.remove("open"));
-            },
+            }
         },
     
         ACCENT_COLORS: ["white", "blue", "pastel-indigo", "lapis", "pastel-teal", "aquamarine", "green", "lime", "neon", "yellow", "orange", "deep-orange", "red", "rusty-red", "pink", "hotpink", "purple", "soap", "burple"],
@@ -414,8 +390,7 @@ console.log(
          * @param {Function} callback - The initialization callback function.
          */
         register(script, callback) {
-            if(!window.__init) window.__init = [];
-            window.__init.push({ script, callback });
+            return kernel.registerModule(script, callback);
         },
 
         /**
@@ -430,11 +405,65 @@ console.log(
             selector: ".login-toolbar-page",
             styled: false
         }),
+
+        set theme(value){
+            if(!value) return;
+
+            LS.Color.setTheme(value);
+            localStorage.setItem("ls-theme", value);
+        },
+
+        get theme(){
+            return document.body.getAttribute("ls-theme") || "dark";
+        },
+
+        isToolbarOpen: false,
+
+        toolbarOpen(id, toggle, button) {
+            if(app.headerWindowCurrent == id && app.isToolbarOpen) {
+                if(toggle) app.toolbarClose();
+                return;
+            }
+
+            const view = document.getElementById(id);
+            if(!view) return;
+
+            const oldElement = O(".toolbar.visible");
+
+            view.style.transition = (!app.isToolbarOpen || !oldElement)? "none" : "";
+
+            LS.Animation.slideInToggle(view, oldElement);
+
+            if (!app.isToolbarOpen) LS.Animation.fadeIn(O("#toolbars"), null, "up");
+            app.isToolbarOpen = true;
+
+            LS.invoke("toolbar-open", id);
+
+            app.headerWindowCurrent = id;
+
+            Q("#headerButtons > button.open").forEach(element => element.classList.remove("open"));
+            if (button) button.classList.add("open");
+        },
+
+        toolbarClose() {
+            if(!app.isToolbarOpen) return;
+
+            LS.Animation.fadeOut(O("#toolbars"), null, "down");
+            LS.invoke("toolbar-close");
+
+            app.isToolbarOpen = false;
+
+            Q("#headerButtons > button.open").forEach(element => element.classList.remove("open"));
+        },
+
+        fetch(url, options = {}, callback) {
+            return kernel.auth.fetch(url, options, callback);
+        },
     }
 
     app.events = new LS.EventHandler(app);
     
-    new class Kernel extends LoggerContext {
+    const kernel = new class Kernel extends LoggerContext {
         version = '1.0.0';
     
         trustedScripts = new Set;
@@ -444,8 +473,8 @@ console.log(
         pageCache = new Map;
     
         queryParams = LS.Util.params();
-    
-        CDN_URL = "https://cdn.extragon.cloud";
+
+        userFragment = LS.Reactive.wrap("user", {});
     
         auth = new class Auth extends LS.EventHandler {
             constructor() {
@@ -457,6 +486,8 @@ console.log(
                 this.ready = false;
                 this.iframe = null;
                 this.callbacks = new Map();
+
+                this.logger = new LoggerContext("auth");
     
                 this.nonce = [...crypto.getRandomValues(new Uint32Array(4))].map(i => i.toString(36)).join("-");
             }
@@ -466,14 +497,22 @@ console.log(
                     if (callback) callback();
                     return;
                 }
-    
+
                 this.iframe = document.createElement('iframe');
                 this.iframe.sandbox = "allow-scripts allow-same-origin";
                 this.iframe.src = this.iframeURL;
                 this.iframe.style.display = 'none';
                 document.body.appendChild(this.iframe);
-    
+                
+                let hello = false;
                 window.addEventListener('message', e => {
+                    if (!hello) {
+                        if (e.data.data.initialized) {
+                            hello = true;
+                            return;
+                        } else return;
+                    }
+
                     if (e.origin !== this.iframeOrigin) return;
     
                     if (e.data.event && !e.data.id) {
@@ -501,12 +540,20 @@ console.log(
                     this.iframe.contentWindow.postMessage({ type: 'init', nonce: this.nonce }, this.iframeOrigin);
                     this.ready = true;
                     if (callback) callback();
+
+                    setTimeout(() => {
+                        if (!hello) {
+                            this.ready = false;
+                            this.logger.error('Auth iframe failed to load.');
+                            LS.Toast.show("Authentication frame failed to load - account features will not work.", { accent: "red" })
+                        }
+                    }, 250);
                 };
         
                 this.iframe.onerror = error => {
                     this.ready = false;
                     if (callback) callback(error);
-                    console.error('Error loading iframe:', error);
+                    this.logger.error('Error loading iframe:', error);
                 };
             }
         
@@ -559,7 +606,10 @@ console.log(
 
         constructor() {
             super('kernel');
-    
+
+            // This may be dynamic later
+            this.currentPage = null;
+
             // Watch for device theme changes
             LS.Color.autoScheme();
     
@@ -571,23 +621,23 @@ console.log(
             LS.Reactive.registerType("DisplayName", (value, args, element, user) => {
                 return value || user.displayname || user.username || "Anonymous";
             });
-    
+
             LS.Reactive.registerType("ProfileUsername", (value, args, element, user) => {
                 if(value === "admin") {
                     const profile = element.closest(".profile");
-    
+
                     if(profile) {
                         profile.classList.add("admin");
                     }
                 }
-    
+
                 element.classList.add("profile-username");
                 return "@" + (value || (user && user.username) || "anonymous");
             });
-    
+
             LS.Reactive.registerType("ProfileEffects", (value, args, element, user) => {
                 const profile = element.closest(".profile");
-    
+
                 if(args[0] === "style") {
                     if(profile && value) {
                         profile.setAttribute("profile-style", value);
@@ -595,28 +645,15 @@ console.log(
                         profile.removeAttribute("profile-style");
                     }
                 }
-    
+
                 if (args[0] === "fullscreen-banner") {
                     profile.classList.toggle("fullscreen-banner", !!user.fullscreen_banner);
                 }
     
                 return null;
             });
-    
-            document.addEventListener('DOMContentLoaded', () => {
-                app.container = this.container = document.getElementById('app');
-                app.viewport  = this.viewport  = document.getElementById('viewport');
-    
-                // Register initial page
-                this.registerPage(location.pathname, { element: this.viewport.firstElementChild });
-            });
 
-            this.log('Kernel initialized, version %c' + this.version, 'font-weight: bold');
-            if (window.__init) {
-                for (const initEntry of window.__init) {
-                    app.register(initEntry.script, initEntry.callback);
-                }
-            }
+            this.log('Kernel initialized, version %c' + this.version + '%c, time since first load: ' + (Date.now() - window.__loadTime) + 'ms', 'font-weight:bold', 'font-weight:normal');
 
             const originalState = location.pathname;
 
@@ -645,7 +682,7 @@ console.log(
                 if (isLoggedIn) {
                     try {
                         const user = await this.auth.getUserFragment();
-                        Object.assign(app.userFragment, user);
+                        Object.assign(this.userFragment, user);
                     } catch (error) {
                         console.error("Failed to load user fragment:", error);
                         isLoggedIn = false;
@@ -663,12 +700,174 @@ console.log(
 
             this.auth.on("user-updated", (patch) => {
                 if (patch) {
-                    Object.assign(app.userFragment, patch);
+                    Object.assign(this.userFragment, patch);
                 }
             });
 
-            this.#setupToolbars();
-            app.emit("load-user");
+            if(!app.isLocalhost || localStorage.getItem("ls-debug-mode") !== "true") {
+                // Only give the global context limited access
+                window.app = {
+                    register: app.register,
+
+                    loginTabs: app.loginTabs,
+
+                    cdn: app.cdn,
+
+                    on: app.events.on.bind(app.events),
+                    once: app.events.once.bind(app.events),
+                    off: app.events.off.bind(app.events),
+
+                    get theme() {
+                        return app.theme;
+                    },
+
+                    set theme(value) {
+                        app.theme = value;
+                    }
+                };
+            } else {
+                // Debugging only!
+                window.app = app;
+            }
+
+            window.addEventListener('click', function (event) {
+                const targetElement = event.target.closest("a");
+
+                if (targetElement && targetElement.tagName === 'A') {
+                    if(targetElement.hasAttribute("target")) return;
+                    if(targetElement.href.endsWith("#")) return event.preventDefault();
+
+                    const link = targetElement.href;
+                    const href = targetElement.getAttribute('href');
+
+                    if(link.startsWith(origin) && !link.endsWith("?") && !link.startsWith(origin + ":")){
+                        const SPAExtension = SPAExtensions.find(([path]) => (href + "/").startsWith(path));
+                        if (SPAExtension) {
+                            event.preventDefault();
+                            if(location.href === link) {
+                                return;
+                            }
+
+                            app.handleSPAExtension(href, SPAExtension, targetElement);
+                        } else {
+                            // Temporarily disabled
+                            // event.preventDefault();
+                            // app.setPage(href);
+                            // app.toolbarClose();
+                        }
+                    }
+                }
+            });
+    
+            document.addEventListener('DOMContentLoaded', () => {
+                app.container = this.container = document.getElementById('app');
+                app.viewport  = this.viewport  = document.getElementById('viewport');
+
+                // Register initial page
+                const page = this.registerPage(location.pathname, { element: this.viewport.firstElementChild });
+                this.setPage(page, {
+                    browserTriggered: true
+                });
+
+                if (window.__init) {
+                    for (const initEntry of window.__init) {
+                        this.registerModule(initEntry.script, initEntry.callback);
+                    }
+                    window.__init = null;
+                }
+
+                this.#setupToolbars();
+                app.emit("load-user");
+
+                // Display content
+                document.querySelector(".loaderContainer").style.display = "none";
+                app.container.style.display = "flex";
+
+                app.emit("ready");
+            });
+        }
+
+        /**
+         * Set content as the current (fullscreen) page.
+         * Replaces the current page if set.
+         * @param {*} path Registered identifier or ContentContext
+         * @param {*} options Options
+         * @returns {boolean} Success
+         */
+        setPage(path, options = {}) {
+            let page = (path instanceof ContentContext)? path: this.pageCache.get(app.utils.normalizePath(path));
+
+            if (page) {
+                if(!page.path) {
+                    this.error("Cannot set content as page: Path must be defined for fullscreen pages.");
+                    return false;
+                }
+
+                path = page.path;
+
+                // Redirect completely to a new context instead of loading dynamically
+                if ((page.requiresReload || options.reload) && path !== this.currentPage?.path) {
+                    return location.href = path;
+                }
+
+                if (!options.browserTriggered && this.currentPage?.page === path) {
+                    return true;
+                }
+
+                this.log("Changed main page to", page.path);
+                this.currentPage = page;
+
+                if(page.title) document.title = `LSTV | ${page.title || "Web"}`;
+
+                this.viewport.getAll("style").forEach(style => style.disabled = true);
+
+                if (!options.browserTriggered) {
+                    history.pushState({ path }, document.title, page.path);
+                }
+
+                this.viewport.replaceChildren(page.content);
+                return true;
+            }
+
+            return false;
+        }
+
+        /**
+         * Register a module/script scope with the application. This scope can request permissions and access APIs.
+         * @param {*} script Script tag or unique identifier
+         * @param {*} callback Initialization callback
+         */
+        registerModule(script, callback) {
+            if (window.__init !== null) {
+                // Still initializing
+                window.__init.push({ script, callback });
+                return;
+            }
+
+            // FIXME:
+            this.log("Registered module", script);
+            this.trustedScripts.add(script);
+            if (callback) callback(app, this.currentPage, this.currentPage.content);
+        }
+
+        /**
+         * Register a fullscreen page for a specific path.
+         * @param {*} path 
+         * @param {*} options 
+         * @returns 
+         */
+        registerPage(path, options) {
+            path = app.utils.normalizePath(path);
+
+            if (this.pageCache.has(path)) {
+                this.warn(`Page for path %c${path}%c is being registered twice. Overwriting existing page.`, 'font-weight: bold', '');
+            }
+
+            const page = new ContentContext(options);
+            this.pageCache.set(path, page);
+            page.path = path;
+            this.log(`Registered page for path %c${path}`, 'font-weight: bold');
+            return page;
         }
 
         #setupToolbars() {
@@ -710,7 +909,7 @@ console.log(
             }
 
             function redirectAfterLogin() {
-                location.replace(app.originalQuery.continue || ((location.pathname.startsWith("/login") || location.pathname.startsWith("/sign-up"))? "/": location.href));
+                location.replace(kernel.queryParams.continue || ((location.pathname.startsWith("/login") || location.pathname.startsWith("/sign-up"))? "/": location.href));
             }
 
             document.forms["loginForm"].addEventListener("submit", (event) => {
@@ -871,13 +1070,6 @@ console.log(
             app.viewport.on("click", () => {
                 app.toolbarClose();
             })
-        }
-    
-        registerPage(path, options) {
-            const page = new Page(options);
-            this.pageCache.set(path, page);
-            this.log(`Registered page for path %c${path}`, 'font-weight: bold');
-            return page;
         }
     }
 })();

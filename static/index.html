@@ -195,7 +195,7 @@ const data = {
     ]
 }
 
-app.module(document.currentScript, (app, page, container) => {
+app.register(document.currentScript, (app, page, container) => {    
     class ItemPreview {
         updateLikedStatus(liked) {
             const likeIcon = this.container.querySelector("i");
@@ -313,7 +313,7 @@ app.module(document.currentScript, (app, page, container) => {
                             N("button", { tooltip: "Like", class: "pill clear", inner: [N("i", { class: "bi-heart" }), (art.likes? String(art.likes): "0")], onclick() {
                                 if(app.isLoggedIn) {
                                     this.disabled = true;
-                                    app.auth.fetch("/showcase/like?id=" + art._id).then(data => {
+                                    app.fetch("/showcase/like?id=" + art._id).then(data => {
                                         this.disabled = false;
 
                                         if(data.success) {
@@ -453,7 +453,7 @@ app.module(document.currentScript, (app, page, container) => {
                 if(!gallery_loaded) {
                     gallery_loaded = true;
 
-                    app.auth.fetch("/showcase/list?type=1&limit=100", { auth: app.isLoggedIn }).then(data => {
+                    app.fetch("/showcase/list?type=1&limit=100", { auth: app.isLoggedIn }).then(data => {
                         O("#showcase-gallery .ui-loader").remove();
                         O("#showcase-gallery").add(N("h3", "This is a rough collection of some of my designs and illustrations that I may update over time."));
 
@@ -474,7 +474,7 @@ app.module(document.currentScript, (app, page, container) => {
                 if(!music_loaded) {
                     music_loaded = true;
 
-                    app.auth.fetch("/showcase/list?type=2&limit=100", { auth: app.isLoggedIn }).then(data => {
+                    app.fetch("/showcase/list?type=2&limit=100", { auth: app.isLoggedIn }).then(data => {
                         O("#showcase-music .ui-loader").remove();
 
                         data.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
