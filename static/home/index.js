@@ -113,7 +113,7 @@ app.register('home', function(app, page, container) {
             });
 
             O("#mature-content").on("change", function() {
-                editingUser.nsfw = this.checked;
+                editingUser.mature_content = this.checked;
             });
 
             O("#fullscreen-banner").on("change", function() {

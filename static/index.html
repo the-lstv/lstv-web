@@ -403,7 +403,7 @@ app.register(document.currentScript, (app, page, container) => {
         });
     }
 
-    const contentContainer = container.get(".content");
+    const logoContainer = container.get(".logo-board");
 
     const showcaseTabs = new LS.Tabs(O("#showcase-tabs"), {
         list: false,
@@ -554,7 +554,7 @@ app.register(document.currentScript, (app, page, container) => {
             let scroll = container.scrollTop;
 
             const frameWidth = 1360 + scroll;
-            if(frameWidth <= 1920) contentContainer.style.maxWidth = Math.min(frameWidth, 1920) + "px";
+            if(frameWidth <= 1920) logoContainer.style.maxWidth = Math.min(frameWidth, 1920) + "px";
 
             if (Math.abs(scroll - lastScroll) > 10) {
                 container.get("#chevron").class("visible", scroll < 60);

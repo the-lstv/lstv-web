@@ -5,7 +5,7 @@ body[ls-theme="dark"] {
 .content {
     margin: auto;
     height: 100%;
-    max-width: 1360px;
+    max-width: 1920px;
 }
 
 .logo-board {
@@ -16,6 +16,8 @@ body[ls-theme="dark"] {
     gap: 60px;
     height: 100%;
     position: relative;
+    max-width: 1360px;
+    margin: auto;
 }
 
 .logo-board::after {

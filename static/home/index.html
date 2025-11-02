@@ -35,12 +35,12 @@
 
         <span .menu-category-title>Applications</span>
         <div .grouped-buttons>
-            <a .ls-button .elevated href="/home/applications" data-tab-id="applications"><i .bi-app-indicator /><span>Authorized applications</span></a>
+            <a .ls-button .elevated href="/home/apps" data-tab-id="apps"><i .bi-app-indicator /><span>Applications</span></a>
         </div>
         
         <span .menu-category-title>Developers</span>
         <div .grouped-buttons>
-            <a .ls-button .elevated href="/home/apps" data-tab-id="apps"><i .bi-app /><span>My applications</span></a>
+            <a .ls-button .elevated href="/home/dev" data-tab-id="dev"><i .bi-app /><span>My applications</span></a>
             <a .ls-button .elevated href="/home/sub-users" data-tab-id="sub-users"><i .bi-robot /><span>Bot accounts</span></a>
             <a .ls-button .elevated href="/home/keys" data-tab-id="keys"><i .bi-key-fill /><span>API Keys</span></a>
             <a .ls-button .elevated href="/home/api" data-tab-id="api"><i .bi-file-earmark-text /><span>API Documentation</span></a>
@@ -207,7 +207,7 @@ directly may be better and have much better quality." ls-tooltip-detached>*GIF i
                         <span .settings-subtext>If your profile media or content contains mature content, you must check this. Your profile will be hidden from some people. Remember to see our ToS to see what's allowed.</span>
 
                         <label .ls-checkbox>
-                            <input type="checkbox" id="mature-content" name="mature-content" {{ editingUser.nsfw }}>
+                            <input type="checkbox" id="mature-content" name="mature-content" {{ editingUser.mature_content }}>
                             My profile contains mature content
                             <span />
                         </label>
@@ -244,8 +244,8 @@ directly may be better and have much better quality." ls-tooltip-detached>*GIF i
         </ls-tab>
 
 
-        <ls-tab tab-id="applications" tab-title="Authorized Applications">D</ls-tab>
-        <ls-tab tab-id="apps" tab-title="My Applications">E</ls-tab>
+        <ls-tab tab-id="apps" tab-title="My applications">D</ls-tab>
+        <ls-tab tab-id="dev" tab-title="Developer Applications">E</ls-tab>
         <ls-tab tab-id="sub-users" tab-title="Bot Accounts">F</ls-tab>
         <ls-tab tab-id="keys" tab-title="API Keys">G</ls-tab>
         <ls-tab tab-id="api" tab-title="API Documentation">H</ls-tab>
@@ -257,10 +257,10 @@ directly may be better and have much better quality." ls-tooltip-detached>*GIF i
 
         <div>
             <button .elevated .pill #profile-reset>
-                <i .bi-x-lg></i> Discard
+                <i .bi-x-lg /> Discard
             </button>
             <button .elevated .pill #profile-save ls-accent="green">
-                <i .bi-check-lg></i> Save Changes
+                <i .bi-check-lg /> Save Changes
             </button>
         </div>
     </div>

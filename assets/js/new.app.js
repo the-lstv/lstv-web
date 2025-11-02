@@ -412,6 +412,16 @@ console.log(
             return kernel.userFragment;
         },
 
+        handleSPAExtension(href, extension, targetElement) {
+            const [path, handler] = extension;
+            if (typeof handler !== "function") {
+                return;
+            }
+
+            const extendedPath = app.utils.normalizePath(href.replace(path, ""), false);
+            handler(extendedPath, targetElement);
+        },
+
         loginTabs: new LS.Tabs(O("#toolbarLogin"), {
             list: false,
             selector: ".login-toolbar-page",
@@ -667,21 +677,6 @@ console.log(
 
             this.log('Kernel initialized, version %c' + this.version + '%c, time since first load: ' + (Date.now() - window.__loadTime) + 'ms', 'font-weight:bold', 'font-weight:normal');
 
-            const originalState = location.pathname;
-
-            // Event listener for back/forward buttons (for single-page app behavior)
-            window.addEventListener('popstate', function (event) {
-                const href = event.state? event.state.path: originalState;
-
-                const SPAExtension = SPAExtensions.find(([path]) => (href + "/").startsWith(path));
-                if (SPAExtension) {
-                    app.handleSPAExtension(href, SPAExtension, null);
-                } else {
-                    // Temporarily disabled
-                    // app.setPage(href, { browserTriggered: true });
-                }
-            });
-
             LS.Color.on("theme-changed", () => {
                 O("#themeButton i").className = "bi-" + (app.theme == "light"? "moon-stars-fill": "sun-fill");
             });
@@ -753,21 +748,24 @@ console.log(
                     const href = targetElement.getAttribute('href');
 
                     if(link.startsWith(origin) && !link.endsWith("?") && !link.startsWith(origin + ":")){
-                        const SPAExtension = SPAExtensions.find(([path]) => (href + "/").startsWith(path));
-                        if (SPAExtension) {
-                            event.preventDefault();
-                            if(location.href === link) {
-                                return;
-                            }
-
-                            app.handleSPAExtension(href, SPAExtension, targetElement);
-                        } else {
-                            // Temporarily disabled
-                            // event.preventDefault();
-                            // app.setPage(href);
-                            // app.toolbarClose();
-                        }
+                        event.preventDefault();
+                        kernel.setPage(href, { targetElement });
                     }
+                }
+            });
+
+            const originalState = location.pathname;
+
+            // Event listener for back/forward buttons (for single-page app behavior)
+            window.addEventListener('popstate', function (event) {
+                const href = event.state? event.state.path: originalState;
+
+                const SPAExtension = kernel.SPAExtensions.find(([path]) => (href + "/").startsWith(path));
+                if (SPAExtension) {
+                    app.handleSPAExtension(href, SPAExtension, null);
+                } else {
+                    // Temporarily disabled
+                    // app.setPage(href, { browserTriggered: true });
                 }
             });
     
@@ -808,6 +806,19 @@ console.log(
          * @returns {boolean} Success
          */
         setPage(path, options = {}) {
+            if(typeof path === "string") {
+                path = app.utils.normalizePath(path);
+                const SPAExtension = kernel.SPAExtensions.find(([extpath]) => (path + "/").startsWith(extpath));
+                if (SPAExtension) {
+                    if(location.pathname !== path) {
+                        history.pushState({ path }, document.title, path);
+                        app.handleSPAExtension(path, SPAExtension, options.targetElement || null);
+                    }
+    
+                    return true;
+                }
+            }
+
             let page = (path instanceof ContentContext)? path: this.pageCache.get(app.utils.normalizePath(path));
 
             if (page) {
@@ -839,6 +850,7 @@ console.log(
                 }
 
                 this.viewport.replaceChildren(page.content);
+                app.toolbarClose();
                 return true;
             }
 

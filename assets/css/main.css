@@ -307,21 +307,21 @@ input[aria-invalid] {
 }
 
 @media only screen and (max-width: 350px) {
-    #assistantButton {
+    /* #assistantButton {
         display: none !important;
-    }
+    } */
 }
 
 @media only screen and (max-width: 310px) {
-    #appsButton {
+    /* #appsButton {
         display: none !important;
-    }
+    } */
 }
 
 @media only screen and (max-width: 250px) {
-    #themeButton {
+    /* #themeButton {
         display: none !important;
-    }
+    } */
 }
 
 [ls] button.small {

@@ -123,10 +123,6 @@
                     <i .bi-grid-fill /> <span .label>Apps</span>
                 </button>
 
-                <button ls-tooltip="Command Palette (Ctrl+Shift+P)" #commandsButton .pill.elevated aria-label="Open Command Palette">
-                    <i .bi-terminal />
-                </button>
-
                 <button ls-tooltip="Assistant" #assistantButton .pill.elevated aria-label="Open Assistant">
                     <i .bi-stars />
                 </button>
@@ -134,9 +130,17 @@
                 <button ls-tooltip="Customize" #themeButton .pill.elevated aria-label="Customize the site appearance">
                     <i .bi-sun-fill /> <i .bi-palette-fill />
                 </button>
+
+                <button id="moreButton" ls-tooltip="More options" .pill .elevated aria-label="More options">
+                    <i .bi-three-dots-vertical></i>
+                </button>
             </div>
 
         </nav>
+
+        <script>
+            const moreButton = document.getElementById('moreButton');
+        </script>
 
         <div #toolbars .level-1 .ls-slide-animation style="display: none">
 
