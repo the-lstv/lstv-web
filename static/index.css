@@ -16,7 +16,7 @@ body[ls-theme="dark"] {
     gap: 60px;
     height: 100%;
     position: relative;
-    max-width: 1360px;
+    max-width: 1000px;
     margin: auto;
 }
 
@@ -41,6 +41,7 @@ body[ls-theme="dark"] {
     font-size: xxx-large;
     opacity: 0;
     animation: logoTextFadeIn 2s ease forwards;
+    z-index: 10;
 }
 
 @keyframes logoTextFadeIn {
@@ -140,6 +141,9 @@ body[ls-theme="dark"] {
 
 .padding {
     padding: 3.5em;
+}
+
+.flex-center {
     display: flex;
     align-items: center;
     flex-direction: column;
@@ -187,7 +191,7 @@ body[ls-theme="dark"] {
     border-radius: var(--border-radius-xxlarge);
     overflow: hidden;
     outline: 1px solid var(--surface-1);
-    margin: 60px;
+    margin: 60px 180px;
 }
 
 @media screen and (max-width: 600px) {

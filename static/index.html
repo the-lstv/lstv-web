@@ -31,17 +31,17 @@
     <div .level-0 .lore-section>
         <div .marqueeBar .mono .level-n2>
             <div>
-                <span>Welcome to LSTV.space</span>
-                <span>Welcome to LSTV.space</span>
-                <span>Welcome to LSTV.space</span>
-                <span>Welcome to LSTV.space</span>
+                <span>"Good enough" is the enemy of great. </span>
+                <span>"Good enough" is the enemy of great. </span>
+                <span>"Good enough" is the enemy of great. </span>
+                <span>"Good enough" is the enemy of great. </span>
             </div>
         </div>
 
-        <div .padding>
+        <div .flex-center>
             <canvas #glCanvas .bga.clouds />
 
-            <div .guy-lore .mono .padding>
+            <div .guy-lore .mono .padding .flex-center>
                 <div style="z-index: 5">
 
                     <h1>Who is Lukas?</h1>
@@ -544,7 +544,6 @@ app.register(document.currentScript, (app, page, container) => {
 
     let showcase_loaded = false;
 
-    const logoBoard = container.get(".logo-board");
     const loreSection = container.get(".lore-section");
 
     setTimeout(() => {
@@ -553,7 +552,7 @@ app.register(document.currentScript, (app, page, container) => {
         const onScroll = () => {
             let scroll = container.scrollTop;
 
-            const frameWidth = 1360 + scroll;
+            const frameWidth = 1000 + scroll;
             if(frameWidth <= 1920) logoContainer.style.maxWidth = Math.min(frameWidth, 1920) + "px";
 
             if (Math.abs(scroll - lastScroll) > 10) {
@@ -569,6 +568,7 @@ app.register(document.currentScript, (app, page, container) => {
                     } else blurRenderer.paused = true;
                     
                     loreSection.style.opacity = Math.min(1, scroll / 800);
+                    logoContainer.style.opacity = Math.max(0, 1 - (scroll / 800));
                 }
 
                 lastScroll = scroll;

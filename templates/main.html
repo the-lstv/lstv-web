@@ -139,7 +139,38 @@
         </nav>
 
         <script>
-            const moreButton = document.getElementById('moreButton');
+            addEventListener("DOMContentLoaded", () => {
+                const nav = O("#app > nav");
+                const moreButton = O("#moreButton");
+                const navPadding = 28 + 5;
+                const gap = 10;
+
+                function collapseItems() {
+                    const availableSpace = nav.clientWidth - navPadding - moreButton.clientWidth - (nav.firstElementChild?.clientWidth || 0);
+        
+                    let takenSpace = 0;
+                    for (const i of Q("#headerButtons > *")) {
+                        if(i === moreButton) continue;
+        
+                        const w = i.clientWidth + gap;
+                        takenSpace += w;
+        
+                        if(takenSpace > availableSpace) {
+                            i.classList.add("hidden");
+                        } else {
+                            i.classList.remove("hidden");
+                        }
+                    }
+
+                    moreButton.style.display = (availableSpace + moreButton.clientWidth) < takenSpace ? "inline-flex" : "none";
+                }
+
+                collapseItems();
+
+                addEventListener("resize", () => {
+                    collapseItems();
+                });
+            })
         </script>
 
         <div #toolbars .level-1 .ls-slide-animation style="display: none">

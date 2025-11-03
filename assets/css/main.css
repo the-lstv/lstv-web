@@ -80,6 +80,12 @@ nav {
     box-shadow: 0 0 60px 0px var(--accent-40);
 }
 
+#headerButtons .hidden {
+    visibility: hidden;
+    position: absolute;
+    pointer-events: none;
+}
+
 #accountsButton {
     padding-right: 45px;
 }
@@ -362,7 +368,7 @@ main > div {
 }
 
 .marqueeBar div {
-    animation: marquee 8s linear infinite;
+    animation: marquee 32s linear infinite;
     white-space: nowrap;
     display: flex;
     width: 200%;
