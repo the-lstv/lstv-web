@@ -403,6 +403,15 @@ main > div {
     padding: var(--padding-content-h);
 }
 
+#resizeMessage {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-family: "IBM Plex Mono", "JetBrains Mono", monospace;
+    height: 100%;
+    width: 100%;
+}
+
 #toolbarAssistant .loading {
     height: 100%;
     width: 100%;

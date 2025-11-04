@@ -75,7 +75,7 @@
     </script>
 
     @use (ls:5.2.2[flat, tooltips, toast, reactive, tabs, animation, modal], bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800", "IBM Plex Mono:wght@400;600;800"]);
-    @use (~/assets/css/main.css, ~/assets/js/new.app.js[defer]);
+    @use (~/assets/css/main.css, ~/assets/js/app.js[defer]);
 
     @page {
         style: flat;
@@ -90,6 +90,11 @@
 </head>
 
 <body .level-0>
+    <script>
+        // Apply theme based on user preference
+        document.body.setAttribute("ls-theme", localStorage.getItem("ls-theme") || (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches? "light": "dark"));
+    </script>
+
     <div .loaderContainer>
         <div .loader/>
         <noscript>
@@ -97,10 +102,9 @@
         </noscript>
     </div>
 
-    <script>
-        // Apply theme based on user preference
-        document.body.setAttribute("ls-theme", localStorage.getItem("ls-theme") || (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches? "light": "dark"));
-    </script>
+    <div #resizeMessage hidden>
+        Minimum size for this application is 100x100 pixels.
+    </div>
 
     <div #app hidden>
         <nav .level-1>
@@ -137,41 +141,6 @@
             </div>
 
         </nav>
-
-        <script>
-            addEventListener("DOMContentLoaded", () => {
-                const nav = O("#app > nav");
-                const moreButton = O("#moreButton");
-                const navPadding = 28 + 5;
-                const gap = 10;
-
-                function collapseItems() {
-                    const availableSpace = nav.clientWidth - navPadding - moreButton.clientWidth - (nav.firstElementChild?.clientWidth || 0);
-        
-                    let takenSpace = 0;
-                    for (const i of Q("#headerButtons > *")) {
-                        if(i === moreButton) continue;
-        
-                        const w = i.clientWidth + gap;
-                        takenSpace += w;
-        
-                        if(takenSpace > availableSpace) {
-                            i.classList.add("hidden");
-                        } else {
-                            i.classList.remove("hidden");
-                        }
-                    }
-
-                    moreButton.style.display = (availableSpace + moreButton.clientWidth) < takenSpace ? "inline-flex" : "none";
-                }
-
-                collapseItems();
-
-                addEventListener("resize", () => {
-                    collapseItems();
-                });
-            })
-        </script>
 
         <div #toolbars .level-1 .ls-slide-animation style="display: none">
 

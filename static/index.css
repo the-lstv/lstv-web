@@ -192,32 +192,8 @@ body[ls-theme="dark"] {
     overflow: hidden;
     outline: 1px solid var(--surface-1);
     margin: 60px 180px;
+    margin-bottom: -300px;
 }
-
-@media screen and (max-width: 600px) {
-    .padding {
-        padding: 3em 2em;
-    }
-
-    #lore-illustration {
-        width: 250px;
-    }
-
-    .marqueeBar span:nth-child(odd) {
-        display: none;
-    }
-
-    .lore-section {
-        margin: 60px 20px;
-    }
-}
-
-@media screen and (max-width: 1360px) {
-    #footer {
-        border-radius: 0;
-    }
-}
-
 
 ls-box.inline.color {
     padding: 4px 12px;
@@ -283,6 +259,34 @@ ls-box.inline.color {
     .koba-button:after {
         background-size: 250px;
         background-position: bottom right -40px;
+    }
+
+    .lore-section {
+        margin: 60px;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .padding {
+        padding: 3em 2em;
+    }
+
+    #lore-illustration {
+        width: 250px;
+    }
+
+    .marqueeBar span:nth-child(odd) {
+        display: none;
+    }
+
+    .lore-section {
+        margin: 60px 20px;
+    }
+}
+
+@media screen and (max-width: 1360px) {
+    #footer {
+        border-radius: 0;
     }
 }
 
@@ -351,8 +355,10 @@ ls-box.inline.color {
 
 .showcase-intro-text {
     height: 90px;
+    margin: 30px;
     margin-bottom: -80px;
     margin-top: 60px;
+    width: calc(100% - 60px);
 }
 
 /* Temporary: */
