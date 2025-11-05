@@ -661,7 +661,7 @@ console.log(
                             this.logger.error('Auth iframe failed to load.');
                             LS.Toast.show("Authentication frame failed to load - account features will not work.", { accent: "red" })
                         }
-                    }, 250);
+                    }, 500);
                 };
         
                 this.iframe.onerror = error => {

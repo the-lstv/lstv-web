@@ -243,9 +243,142 @@ directly may be better and have much better quality." ls-tooltip-detached>*GIF i
             </div>
         </ls-tab>
 
-
         <ls-tab tab-id="apps" tab-title="My applications">D</ls-tab>
-        <ls-tab tab-id="dev" tab-title="Developer Applications">E</ls-tab>
+
+        <ls-tab tab-id="dev" tab-title="Developer Applications">
+            <div #dev-apps-list></div>
+        </ls-tab>
+
+        <ls-tab tab-id="app-setup" id="app-setup-form" tab-title="Create an app">
+            <div style="display: flex; overflow: auto; flex-direction: column; gap: 32px; padding-bottom: 80px">
+                <h1 style="margin: 0">Create an application!</h1>
+                <input class="clear" type="text" id="app-name" placeholder="Project name" aria-label="Project name">
+
+                <div>
+                    <label for="app-description">Description <ls-box class="inline text-tag">Optional</ls-box></label> <br>
+                    <textarea style="height: 150px; resize: none; margin-top: 10px" id="app-description" placeholder="Enter a brief description of your application"></textarea> <br>
+                </div>
+
+                <div>
+                    <label for="app-type">Primary purpose <ls-box class="inline text-tag">Optional</ls-box></label> <br>
+                    <ls-select id="app-type" style="margin-top: 10px">
+                        <option value="" selected>What are you building?</option>
+                        <option value="web">Web Application</option>
+                        <option value="software">Mobile/Desktop Application</option>
+                        <option value="game">Game</option>
+                        <option value="bot">Bot</option>
+                        <option value="other">Other</option>
+                    </ls-select>
+
+                    <script>
+                    class LSSelect extends HTMLElement {
+                        constructor() {
+                            super();
+                            this._value = '';
+                            this._options = [];
+                        }
+
+                        connectedCallback() {
+                            this.setAttribute('role', 'combobox');
+                            this.setAttribute('tabindex', '0');
+                            this._render();
+                            this._attachEvents();
+                        }
+
+                        _render() {
+                            const select = this.querySelector('select') || document.createElement('select');
+                            select.style.display = 'none';
+                            
+                            let selectedOption = null;
+                            this.options = [];
+                            for(const opt of this.querySelectorAll('option')) {
+                                if (opt.selected) selectedOption = opt;
+                                this.options.push({
+                                    value: opt.value,
+                                    text: opt.textContent,
+                                    selected: opt.selected,
+                                    optionElement: opt,
+                                    element: N({
+                                        class: "ls-list-item ls-select-option",
+                                        dataset: { value: opt.value },
+                                        textContent: opt.textContent,
+                                        tabindex: -1
+                                    })
+                                });
+                            }
+                        }
+
+                        _attachEvents() {
+                            this.addEventListener('click', () => this.toggle());
+                            this.addEventListener('keydown', (e) => this._handleKeyboard(e));
+                            
+                            this.querySelectorAll('.ls-select-option').forEach(opt => {
+                                opt.addEventListener('click', (e) => {
+                                    e.stopPropagation();
+                                    this.selectOption(opt.dataset.value);
+                                });
+                            });
+
+                            document.addEventListener('click', (e) => {
+                                if (!this.contains(e.target)) this.close();
+                            });
+                        }
+
+                        toggle() {
+                            const dropdown = this.querySelector('.ls-select-dropdown');
+                            dropdown.hidden = !dropdown.hidden;
+                        }
+
+                        close() {
+                            const dropdown = this.querySelector('.ls-select-dropdown');
+                            if (dropdown) dropdown.hidden = true;
+                        }
+
+                        selectOption(value) {
+                            this._value = value;
+                            const option = this._options.find(opt => opt.value === value);
+                            this.querySelector('.ls-select-display').textContent = option?.text || '';
+                            this.close();
+                            this.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+
+                        _handleKeyboard(e) {
+                            const dropdown = this.querySelector('.ls-select-dropdown');
+                            
+                            if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                this.toggle();
+                            } else if (e.key === 'Escape') {
+                                this.close();
+                            } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                                e.preventDefault();
+                                const currentIndex = this._options.findIndex(opt => opt.value === this._value);
+                                const newIndex = e.key === 'ArrowDown' 
+                                    ? Math.min(currentIndex + 1, this._options.length - 1)
+                                    : Math.max(currentIndex - 1, 0);
+                                this.selectOption(this._options[newIndex].value);
+                            }
+                        }
+
+                        get value() {
+                            return this._value;
+                        }
+
+                        set value(val) {
+                            this.selectOption(val);
+                        }
+                    }
+
+                    customElements.define('ls-select', LSSelect);
+                    </script>
+                </div>
+            </div>
+
+            <div .bottom-buttons>
+                <button .pill #app-create>Create Application</button>
+            </div>
+        </ls-tab>
+
         <ls-tab tab-id="sub-users" tab-title="Bot Accounts">F</ls-tab>
         <ls-tab tab-id="keys" tab-title="API Keys">G</ls-tab>
         <ls-tab tab-id="api" tab-title="API Documentation">H</ls-tab>

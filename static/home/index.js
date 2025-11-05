@@ -368,6 +368,22 @@ app.register('home', function(app, page, container) {
                 newPasswordField.querySelector("input").focus();
                 confirmationModal.open();
             });
+        },
+
+        dev() {
+            app.fetch("v1/apps/list", {}, (error, response) => {
+                if (error) {
+                    console.error("Failed to fetch app list:", error);
+                    return;
+                }
+
+                O("#dev-apps-list").innerHTML = "";
+
+                for(let app of response) {
+                    const appElement = N("div", { class: "dev-app-entry" });
+                }
+                tabs.set("app-setup");
+            });
         }
     }
 
