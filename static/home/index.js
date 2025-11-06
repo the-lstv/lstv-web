@@ -377,11 +377,18 @@ app.register('home', function(app, page, container) {
                     return;
                 }
 
-                O("#dev-apps-list").innerHTML = "";
+                const listElement = container.get("#dev-apps-list");
+                listElement.innerHTML = "";
 
                 for(let app of response) {
-                    const appElement = N("div", { class: "dev-app-entry" });
+                    const appElement = N("div", {
+                        class: "dev-app-entry",
+                        inner: []
+                    });
+
+                    listElement.add(appElement);
                 }
+
                 tabs.set("app-setup");
             });
         }

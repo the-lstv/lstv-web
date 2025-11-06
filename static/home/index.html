@@ -274,8 +274,8 @@ directly may be better and have much better quality." ls-tooltip-detached>*GIF i
                     class LSSelect extends HTMLElement {
                         constructor() {
                             super();
-                            this._value = '';
-                            this._options = [];
+                            this._selected = '';
+                            this.options = [];
                         }
 
                         connectedCallback() {
@@ -288,7 +288,7 @@ directly may be better and have much better quality." ls-tooltip-detached>*GIF i
                         _render() {
                             const select = this.querySelector('select') || document.createElement('select');
                             select.style.display = 'none';
-                            
+
                             let selectedOption = null;
                             this.options = [];
                             for(const opt of this.querySelectorAll('option')) {
@@ -306,6 +306,11 @@ directly may be better and have much better quality." ls-tooltip-detached>*GIF i
                                     })
                                 });
                             }
+
+                            this.handle = this.querySelector('.ls-select-display') || N({
+                                class: "ls-select-display",
+                                textContent: selectedOption ? selectedOption.textContent : (this.getAttribute("placeholder") || 'Select an option')
+                            }).addTo(this);
                         }
 
                         _attachEvents() {
@@ -335,9 +340,11 @@ directly may be better and have much better quality." ls-tooltip-detached>*GIF i
                         }
 
                         selectOption(value) {
-                            this._value = value;
-                            const option = this._options.find(opt => opt.value === value);
-                            this.querySelector('.ls-select-display').textContent = option?.text || '';
+                            const option = typeof value === "object" && this.options.indexOf(value) !== -1? value: this.options.find(opt => opt.value === value);
+                            if(!option) return;
+
+                            this._selected = value;
+                            this.querySelector('.ls-select-display .ls-select-text-target, .ls-select-display').textContent = option?.text || '';
                             this.close();
                             this.dispatchEvent(new Event('change', { bubbles: true }));
                         }
@@ -352,16 +359,16 @@ directly may be better and have much better quality." ls-tooltip-detached>*GIF i
                                 this.close();
                             } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
                                 e.preventDefault();
-                                const currentIndex = this._options.findIndex(opt => opt.value === this._value);
+                                const currentIndex = this.options.findIndex(opt => opt.value === this._selected);
                                 const newIndex = e.key === 'ArrowDown' 
-                                    ? Math.min(currentIndex + 1, this._options.length - 1)
+                                    ? Math.min(currentIndex + 1, this.options.length - 1)
                                     : Math.max(currentIndex - 1, 0);
-                                this.selectOption(this._options[newIndex].value);
+                                this.selectOption(this.options[newIndex].value);
                             }
                         }
 
                         get value() {
-                            return this._value;
+                            return this._selected.value;
                         }
 
                         set value(val) {

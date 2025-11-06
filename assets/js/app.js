@@ -598,6 +598,8 @@ console.log(
                 this.iframeURL = `${this.iframeOrigin}/bridge.html`;
     
                 this.ready = false;
+                this.loading = false;
+                this.startupQueue = [];
                 this.iframe = null;
                 this.callbacks = new Map();
 
@@ -605,13 +607,19 @@ console.log(
     
                 this.nonce = [...crypto.getRandomValues(new Uint32Array(4))].map(i => i.toString(36)).join("-");
             }
-        
+
             #getFrame(callback) {
                 if (this.ready) {
                     if (callback) callback();
                     return;
                 }
 
+                if (this.loading) {
+                    if (callback) this.startupQueue.push(callback);
+                    return;
+                }
+
+                this.loading = true;
                 this.iframe = document.createElement('iframe');
                 this.iframe.sandbox = "allow-scripts allow-same-origin";
                 this.iframe.src = this.iframeURL;
@@ -654,6 +662,11 @@ console.log(
                     this.iframe.contentWindow.postMessage({ type: 'init', nonce: this.nonce }, this.iframeOrigin);
                     this.ready = true;
                     if (callback) callback();
+                    if (this.startupQueue.length > 0) {
+                        this.startupQueue.forEach(cb => cb());
+                        this.startupQueue = [];
+                    }
+                    this.loading = false;
 
                     setTimeout(() => {
                         if (!hello) {
@@ -667,6 +680,11 @@ console.log(
                 this.iframe.onerror = error => {
                     this.ready = false;
                     if (callback) callback(error);
+                    if (this.startupQueue.length > 0) {
+                        this.startupQueue.forEach(cb => cb(error));
+                        this.startupQueue = [];
+                    }
+                    this.loading = false;
                     this.logger.error('Error loading iframe:', error);
                 };
             }
