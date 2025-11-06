@@ -293,18 +293,20 @@ directly may be better and have much better quality." ls-tooltip-detached>*GIF i
                             this.options = [];
                             for(const opt of this.querySelectorAll('option')) {
                                 if (opt.selected) selectedOption = opt;
-                                this.options.push({
+                                const option = {
                                     value: opt.value,
                                     text: opt.textContent,
                                     selected: opt.selected,
                                     optionElement: opt,
                                     element: N({
                                         class: "ls-list-item ls-select-option",
-                                        dataset: { value: opt.value },
                                         textContent: opt.textContent,
                                         tabindex: -1
                                     })
-                                });
+                                };
+
+                                option.element.dataset.value = option.value;
+                                this.options.push(option);
                             }
 
                             this.handle = this.querySelector('.ls-select-display') || N({
