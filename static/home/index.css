@@ -305,6 +305,10 @@ textarea#profile-about {
     border-color: var(--accent);
 }
 
+#app-setup-tab {
+    height: 100%;
+}
+
 #app-setup-form {
     width: 100%;
     height: 100%;
@@ -324,6 +328,6 @@ textarea#profile-about {
     width: 400px;
 }
 
- .bottom-buttons {
+.bottom-buttons {
     margin: 0 auto;
- }
+}

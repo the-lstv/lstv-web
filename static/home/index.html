@@ -249,161 +249,163 @@ directly may be better and have much better quality." ls-tooltip-detached>*GIF i
             <div #dev-apps-list></div>
         </ls-tab>
 
-        <ls-tab tab-id="app-setup" id="app-setup-form" tab-title="Create an app">
-            <div style="display: flex; overflow: auto; flex-direction: column; gap: 32px; padding-bottom: 80px">
-                <h1 style="margin: 0">Create an application!</h1>
-                <input class="clear" type="text" id="app-name" placeholder="Project name" aria-label="Project name">
-
-                <div>
-                    <label for="app-description">Description <ls-box class="inline text-tag">Optional</ls-box></label> <br>
-                    <textarea style="height: 150px; resize: none; margin-top: 10px" id="app-description" placeholder="Enter a brief description of your application"></textarea> <br>
-                </div>
-
-                <div>
-                    <label for="app-type">Primary purpose <ls-box class="inline text-tag">Optional</ls-box></label> <br>
-                    <ls-select id="app-type" style="margin-top: 10px" placeholder="What are you building?">
-                        <ls-option value="web">Web Application</ls-option>
-                        <ls-option value="software">Mobile/Desktop Application</ls-option>
-                        <ls-option value="game">Game</ls-option>
-                        <ls-option value="bot">Bot</ls-option>
-                        <ls-option value="other">Other</ls-option>
-                    </ls-select>
-
-                    <script>
-                    class LSSelect extends HTMLElement {
-                        constructor() {
-                            super();
-                            this.selected = '';
-                            this.options = [];
-                        }
-
-                        connectedCallback() {
-                            this.setAttribute('role', 'combobox');
-                            this.setAttribute('tabindex', '0');
-                            this._render();
-
-                            this.addEventListener('click', () => this.toggle());
-                            this.addEventListener('keydown', (e) => {
-                                if (e.key === 'Enter' || e.key === ' ') {
-                                    e.preventDefault();
-                                    this.toggle();
-                                } else if (e.key === 'Escape') {
-                                    this.close();
-                                } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-                                    e.preventDefault();
-                                    const currentIndex = this.options.findIndex(opt => opt.value === this.selected);
-                                    const newIndex = e.key === 'ArrowDown' 
-                                        ? Math.min(currentIndex + 1, this.options.length - 1)
-                                        : Math.max(currentIndex - 1, 0);
-                                    this.selectOption(this.options[newIndex].value);
-                                }
-                            });
-
-                            document.addEventListener('click', (e) => {
-                                if (!this.contains(e.target)) this.close();
-                            });
-                        }
-
-                        _render() {
-                            // const select = this.querySelector('select') || document.createElement('select');
-                            // select.style.display = 'none';
-
-                            let selectedOption = null;
-                            this.options = [];
-                            for(const opt of this.querySelectorAll('ls-option')) {
-                                if (opt.selected) selectedOption = opt;
-                                opt.setAttribute('role', 'option');
-
-                                const option = {
-                                    value: opt.value || opt.getAttribute('value') || opt.textContent,
-                                    text: opt.getAttribute("label") || opt.textContent,
-                                    selected: opt.getAttribute("selected") !== null,
-                                    optionElement: opt,
-                                    element: N({
-                                        class: "ls-list-item ls-select-option",
-                                        textContent: opt.textContent,
-                                        tabindex: -1
-                                    })
-                                };
-
-                                option.element.dataset.value = option.value;
-                                this.options.push(option);
-
-                                option.element.addEventListener('click', (event) => {
-                                    event.stopPropagation();
-                                    this.selectOption(option);
+        <ls-tab tab-id="app-setup" tab-title="Create an app" #app-setup-tab>
+            <form  #app-setup-form action="return false">
+                <div style="display: flex; overflow: auto; flex-direction: column; gap: 32px; padding-bottom: 80px">
+                    <h1 style="margin: 0">Create an application!</h1>
+                    <input class="clear" type="text" id="app-name" placeholder="Project name" aria-label="Project name">
+    
+                    <div>
+                        <label for="app-description">Description <ls-box class="inline text-tag">Optional</ls-box></label> <br>
+                        <textarea style="height: 150px; resize: none; margin-top: 10px" id="app-description" placeholder="Enter a brief description of your application"></textarea> <br>
+                    </div>
+    
+                    <div>
+                        <label for="app-type">Primary purpose <ls-box class="inline text-tag">Optional</ls-box></label> <br>
+                        <ls-select id="app-type" style="margin-top: 10px" placeholder="What are you building?">
+                            <ls-option value="web">Web Application</ls-option>
+                            <ls-option value="software">Mobile/Desktop Application</ls-option>
+                            <ls-option value="game">Game</ls-option>
+                            <ls-option value="bot">Bot</ls-option>
+                            <ls-option value="other">Other</ls-option>
+                        </ls-select>
+    
+                        <script>
+                        class LSSelect extends HTMLElement {
+                            constructor() {
+                                super();
+                                this.selected = '';
+                                this.options = [];
+                            }
+    
+                            connectedCallback() {
+                                this.setAttribute('role', 'combobox');
+                                this.setAttribute('tabindex', '0');
+                                this._render();
+    
+                                this.addEventListener('click', () => this.toggle());
+                                this.addEventListener('keydown', (e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                        e.preventDefault();
+                                        this.toggle();
+                                    } else if (e.key === 'Escape') {
+                                        this.close();
+                                    } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                                        e.preventDefault();
+                                        const currentIndex = this.options.findIndex(opt => opt.value === this.selected);
+                                        const newIndex = e.key === 'ArrowDown' 
+                                            ? Math.min(currentIndex + 1, this.options.length - 1)
+                                            : Math.max(currentIndex - 1, 0);
+                                        this.selectOption(this.options[newIndex].value);
+                                    }
                                 });
-
-                                opt.remove();
+    
+                                document.addEventListener('click', (e) => {
+                                    if (!this.contains(e.target)) this.close();
+                                });
                             }
-
-                            this._labelTarget = this.querySelector('.ls-select-display .ls-select-label-target, .ls-select-display');
-
-                            this.handle = this.querySelector('.ls-select-display') || N({
-                                class: "ls-select-display",
-                                textContent: selectedOption ? selectedOption.textContent : (this.getAttribute("placeholder") || 'Select an option')
-                            }).addTo(this);
-                        }
-
-                        toggle() {
-
-                        }
-
-                        open() {
-
-                        }
-
-                        close() {
-
-                        }
-
-                        selectOption(value) {
-                            const option = typeof value === "object" && this.options.indexOf(value) !== -1? value: this.options.find(opt => opt.value === value);
-                            if(!option) return;
-
-                            this.selected = option;
-                            if(this._labelTarget) this._labelTarget.textContent = option?.text || '';
-                            this.dispatchEvent(new Event('change', { bubbles: true, detail: { value } }));
-                            this.close();
-                        }
-
-                        get value() {
-                            return this.selected.value || null;
-                        }
-
-                        set value(val) {
-                            this.selectOption(val);
-                        }
-                    }
-
-                    customElements.define('ls-select', LSSelect);
-
-                    LS.LoadComponent(class Menu extends LS.Component {
-                        constructor(element, options = {}) {
-                            super();
-                            this.open = false;
-
-                            const isElement = element instanceof HTMLElement;
-
-                            this.container = (isElement? element : N({
-                                class: "ls-menu"
-                            }));
-
-                            this.options = options || !isElement? element: {};
-                        }
-
-                        addItems(items) {
-                            for(const item of items) {
+    
+                            _render() {
+                                // const select = this.querySelector('select') || document.createElement('select');
+                                // select.style.display = 'none';
+    
+                                let selectedOption = null;
+                                this.options = [];
+                                for(const opt of this.querySelectorAll('ls-option')) {
+                                    if (opt.selected) selectedOption = opt;
+                                    opt.setAttribute('role', 'option');
+    
+                                    const option = {
+                                        value: opt.value || opt.getAttribute('value') || opt.textContent,
+                                        text: opt.getAttribute("label") || opt.textContent,
+                                        selected: opt.getAttribute("selected") !== null,
+                                        optionElement: opt,
+                                        element: N({
+                                            class: "ls-list-item ls-select-option",
+                                            textContent: opt.textContent,
+                                            tabindex: -1
+                                        })
+                                    };
+    
+                                    option.element.dataset.value = option.value;
+                                    this.options.push(option);
+    
+                                    option.element.addEventListener('click', (event) => {
+                                        event.stopPropagation();
+                                        this.selectOption(option);
+                                    });
+    
+                                    opt.remove();
+                                }
+    
+                                this._labelTarget = this.querySelector('.ls-select-display .ls-select-label-target, .ls-select-display');
+    
+                                this.handle = this.querySelector('.ls-select-display') || N({
+                                    class: "ls-select-display",
+                                    textContent: selectedOption ? selectedOption.textContent : (this.getAttribute("placeholder") || 'Select an option')
+                                }).addTo(this);
+                            }
+    
+                            toggle() {
+    
+                            }
+    
+                            open() {
+    
+                            }
+    
+                            close() {
+    
+                            }
+    
+                            selectOption(value) {
+                                const option = typeof value === "object" && this.options.indexOf(value) !== -1? value: this.options.find(opt => opt.value === value);
+                                if(!option) return;
+    
+                                this.selected = option;
+                                if(this._labelTarget) this._labelTarget.textContent = option?.text || '';
+                                this.dispatchEvent(new Event('change', { bubbles: true, detail: { value } }));
+                                this.close();
+                            }
+    
+                            get value() {
+                                return this.selected.value || null;
+                            }
+    
+                            set value(val) {
+                                this.selectOption(val);
                             }
                         }
-                    }, { global: true, name: "Menu" });
-                    </script>
+    
+                        customElements.define('ls-select', LSSelect);
+    
+                        LS.LoadComponent(class Menu extends LS.Component {
+                            constructor(element, options = {}) {
+                                super();
+                                this.open = false;
+    
+                                const isElement = element instanceof HTMLElement;
+    
+                                this.container = (isElement? element : N({
+                                    class: "ls-menu"
+                                }));
+    
+                                this.options = options || !isElement? element: {};
+                            }
+    
+                            addItems(items) {
+                                for(const item of items) {
+                                }
+                            }
+                        }, { global: true, name: "Menu" });
+                        </script>
+                    </div>
                 </div>
-            </div>
-
-            <div .bottom-buttons>
-                <button .pill #app-create>Create Application</button>
-            </div>
+    
+                <div .bottom-buttons>
+                    <button type="submit" .pill #app-create>Create Application</button>
+                </div>
+            </form>
         </ls-tab>
 
         <ls-tab tab-id="sub-users" tab-title="Bot Accounts">F</ls-tab>

@@ -1077,7 +1077,7 @@ console.log(
             });
 
             O("#logOutButton").on("click", function (){
-                this.auth.logout(() => {
+                kernel.auth.logout(() => {
                     LS.Toast.show("Logged out successfully.");
                     app.toolbarClose();
                     location.reload();
