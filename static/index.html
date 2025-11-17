@@ -11,7 +11,7 @@
 </head>
 
 <div .content>
-    <div .full-height .logo-board>
+    <div .logo-board>
         <div #logo>
             <img src="/assets/image/prism_light.png" fetchpriority="high" srcset="/assets/image/prism_light.png 1x, /assets/image/prism_light_2x.png 2x" alt="LSTV Triangle Logo" draggable="false">
         
@@ -28,42 +28,48 @@
         <div #chevron .visible .mono .level-top><i class="bi-chevron-down"></i> Scroll down <i class="bi-chevron-down"></i></div>
     </div>
     
-    <div .level-0>
-        <div .marqueeBar .mono .level-3>
+    <div .level-0 .lore-section>
+        <div .marqueeBar .mono .level-n2>
             <div>
-                <span>Welcome to LSTV.space</span>
-                <span>Welcome to LSTV.space</span>
-                <span>Welcome to LSTV.space</span>
-                <span>Welcome to LSTV.space</span>
+                <span>"Good enough" is the enemy of great. </span>
+                <span>"Good enough" is the enemy of great. </span>
+                <span>"Good enough" is the enemy of great. </span>
+                <span>"Good enough" is the enemy of great. </span>
             </div>
         </div>
-    
-        <div .padding>
-            <canvas #glCanvas .bga />
-    
-            <div .guy-lore .mono .padding>
+
+        <div .flex-center>
+            <canvas #glCanvas .bga.clouds />
+
+            <div .guy-lore .mono .padding .flex-center>
                 <div style="z-index: 5">
-    
-                    <h1>Who am I?</h1>
-    
+
+                    <h1>Who is Lukas?</h1>
+
                     <ls-div .margin-bottom-xxlarge>
                         <ls-div>
                             My name is <b>{{ about.name }} / {{ about.name_alt }}</b>.<br>
-                            I am an {{ about.age }} years old student in IT, with about {{ about.coding_years }} years of coding experience, {{ about.design_years }} years of design experience, and ~{{ about.music_years }} year of sound design experience, all self-taught. (More information on my <a href="https://github.com/the-lstv">Github profile</a>).
+                            I am an {{ about.age }} years old student in IT, with about {{ about.coding_years }} years of coding experience, {{ about.design_years }} years of design experience, and ~{{ about.music_years }} year of sound design experience, all self-taught. (More information on my <a target="_blank" .poppable-link .underline-link .has-icon style="--accent: #000; --hover-color: #fff" href="https://github.com/the-lstv"><i .bi-github /> Github profile</a>).
                         </ls-div>
-    
+
                         <ls-div>
-                            I design and develop software, attempt making music, and develop games. I do all kinds of things from networking, hardware, libraries and utility to creative software. I also enjoy video editing, sound composition and design, writing, animating, you name it.<br>
-                            My current main area of expertise is software optimization, design, graphics/rendering software, and networking software. I'm a bit of a perfectionist.
+                            I design and develop software, attempt creating music, and make games (when I have the time). I do all kinds of things from networking, hardware, libraries and utility to creative/productivity software. I also enjoy video editing/VFX work, music composition and sound design, writing, drawing and animating, you name it.<br>
+                            My current main area of expertise is software optimization, UI/UX design, graphics/rendering software, data processing and networking software.<br><br>
+                            I'm a bit of a perfectionist that obsesses over minor details.
+                        </ls-div>
+
+                        <ls-div>
+                            <b>Note:</b> LSTV is not my nickname. To refer to me, please use my name or an alias.<br><br>
+                            On this website I showcase my works and write posts, but it is also the center of LSTV's services and products, not only my personal website (and it may become more general in the coming future). There is a lot more to explore!<br>
+                            My favorite artists: <a target="_blank" .poppable-link .underline-link .koba-button style="--accent: #6817eb" href="https://www.youtube.com/@Kobaryo">Kobaryo</a>, <a target="_blank" .poppable-link .underline-link style="--accent: #a81446" href="https://www.youtube.com/channel/UCV4ggxLd_Vz-I-ePGSKfFog">Camellia</a>.<br>
                         </ls-div>
                     </ls-div>
-    
+
                     <ls-div>
                         <ls-div>
-                            <h1>What's "LSTV"?</h1>
-                            LSTV is a broad term describing our community of developers, artists, and producers (or just people who enjoy what we make), aiming to provide an open, universal environment to create awesome high-quality projects.<br>
-                            But it can also mean the services and products we offer.<br>
-                            <b>Note:</b> LSTV is not my nickname. To refer to me, please use my name (Lukas) or one of my aliases.
+                            <h1>What's LSTV?</h1>
+                            LSTV is a broad term describing a community of developers, artists, and producers (or people who enjoy what we make), aiming to provide an open, universal environment to create and share awesome high-quality projects.<br>
+                            It is also the label under which we release our software, etc., but there are also other brands under the LSTV label that branch out into different areas.<br>
                         </ls-div>
     
                         <ls-div .margin-top-xxxlarge>
@@ -75,12 +81,11 @@
                             </div>
                         </ls-div>
                     </ls-div>
-    
                 </div>
             </div>
         </div>
-    
-        <div .marqueeBar .mono .level-3>
+
+        <div .marqueeBar .mono .level-n2>
             <div>
                 <span>Welcome to LSTV.space</span>
                 <span>Welcome to LSTV.space</span>
@@ -90,52 +95,114 @@
         </div>
     </div>
 
-    <div style="text-align: center;">
-        <h2>Comming soon!</h2>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 20px 0">
+        <ls-box .inline .elevated>
+            <button .elevated>
+                <i .bi-box-seam-fill />
+                Projects
+            </button>
+        
+            <button .elevated>
+                <i .bi-image />
+                Designs
+            </button>
+        
+            <button .elevated>
+                <i .bi-music-note-beamed />
+                Music
+            </button>
+        </ls-box>
+        
+        <div style="position: relative">
+            <div style="position: relative">
+                <div #cursorPopout>
+                    <i class="bi-box-arrow-up-right"></i>
+                </div>
+            
+                <div #searchBar>
+                    <input type="text" placeholder="Search" #searchInput>
+                </div>
+        
+                <div .appShowcaseWrap>
+                    <div #apps-showcase></div>
+                </div>
+            </div>
+        </div>
     </div>
     
     <div #footer .level-1>
-
         <svg style="width: 300px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 290 95" fill="none"><path d="M101.84 73V20.44h10.8v42.48h21.24V73h-32.04zm65.132.72c-3.696 0-6.912-.624-9.648-1.872s-4.848-3-6.336-5.256-2.232-4.92-2.232-7.992h10.8c0 1.776.672 3.192 2.016 4.248 1.392 1.008 3.264 1.512 5.616 1.512 2.256 0 4.008-.504 5.256-1.512 1.296-1.008 1.944-2.4 1.944-4.176 0-1.536-.48-2.856-1.44-3.96s-2.304-1.848-4.032-2.232l-5.328-1.224c-4.464-1.056-7.944-3-10.44-5.832-2.448-2.88-3.672-6.384-3.672-10.512 0-3.072.696-5.736 2.088-7.992 1.44-2.304 3.456-4.08 6.048-5.328s5.664-1.872 9.216-1.872c5.376 0 9.624 1.344 12.744 4.032 3.168 2.64 4.752 6.216 4.752 10.728h-10.8c0-1.68-.6-3-1.8-3.96-1.152-.96-2.832-1.44-5.04-1.44-2.064 0-3.648.48-4.752 1.44-1.104.912-1.656 2.232-1.656 3.96 0 1.536.432 2.856 1.296 3.96.912 1.056 2.184 1.776 3.816 2.16l5.616 1.296c4.656 1.056 8.184 2.976 10.584 5.76 2.4 2.736 3.6 6.24 3.6 10.512 0 3.072-.768 5.784-2.304 8.136-1.488 2.352-3.6 4.176-6.336 5.472-2.688 1.296-5.88 1.944-9.576 1.944zm44.972-.72V30.52h-13.32V20.44h37.44v10.08h-13.32V73h-10.8zm49.004 0l-13.032-52.56h11.16l7.272 33.192.864 4.392c.384 1.776.672 3.288.864 4.536l.72-4.536.792-4.464 7.056-33.12h10.872L274.628 73h-13.68z" fill="url(#TC)"/><path d="M40.321 20H78v14H48.348l-8.027-14z" fill="#ed6c30"/><path d="M51.215 39H78v15H59.816l-8.601-15z" fill="#fcc21b"/><path d="M62.683 59H78v14h-7.29l-8.027-14z" fill="#40c0e7"/><path d="M12.483 68L35 29l22.517 39H12.483z" stroke="var(--color)" stroke-width="9"/><defs><linearGradient id="TC" x1="95" y1="-48.5" x2="279.5" y2="63.5" gradientUnits="userSpaceOnUse"><stop stop-color="#fcc21b"/><stop offset=".465" stop-color="#fcc21b"/><stop offset=".465" stop-color="#ed6c30"/><stop offset=".725" stop-color="#ed6c30"/><stop offset=".725" stop-color="#40c0e7"/></linearGradient></defs></svg>
 
         <div ls-accent="auto" style="line-height: 1.6em; text-align: center">
             <a href="/tos">Terms of Service</a> · <a href="/pp">Privacy Policy</a> <br>
             <a style="font-weight: 100" href="https://github.com/the-lstv/lstv-web"><i class="bi-github"></i> Website GitHub</a>
         </div>
-
     </div>
 </div>
 
-<!--
-
---- ROADMAP
-
-- [ ] Projects showcase
-- [ ] Music showcase
-- [ ] Store page
-- [ ] App integration
-- [ ] Chat platform
-- [ ] Blog
-- [ ] Better introduction
-- [ ] Sitewide navigation
-- [ ] Bring back SPA design
-- [ ] Reason of insanity
-
--->
-
 <script>
+// window.LOW_PERFORMANCE_MODE = true;
+
 const year = new Date().getFullYear();
 
+// About me
 const about = LS.Reactive.wrap("about", {
     coding_years: year - 2016,
     design_years: year - 2021,
-    music_years: year - 2024,
+    music_years: year - 2024, // Technically 2023, but I won't count that
     age: year - 2007,
     name: "Lukáš",
     name_alt: "Lukas",
     location: "Czech Republic",
     github: "https://github.com/the-lstv"
 });
+
+const data = {
+    projects: [
+        { title: "Akeno", icon: "f2eeab33bc9b7873.svg", description: "Akeno is a very fast, modular, and extensive webserver/backend framework handling various protocols. Akeno makes it easy to manage projects of any scale and includes everything a modern web application needs, with world-class performance.", link: "https://github.com/the-lstv/akeno" },
+        { title: "LS", icon: "dbe4a5375f5d72f3.webp", description: "A lightweight and modern framework for web applications with tons of high-quality features and a clean API, fast and light reactivity, color system, and more. Used in all of our web projects.", link: "https://github.com/the-lstv/LS" },
+        { title: "Atrium", icon: "e663bce787d37541.svg", description: "A pure JS, fast and very flexible parser used to parse configs etc.", link: "https://github.com/the-lstv/Atrium" },
+        { title: "ExtraGon", icon: "eedc54a7c1bcaf67.png", description: "ExtraGon is our cloud services and hosting platform, offering features from managed storage, accelerated webhosting, VPS, DNS management, APIs, and more.", link: "https://extragon.cloud" },
+        { title: "FOSSHome", icon: "b9e3e4e22dbacd30.png", description: "FOSSHome is a cloud-synced \"WebOS\" launchpad environment with a Linux-like shell and a sleek interface and an extensive window/widget framework, to make you feel right at home. Currently abandoned (for over a year now...) until I work on it again.", link: "https://github.com/the-lstv/fosshome" },
+        { title: "Getrox", icon: "fd3114d28bfeb619.png", description: "Our crypto-like currency and community platform, used as a token across our services and cloud platform.", link: "" },
+        { title: "Unifya", icon: "b28d371fec0dae44.png", description: "Unifya is an universal data flow framework used across our software to ensure seamless integration.", link: "https://unifya.com" },
+        
+    ],
+
+    music: [
+        { title: "ID - ?", track: "", cover: "", album: "ID", genre: "Speedcore, Metal" },
+        { title: "ID - 85", track: "", cover: "", album: "ID", genre: "Speed Eurobeat" },
+        { title: "teascramble hardcore", track: "", cover: "", album: "", genre: "Speedcore, Schranz" },
+        { title: "ID - 81", track: "", cover: "", album: "ID", genre: "" },
+        { title: "hate song", track: "", cover: "", album: "9a17397a31f588c7.webp", genre: "Speedcore" },
+        { title: "Subtile Confinement", track: "", cover: "", album: "", genre: "" },
+        { title: "Perplexed Projectile", track: "", cover: "fa67922220db2a31.webp", album: "", genre: "Chiptune, Speedcore" },
+        { title: "triage colony", track: "", cover: "", album: "", genre: "Rock" },
+        { title: "All shapes! feat. Nogako", track: "", cover: "", album: "", genre: "Chiptune, Speedcore, Jazz" },
+        { title: "Calm", track: "", cover: "", album: "", genre: "" },
+        { title: "Traceback", track: "", cover: "", album: "", genre: "" },
+        { title: "argumented cloud feat. xnizrun", track: "", cover: "", album: "", genre: "" },
+        { title: "dfglkjdfgklserlhj24", track: "", cover: "", album: "", genre: "" },
+        { title: "Axel L", track: "", cover: "", album: "", genre: "Speedcore" },
+        { title: "Blocky", track: "", cover: "", album: "", genre: "Chiptune" },
+        { title: "Random orchestra", track: "", cover: "", album: "", genre: "Orchestral" },
+        { title: "Skibidi aah", track: "", cover: "", album: "", genre: "Piano" },
+
+        { title: "td-1", track: "", cover: "", album: "", genre: "Speedcore" },
+        { title: "violin-1 (edit)", track: "", cover: "", album: "", genre: "Speedcore" },
+
+        { title: "Departure", track: "", cover: "", album: "", genre: "Abstract" },
+        { title: "San Andreas", track: "", cover: "", album: "", genre: "Abstract" },
+        { title: "Uneasy Calm", track: "", cover: "", album: "", genre: "Abstract" },
+
+        { title: "dj toenail ambulance beat - thelstv remix", track: "", cover: "", album: "", genre: "Random" },
+    ],
+
+    art: [
+        { title: "", artist: "", year: "", link: "" }
+    ]
+}
+
 
 app.module(document.currentScript, (app, page, container) => {
     let bgaSpeedFactor = .001, cloudsCanvas = O("#glCanvas"), raysCanvas = O("#raysBga"), cloudsRenderer, blurRenderer, noiseRenderer;
@@ -150,7 +217,7 @@ app.module(document.currentScript, (app, page, container) => {
             // First, handle customBackOrder by placing those IDs at the end
             const aInBackOrder = customBackOrder.indexOf(a.id) !== -1;
             const bInBackOrder = customBackOrder.indexOf(b.id) !== -1;
-            
+
             if (aInBackOrder && !bInBackOrder) return 1;
             if (!aInBackOrder && bInBackOrder) return -1;
             if (aInBackOrder && bInBackOrder) return customBackOrder.indexOf(a.id) - customBackOrder.indexOf(b.id);
@@ -178,75 +245,272 @@ app.module(document.currentScript, (app, page, container) => {
         });
     }
 
-    const contentContainer = container.get(".content");
+    const logoContainer = container.get(".logo-board");
 
+    // const showcaseTabs = new LS.Tabs(O("#showcase-tabs"), {
+    //     list: false,
+    //     slideAnimation: true
+    // });
+
+    container.getAll("[data-tab-id]").forEach(button => {
+        button.addEventListener("click", () => {
+            const tabId = button.getAttribute("data-tab-id");
+            showcaseTabs.set(tabId);
+        });
+    });
+
+    let projects_loaded = false, music_loaded = false, gallery_loaded = false;
+
+    // showcaseTabs.on("changed", function(tab, old) {
+    //     const button = container.get(`[data-tab-id="${tab}"]`);
+    //     const activeButton = container.get(`.showcase-buttons .active`);
+    //     if (activeButton) {
+    //         activeButton.classList.remove('active');
+    //         activeButton.classList.add('clear');
+    //         activeButton.classList.remove('elevated');
+    //     }
+
+    //     if (button) {
+    //         button.classList.add('active');
+    //         button.classList.remove('clear');
+    //         button.classList.add('elevated');
+    //     }
+
+    //     switch(tab) {
+    //         case "showcase-projects":
+    //             if(!projects_loaded) {
+    //                 projects_loaded = true;
+
+    //                 data.projects.forEach((project, index) => {
+    //                     O("#showcase-projects").add((new ShowcaseProject(project)).container);
+    //                 });
+    //             }
+    //             break;
+
+    //         case "showcase-gallery":
+    //             if(!gallery_loaded) {
+    //                 gallery_loaded = true;
+
+    //                 app.fetch("/showcase/list?type=1&limit=100", { auth: app.isLoggedIn }).then(data => {
+    //                     O("#showcase-gallery .ui-loader").remove();
+    //                     O("#showcase-gallery").add(N("h3", "This is a rough collection of some of my designs and illustrations that I may update over time."));
+
+    //                     data.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+    //                     data.forEach((art, index) => {
+    //                         O("#showcase-gallery").add((new ShowcaseGalleryItem(art)).container);
+    //                     });
+    //                 }).catch(err => {
+    //                     console.error(err);
+    //                     O("#showcase-gallery .ui-loader").remove();
+    //                     O("#showcase-gallery").add(N("h3", { innerText: "An error occurred while loading artworks." }));
+    //                 });
+    //             }
+    //             break;
+
+    //         case "showcase-music":
+    //             if(!music_loaded) {
+    //                 music_loaded = true;
+
+    //                 app.fetch("/showcase/list?type=2&limit=100", { auth: app.isLoggedIn }).then(data => {
+    //                     O("#showcase-music .ui-loader").remove();
+
+    //                     data.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+    //                     data.forEach((art, index) => {
+    //                         O("#showcase-music").add((new ShowcaseGalleryItem(art)).container);
+    //                     });
+    //                 }).catch(err => {
+    //                     console.error(err);
+    //                     O("#showcase-music .ui-loader").remove();
+    //                     O("#showcase-music").add(N("h3", { innerText: "An error occurred while loading artworks." }));
+    //                 });
+    //             }
+    //             break;
+    //     }
+    // });
+
+    // let wordStopped = true;
+    // const wordInterval = (() => {
+    //     const words = [
+    //         { text: "software", color: "#40c0e7" },
+    //         { text: "art", color: "#fcc21b" },
+    //         { text: "music", color: "#ed6c30" },
+    //         { text: "games", color: "#6817eb" },
+    //         { text: "experiences", color: "#ff5fa1" },
+    //         { text: "stories", color: "#00c8a8" },
+    //         { text: "solutions", color: "#a81446" },
+    //         { text: "dreams", color: "#b400ff" },
+    //         { text: "tools", color: "#14a800" },
+    //     ];
+    
+    //     for(const word of words) {
+    //         word.map = word.text.split("").map(w => N("span", { innerText: w }));
+    //     }
+    
+    //     let currentWord = 0;
+    //     const wordContainer = document.getElementById("animated-word");
+    //     const cursor = document.getElementById("animated-word-cursor");
+    
+    //     return async () => {
+    //         currentWord = (currentWord + 1) % words.length;
+    //         const { text, color } = words[currentWord];
+    //         wordContainer.style.color = color;
+    
+    //         wordContainer.textContent = '';
+    
+    //         for(const span of words[currentWord].map) {
+    //             wordContainer.appendChild(span);
+    //             await LS.Animation.fadeIn(span, 80, "up");
+    //             await new Promise(r => setTimeout(r, 30));
+    //         }
+    
+    //         cursor.style.opacity = 0;
+    //         await new Promise(r => setTimeout(r, 1000));
+    //         cursor.style.opacity = 1;
+    
+    //         for(let i = words[currentWord].map.length - 1; i >= 0; i--) {
+    //             await LS.Animation.fadeOut(words[currentWord].map[i], 50, "down");
+    //         }
+    
+    //         if(container.scrollTop > innerHeight) {
+    //             wordInterval();
+    //         } else wordStopped = true;
+    //     }
+    // })();
+
+    const loreSection = container.get(".lore-section");
+    const chevron = container.get("#chevron");
+
+    // The timeout avoids blocking on the page load
     setTimeout(() => {
-        let lastScroll = 0, initialLoadApps = false;
+        let lastScroll = 0;
+        let showcaseLoaded = false;
 
-        const onScroll = () => {
+        const chevronSwitch = new app.utils.Switch(visible => {
+            if(visible) {
+                chevron.classList.add("visible");
+            } else {
+                chevron.classList.remove("visible");
+            }
+        });
+
+        const onScroll = new app.utils.FrameScheduler(() => {
             let scroll = container.scrollTop;
-    
-            window.requestAnimationFrame(() => {
-                contentContainer.style.maxWidth = Math.min(1360 + scroll, 1920) + "px"
-                // svgElement.style.transform = `translateY(${(scroll - 1000) / 2}px) scale(${(scroll + 1000) / 2000}) rotate(${(scroll - 2500) / 100}deg)`;
-            })
-    
+
+            const frameWidth = 1000 + scroll;
+            if(frameWidth <= 1920) logoContainer.style.maxWidth = Math.min(frameWidth, 1920) + "px";
+
             if (Math.abs(scroll - lastScroll) > 10) {
-                container.get("#chevron").class("visible", scroll < 60)
-    
-                if(!initialLoadApps && scroll > 600) {
-                    initialLoadApps = true
-                    // loadApps()
+                chevronSwitch.set(scroll < 60);
+
+                if(!window.LOW_PERFORMANCE_MODE) {
+                    const logoOpacity = Math.max(0, 1 - (scroll / 800));
+                    loreSection.style.opacity = Math.min(1, scroll / 500);
+                    loreSection.style.transform = `translateY(${Math.max(-300, -scroll / 2)}px)`;
+                    logoContainer.style.opacity = logoOpacity;
+
+                    if(cloudsCanvas.isInView()){
+                        cloudsRenderer.resume();
+                    } else cloudsRenderer.paused = true;
+
+                    if(introCanvas.isInView() && logoOpacity > 0.2){
+                        blurRenderer.resume();
+                    } else blurRenderer.paused = true;
                 }
 
-                if(cloudsCanvas.isInView()){
-                    cloudsRenderer.resume();
-                } else cloudsRenderer.paused = true;
-    
-                if(raysCanvas.isInView()){
-                    blurRenderer.resume();
-                } else blurRenderer.paused = true;
+                if(scroll > innerHeight) {
+                    if(!showcaseLoaded) {
+                        showcaseLoaded = true;
+                        showcaseTabs.set(0);
+                    }
+
+                    if(wordStopped) { wordInterval(); wordStopped = false }
+                }
 
                 lastScroll = scroll;
             }
+        });
+
+        if(!window.LOW_PERFORMANCE_MODE) {
+            const logger = new app.LoggerContext("rendering");
+
+            cloudsRenderer = new CombinedShaderRenderer(cloudsCanvas);
+            blurRenderer = new CombinedShaderRenderer(introCanvas);
+
+            blurRenderer.addShaderContext(ShaderSource.blurredColors(blurRenderer.gl), {
+                u_time: { type: "uniform1f", value: time => [(time * bgaSpeedFactor) + 1000] },
+                u_resolution: { type: "uniform2f", value: () => [introCanvas.width, introCanvas.height] },
+                u_speed: { type: "uniform1f", value: [0.196] },
+                u_scale: { type: "uniform1f", value: [4] },
+                u_colors: { type: "uniform4fv", value: [[0.25098039215686274,0.7529411764705882,0.9058823529411765,1,0.9882352941176471,0.7607843137254902,0.10588235294117647,1,0.9294117647058824,0.4235294117647059,0.18823529411764706,1,0,0,0,0]] },
+                u_blur: { type: "uniform1f", value: [1] },
+                u_animate: { type: "uniform1f", value: [1] },
+                u_animate_speed: { type: "uniform1f", value: [1] },
+                u_frequency: { type: "uniform1f", value: [0] },
+                alpha: { type: "uniform1f", value: [0.25] },
+            })
+
+            blurRenderer.addShaderContext(ShaderSource.sparkles(blurRenderer.gl), {
+                time: { type: "uniform1f", value: time => [time * bgaSpeedFactor] },
+                resolution: { type: "uniform2f", value: () => [introCanvas.width * 1.9, introCanvas.height] },
+                areaBounds: { type: "uniform4f", value: [0.5, 0.5, 0.6, 0.1] },
+                areaFeather: { type: "uniform1f", value: [1.0] },
+                areaInvert: { type: "uniform1f", value: [0.0] },
+            })
+
+            blurRenderer.resume();
+
+            let cloud_q = 1;
+            cloudsRenderer.addShaderContext(ShaderSource.clouds(cloudsRenderer.gl), {
+                u_time: { type: "uniform1f", value: time => [(time * bgaSpeedFactor) % 15000] }, // SHADER BUG: Precision breaks after a longer time
+                u_resolution: { type: "uniform2f", value: () => [cloudsCanvas.width, cloudsCanvas.height] },
+                u_speed: { type: "uniform1f", value: [0.196] },
+                u_scale: { type: "uniform1f", value: [0] },
+                u_quality: { type: "uniform1f", value: () => [cloud_q] },
+                u_colors: { type: "uniform4fv", value: [[1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0]] },
+                light: { type: "uniform1f", value: [0.5] },
+                shadow: { type: "uniform1f", value: [0.5] },
+                tint: { type: "uniform1f", value: [0.5] },
+                coverage: { type: "uniform1f", value: [0.3] },
+                alpha: { type: "uniform1f", value: [1.0] },
+            })
+
+            // Track FPS samples for better quality decisions
+            const fpsSamples = [];
+            const FPS_SAMPLE_SIZE = 30; // Track last 30 samples
+            const FPS_THRESHOLD_LOW = 35; // Average FPS below this triggers quality reduction
+            const FPS_THRESHOLD_HIGH = 55; // Average FPS above this allows quality increase
+
+            cloudsRenderer.watchFPS(fps => {
+                if(!cloudsRenderer.paused && document.visibilityState === "visible") {
+                    // Add current FPS to samples
+                    fpsSamples.push(fps);
+                    if(fpsSamples.length > FPS_SAMPLE_SIZE) {
+                        fpsSamples.shift(); // Remove oldest sample
+                    }
+                    
+                    // Only make quality decisions once we have enough samples
+                    if(fpsSamples.length >= FPS_SAMPLE_SIZE) {
+                        const avgFps = fpsSamples.reduce((a, b) => a + b, 0) / fpsSamples.length;
+                        
+                        if(avgFps < FPS_THRESHOLD_LOW && cloud_q > 0) {
+                            logger.warn(`Average FPS too low: ${avgFps.toFixed(1)}, lowering cloud quality from ${cloud_q} to ${Math.max(0, cloud_q - 0.5)}`);
+                            cloud_q = Math.max(0, cloud_q - 0.5);
+                            fpsSamples.length = 0; // Reset samples after quality change
+                        } else if(avgFps > FPS_THRESHOLD_HIGH && cloud_q < 1) {
+                            logger.info(`Average FPS stable: ${avgFps.toFixed(1)}, increasing cloud quality from ${cloud_q} to ${Math.min(1, cloud_q + 0.5)}`);
+                            cloud_q = Math.min(1, cloud_q + 0.5);
+                            fpsSamples.length = 0; // Reset samples after quality change
+                        }
+                    }
+                }
+            })
         }
 
-        cloudsRenderer = new CombinedShaderRenderer(cloudsCanvas);
-
-        cloudsRenderer.addShaderContext(ShaderSource.clouds(cloudsRenderer.gl), {
-            u_time: { type: "uniform1f", value: time => [time * bgaSpeedFactor] },
-            u_resolution: { type: "uniform2f", value: () => [cloudsCanvas.width, cloudsCanvas.height] },
-            u_speed: { type: "uniform1f", value: [0.196] },
-            u_scale: { type: "uniform1f", value: [0] },
-            u_colors: { type: "uniform4fv", value: [[1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0]] },
-            light: { type: "uniform1f", value: [0.5] },
-            shadow: { type: "uniform1f", value: [0.5] },
-            tint: { type: "uniform1f", value: [0.5] },
-            coverage: { type: "uniform1f", value: [0.3] },
-            alpha: { type: "uniform1f", value: [1.0] },
-        })
-
-        blurRenderer = new CombinedShaderRenderer(raysCanvas);
-
-        blurRenderer.addShaderContext(ShaderSource.blurredColors(blurRenderer.gl), {
-            u_time: { type: "uniform1f", value: time => [(time * bgaSpeedFactor) + 1000] },
-            u_resolution: { type: "uniform2f", value: () => [cloudsCanvas.width, cloudsCanvas.height] },
-            u_speed: { type: "uniform1f", value: [0.196] },
-            u_scale: { type: "uniform1f", value: [4] },
-            u_colors: { type: "uniform4fv", value: [[0.25098039215686274,0.7529411764705882,0.9058823529411765,1,0.9882352941176471,0.7607843137254902,0.10588235294117647,1,0.9294117647058824,0.4235294117647059,0.18823529411764706,1,0,0,0,0]] },
-            u_blur: { type: "uniform1f", value: [1] },
-            u_animate: { type: "uniform1f", value: [1] },
-            u_animate_speed: { type: "uniform1f", value: [1] },
-            u_frequency: { type: "uniform1f", value: [0] },
-            alpha: { type: "uniform1f", value: [1] },
-        })
-
-        blurRenderer.resume();
-
-        onScroll();
+        onScroll.schedule();
         container.classList.add("vfx-loaded");
-
-        container.addEventListener("scroll", onScroll);
+        container.addEventListener("scroll", () => onScroll.schedule());
     }, 50);
 });
 </script>

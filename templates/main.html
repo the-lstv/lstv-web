@@ -59,15 +59,22 @@
     </style>
 
     <script>
+        window.__loadTime = Date.now();
+        window.__init = [];
+
         window.app = {
-            module(script, callback) {
-                window.__initOrigin = script;
-                window.__init = callback;
+            /**
+             * Requests scoped access. This is required to access the website APIs.
+             * @param {HTMLScriptElement|string} script - The script tag or unique identifier.
+             * @param {Function} callback - The initialization callback function.
+             */
+            register(script, callback) {
+                window.__init.push({ script, callback });
             }
         }
     </script>
 
-    @use (ls:5.2.1[flat, tooltips, toast, reactive, tabs, animation, modal], bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800", "IBM Plex Mono:wght@400;600;800"]);
+    @use (ls:5.2.2[flat, tooltips, toast, reactive, tabs, animation, modal], bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800", "IBM Plex Mono:wght@400;600;800"]);
     @use (~/assets/css/main.css, ~/assets/js/app.js[defer]);
 
     @page {
@@ -82,23 +89,27 @@
 
 </head>
 
-<body class="level-0">
-    <div .loaderContainer>
-        <div .loader/>
-        <noscript>
-            <h1>You need to enable JavaScript to be able to access this website!</h1>
-        </noscript>
-    </div>
-
+<body .level-0>
     <script>
         // Apply theme based on user preference
         document.body.setAttribute("ls-theme", localStorage.getItem("ls-theme") || (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches? "light": "dark"));
     </script>
 
+    <div .loaderContainer>
+        <div .loader/>
+        <noscript>
+            <h3 style="margin:40px 20px">You need to enable JavaScript to be able to access this website!</h3>
+        </noscript>
+    </div>
+
+    <div #resizeMessage hidden>
+        Minimum size for this application is 100x100 pixels.
+    </div>
+
     <div #app hidden>
         <nav .level-1>
 
-            <a href="/" .homeButton aria-label="LSTV Home">
+            <a href="/" .homeButton aria-label="LSTV Homepage">
                 <svg xmlns="http://www.w3.org/2000/svg" width="21" height="15" fill="none"><path d="M19.1689 12.3682V13.7529H19.1182L18.3242 12.3682H19.1689ZM14.9346 13.7529H2.3457L8.63965 2.81445L14.9346 13.7529ZM19.1689 6.82617V8.48926H16.0996L15.1465 6.82617H19.1689ZM19.1689 1.5625V2.94727H12.9219L12.1279 1.5625H19.1689Z" stroke="currentColor" stroke-width="2.494"/></svg>
                 <span .headerTitle>LSTV</span> <span .headerText />
             </a>
@@ -122,6 +133,10 @@
 
                 <button ls-tooltip="Customize" #themeButton .pill.elevated aria-label="Customize the site appearance">
                     <i .bi-sun-fill /> <i .bi-palette-fill />
+                </button>
+
+                <button id="moreButton" ls-tooltip="More options" .pill .elevated aria-label="More options">
+                    <i .bi-three-dots-vertical></i>
                 </button>
             </div>
 
@@ -168,14 +183,10 @@
 
                     <ls-div .assistant-intro .margin-h-small>
                         <i .bi-info-circle />
-                        Assistant can help you navigate the site, answer questions, or just chat with you. It has access to your profile and data & memories you set on Arisen chat. Chats you start here will also appear in Arisen chat. If you wish to opt out from this feature, you can do so in your account settings. 
+                        Assistant can help with answering questions or just chat with you. It has access to a part of your profile and data & memories you have on Arisen chat. Chats you start here will also appear in Arisen chat. More features and integrations will be added over time! You can opt out from it in settings.
                     </ls-div>
 
-                    <ls-div .assistant-examples>
-                        <button .pill .elevated onclick="O('#assistant-input').value='Hello! Who are you?'">Say hi</button>
-                        <button .pill .elevated onclick="O('#assistant-input').value='Check my saved reminders.'">Check reminders</button>
-                        <button .pill .elevated onclick="O('#assistant-input').value='I want to report a bug or suggest a feature related to lstv.space.'">Report a bug</button>
-                    </ls-div>
+                    <ls-div .assistant-examples />
     
                     <form .input-container name="assistantForm" onsubmit="return false">
                         <div .input-wrapper>

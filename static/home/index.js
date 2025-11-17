@@ -1,5 +1,7 @@
-app.module('home', function(app, page, container) {
+app.register('home', function(app, page, container) {
     page.title = "User Settings";
+
+    const auth = app.requestPermission("auth");
 
     app.once("user-loaded", () => {
         if(!app.isLoggedIn) {
@@ -111,7 +113,7 @@ app.module('home', function(app, page, container) {
             });
 
             O("#mature-content").on("change", function() {
-                editingUser.nsfw = this.checked;
+                editingUser.mature_content = this.checked;
             });
 
             O("#fullscreen-banner").on("change", function() {
@@ -235,7 +237,7 @@ app.module('home', function(app, page, container) {
                     patch.banner = blobs.banner.uploadResult.name;
                 }
 
-                app.auth.patch(patch, (error, response) => {
+                auth.patch(patch, (error, response) => {
                     confirmButtons.getAll("button").forEach(button => {
                         button.removeAttribute("disabled");
                     });
@@ -333,7 +335,7 @@ app.module('home', function(app, page, container) {
 
                             confirmationModal.close();
 
-                            app.auth.patch(patch, (error, response) => {
+                            auth.patch(patch, (error, response) => {
                                 if (error) {
                                     LS.Modal.buildEphemeral({
                                         title: "Update failed",
@@ -365,6 +367,29 @@ app.module('home', function(app, page, container) {
                 clearInputs();
                 newPasswordField.querySelector("input").focus();
                 confirmationModal.open();
+            });
+        },
+
+        dev() {
+            app.fetch("v1/apps/list", {}, (error, response) => {
+                if (error) {
+                    console.error("Failed to fetch app list:", error);
+                    return;
+                }
+
+                const listElement = container.get("#dev-apps-list");
+                listElement.innerHTML = "";
+
+                for(let app of response) {
+                    const appElement = N("div", {
+                        class: "dev-app-entry",
+                        inner: []
+                    });
+
+                    listElement.add(appElement);
+                }
+
+                tabs.set("app-setup");
             });
         }
     }

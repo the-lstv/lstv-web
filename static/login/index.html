@@ -11,7 +11,7 @@
 <div #loginContainer />
 
 <script>
-    app.module(document.currentScript, (app, page, container) => {
+    app.register(document.currentScript, (app, page, container) => {
         O("#toolbarLogin").addTo(container.get("#loginContainer"));
     })
 </script>

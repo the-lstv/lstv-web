@@ -51,6 +51,13 @@ class CombinedShaderRenderer {
         this.animating = false;
         this.paused = true;
 
+        // FPS tracking
+        this.fpsEnabled = false;
+        this.fpsCallback = null;
+        this.fpsFrameTimes = [];
+        this.fpsLastReportTime = 0;
+        this.fpsReportInterval = 500; // Report FPS every 500ms
+
         canvas.width = this.width;
         canvas.height = this.height;
 
@@ -89,6 +96,24 @@ class CombinedShaderRenderer {
             return;
         }
 
+        // FPS tracking
+        if (this.fpsEnabled) {
+            this.fpsFrameTimes.push(time);
+            // Keep only last 60 frame times
+            if (this.fpsFrameTimes.length > 60) {
+                this.fpsFrameTimes.shift();
+            }
+            
+            // Report FPS at interval
+            if (time - this.fpsLastReportTime >= this.fpsReportInterval) {
+                const fps = this.calculateFPS();
+                if (this.fpsCallback) {
+                    this.fpsCallback(fps);
+                }
+                this.fpsLastReportTime = time;
+            }
+        }
+
         const gl = this.gl;
 
         gl.viewport(0, 0, this.canvas.width, this.canvas.height);
@@ -97,7 +122,8 @@ class CombinedShaderRenderer {
         gl.clear(gl.COLOR_BUFFER_BIT);
 
         gl.enable(gl.BLEND);
-        gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+        // gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
 
 
         this.shaders.forEach((shaderContext, index) => {
@@ -121,6 +147,31 @@ class CombinedShaderRenderer {
         });
 
         requestAnimationFrame(this.frame);
+    }
+
+    calculateFPS() {
+        if (this.fpsFrameTimes.length < 2) return 0;
+        
+        const timeSpan = this.fpsFrameTimes[this.fpsFrameTimes.length - 1] - this.fpsFrameTimes[0];
+        const frameCount = this.fpsFrameTimes.length - 1;
+        
+        if (timeSpan === 0) return 0;
+        
+        return Math.round((frameCount / timeSpan) * 1000);
+    }
+
+    watchFPS(callback, reportInterval = 500) {
+        this.fpsEnabled = true;
+        this.fpsCallback = callback;
+        this.fpsReportInterval = reportInterval;
+        this.fpsFrameTimes = [];
+        this.fpsLastReportTime = 0;
+    }
+
+    unwatchFPS() {
+        this.fpsEnabled = false;
+        this.fpsCallback = null;
+        this.fpsFrameTimes = [];
     }
 
     resize(width = this.width, height = this.height) {
@@ -184,7 +235,17 @@ void main(){vec2 uv=gl_FragCoord.xy/iResolution.xy;uv=uv*2.0-1.0;uv.x*=iResoluti
     }
 
     static clouds(gl) {
-        return new ShaderSource(gl, ShaderSource.gl_vertex, `#ifdef GL_ES\nprecision mediump float;\n#endif\nuniform vec2 u_resolution,u_mouse;uniform vec4 u_colors[2];uniform float u_speed,u_time,u_scale,light,shadow,tint,coverage,alpha;const mat2 m=mat2(1.6,1.2,-1.2,1.6);vec2 hash(vec2 p){p=vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3)));return-1.+2.*fract(sin(p)*43758.5453123);}float noise(vec2 p){vec2 i=floor(p+(p.x+p.y)*.366025404),a=p-i+(i.x+i.y)*.211324865,o=a.x>a.y?vec2(1,0):vec2(0,1),b=a-o+.211324865,c=a-1.+.42264973;vec3 h=max(.5-vec3(dot(a,a),dot(b,b),dot(c,c)),0.);return dot(h*h*h*h*vec3(dot(a,hash(i)),dot(b,hash(i+o)),dot(c,hash(i+1.))),vec3(70));}float fbm(vec2 n){float total=0.,amplitude=.1;for(int i=0;i<7;i++)total+=noise(n)*amplitude,n=m*n,amplitude*=.4;return total;}void main(){vec2 p=gl_FragCoord.xy/u_resolution.xy,uv=p*vec2(u_resolution.x/u_resolution.y,1);float speed=u_speed*.1,time=u_time*speed,scale=1.-u_scale,q=fbm(uv*scale*.5),r=0.;uv=uv*scale-q+time;float weight=.8;for(int i=0;i<8;i++)r+=abs(weight*noise(uv)),uv=m*uv+time,weight*=.7;float f=0.;uv=p*vec2(u_resolution.x/u_resolution.y,1)*scale-q+time;weight=.7;for(int i=0;i<8;i++)f+=weight*noise(uv),uv=m*uv+time,weight*=.6;f*=r+f;float c=0.;time=u_time*speed*2.;uv=p*vec2(u_resolution.x/u_resolution.y,1)*(scale*2.)-q+time;weight=.4;for(int i=0;i<7;i++)c+=weight*noise(uv),uv=m*uv+time,weight*=.6;float c1=0.;time=u_time*speed*3.;uv=p*vec2(u_resolution.x/u_resolution.y,1)*(scale*3.)-q+time;weight=.4;for(int i=0;i<7;i++)c1+=abs(weight*noise(uv)),uv=m*uv+time,weight*=.6;c+=c1;vec4 skycolour=mix(u_colors[1],u_colors[0],p.y),cloudcolour=vec4(1)*clamp(1.-shadow+light*c,0.,1.);f=coverage+20.*alpha*f*r;cloudcolour=mix(skycolour,clamp(tint*skycolour+cloudcolour,0.,1.),clamp(f+c,0.,1.));gl_FragColor=cloudcolour;}`);
+        return new ShaderSource(gl, ShaderSource.gl_vertex, `#ifdef GL_ES
+precision mediump float;
+#endif
+uniform vec2 u_resolution,u_mouse;
+uniform vec4 u_colors[2];
+uniform float u_speed,u_time,u_scale,light,shadow,tint,coverage,alpha,u_quality;
+const mat2 m=mat2(1.6,1.2,-1.2,1.6);
+vec2 hash(vec2 p){p=vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3)));return-1.+2.*fract(sin(p)*43758.5453123);}
+float noise(vec2 p){const float K1=.366025404,K2=.211324865;vec2 i=floor(p+(p.x+p.y)*K1),a=p-i+(i.x+i.y)*K2,o=step(a.yx,a.xy),b=a-o+K2,c=a-1.+2.*K2;vec3 h=max(.5-vec3(dot(a,a),dot(b,b),dot(c,c)),0.),n=h*h*h*h*vec3(dot(a,hash(i)),dot(b,hash(i+o)),dot(c,hash(i+1.)));return dot(n,vec3(70.));}
+float fbm(vec2 n){float t=0.,a=.1;int it=int(mix(4.,7.,u_quality));for(int i=0;i<7;i++){if(i>=it)break;t+=noise(n)*a;n=m*n;a*=.4;}return t;}
+void main(){vec2 p=gl_FragCoord.xy/u_resolution.xy,uv=p*vec2(u_resolution.x/u_resolution.y,1.);float s=u_speed*.1,t=u_time*s,sc=1.-u_scale,q=fbm(uv*sc*.5);vec2 bu=uv*sc-q;int it1=int(mix(5.,8.,u_quality));float r=0.,w=.8;vec2 u1=bu+t;for(int i=0;i<8;i++){if(i>=it1)break;r+=abs(w*noise(u1));u1=m*u1+t;w*=.7;}int it2=int(mix(5.,8.,u_quality));float f=0.;w=.7;vec2 u2=bu+t;for(int i=0;i<8;i++){if(i>=it2)break;f+=w*noise(u2);u2=m*u2+t;w*=.6;}f*=r+f;int it3=int(mix(4.,7.,u_quality));float c=0.;w=.4;vec2 u3=uv*vec2(u_resolution.x/u_resolution.y,1.)*sc*2.-q+t*2.;for(int i=0;i<7;i++){if(i>=it3)break;c+=w*noise(u3);u3=m*u3+t*2.;w*=.6;}int it4=int(mix(4.,7.,u_quality));float c1=0.;w=.4;vec2 u4=uv*vec2(u_resolution.x/u_resolution.y,1.)*sc*3.-q+t*3.;for(int i=0;i<7;i++){if(i>=it4)break;c1+=abs(w*noise(u4));u4=m*u4+t*3.;w*=.6;}c+=c1;vec4 sky=mix(u_colors[1],u_colors[0],p.y),cld=vec4(1.)*clamp(1.-shadow+light*c,0.,1.);f=coverage+20.*alpha*f*r;gl_FragColor=mix(sky,clamp(tint*sky+cld,0.,1.),clamp(f+c,0.,1.));}`);
     }
 
     static blurredColors(gl) {
@@ -242,5 +303,16 @@ float degree=noise(vec2(speed/100.0,tuv.x*tuv.y));tuv.y*=1./ratio;tuv*=Rot(radia
 tuv.x+=sin(tuv.y*frequency+speed)/amplitude;tuv.y+=sin(tuv.x*frequency*1.5+speed)/(amplitude*.5);
 vec4 layer1=mixOklab(u_colors[0],u_colors[1],S(-.3,.2,(tuv*Rot(radians(-5.))).x)),layer2=mixOklab(u_colors[2],u_colors[3],S(-.3,.2,(tuv*Rot(radians(-5.))).x));
 vec4 finalComp=mixOklab(layer1,layer2,S(.5,-.3,tuv.y));gl_FragColor=vec4(finalComp.rgb, finalComp.a * alpha);}`);
+    }
+
+    static sparkles(gl) {
+        return new ShaderSource(gl, `attribute vec2 a_position;varying vec2 vUV;void main(){vUV=(a_position+1.0)/2.0;gl_Position=vec4(a_position,0.0,1.0);}`,`
+precision mediump float;varying vec2 vUV;uniform vec2 resolution;uniform float time;uniform vec4 areaBounds;uniform float areaFeather;uniform float areaInvert;
+vec2 hash22(vec2 p){p=fract(p*vec2(123.34,345.45));p+=dot(p,p+34.345);return fract(vec2(p.x*p.y,p.x+p.y));}
+vec2 randomDir(vec2 r){vec2 d=r-0.5;float l=length(d);return l<0.001?vec2(0.0,1.0):d/l;}
+float densityMap(vec2 u,float t){float w1=sin(u.x*3.0+t*0.5)*0.5+0.5;float w2=sin(u.y*4.0-t*0.3)*0.5+0.5;vec2 c1=vec2(0.5+sin(t*0.4)*0.3,0.5+cos(t*0.3)*0.3);vec2 c2=vec2(0.5-sin(t*0.5)*0.2,0.5-cos(t*0.4)*0.2);float d1=length(u-c1);float d2=length(u-c2);float z1=exp(-d1*3.0);float z2=exp(-d2*4.0);return mix(0.4,1.4,w1*w2*0.3+z1*0.5+z2*0.4);}
+float sparkleContribution(vec2 c,vec2 f,float tm,float te,float d){vec2 r=hash22(c);if(r.x>d)return 0.0;vec2 dr=randomDir(r);vec2 ct=fract(r+dr*tm*mix(0.08,0.24,r.x));vec2 df=(c+ct)-f;float sp=exp(-pow(length(df)/mix(0.001,0.1,r.y),10.5));float lf=fract(te*mix(0.5,1.2,r.x)+r.y);float fd=smoothstep(0.0,0.2,lf)*(1.0-smoothstep(0.75,1.0,lf));float gl=smoothstep(0.0,0.05,lf)*(1.0-smoothstep(0.05,0.15,lf));float tw=0.5+0.5*sin(te*0.01*mix(6.0,14.0,r.x)+r.y*6.283);return sp*tw*fd*(1.0+gl*2.5);}
+float ovalMask(vec2 u){float b=sin(time*0.8)*0.15;float p=sin(time*1.2)*0.1;vec2 c=areaBounds.xy;vec2 rd=areaBounds.zw;rd.x+=b;rd.y+=p;float a=atan(u.y-c.y,u.x-c.x);float w=sin(a*3.0+time*0.5)*0.05;vec2 df=(u-c)/(rd+w);float dt=length(df);float ft=max(areaFeather,1e-4);float m=1.0-smoothstep(1.0-ft,1.0+ft,dt);return mix(m,1.0-m,clamp(areaInvert,0.0,1.0));}
+void main(){vec2 u=gl_FragCoord.xy/resolution.xy;vec2 f=u*vec2(50.0,28.0);vec2 b=floor(f);float tm=time*2.0;float te=time*0.6;float d=densityMap(u,time);float g=0.0;for(int y=-1;y<=1;y++){for(int x=-1;x<=1;x++){vec2 cl=b+vec2(float(x),float(y));g+=sparkleContribution(cl,f,tm,te,d);}}float m=ovalMask(u);g=clamp(g*m,0.0,1.0);gl_FragColor=vec4(vec3(1.0)*g,g*0.85);}`);
     }
 }

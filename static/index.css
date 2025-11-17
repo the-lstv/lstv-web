@@ -5,12 +5,7 @@ body[ls-theme="dark"] {
 .content {
     margin: auto;
     height: 100%;
-    max-width: 1360px;
-}
-
-.full-height {
-    height: 100%;
-    position: relative;
+    max-width: 1920px;
 }
 
 .logo-board {
@@ -19,6 +14,24 @@ body[ls-theme="dark"] {
     justify-content: center;
     flex-direction: column;
     gap: 60px;
+    height: 100%;
+    position: relative;
+    max-width: 1000px;
+    margin: auto;
+}
+
+.logo-board::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 500px;
+    background: linear-gradient(0deg, var(--surface-n3), transparent);
+}
+
+[ls-theme="light"] .logo-board::after {
+    background: linear-gradient(0deg, var(--surface-0), transparent);
 }
 
 .logo_text {
@@ -28,6 +41,7 @@ body[ls-theme="dark"] {
     font-size: xxx-large;
     opacity: 0;
     animation: logoTextFadeIn 2s ease forwards;
+    z-index: 10;
 }
 
 @keyframes logoTextFadeIn {
@@ -37,6 +51,7 @@ body[ls-theme="dark"] {
         margin-right: -15px;
         filter: blur(10px);
     }
+
     100% {
         opacity: 1;
         letter-spacing: 40px;
@@ -126,6 +141,9 @@ body[ls-theme="dark"] {
 
 .padding {
     padding: 3.5em;
+}
+
+.flex-center {
     display: flex;
     align-items: center;
     flex-direction: column;
@@ -144,7 +162,11 @@ body[ls-theme="dark"] {
 }
 
 .vfx-loaded .bga {
-    opacity: .25;
+    opacity: 1;
+}
+
+.vfx-loaded .bga.clouds {
+    opacity: 0.25;
 }
 
 .guy-lore {
@@ -165,6 +187,85 @@ body[ls-theme="dark"] {
     font-weight: 200;
 }
 
+.lore-section {
+    border-radius: var(--border-radius-xxlarge);
+    overflow: hidden;
+    outline: 1px solid var(--surface-1);
+    margin: 60px 180px;
+    margin-bottom: -300px;
+}
+
+ls-box.inline.color {
+    padding: 4px 12px;
+}
+
+.poppable-link {
+    border-radius: var(--border-radius-full);
+    transition: .2s background-color, .2s color, .5s padding ease;
+    color: var(--color) !important;
+    position: relative;
+    padding: 2px 0;
+}
+
+.poppable-link:is(:hover, :focus) {
+    background: var(--accent);
+    padding-left: 10px;
+    padding-right: 10px;
+    color: var(--hover-color, var(--surface-0)) !important;
+    text-decoration: none !important;
+}
+
+.poppable-link.has-icon:is(:hover, :focus) {
+    padding-left: 34px;
+}
+
+.poppable-link.has-icon:is(:hover, :focus) i {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.poppable-link i {
+    position: absolute;
+    transition: .5s opacity ease, .5s transform ease;
+    transform: translateX(2px);
+    left: 10px;
+    opacity: 0;
+}
+
+.underline-link {
+    text-decoration: underline !important;
+}
+
+.koba-button:after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-position: bottom right;
+    background-repeat: no-repeat;
+    filter: brightness(.5);
+    pointer-events: none;
+    z-index: 50;
+    opacity: 0;
+    transition: opacity 1s;
+    background-size: 500px;
+}
+
+.koba-button:is(:hover, :focus):after {
+    opacity: .5;
+    background-image: url(https://cdn.extragon.cloud/file/c96029a73c5f647e.webp);
+}
+
+@media screen and (max-width: 1000px) {
+    .koba-button:after {
+        background-size: 250px;
+        background-position: bottom right -40px;
+    }
+
+    .lore-section {
+        margin: 60px;
+    }
+}
+
 @media screen and (max-width: 600px) {
     .padding {
         padding: 3em 2em;
@@ -177,6 +278,10 @@ body[ls-theme="dark"] {
     .marqueeBar span:nth-child(odd) {
         display: none;
     }
+
+    .lore-section {
+        margin: 60px 20px;
+    }
 }
 
 @media screen and (max-width: 1360px) {
@@ -185,7 +290,136 @@ body[ls-theme="dark"] {
     }
 }
 
+#showcase-projects {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    justify-content: center;
+    padding: 0 20px;
+}
 
-ls-box.inline.color {
-    padding: 4px 12px;
+.showcase-item {
+    width: 500px;
+    display: flex;
+    flex-direction: column;
+    padding: 12px 20px;
+    border-radius: var(--border-radius-xlarge);
+    position: relative;
+    outline: 4px solid var(--accent-60);
+    background-color: color-mix(in oklab, #000 40%, var(--accent-20) 70%);
+    box-shadow: 0 10px 20px 0 #0002;
+    gap: 10px;
+}
+
+[ls-theme=light] .showcase-item {
+    background-color: color-mix(in oklab,#fff 100%,var(--accent-20) 20%);
+}
+
+.showcase-item-header {
+    display: flex;
+    justify-content: space-between;
+}
+
+.showcase-item-content {
+    display: flex;
+    gap: 18px;
+}
+
+.showcase-item-description {
+    height: 128px;
+    overflow: auto;
+}
+
+.showcase-item .showcase-item-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--accent-60);
+}
+
+.showcase-item-icon {
+    border-radius: var(--border-radius-large);
+}
+
+.showcase-buttons {
+    border-radius: var(--border-radius-full) !important;
+    font-size: 1.4rem;
+    --padding-control-v: 10px;
+    --padding-control-h-pill: 30px;
+    margin-top: 20px;
+    margin-bottom: 60px;
+}
+
+#animated-word > span {
+    display: inline-block;
+}
+
+.showcase-intro-text {
+    height: 90px;
+    margin: 30px;
+    margin-bottom: -80px;
+    margin-top: 60px;
+    width: calc(100% - 60px);
+}
+
+/* Temporary: */
+.ls-slide-animation>:not(.visible):not(.leaving):not(.entering) {
+    display: none !important;
+}
+
+#showcase-gallery {
+    display: flex;
+    gap: 25px;
+    flex-wrap: wrap;
+    max-width: 1240px;
+    width: 100vw;
+    padding: 0 20px;
+    align-items: center;
+}
+
+.showcase-gallery-item {
+    outline: 1px solid var(--accent-mix-20);
+    border-radius: var(--border-radius-xlarge);
+    box-shadow: 0 10px 20px 0 #0002;
+    display: inline-flex;
+    overflow: hidden;
+    position: relative;
+    flex-direction: column;
+    background: var(--elevate);
+    cursor: pointer;
+}
+
+.showcase-gallery-item > div {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    padding: 14px;
+    background: linear-gradient(360deg, #0008, transparent);
+    right: 0;
+    color: #fff;
+    height: 120px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+}
+
+#showcase-tabs {
+    margin-bottom: 40px;
+}
+
+.showcase-gallery-item img {
+    max-height: 500px;
+    min-width: 200px;
+    min-height: 200px;
+}
+
+.showcase-gallery-item button {
+    --color: #fff;
+    color: var(--color)!important;
+    display: flex;
+    gap: 8px;
+    padding: 8px 13px !important;
+}
+
+.showcase-gallery-item button i {
+    position: relative;
 }

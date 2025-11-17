@@ -80,6 +80,12 @@ nav {
     box-shadow: 0 0 60px 0px var(--accent-40);
 }
 
+#headerButtons .hidden {
+    visibility: hidden;
+    position: absolute;
+    pointer-events: none;
+}
+
 #accountsButton {
     padding-right: 45px;
 }
@@ -307,21 +313,21 @@ input[aria-invalid] {
 }
 
 @media only screen and (max-width: 350px) {
-    #assistantButton {
+    /* #assistantButton {
         display: none !important;
-    }
+    } */
 }
 
 @media only screen and (max-width: 310px) {
-    #appsButton {
+    /* #appsButton {
         display: none !important;
-    }
+    } */
 }
 
 @media only screen and (max-width: 250px) {
-    #themeButton {
+    /* #themeButton {
         display: none !important;
-    }
+    } */
 }
 
 [ls] button.small {
@@ -362,7 +368,7 @@ main > div {
 }
 
 .marqueeBar div {
-    animation: marquee 8s linear infinite;
+    animation: marquee 32s linear infinite;
     white-space: nowrap;
     display: flex;
     width: 200%;
@@ -395,6 +401,15 @@ main > div {
     --font: "IBM Plex Mono", "JetBrains Mono", monospace;
     font-family: var(--font);
     padding: var(--padding-content-h);
+}
+
+#resizeMessage {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-family: "IBM Plex Mono", "JetBrains Mono", monospace;
+    height: 100%;
+    width: 100%;
 }
 
 #toolbarAssistant .loading {
