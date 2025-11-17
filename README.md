@@ -35,9 +35,9 @@ This does not mean that the site is 100% bulletproof - if you are able to find a
 
 ## 🚀 How do we make the site so efficient?
 LSTV.space is unique in that it is built from the ground up with the idea that the software should only perform what is necesarry for it's task.
-We implement subtle but noticeable optimizations (eg. when the user logs in, the user fragment is included inside the login response itself and cached client side - meaning the client does not have to fetch anything again - in a single request, the user logs in and keeps all information it needs), among many more.
+I implement subtle but noticeable optimizations anywhere I can.
 
-This may sound redundant to you - but we believe that all optimizations add up and contribute to a smoother user experience, and smaller load on our servers, which not only reduces costs and allows us to scale way beyond traditional servers, but reduces server latency on it's own.
+This may sound redundant to you - but I believe that all optimizations add up and contribute to a smoother user experience, and smaller load on our servers, which not only reduces costs and allows it to scale way beyond traditional servers, but reduces server latency on it's own.
 
 ## 🖥️ How to run locally
 1. Clone the repository.
@@ -46,23 +46,29 @@ This may sound redundant to you - but we believe that all optimizations add up a
 4. Start Akeno: `akeno start` or using a PM (eg. `akeno pm2-setup`).
 5. Open the website in your browser at http://lstv.localhost.
 
-**Note:** `lstv.localhost` may only work on Linux. If you are on Windows, you may need to edit your `hosts` file, or configure a different domain/port in `app.conf`. (Edit: I tested it on Windows and it worked too)
+To make account features work, you will need to setup the backend as well and run with SSL (HTTPS).<br>
+Note that I provide a way to run the site locally primarily for **development and testing** purposes. I don't welcome public instances being hosted for personal use that aren't for a particular purpose related to LSTV (eg. using it as a base for your own project). Be aware that the website code is not free software (but Akeno and LS is - you can easily make your own site like mine with them, just be original).
 
-## 🖥️ How to run offline/without Akeno
-You need Akeno to be able to compose the website, but you can bundle it into an offline copy by running `akeno bundle --auto` in the root of the repository.
-After that you can run the website from anywhere (well, at least to some extent).
+## 🖥️ How to run without Akeno or from a static file
+You need Akeno (or a significant part of it's preprocessing logic, which can work in isolation, however there is no documented API for that yet) to be able to compose the website, but you can bundle it into an offline copy by running `akeno bundle --auto` in the root of the repository. Note: This is not implemented in the latest Akeno version at this point due to some changes, I will add the API later at some point.
+After that you can run the website from almost anywhere, though you won't be able to do a whole lot of testing and the source code will become incompatible and harder to read.
 
 ## 🗂️ File structure
-- `static/`: Contains site content.
+- `static/`: Contains actual site content (webserver root), though not exclusively.
 - `assets/`: Contains assets like global css, js, and images.
-- `templates/`: Contains templates used by the application.
-- `api/`: Not currently included in the repository for security reasons, but it contains the backend and authentication bridge.
-- `app.conf`: Akeno app configuration file.
+    - `assets/css/`: Contains global CSS files.
+    - `assets/js/`: Contains global JavaScript files.
+    - `assets/images/`: Contains image assets.
+    - `assets/shaders/`: Contains WebGL shader source files.
+- `backend/`: Contains the backend (submodule). The source is currently private, but may become public in the future.
+- `templates/`: Contains templates used by the application. At this moment this has one `main.html` file, which is the main template used across all pages. Any code here will be available globally.
+- `app.conf`: Akeno configuration file. Generic server settings are located here.
+- `etc/`: Contains miscellaneous files.
 
 ## 📜 License
 This project is licensed under the [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) license.
 
-This project is **not open source** like most of my other projects.<br>
-You are free to browse the code and make contributions, but you are **not allowed** to redistribute modified copies, and you must always include credit when taking code. If you have any questions about what you can take, feel free to contact me. You are not allowed to use this code for commercial purposes.<br>
+This project is **not open source** like most of my other projects, it is a personal project.<br>
+You are free to browse the code and make contributions, but you are **not allowed** to redistribute modified copies, in part or as a whole. If you would like permission to take something, feel free to contact me. You are not allowed to use this code for any commercial purposes.<br>
 You are allowed to run the website for personal or educational use.<br>
 Please consider contributing to the project by reporting issues or suggesting improvements!
