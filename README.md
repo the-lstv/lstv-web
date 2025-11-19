@@ -29,7 +29,7 @@ The bridge itself has its own security measures to prevent unauthorized access f
 The bridge method has its own extra unique advantages - apart from security, it allows *any* authorized site to have secure access, meaning that when the user is logged in on the main site (eg. lstv.space), they will also be logged in on any other site included on the list of trusted origins (eg. extragon.cloud), which is a massive benefit over other methods of authentication.<br>
 Not using cookies also prevents CSRF and gives the bridge proper control over where and when it sends tokens.<br>
 The centralized auth system also allows for a unified API that can implement things like multi-accounts easily.<br>
-All of the website's internal code is isolated and only trusted sources are allowed to interact with it, no global access to sensitive methods is allowed.<br><br>
+All the website's internal code is isolated and only trusted sources are allowed to interact with it, no global access to sensitive methods is allowed.<br><br>
 
 This does not mean that the site is 100% bulletproof - if you are able to find a vulnerability, please report it to me! Maybe you will receive a prize :)
 

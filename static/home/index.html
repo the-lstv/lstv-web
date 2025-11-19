@@ -250,7 +250,7 @@ directly may be better and have much better quality." ls-tooltip-detached>*GIF i
         </ls-tab>
 
         <ls-tab tab-id="app-setup" tab-title="Create an app" #app-setup-tab>
-            <form  #app-setup-form action="return false">
+            <form  #app-setup-form onsubmit="return false">
                 <div style="display: flex; overflow: auto; flex-direction: column; gap: 32px; padding-bottom: 80px">
                     <h1 style="margin: 0">Create an application!</h1>
                     <input class="clear" type="text" id="app-name" placeholder="Project name" aria-label="Project name">

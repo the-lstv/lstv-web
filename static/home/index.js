@@ -391,6 +391,31 @@ app.register('home', function(app, page, container) {
 
                 tabs.set("app-setup");
             });
+
+            O("#app-setup-form").on("submit", function() {
+                const form = document.forms['app-setup-form'];
+                const payload = {
+                    name: String(form['app-name'].value).trim(),
+                    description: String(form['app-description'].value).trim(),
+                    slug: "",
+                }
+                app.fetch("v1/apps/create", {
+                    method: "POST",
+                    body: {}
+                }, (error, response) => {
+                    if (error) {
+                        LS.Modal.buildEphemeral({
+                            title: "App creation failed",
+                            content: error.error || error.message || "Sorry, an error occurred while creating your app. Please try again later. If this persists, please contact us.",
+                            buttons: [
+                                { label: "Ok" }
+                            ]
+                        });
+                        return;
+                    }
+                });
+                return false;
+            });
         }
     }
 

@@ -11,7 +11,7 @@ console.log(
     'font-size:1em;font-weight:400'
 );
 
-(() => {
+try {
     class LoggerContext {
         constructor(context) {
             this.logContext = context;
@@ -1272,4 +1272,7 @@ console.log(
             })
         }
     }
-})();
+} catch (e) {
+    console.error("Fatal error during app initialization:", e);
+    window.__loadError('<h3 style="margin:40px 20px">The application failed to load. Please try again later.</h3>');
+}

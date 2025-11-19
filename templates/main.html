@@ -61,6 +61,9 @@
     <script>
         window.__loadTime = Date.now();
         window.__init = [];
+        window.__loadError = (message) => {
+            document.querySelector('.loaderContainer').innerHTML = message;
+        }
 
         window.app = {
             /**
@@ -312,5 +315,11 @@
             <div><template::content /></div>
         </main>
     </div>
+
+    <script>
+        if(!window.LS) {
+            window.__loadError('<h3 style="margin:40px 20px">The application failed to load. Please try again later.</h3>');
+        }
+    </script>
 
 </body>
