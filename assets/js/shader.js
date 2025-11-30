@@ -191,6 +191,44 @@ class CombinedShaderRenderer {
     pause() {
         this.paused = true;
     }
+
+    destroy() {
+        // Stop animation
+        this.pause();
+        this.animating = false;
+
+        const gl = this.gl;
+        if (!gl) return;
+
+        // Delete position buffer
+        if (this.positionBuffer) {
+            gl.deleteBuffer(this.positionBuffer);
+            this.positionBuffer = null;
+        }
+
+        // Delete shaders and programs
+        this.shaders.forEach((shaderContext) => {
+            if (shaderContext.program) {
+                // Detach and delete shaders
+                if (shaderContext.source.vertexShader) {
+                    gl.detachShader(shaderContext.program, shaderContext.source.vertexShader);
+                    gl.deleteShader(shaderContext.source.vertexShader);
+                }
+                if (shaderContext.source.fragmentShader) {
+                    gl.detachShader(shaderContext.program, shaderContext.source.fragmentShader);
+                    gl.deleteShader(shaderContext.source.fragmentShader);
+                }
+                gl.deleteProgram(shaderContext.program);
+            }
+        });
+
+        // Clear arrays
+        this.shaders = [];
+        this.uniforms = [];
+
+        // Clear FPS tracking
+        this.unwatchFPS();
+    }
 }
 
 class ShaderSource {

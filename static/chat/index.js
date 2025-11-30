@@ -1,4 +1,4 @@
-app.register('chat', function(app, page, container) {
+website.register('chat', function(page, container) {
 
     LS.Resize.set(O("#chat-right-area"), {
         left: true,

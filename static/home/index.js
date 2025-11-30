@@ -1,16 +1,30 @@
-app.register('home', function(app, page, container) {
-    page.title = "User Settings";
+website.register('home', function(context, container) {
+    const auth = context.requestPermission(["auth"]).auth;
+    context.title = "User Settings";
+    context.dynamicAccount = true;
 
-    const auth = app.requestPermission("auth");
-
-    app.once("user-loaded", () => {
-        if(!app.isLoggedIn) {
-            location.replace("/login?continue=" + encodeURIComponent(location.pathname));
-            return;
-        }
+    context.on("resume", () => {
+        
     })
 
-    page.registerSPAExtension("/home/", (page) => {
+    context.on("suspend", () => {
+
+    })
+
+    context.on("destroy", () => {
+        tabs.destroy();
+    })
+
+
+    website.once("user-loaded", () => {
+        // TODO: Display a notice and a login button
+        // if(!website.isLoggedIn) {
+        //     location.replace("/login?continue=" + encodeURIComponent(location.pathname));
+        //     return;
+        // }
+    });
+
+    context.registerSPAExtension("/home/", (page) => {
         container.get('.container').classList.remove('sidebar-menu-visible');
         tabs.set(page || "home");
     });
@@ -20,13 +34,13 @@ app.register('home', function(app, page, container) {
         list: false
     });
 
-    const siteScriptsOnce = [];
+    const siteScriptsOnce = new Set();
     const siteScripts = {
         profile() {
-            const editingUser = LS.Reactive.fork("editingUser", app.userFragment);
+            const editingUser = LS.Reactive.fork("editingUser", website.userFragment);
             const confirmButtons = container.get('.profile-editor-confirm-buttons');
 
-            app.once("user-loaded", () => {
+            website.once("user-loaded", () => {
                 editingUser.__reset(); // Reset the reactive user data
             });
 
@@ -125,7 +139,7 @@ app.register('home', function(app, page, container) {
             });
 
             const links_table = O("#links");
-            for(const link of app.userFragment.external_links || []) {
+            for(const link of website.userFragment.external_links || []) {
                 const row = document.createElement("tr");
                 row.innerHTML = `
                     <td>${link.platform}</td>
@@ -193,7 +207,7 @@ app.register('home', function(app, page, container) {
                         if (blobs.pfp) formData.append("file", blobs.pfp.blob, "avatar." + (editingUser.__animated_pfp ? "webm" : "webp"));
                         if (blobs.banner) formData.append("file", blobs.banner.blob, "banner." + (editingUser.__animated_banner ? "webm" : "webp"));
 
-                        const response = await fetch(app.cdn + "/upload?intent=avatar&origin_id=" + editingUser.id, {
+                        const response = await fetch(website.cdn + "/upload?intent=avatar&origin_id=" + editingUser.id, {
                             method: "POST",
                             body: formData
                         });
@@ -325,11 +339,11 @@ app.register('home', function(app, page, container) {
                                 patch.newPassword = changedPassword;
                             }
 
-                            if (changedUsername && app.userFragment.username !== changedUsername) {
+                            if (changedUsername && website.userFragment.username !== changedUsername) {
                                 patch.username = changedUsername;
                             }
 
-                            if (changedEmail && app.userFragment.email !== changedEmail) {
+                            if (changedEmail && website.userFragment.email !== changedEmail) {
                                 patch.email = changedEmail;
                             }
 
@@ -371,7 +385,7 @@ app.register('home', function(app, page, container) {
         },
 
         dev() {
-            app.fetch("v1/apps/list", {}, (error, response) => {
+            website.fetch("v1/apps/list", {}, (error, response) => {
                 if (error) {
                     console.error("Failed to fetch app list:", error);
                     return;
@@ -399,7 +413,7 @@ app.register('home', function(app, page, container) {
                     description: String(form['app-description'].value).trim(),
                     slug: "",
                 }
-                app.fetch("v1/apps/create", {
+                website.fetch("v1/apps/create", {
                     method: "POST",
                     body: {}
                 }, (error, response) => {
@@ -423,9 +437,9 @@ app.register('home', function(app, page, container) {
         const view = tabs.currentElement();
         const oldElement = tabs.tabs.get(old)?.element;
 
-        if(!siteScriptsOnce.includes(tab) && siteScripts[tab]) {
+        if(!siteScriptsOnce.has(tab) && siteScripts[tab]) {
             siteScripts[tab]?.();
-            siteScriptsOnce.push(tab);
+            siteScriptsOnce.add(tab);
         }
 
         LS.Animation.slideInToggle(view, oldElement);

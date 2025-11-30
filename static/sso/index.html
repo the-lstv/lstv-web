@@ -143,9 +143,9 @@
         location.replace("/login?continue=" + encodeURIComponent(location.href))
     }
 
-    app.register("sso", async (app, source, container) => {
+    website.register("sso", async (source, container) => {
 
-        if(app.user.current === null){
+        if(website.user.current === null){
             return sso_changeAccount()
         }  
 
@@ -153,12 +153,12 @@
             list: false
         })
 
-        app.once("users-available", async ()=>{
+        website.once("users-available", async ()=>{
 
-            container.get("#sso-user").set(app.user.fragment.displayname)
-            container.get("#sso-avatar").set(app.user.getProfilePictureView())
+            container.get("#sso-user").set(website.user.fragment.displayname)
+            container.get("#sso-avatar").set(website.user.getProfilePictureView())
     
-            let userList = app.user.list(),
+            let userList = website.user.list(),
                 query = LS.Util.params(),
                 modal = {
                     title: "Invalid login page",
@@ -181,7 +181,7 @@
                 return LS.Modal.build(modal).show()
             }
     
-            let validation = await app.get("auth/check_sso", {
+            let validation = await website.get("auth/check_sso", {
                 app: query.app || "",
                 permissions: query.permissions,
                 target: query.ref,
@@ -204,7 +204,7 @@
             }
 
             if(validation.app.icon){
-                container.get("#sso-icon img").src = app.cdn + "/file/" + validation.app.icon + (validation.app.icon.endsWith("svg")? "" : "?size=120")
+                container.get("#sso-icon img").src = website.cdn + "/file/" + validation.app.icon + (validation.app.icon.endsWith("svg")? "" : "?size=120")
             } else {
                 container.get("#sso-icon .pfpWrap").set(N("i", {
                     class: "profilePicture bi-grid-1x2-fill"
@@ -255,13 +255,13 @@
     
             O("#authorize").on("click", async () => {
     
-                let token = await app.get("auth/authorize_sso", {
+                let token = await website.get("auth/authorize_sso", {
                     app: query.app || "",
                     permissions: query.permissions,
                     target: query.ref,
                     type: query.type
-                }).json()
-                
+                }).json();
+
                 if(token.error) {
                     modal.title = "Could not authorize";
                     modal.content = token.error;

@@ -58,14 +58,16 @@
         @keyframes l5 { to {rotate: 1turn} }
     </style>
 
-    <script>
+    <script .whitelist>
         window.__loadTime = Date.now();
         window.__init = [];
         window.__loadError = (message) => {
             document.querySelector('.loaderContainer').innerHTML = message;
         }
 
-        window.app = {
+        window.LOW_PERFORMANCE_MODE = localStorage.getItem("LOW_PERFORMANCE_MODE") === "true";
+
+        window.website = {
             /**
              * Requests scoped access. This is required to access the website APIs.
              * @param {HTMLScriptElement|string} script - The script tag or unique identifier.
@@ -77,8 +79,8 @@
         }
     </script>
 
-    @use (ls:5.2.2[flat, tooltips, toast, reactive, tabs, animation, modal], bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800", "IBM Plex Mono:wght@400;600;800"]);
-    @use (~/assets/css/main.css, ~/assets/js/app.js[defer]);
+    @use (ls:5.2.3[flat, tooltips, toast, reactive, tabs, animation, modal], bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800", "IBM Plex Mono:wght@400;600;800"]);
+    @use (~/assets/css/main.css, ~/assets/js/app.js[defer], ~/assets/js/pallete.js);
 
     @page {
         style: flat;
@@ -93,7 +95,7 @@
 </head>
 
 <body .level-0>
-    <script>
+    <script .whitelist>
         // Apply theme based on user preference
         document.body.setAttribute("ls-theme", localStorage.getItem("ls-theme") || (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches? "light": "dark"));
     </script>
@@ -134,31 +136,58 @@
                     <i .bi-stars />
                 </button>
 
+                <button ls-tooltip="Command Palette" #commandPaletteButton .pill.elevated aria-label="Open Command Palette">
+                    <i .bi-terminal />
+                </button>
+
                 <button ls-tooltip="Customize" #themeButton .pill.elevated aria-label="Customize the site appearance">
                     <i .bi-sun-fill /> <i .bi-palette-fill />
                 </button>
 
                 <button id="moreButton" ls-tooltip="More options" .pill .elevated aria-label="More options">
-                    <i .bi-three-dots-vertical></i>
+                    <i .bi-three-dots-vertical />
                 </button>
             </div>
 
         </nav>
 
-        <div #toolbars .level-1 .ls-slide-animation style="display: none">
+        <div #topOverlay style="display: none">
+            <div #commandTerminal .level-n3 style="display: none">
+                <div .terminal-output />
+            </div>
+    
+            <div #commandPaletteBar .level-n3>
+                <div #commandPalette onclick="this.querySelector('.command-input').focus()">
+                    <div .completion-menu></div>
+        
+                    <i .bi-terminal .command-icon />
 
+                    <div .textContainer>
+                        <span .command-selection></span>
+                        <span .command-caret></span>
+                        <span .command-text></span><span .command-hint></span>
+                        <input type="text" .command-input autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Command palette input">
+                    </div>
+                </div>
+    
+                <div .command-palette-buttons>
+                    <button ls-tooltip="Close" .square .clear aria-label="Close command palette"><i .bi-x-lg /></button>
+                </div>
+            </div>
+        </div>
+
+        <div #toolbars .level-1 .ls-slide-animation style="display: none">
             <div .toolbar #toolbarApps>
                 <h3>Applications</h3>
-                <div>
-                </div>
+                <div></div>
             </div>
 
             <div .toolbar #toolbarTheme>
                 <h3>Customize</h3>
                 <ls-box .elevated .inline>
-                    <button .elevated ls-tooltip aria-label="Dark theme" onclick="app.theme = 'dark'"> <i class="bi-moon-stars-fill" /> </button>
-                    <button .elevated ls-tooltip aria-label="Light theme" onclick="app.theme = 'light'"> <i class="bi-sun-fill" /> </button>
-                    <button .elevated ls-tooltip aria-label="Set to system default" onclick='localStorage.removeItem("ls-theme"); LS.Color.setAdaptiveTheme()'> <i class="bi-arrow-clockwise" /> </button>
+                    <button .elevated ls-tooltip aria-label="Dark theme" onclick="website.theme = 'dark'"> <i class="bi-moon-stars-fill" /> </button>
+                    <button .elevated ls-tooltip aria-label="Light theme" onclick="website.theme = 'light'"> <i class="bi-sun-fill" /> </button>
+                    <button .elevated ls-tooltip aria-label="Set to system default" onclick='localStorage.removeItem("ls-theme"); LS.Color.setAdaptiveTheme()'> <i class="bi-laptop" /> </button>
                 </ls-box>
 
                 <br>
@@ -169,6 +198,12 @@
                         <i .bi-eyedropper />
                     </button>
                 </ls-box>
+
+                <ls-div .grouped-buttons style="margin: 18px 30px 24px">
+                    <button>
+                        <i class="bi-pencil-fill"></i><span>Edit panel</span>
+                    </button>
+                </ls-div>
             </div>
 
             <div .toolbar .level-n1 #toolbarAssistant>
@@ -211,8 +246,8 @@
                     </span>
 
                     <div .buttons>
-                        <button onclick="app.loginTabs.set('login')" #login .pill>Log-In</button>
-                        <button onclick="app.loginTabs.set('register')" .pill.elevated>Create account</button>
+                        <button onclick="website.loginTabs.set('login')" #login .pill>Log-In</button>
+                        <button onclick="website.loginTabs.set('register')" .pill.elevated>Create account</button>
                     </div>
                 </div>
 
@@ -228,7 +263,7 @@
                         <button .pill.elevated type="submit">Log in</button>
                     </form>
 
-                    <span>Don't have one? <a href="#" onclick="app.loginTabs.set('register')">Sign up</a></span>
+                    <span>Don't have one? <a href="#" onclick="website.loginTabs.set('register')">Sign up</a></span>
                 </div>
 
                 <div .login-toolbar-page tab-id="register">
@@ -260,7 +295,7 @@
                         <button .pill.elevated type="submit">Continue</button>
                     </form>
 
-                    <span>Want to log-in? <a href="#" onclick="app.loginTabs.set('login')">Log in</a></span>
+                    <span>Want to log-in? <a href="#" onclick="website.loginTabs.set('login')">Log in</a></span>
                 </div>
 
                 <div .login-toolbar-page tab-id="register-step2">
@@ -300,7 +335,7 @@
                     </ls-div>
 
                     <ls-div .profile-buttons .grouped-buttons>
-                        <button .elevated onclick="app.loginTabs.set('login')"><i .bi-arrow-left-right /><span>Switch accounts</span></button>
+                        <button .elevated onclick="website.loginTabs.set('login')"><i .bi-arrow-left-right /><span>Switch accounts</span></button>
                         <button .elevated #logOutButton><i .bi-box-arrow-right /><span>Log out</span></button>
                     </ls-div>
     
@@ -316,10 +351,9 @@
         </main>
     </div>
 
-    <script>
+    <script .whitelist>
         if(!window.LS) {
             window.__loadError('<h3 style="margin:40px 20px">The application failed to load. Please try again later.</h3>');
         }
     </script>
-
 </body>
