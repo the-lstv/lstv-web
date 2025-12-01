@@ -15,14 +15,32 @@ website.register('home', function(context, container) {
         tabs.destroy();
     })
 
+    const panelContent = Array.from(container.getAll('.container > *'));
+    const userUpdate = (loggedIn, userFragment) => {
+        if(!loggedIn) {
+            panelContent.forEach(el => el.remove());
+            container.get('.container').append(LS.Create('div', { inner: [N("h3", "You are not logged in"), N("button", {
+                textContent: "Log in",
+                class: "pill",
+                onclick() {
+                    website.showLoginToolbar();
+                }
+            })], class: "login-notice" }));
+            return;
+        } else {
+            if(container.get('.login-notice')) {
+                container.get('.login-notice').remove();
+                panelContent.forEach(el => container.get('.container').append(el));
+            }
+        }
+    }
 
+    // This guarantees that we update both on load, dynamic load, and live changes
     website.once("user-loaded", () => {
-        // TODO: Display a notice and a login button
-        // if(!website.isLoggedIn) {
-        //     location.replace("/login?continue=" + encodeURIComponent(location.pathname));
-        //     return;
-        // }
+        userUpdate(website.isLoggedIn, website.userFragment);
+        website.on("user-changed", userUpdate);
     });
+
 
     context.registerSPAExtension("/home/", (page) => {
         container.get('.container').classList.remove('sidebar-menu-visible');

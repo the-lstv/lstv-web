@@ -354,3 +354,7 @@ float ovalMask(vec2 u){float b=sin(time*0.8)*0.15;float p=sin(time*1.2)*0.1;vec2
 void main(){vec2 u=gl_FragCoord.xy/resolution.xy;vec2 f=u*vec2(50.0,28.0);vec2 b=floor(f);float tm=time*2.0;float te=time*0.6;float d=densityMap(u,time);float g=0.0;for(int y=-1;y<=1;y++){for(int x=-1;x<=1;x++){vec2 cl=b+vec2(float(x),float(y));g+=sparkleContribution(cl,f,tm,te,d);}}float m=ovalMask(u);g=clamp(g*m,0.0,1.0);gl_FragColor=vec4(vec3(1.0)*g,g*0.85);}`);
     }
 }
+
+window.CombinedShaderRenderer = CombinedShaderRenderer;
+window.ShaderSource = ShaderSource;
+window.ShaderContext = ShaderContext;

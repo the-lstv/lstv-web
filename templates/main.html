@@ -1,5 +1,7 @@
 <head>
 
+    <!-- @import (/~/assets/html/polyfil.html); -->
+
     <style>
         body {
             /* Eye-saver! */
@@ -79,7 +81,7 @@
         }
     </script>
 
-    @use (ls:5.2.3[flat, tooltips, toast, reactive, tabs, animation, modal], bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800", "IBM Plex Mono:wght@400;600;800"]);
+    @use (ls:5.2.4[flat, tooltips, toast, reactive, tabs, animation, resize, modal], bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800", "IBM Plex Mono:wght@400;600;800"]);
     @use (~/assets/css/main.css, ~/assets/js/app.js[defer], ~/assets/js/pallete.js);
 
     @page {
@@ -353,7 +355,7 @@
 
     <script .whitelist>
         if(!window.LS) {
-            window.__loadError('<h3 style="margin:40px 20px">The application failed to load. Please try again later.</h3>');
+            window.__loadError('<h3 style="margin:40px 20px">The application failed to load. Please try again later. Make sure you are on an up-to-date browser.</h3>');
         }
     </script>
 </body>

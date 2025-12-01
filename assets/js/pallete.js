@@ -1934,3 +1934,5 @@ class CommandPalette {
         return document.createTextNode(String(value));
     }
 }
+
+window.CommandPalette = CommandPalette;

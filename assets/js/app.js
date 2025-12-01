@@ -664,13 +664,15 @@ class Viewport {
         }
 
         // Full page reload
-        if ((page.requiresReload || options.reload) && path !== this.current?.path) {
-            // TODO: Display a warning if the website is doing something
-            return location.href = path;
-        }
+        // if ((page.requiresReload || options.reload) && path !== this.current?.path) {
+        //     // TODO: Display a warning if the website is doing something
+        //     return location.href = path;
+        // }
 
         // Suspend old page
         if (old) old.suspend();
+
+        this.target.classList.add("loading");
 
         // Load and Render new page
         try {
@@ -699,6 +701,8 @@ class Viewport {
             if (old) old.render(this.target);
             else this.errorPage(500);
             return false;
+        } finally {
+            this.target.classList.remove("loading");
         }
     }
 
@@ -1149,6 +1153,20 @@ const website = {
         website.isToolbarOpen = false;
 
         Q("#headerButtons > button.open").forEach(element => element.classList.remove("open"));
+    },
+
+    showLoginToolbar(toggle = false) {
+        O("#accountsButton").focus();
+        setTimeout(() => {
+            if(!toggle && website.isToolbarOpen && website.headerWindowCurrent === "toolbarLogin") return;
+
+            website.loginTabs.set(website.isLoggedIn? "account": "default", true);
+            website.toolbarOpen("toolbarLogin", toggle, O("#accountsButton"));
+
+            if(!website.isLoggedIn) setTimeout(() => {
+                O("#loginPopup")?.querySelector("button,input")?.focus();
+            }, 0);
+        }, 0);
     },
 
     /**
@@ -1613,12 +1631,14 @@ const kernel = new class Kernel extends LoggerContext {
                 isLoggedIn = false;
             }
         } else {
-            LS.Reactive.wrap("user", {});
+            this.userFragment = LS.Reactive.wrap("user", {});
         }
 
         O("#accountsButton").disabled = false;
         O("#accountsButton").ls_tooltip = isLoggedIn ? "Manage profiles": "Log in";
 
+        website.events.emit("user-changed", [ isLoggedIn, this.userFragment ]);
+        // website.events.emit("user-loaded", [ isLoggedIn ]);
         website.events.completed("user-loaded");
     }
 
@@ -1921,7 +1941,6 @@ const kernel = new class Kernel extends LoggerContext {
                         name: "set-active",
                         icon: "bi-toggle-on",
                         description: "Set user active status",
-                        onCalled(active) { console.log("Active status:", active); },
                         inputs: [
                             { name: "active", type: "boolean", description: "Active?" }
                         ]
@@ -1937,7 +1956,17 @@ const kernel = new class Kernel extends LoggerContext {
                         name: "add",
                         icon: "bi-plus",
                         description: "Add two numbers",
-                        onCalled(a, b) { console.log("Sum:", a + b); },
+                        onCalled(a, b) { terminalWriter.log("Sum:", a + b); },
+                        inputs: [
+                            { name: "a", type: "number", description: "First number" },
+                            { name: "b", type: "number", description: "Second number" }
+                        ]
+                    },
+                    {
+                        name: "subtract",
+                        icon: "bi-dash",
+                        description: "Subtract two numbers",
+                        onCalled(a, b) { terminalWriter.log("Difference:", a - b); },
                         inputs: [
                             { name: "a", type: "number", description: "First number" },
                             { name: "b", type: "number", description: "Second number" }
@@ -1947,11 +1976,149 @@ const kernel = new class Kernel extends LoggerContext {
                         name: "multiply",
                         icon: "bi-x",
                         description: "Multiply two numbers",
-                        onCalled(a, b) { console.log("Product:", a * b); },
+                        onCalled(a, b) { terminalWriter.log("Product:", a * b); },
                         inputs: [
                             { name: "a", type: "number", description: "First number" },
                             { name: "b", type: "number", description: "Second number" }
                         ]
+                    },
+                    {
+                        name: "divide",
+                        icon: "bi-slash",
+                        description: "Divide two numbers",
+                        onCalled(a, b) { 
+                            if (b === 0) terminalWriter.log("Error: Division by zero");
+                            else terminalWriter.log("Quotient:", a / b); 
+                        },
+                        inputs: [
+                            { name: "a", type: "number", description: "Dividend" },
+                            { name: "b", type: "number", description: "Divisor" }
+                        ]
+                    },
+                    {
+                        name: "power",
+                        icon: "bi-caret-up-fill",
+                        description: "Raise a number to a power",
+                        onCalled(a, b) { terminalWriter.log(`${a} ^ ${b} =`, Math.pow(a, b)); },
+                        inputs: [
+                            { name: "a", type: "number", description: "Base" },
+                            { name: "b", type: "number", description: "Exponent" }
+                        ]
+                    },
+                    {
+                        name: "sqrt",
+                        icon: "bi-square-root",
+                        description: "Square root",
+                        onCalled(a) { 
+                            if (a < 0) terminalWriter.log("Error: Negative input");
+                            else terminalWriter.log(`√${a} =`, Math.sqrt(a)); 
+                        },
+                        inputs: [
+                            { name: "a", type: "number", description: "Number" }
+                        ]
+                    },
+                    {
+                        name: "abs",
+                        icon: "bi-arrow-up-right",
+                        description: "Absolute value",
+                        onCalled(a) { terminalWriter.log(`|${a}| =`, Math.abs(a)); },
+                        inputs: [
+                            { name: "a", type: "number", description: "Number" }
+                        ]
+                    },
+                    {
+                        name: "round",
+                        icon: "bi-circle",
+                        description: "Round to nearest integer",
+                        onCalled(a) { terminalWriter.log(`round(${a}) =`, Math.round(a)); },
+                        inputs: [
+                            { name: "a", type: "number", description: "Number" }
+                        ]
+                    },
+                    {
+                        name: "floor",
+                        icon: "bi-arrow-down",
+                        description: "Floor (round down)",
+                        onCalled(a) { terminalWriter.log(`floor(${a}) =`, Math.floor(a)); },
+                        inputs: [
+                            { name: "a", type: "number", description: "Number" }
+                        ]
+                    },
+                    {
+                        name: "ceil",
+                        icon: "bi-arrow-up",
+                        description: "Ceil (round up)",
+                        onCalled(a) { terminalWriter.log(`ceil(${a}) =`, Math.ceil(a)); },
+                        inputs: [
+                            { name: "a", type: "number", description: "Number" }
+                        ]
+                    },
+                    {
+                        name: "sin",
+                        icon: "bi-activity",
+                        description: "Sine (degrees)",
+                        onCalled(a) { terminalWriter.log(`sin(${a}°) =`, Math.sin(a * Math.PI / 180)); },
+                        inputs: [
+                            { name: "a", type: "number", description: "Degrees" }
+                        ]
+                    },
+                    {
+                        name: "cos",
+                        icon: "bi-activity",
+                        description: "Cosine (degrees)",
+                        onCalled(a) { terminalWriter.log(`cos(${a}°) =`, Math.cos(a * Math.PI / 180)); },
+                        inputs: [
+                            { name: "a", type: "number", description: "Degrees" }
+                        ]
+                    },
+                    {
+                        name: "tan",
+                        icon: "bi-activity",
+                        description: "Tangent (degrees)",
+                        onCalled(a) { terminalWriter.log(`tan(${a}°) =`, Math.tan(a * Math.PI / 180)); },
+                        inputs: [
+                            { name: "a", type: "number", description: "Degrees" }
+                        ]
+                    },
+                    {
+                        name: "log",
+                        icon: "bi-graph-up",
+                        description: "Logarithm base 10",
+                        onCalled(a) { 
+                            if (a <= 0) terminalWriter.log("Error: Non-positive input");
+                            else terminalWriter.log(`log10(${a}) =`, Math.log10(a)); 
+                        },
+                        inputs: [
+                            { name: "a", type: "number", description: "Number" }
+                        ]
+                    },
+                    {
+                        name: "ln",
+                        icon: "bi-graph-up-arrow",
+                        description: "Natural logarithm",
+                        onCalled(a) { 
+                            if (a <= 0) terminalWriter.log("Error: Non-positive input");
+                            else terminalWriter.log(`ln(${a}) =`, Math.log(a)); 
+                        },
+                        inputs: [
+                            { name: "a", type: "number", description: "Number" }
+                        ]
+                    },
+                    {
+                        name: "exp",
+                        icon: "bi-lightning",
+                        description: "Exponential (e^x)",
+                        onCalled(a) { terminalWriter.log(`e^${a} =`, Math.exp(a)); },
+                        inputs: [
+                            { name: "a", type: "number", description: "Exponent" }
+                        ]
+                    },
+                    {
+                        name: "pi",
+                        icon: "bi-circle-half",
+                        description: "Value of π",
+                        onCalled() { terminalWriter.log("π =", Math.PI); },
+                        inputs: []
                     }
                 ]
             },
@@ -2083,16 +2250,16 @@ const kernel = new class Kernel extends LoggerContext {
             collapseItems.schedule();
         });
 
-        O("#accountsButton").on("click", function (){
-            website.loginTabs.set(website.isLoggedIn? "account": "default", true);
-            website.toolbarOpen("toolbarLogin", true, this);
-        });
+        O("#accountsButton").on("click", () => website.showLoginToolbar(true));
 
         O("#logOutButton").on("click", function (){
             kernel.auth.logout(() => {
                 LS.Toast.show("Logged out successfully.");
                 website.toolbarClose();
-                location.reload();
+                // location.reload();
+
+                kernel.loadUser();
+                website.loginTabs.set("default");
             });
         });
 
@@ -2121,7 +2288,17 @@ const kernel = new class Kernel extends LoggerContext {
         }
 
         function redirectAfterLogin() {
-            location.replace(kernel.queryParams.continue || ((location.pathname.startsWith("/login") || location.pathname.startsWith("/sign-up"))? "/": location.href));
+            const redirect = kernel.queryParams.continue || ((location.pathname.startsWith("/login") || location.pathname.startsWith("/sign-up"))? "/": null);
+            if (redirect) {
+                location.replace(redirect);
+                return;
+            }
+
+            // Update user without reloading
+            kernel.loadUser().then(() => {
+                website.toolbarClose();
+                website.loginTabs.set("default");
+            });
         }
 
         document.forms["loginForm"].addEventListener("submit", (event) => {
