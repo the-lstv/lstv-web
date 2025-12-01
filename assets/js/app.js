@@ -231,6 +231,8 @@ const AssetManager = new class {
  * (This does not equal a whole application, and application may have multiple content contexts.)
  */
 class ContentContext extends LS.EventHandler {
+    #path = null;
+
     constructor(options = {}) {
         super();
         this.id = options?.id || "context-" + Math.random().toString(36).substring(2, 10) + "-" + Date.now().toString(36);
@@ -244,17 +246,17 @@ class ContentContext extends LS.EventHandler {
         this.content = null;
         this.destroyed = false;
 
-        if(options) {
-            this.setOptions(options);
-        }
-
-        // FIXME: Sandboxing needs to be properly implemented
+        // FIXME: Sandboxing needs to be better implemented
 
         this.state = "empty"; // empty | ready | suspended | destroyed
         this.sandboxMode = "none"; // none | shadow | iframe
 
         this.loaded = false;
         this.error = null;
+
+        if(options) {
+            this.setOptions(options);
+        }
 
         this.on("resume", () => {
             this.state = "ready";
@@ -289,9 +291,21 @@ class ContentContext extends LS.EventHandler {
             this.content = null;
             this.events.clear();
             kernel.contexts.delete(this.id);
-            kernel.pageCache.delete(this.path);
+            kernel.pageCache.delete(this.#path);
+
+            let i = 0;
+            for(const [,, page] of kernel.SPAExtensions) {
+                if(page === this) {
+                    kernel.SPAExtensions.splice(i, 1);
+                }
+                i++;
+            }
+
+            if(this.aliases) for(const alias of this.aliases) {
+                kernel.aliasMap.delete(alias);
+            }
+
             this.loadPromise = null;
-            this.options = null;
             this.destroyed = true;
 
             // Unload assets that are not used elsewhere
@@ -319,6 +333,10 @@ class ContentContext extends LS.EventHandler {
             this.scripts = null;
             this.styles = null;
         });
+    }
+
+    get path() {
+        return this.#path || null;
     }
 
     setOptions(options){
@@ -364,14 +382,44 @@ class ContentContext extends LS.EventHandler {
                 if(!this.styles.includes(style)) this.styles.push(style);
             }
         }
+
+        // Only for contexts with a path; all aliases, INCLUDING the canonical path should be set here to help with duplicate resolution.
+        if(options.aliases && Array.isArray(options.aliases)) {
+            this.aliases = options.aliases.map(alias => website.utils.normalizePath(alias));
+            for(const alias of this.aliases) {
+                kernel.aliasMap.set(alias, this);
+            }
+        }
+
+        // Unique path that clearly identifies this context, not required for non-page contexts.
+        if (options.path) {
+            const newPath = website.utils.normalizePath(options.path);
+            if (this.#path && this.#path !== newPath) {
+                // Remove old path from cache if changed
+                if (kernel.pageCache.get(this.#path) === this) {
+                    kernel.pageCache.delete(this.#path);
+                }
+            }
+
+            // Check for collision
+            const existing = kernel.pageCache.get(newPath);
+            if (existing && existing !== this) {
+                throw new Error(`Context path collision: "${newPath}" is already taken by another context.`);
+            }
+
+            this.#path = newPath;
+            kernel.pageCache.set(newPath, this);
+        }
     }
 
     async render(targetElement = null){
-        if(this.src) {
+        if(this.src && this.sandboxMode !== "iframe" && !this.loaded) {
             await (this.loadPromise || this.fromURL());
         }
 
-        if(!this.content) {
+        if(this.sandboxMode === "iframe" && !(this.content instanceof HTMLIFrameElement)) {
+            this.replaceContent(); // Create iframe
+        } else if (!this.content) {
             return;
         }
 
@@ -399,7 +447,8 @@ class ContentContext extends LS.EventHandler {
 
     // TODO: This needs to be worked on
     registerSPAExtension(path, handler) {
-        kernel.SPAExtensions.push([path || this.path, handler, this]);
+        path = website.utils.normalizePath(path || this.#path);
+        kernel.SPAExtensions.push([path, handler, this]);
     }
 
     requestPermission(permissions = []) {
@@ -407,12 +456,23 @@ class ContentContext extends LS.EventHandler {
     }
 
     fromElement(element){
+        if(this.sandboxMode === "iframe") {
+            console.warn("fromElement() called with iframe sandbox mode. You probably didn't mean to do that. The element will *not* be used, a copy will be made instead.");
+            this.__rawContent = element.outerHTML;
+            return this;
+        }
+
         this.replaceContent(element);
         this.processAssetsOnNode(element);
         return this;
     }
 
     fromText(text){
+        if(this.sandboxMode === "iframe") {
+            this.__rawContent = text;
+            return this;
+        }
+
         this.replaceContent(N('div', {
             class: 'page page-content',
             innerHTML: text
@@ -428,7 +488,7 @@ class ContentContext extends LS.EventHandler {
         }
 
         if(this.loadPromise) return this.loadPromise;
-        if(this.loaded) return Promise.resolve(this);
+        if(this.loaded || this.sandboxMode === "iframe") return Promise.resolve(this);
 
         this.loadPromise = new Promise(async (resolve, reject) => {
             if(!this.src) {
@@ -529,6 +589,26 @@ class ContentContext extends LS.EventHandler {
      * This method is used even when setting the content for the first time
      */
     replaceContent(newContent){
+        if(this.sandboxMode === "iframe") {
+            const iframe = document.createElement("iframe");
+            iframe.classList.add("page");
+            iframe.classList.add("page-sandbox-iframe");
+            iframe.allow = this.sandboxAllow || "fullscreen; clipboard-write";
+            iframe.sandbox = this.sandboxOptions || "allow-scripts allow-same-origin allow-modals allow-popups allow-downloads allow-forms allow-presentation";
+            iframe.style.border = "none";
+            iframe.style.width = "100%";
+            iframe.style.height = "100%";
+            if(this.src) {
+                iframe.src = this.src;
+            } else {
+                iframe.srcdoc = this.__rawContent || "<html><body><h3>Empty content.</h3></body></html>";
+            }
+            this.content = iframe;
+            this.loaded = true;
+            this.error = null; // Sadly no way to track errors in iframes
+            return this;
+        }
+
         if(this.content && this.content !== newContent) {
             // Not sure I should do this, it's not even consistent across sandbox modes so idk
             if(this.content.parentNode && this.content !== newContent) {
@@ -630,7 +710,7 @@ class Viewport {
                 this.navigate(SPAExtension[2], { browserTriggered: true });
             }
 
-            if(location.pathname !== path && !options.browserTriggered && this.name === 'main') {
+            if(location.pathname !== path && !options.browserTriggered && options.pushState !== false && this.name === 'main') {
                 history.pushState({ path }, document.title, path);
             }
             kernel.handleSPAExtension(path, SPAExtension, options.targetElement || null);
@@ -639,9 +719,8 @@ class Viewport {
 
         // 2. Resolve Page Object
         if (!page) {
-            if (kernel.pageCache.has(path)) {
-                page = kernel.pageCache.get(path);
-            } else {
+            page = kernel.getPage(path);
+            if (!page) {
                 // Dynamic Load
                 kernel.log("Dynamically loading page for", path);
                 page = kernel.registerPage(path, {
@@ -685,7 +764,7 @@ class Viewport {
             this.current = page;
 
             if (this.name === 'main') {
-                if(page.title) document.title = page.title || `LSTV | Web`;
+                document.title = (page.title && page.title.startsWith("LSTV | "))? page.title: `LSTV | ${page.title || 'Untitled'}`;
                 
                 if (!options.browserTriggered && !options.initial) {
                     history.pushState({ path }, document.title, page.path);
@@ -741,6 +820,7 @@ const website = {
 
     // Constants
     isLocalhost: location.hostname.endsWith("localhost"),
+    isEmbedded: window.self !== window.top,
     cdn: "https://cdn.extragon.cloud",
 
     views: {
@@ -866,7 +946,7 @@ const website = {
     utils: {
         normalizePath(path, isAbsolute = null) {
             // Replace backslashes with forward slashes
-            path = "/" + path.replace("index.html", "").replace(".html", "").replace(/\\/g, '/');
+            path = path.replace(/index\.html$|\.html$/i, "").replace(/\\/g, "/").trim();
 
             const parts = path.split('/');
             const normalizedParts = [];
@@ -1201,6 +1281,8 @@ const kernel = new class Kernel extends LoggerContext {
     viewports = new Map();
     pageCache = new Map();
 
+    aliasMap = new Map();
+
     queryParams = LS.Util.params();
     userFragment = LS.Reactive.wrap("user", {});
 
@@ -1371,6 +1453,14 @@ const kernel = new class Kernel extends LoggerContext {
         }
     }
 
+    clearAllOtherPages(){
+        for(const [path, page] of this.pageCache){
+            if(this.viewport.current !== page){
+                page.destroy();
+            }
+        }
+    }
+
     /**
      * Permission scope
      */
@@ -1395,6 +1485,17 @@ const kernel = new class Kernel extends LoggerContext {
 
         // Watch for device theme changes
         LS.Color.autoScheme();
+
+        if(localStorage.hasOwnProperty("ls-accent")){
+            const accent = localStorage.getItem("ls-accent");
+
+            if(accent.startsWith("#")) {
+                LS.Color.update('custom', accent);
+                LS.Color.setAccent('custom');
+            } else {
+                LS.Color.setAccent(accent);
+            }
+        }
 
         website.viewport = this.viewport = new Viewport('main', document.getElementById('viewport'), {
             kernel: this
@@ -1456,7 +1557,7 @@ const kernel = new class Kernel extends LoggerContext {
         // Event listener for back/forward buttons (for single-page app behavior)
         window.addEventListener('popstate', function (event) {
             const href = event.state? event.state.path: originalState;
-            kernel.viewport.navigate(href, { browserTriggered: true });
+            kernel.viewport.navigate(href, { pushState: false });
         });
 
         window.addEventListener('click', function (event) {
@@ -1504,6 +1605,7 @@ const kernel = new class Kernel extends LoggerContext {
 
             this.viewport.navigate(location.pathname, {
                 browserTriggered: true,
+                pushState: false,
                 initial: true
             });
 
@@ -1534,7 +1636,7 @@ const kernel = new class Kernel extends LoggerContext {
         // TODO:FIXME: This should only allow non-authenticated access
         website.fetch = this.auth.fetch.bind(this.auth);
 
-        this.#initializeCommandPalette();
+        if (!website.isEmbedded) this.#initializeCommandPalette();
         website.emit("ready");
     }
 
@@ -1561,10 +1663,21 @@ const kernel = new class Kernel extends LoggerContext {
         }
 
         const page = new ContentContext(options);
-        this.pageCache.set(path, page);
-        page.path = path;
+        page.setOptions({ path });
         this.log(`Registered page for path %c${path}`, 'font-weight: bold');
         return page;
+    }
+
+    /**
+     * Gets a registered page by its path, resolving SPA extensions to the main.
+     * It is recommended to use this method to reliably retrieve pages rather than using the map directly, because some pages may have initially loaded under a different URL or alias.
+     * @param {string} path - The path of the page to retrieve.
+     * @returns {ContentContext|null} The ContentContext object if found, otherwise null.
+     */
+    getPage(path) {
+        path = website.utils.normalizePath(path);
+        const page = this.pageCache.get(path) || this.aliasMap.get(path) || (this.SPAExtensions.find(([extpath]) => (path + "/").startsWith(extpath + "/"))?.[2]);
+        return page || null;
     }
 
     /**
@@ -2254,7 +2367,9 @@ const kernel = new class Kernel extends LoggerContext {
 
         O("#logOutButton").on("click", function (){
             kernel.auth.logout(() => {
-                LS.Toast.show("Logged out successfully.");
+                LS.Toast.show("Logged out successfully.", {
+                    timeout: 2000
+                });
                 website.toolbarClose();
                 // location.reload();
 
@@ -2423,17 +2538,6 @@ const kernel = new class Kernel extends LoggerContext {
                 LS.Color.setAccent('custom');
                 localStorage.setItem("ls-accent", this.value);
             });
-        }
-
-        if(localStorage.hasOwnProperty("ls-accent")){
-            const accent = localStorage.getItem("ls-accent");
-
-            if(accent.startsWith("#")) {
-                LS.Color.update('custom', accent);
-                LS.Color.setAccent('custom');
-            } else {
-                LS.Color.setAccent(accent);
-            }
         }
 
         O("#assistantButton").on("click", (event) => {

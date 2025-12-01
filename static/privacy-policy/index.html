@@ -14,6 +14,12 @@
     <a href="/privacy-policy/text.html" target="_blank" class="ls-button">Open plaintext version</a>
 </div>
 
+<script>
+    website.register(document.currentScript, (context) => {
+        context.setOptions({ aliases: ["/privacy-policy", "/pp"] });
+    });
+</script>
+
 <style>
     pre {
         max-width: 800px;

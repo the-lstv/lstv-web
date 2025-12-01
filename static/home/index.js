@@ -1,19 +1,23 @@
-website.register('home', function(context, container) {
+website.register(document.currentScript, function(context, container) {
     const auth = context.requestPermission(["auth"]).auth;
-    context.title = "User Settings";
-    context.dynamicAccount = true;
+
+    context.setOptions({
+        // title: "User Settings",
+        dynamicAccount: true,
+        path: "/home"
+    });
 
     context.on("resume", () => {
         
-    })
+    });
 
     context.on("suspend", () => {
 
-    })
+    });
 
     context.on("destroy", () => {
         tabs.destroy();
-    })
+    });
 
     const panelContent = Array.from(container.getAll('.container > *'));
     const userUpdate = (loggedIn, userFragment) => {
