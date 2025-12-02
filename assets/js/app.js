@@ -1558,8 +1558,8 @@ const kernel = new class Kernel extends LoggerContext {
             kernel: this
         });
 
-        this.tsl = Date.now() - window.__loadTime;
-        this.log('Kernel initialized, version %c' + this.version + '%c, time since first load: ' + this.tsl + 'ms', 'font-weight:bold', 'font-weight:normal');
+        this.ttl = Date.now() - window.__loadTime;
+        this.log('Kernel initialized, version %c' + this.version + '%c, time since first load: ' + this.ttl + 'ms', 'font-weight:bold', 'font-weight:normal');
 
         LS.Reactive.registerType("ProfilePicture", website.views.getProfilePictureView);
         LS.Reactive.registerType("ProfileBanner", website.views.getBannerView);
@@ -1677,6 +1677,7 @@ const kernel = new class Kernel extends LoggerContext {
 
             this.loadUser();
             this.#initializeToolbars();
+            this.#initializePings();
 
             // Display content
             document.querySelector(".loaderContainer").style.display = "none";
@@ -1695,7 +1696,6 @@ const kernel = new class Kernel extends LoggerContext {
         website.fetch = this.auth.fetch.bind(this.auth);
 
         if (!website.isEmbedded) this.#initializeCommandPalette();
-        this.#initializePings();
         website.emit("ready");
     }
 
@@ -2625,37 +2625,51 @@ const kernel = new class Kernel extends LoggerContext {
     }
 
     /**
-     * Anonymous statistics pings, also helps to check for connectivity, check for updates from the server & receive remote updates, etc.
-     * Please do not disable unless you have a *very* good reason to, this is *not* invasive telemetry - privacy is fully respected (https://lstv.space/privacy-policy).
+     * Anonymous statistics pings, helps to check for connectivity, check for updates from the server & receive remote updates, etc.
+     * Do not disable unless you have a *very* good reason to, this is *not* invasive telemetry - privacy is fully respected (https://lstv.space/privacy-policy), and *nothing* is ever shared with 3rd parties for any reason.
      * 
-     * We do not track IP addresses or connect these pings to any identifiable information. Everything is fully transparent as seen below.
+     * Timings are rounded to reduce precision for privacy.
      */
     #initializePings() {
-        const sessionID = website.utils.generateIdentifier(); // True random ID
-        let current_interval = 10000, first = true;
+        const PING_URL = '/ping';
+        const SESSION_ID = website.utils.generateIdentifier(); // True random ID
+        let current_interval = 15000, first = true;
 
         const sendPing = (beacon = false) => {
-            const data = JSON.stringify({
-                sessionID,
-                origin: location.origin,
+            const STATS_DISABLED = localStorage.getItem("DISABLE_STATS") === "true";
+
+            const data = JSON.stringify(!STATS_DISABLED? {
+                sessionID: SESSION_ID,
                 timestamp: Date.now(),
-                quit: beacon,
                 kernel: KERNEL_VERSION,
                 pagesLoaded: kernel.pageCache.size,
                 viewports: kernel.viewports.size,
-                currentPage: kernel.viewport.current.path, // Does not include query or fragments, neither things like the content being viewed (eg. /post/123 will likely show up as just /post))
+                currentPage: kernel.viewport.current?.path, // Does not include query or fragments, neither things like the content being viewed (eg. /post/123 will likely show up as just /post))
                 userLoggedIn: website.isLoggedIn, // No identifiable info, just yes/no
-                uptimeMs: Math.round(Date.now() - window.__loadTime), // Rounded to reduce precision for privacy
-                ...first ? { userAgent: navigator.userAgent, platform: navigator.platform, loadTime: Math.round(this.tsl) } : {}
+                uptimeMs: Math.round(Date.now() - window.__loadTime),
+
+                ...first ? {
+                    platform: navigator.platform,
+                    loadTime: Math.round(this.ttl),
+                    ttfp: Math.round(Date.now() - window.__loadTime),
+                    origin: location.origin,
+                    performanceMode: window.LOW_PERFORMANCE_MODE ? "low" : "normal", // User-set, does not relate to hardware,
+                    ls_version: LS.version
+                } : {}
+            }: {
+                sessionID: SESSION_ID,
+                kernel: KERNEL_VERSION,
+                uptimeMs: Math.round(Date.now() - window.__loadTime),
             });
 
             if(beacon) {
                 // Sent when ending a session naturally
-                navigator.sendBeacon('/ping', data);
+                data.quit = true;
+                navigator.sendBeacon(PING_URL, data);
                 return;
             }
 
-            fetch('/ping', {
+            fetch(PING_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -2663,20 +2677,21 @@ const kernel = new class Kernel extends LoggerContext {
                 body: data
             }).then(response => {
                 if(response.ok) {
-                    // Success, increase interval up to 1 minute
-                    current_interval = Math.min(current_interval + 5000, 60000);
+                    response.json().then(serverData => {
+                        // TODO: handle server commands
+                        if(serverData.updateAvailable) {
+                            // TBA
+                        }
+
+                        first = false;
+                        current_interval = Math.min(current_interval + 5000, 60000);
+                        setTimeout(sendPing, current_interval);
+                    });
                 } else {
-                    // Failure, decrease interval down to 10 seconds
                     current_interval = Math.max(current_interval - 5000, 10000);
                 }
-
-                first = false;
-                setTimeout(sendPing, current_interval);
             }).catch(() => {
-                // Network error, decrease interval down to 10 seconds
-                current_interval = Math.max(current_interval - 5000, 10000);
-                first = false;
-                setTimeout(sendPing, current_interval);
+                setTimeout(sendPing, 5000);
             });
         };
 
