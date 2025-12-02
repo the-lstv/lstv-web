@@ -19,8 +19,9 @@ website.register(document.currentScript, function(context, container) {
         tabs.destroy();
     });
 
+    // This guarantees that we update both on load, dynamic load, and live changes
     const panelContent = Array.from(container.getAll('.container > *'));
-    const userUpdate = (loggedIn, userFragment) => {
+    website.watchUser((loggedIn, userFragment) => {
         if(!loggedIn) {
             panelContent.forEach(el => el.remove());
             container.get('.container').append(LS.Create('div', { inner: [N("h3", "You are not logged in"), N("button", {
@@ -37,14 +38,7 @@ website.register(document.currentScript, function(context, container) {
                 panelContent.forEach(el => container.get('.container').append(el));
             }
         }
-    }
-
-    // This guarantees that we update both on load, dynamic load, and live changes
-    website.once("user-loaded", () => {
-        userUpdate(website.isLoggedIn, website.userFragment);
-        website.on("user-changed", userUpdate);
     });
-
 
     context.registerSPAExtension("/home/", (page) => {
         container.get('.container').classList.remove('sidebar-menu-visible');

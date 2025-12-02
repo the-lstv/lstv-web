@@ -11,9 +11,7 @@
 // --- SOME PRE-INITIALIZATION STUFF ---
 
 const KERNEL_VERSION = "1.2.0-beta";
-
 window.cacheKey = "?mtime=" + document.currentScript.src.split("?mtime=")[1];
-
 if(!window.LS || typeof LS !== "object" || LS.v < 5) {
     window.__loadError('<h3 style="margin:40px 20px">The application framework failed to load. Please try again later.</h3>')
     throw new Error("Fatal error: Missing LS, or it's too old! Make sure it was loaded properly! Aborting.");
@@ -21,7 +19,7 @@ if(!window.LS || typeof LS !== "object" || LS.v < 5) {
 
 // Console welcome message
 console.log(
-    '%c LSTV %c\nPlease beware:\n%cIF SOMEONE TOLD YOU TO PASTE SOMETHING HERE,\nTHEY MIGHT BE TRYING TO SCAM YOU.\nDO NOT USE THE CONSOLE IF YOU DON\'T KNOW\nWHAT YOU ARE DOING.\n\n',
+    '%c LSTV %c\nPlease beware:\n%cIF SOMEONE TOLD YOU TO PASTE SOMETHING HERE,\nTHEY MIGHT BE TRYING TO STEAL PERSONAL INFORMATION OR SCAM YOU.\nDO NOT USE THE CONSOLE IF YOU DON\'T KNOW\nWHAT YOU ARE DOING.\n\n',
     'font-size:4em;padding:10px;background:linear-gradient(to bottom,#e74c3c, #e74c3c 33%, #f39c12 33%,#f39c12 66%,#3498db 66%,#3498db);border-radius:1em;color:white;font-weight:900;margin:1em 0',
     'font-size:1.5em;color:#ed6c30;font-weight:bold',
     'font-size:1em;font-weight:400'
@@ -258,22 +256,7 @@ class ContentContext extends LS.EventHandler {
             this.setOptions(options);
         }
 
-        this.on("resume", () => {
-            this.state = "ready";
-            for(const style of this.styles) {
-                style.disabled = false;
-
-                if (!style.isConnected) {
-                    document.head.appendChild(style);
-                }
-            }
-
-            for(const script of this.scripts) {
-                if (!script.isConnected) {
-                    document.head.appendChild(script);
-                }
-            }
-        });
+        // this.on("resume", async () => {});
 
         this.on("suspend", () => {
             this.state = "suspended";
@@ -335,6 +318,48 @@ class ContentContext extends LS.EventHandler {
         });
     }
 
+    async #loadCSS(){
+        const promises = [];
+        for (const style of this.styles) {
+            style.disabled = false;
+            if (!style.isConnected) {
+                document.head.appendChild(style);
+                if (style.tagName === "LINK" && style.rel === "stylesheet" && !style.sheet) {
+                    promises.push(new Promise((resolve, reject) => {
+                        style.addEventListener("load", resolve, { once: true });
+                        style.addEventListener("error", resolve, { once: true });
+                    }));
+                }
+            }
+        }
+
+        await Promise.all(promises);
+    }
+
+    async #loadJS(){
+        const promises = [];
+        for (const script of this.scripts) {
+            if (!script.isConnected) {
+                document.head.appendChild(script);
+                if (script.src && !script.hasAttribute("data-loaded")) {
+                    if(this.destroyed) return;
+
+                    const promise = new Promise((resolve, reject) => {
+                        script.addEventListener("load", () => {
+                            script.setAttribute("data-loaded", "true");
+                            resolve();
+                        }, { once: true });
+                        script.addEventListener("error", resolve, { once: true });
+                    });
+
+                    if(script.async) {
+                        promises.push(promise);
+                    } else await promise;
+                }
+            }
+        }
+    }
+
     get path() {
         return this.#path || null;
     }
@@ -346,7 +371,7 @@ class ContentContext extends LS.EventHandler {
         if(options.requiresReload) this.requiresReload = true;
 
         // Flag that specifies if the page can handle logins dynamically (without reload)
-        // If false, a reload will be required on login/logout
+        // Currently it does nothing, in the future pages that don't have this flag may be suspended on login/logout until they confirm or reload
         if(options.dynamicAccount) this.dynamicAccount = true;
 
         // Metadata
@@ -413,8 +438,15 @@ class ContentContext extends LS.EventHandler {
     }
 
     async render(targetElement = null){
+        if(this.state === "loading" || this.state === "destroyed" || (this.state === "ready" && targetElement && this.content && targetElement.contains(this.content))) {
+            return this;
+        }
+
+        this.state = "loading";
+
         if(this.src && this.sandboxMode !== "iframe" && !this.loaded) {
             await (this.loadPromise || this.fromURL());
+            if(this.destroyed) return this;
         }
 
         if(this.sandboxMode === "iframe" && !(this.content instanceof HTMLIFrameElement)) {
@@ -422,6 +454,9 @@ class ContentContext extends LS.EventHandler {
         } else if (!this.content) {
             return;
         }
+
+        await this.#loadCSS();
+        if(this.destroyed) return this;
 
         for(const child of Array.from(targetElement.children)) {
             child.remove();
@@ -436,12 +471,11 @@ class ContentContext extends LS.EventHandler {
             }
         }
 
-        if(this.state === "empty" || this.state === "suspended") {
-            this.state = "ready";
-            this.emit("ready");
-        }
+        this.state = "ready";
 
-        this.emit("resume");
+        await this.#loadJS();
+        this.emit("resume", targetElement);
+        this.loaded = true;
         return this;
     }
 
@@ -511,6 +545,7 @@ class ContentContext extends LS.EventHandler {
                 }
     
                 const text = await response.text();
+                if (this.destroyed) return;
     
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(text, 'text/html');
@@ -531,6 +566,8 @@ class ContentContext extends LS.EventHandler {
                 });
 
                 this.processAssetsOnNode(doc);
+
+                document.adoptNode(newContent); // The original may be safely deleted after this
                 this.replaceContent(newContent);
                 this.title = doc.title;
                 resolve(this);
@@ -604,7 +641,12 @@ class ContentContext extends LS.EventHandler {
                 iframe.srcdoc = this.__rawContent || "<html><body><h3>Empty content.</h3></body></html>";
             }
             this.content = iframe;
-            this.loaded = true;
+
+            iframe.addEventListener("load", () => {
+                this.loaded = true;
+                this.emit("ready");
+            }, { once: true });
+
             this.error = null; // Sadly no way to track errors in iframes
             return this;
         }
@@ -621,7 +663,6 @@ class ContentContext extends LS.EventHandler {
         newContent.classList.add("page");
         LS.Reactive.scan(newContent); // Scan for reactive bindings
         this.content = newContent;
-        this.loaded = true;
         this.error = null;
         return this;
     }
@@ -853,6 +894,8 @@ const website = {
                         });
 
                         this.replaceWith(image);
+                        this.src = "";
+                        this.load();
                         if (args && args[0]) image.style.width = image.style.height = typeof args[0] === "number" ? args[0] + "px" : args[0];
                         return;
                     }
@@ -1259,6 +1302,20 @@ const website = {
         return kernel.registerModule(script, callback);
     },
 
+    /**
+     * Helper that calls back immediately when the user data is loaded, and subsequently whenever it changes.
+     * Reliable method to ensure up-to-date user data at any point without race conditions.
+     * TODO: Move to isolated contexts to avoid leaking the user fragment.
+     * @param {Function} callback - The function to call with user data updates.
+     */
+    watchUser(callback) {
+        // user-loaded is a completed event, meaning it will call immediately
+        website.once("user-loaded", () => {
+            callback(website.isLoggedIn, website.userFragment);
+            website.on("user-changed", callback);
+        });
+    },
+
     loginTabs: new LS.Tabs(O("#toolbarLogin"), {
         list: false,
         selector: ".login-toolbar-page",
@@ -1307,6 +1364,39 @@ const kernel = new class Kernel extends LoggerContext {
             this.logger = new LoggerContext("auth");
 
             this.nonce = [...crypto.getRandomValues(new Uint32Array(4))].map(i => i.toString(36)).join("-");
+
+            this.hello = false;
+            window.addEventListener('message', e => {
+                if (!this.hello) {
+                    if (e.data.data.initialized) {
+                        this.hello = true;
+                        this.logger.info('Auth bridge initialized.');
+                        return;
+                    } else return;
+                }
+
+                if (e.origin !== this.iframeOrigin) return;
+
+                if (e.data.event && !e.data.id) {
+                    this.emit(e.data.event, [e.data.data]);
+                    return;
+                }
+
+                const { id, error, data } = e.data;
+    
+                const cb = this.callbacks.get(id);
+                if (cb) {
+                    if (error) {
+                        if (cb.callback) cb.callback(error);
+                        if (cb.reject) cb.reject(error);
+                    } else {
+                        if (cb.callback) cb.callback(null, data);
+                        if (cb.resolve) cb.resolve(data);
+                    }
+    
+                    this.callbacks.delete(id);
+                }
+            });
         }
 
         #getFrame(callback) {
@@ -1344,39 +1434,6 @@ const kernel = new class Kernel extends LoggerContext {
             this.iframe.style.display = 'none';
             document.body.appendChild(this.iframe);
 
-            let hello = false;
-            window.addEventListener('message', e => {
-                if (!hello) {
-                    if (e.data.data.initialized) {
-                        hello = true;
-                        this.logger.info('Auth bridge initialized.');
-                        return;
-                    } else return;
-                }
-
-                if (e.origin !== this.iframeOrigin) return;
-
-                if (e.data.event && !e.data.id) {
-                    this.emit(e.data.event, [e.data.data]);
-                    return;
-                }
-
-                const { id, error, data } = e.data;
-    
-                const cb = this.callbacks.get(id);
-                if (cb) {
-                    if (error) {
-                        if (cb.callback) cb.callback(error);
-                        if (cb.reject) cb.reject(error);
-                    } else {
-                        if (cb.callback) cb.callback(null, data);
-                        if (cb.resolve) cb.resolve(data);
-                    }
-    
-                    this.callbacks.delete(id);
-                }
-            });
-    
             this.iframe.onload = () => {
                 this.iframe.contentWindow.postMessage({ type: 'init', nonce: this.nonce }, this.iframeOrigin);
                 this.ready = true;
@@ -1388,7 +1445,7 @@ const kernel = new class Kernel extends LoggerContext {
                 this.loading = false;
 
                 setTimeout(() => {
-                    if (!hello) {
+                    if (!this.hello) {
                         this.ready = false;
                         this.logger.error('Auth iframe failed to respond.');
                         LS.Toast.show("Authentication bridge failed to respond - account features will not work.", { accent: "red" });
@@ -1501,7 +1558,8 @@ const kernel = new class Kernel extends LoggerContext {
             kernel: this
         });
 
-        this.log('Kernel initialized, version %c' + this.version + '%c, time since first load: ' + (Date.now() - window.__loadTime) + 'ms', 'font-weight:bold', 'font-weight:normal');
+        this.tsl = Date.now() - window.__loadTime;
+        this.log('Kernel initialized, version %c' + this.version + '%c, time since first load: ' + this.tsl + 'ms', 'font-weight:bold', 'font-weight:normal');
 
         LS.Reactive.registerType("ProfilePicture", website.views.getProfilePictureView);
         LS.Reactive.registerType("ProfileBanner", website.views.getBannerView);
@@ -1637,6 +1695,7 @@ const kernel = new class Kernel extends LoggerContext {
         website.fetch = this.auth.fetch.bind(this.auth);
 
         if (!website.isEmbedded) this.#initializeCommandPalette();
+        this.#initializePings();
         website.emit("ready");
     }
 
@@ -2564,7 +2623,70 @@ const kernel = new class Kernel extends LoggerContext {
             website.toolbarClose();
         })
     }
+
+    /**
+     * Anonymous statistics pings, also helps to check for connectivity, check for updates from the server & receive remote updates, etc.
+     * Please do not disable unless you have a *very* good reason to, this is *not* invasive telemetry - privacy is fully respected (https://lstv.space/privacy-policy).
+     * 
+     * We do not track IP addresses or connect these pings to any identifiable information. Everything is fully transparent as seen below.
+     */
+    #initializePings() {
+        const sessionID = website.utils.generateIdentifier(); // True random ID
+        let current_interval = 10000, first = true;
+
+        const sendPing = (beacon = false) => {
+            const data = JSON.stringify({
+                sessionID,
+                origin: location.origin,
+                timestamp: Date.now(),
+                quit: beacon,
+                kernel: KERNEL_VERSION,
+                pagesLoaded: kernel.pageCache.size,
+                viewports: kernel.viewports.size,
+                currentPage: kernel.viewport.current.path, // Does not include query or fragments, neither things like the content being viewed (eg. /post/123 will likely show up as just /post))
+                userLoggedIn: website.isLoggedIn, // No identifiable info, just yes/no
+                uptimeMs: Math.round(Date.now() - window.__loadTime), // Rounded to reduce precision for privacy
+                ...first ? { userAgent: navigator.userAgent, platform: navigator.platform, loadTime: Math.round(this.tsl) } : {}
+            });
+
+            if(beacon) {
+                // Sent when ending a session naturally
+                navigator.sendBeacon('/ping', data);
+                return;
+            }
+
+            fetch('/ping', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: data
+            }).then(response => {
+                if(response.ok) {
+                    // Success, increase interval up to 1 minute
+                    current_interval = Math.min(current_interval + 5000, 60000);
+                } else {
+                    // Failure, decrease interval down to 10 seconds
+                    current_interval = Math.max(current_interval - 5000, 10000);
+                }
+
+                first = false;
+                setTimeout(sendPing, current_interval);
+            }).catch(() => {
+                // Network error, decrease interval down to 10 seconds
+                current_interval = Math.max(current_interval - 5000, 10000);
+                first = false;
+                setTimeout(sendPing, current_interval);
+            });
+        };
+
+        addEventListener('beforeunload', () => {
+            sendPing(true);
+        });
+
+        sendPing();
+    }
 }
 
 
-} catch (e) { console.error("Fatal error during app initialization:", e); window.__loadError('<h3 style="margin:40px 20px">The application failed to load. Please try again later.</h3>') }
+} catch (e) { console.error("Fatal error during app initialization:", e); window.__loadError('<h3 style="margin:40px 20px">The application failed to load. Please try again later. Make sure you are on an up-to-date browser.</h3>') }
