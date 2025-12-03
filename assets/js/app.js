@@ -455,7 +455,13 @@ class ContentContext extends LS.EventHandler {
             return;
         }
 
-        await this.#loadCSS();
+        // Unsure whether to load JS and CSS in parallel (before render) or load JS separately after render, since some scripts may expect DOM to exist.
+        // Loading early allows for quicker execution though (eg. if JS is responsible for rendering something, it will be available before actually displaying).
+        await Promise.all([
+            this.#loadCSS(),
+            this.#loadJS()
+        ]);
+
         if(this.destroyed) return this;
 
         for(const child of Array.from(targetElement.children)) {
@@ -473,7 +479,7 @@ class ContentContext extends LS.EventHandler {
 
         this.state = "ready";
 
-        await this.#loadJS();
+        // await this.#loadJS();
         this.emit("resume", targetElement);
         this.loaded = true;
         return this;
@@ -2660,6 +2666,11 @@ const kernel = new class Kernel extends LoggerContext {
                 sessionID: SESSION_ID,
                 kernel: KERNEL_VERSION,
                 uptimeMs: Math.round(Date.now() - window.__loadTime),
+                statsDisabled: true,
+
+                ...first ? {
+                    ttfp: Math.round(Date.now() - window.__loadTime)
+                } : {}
             });
 
             if(beacon) {
@@ -2704,4 +2715,4 @@ const kernel = new class Kernel extends LoggerContext {
 }
 
 
-} catch (e) { console.error("Fatal error during app initialization:", e); window.__loadError('<h3 style="margin:40px 20px">The application failed to load. Please try again later. Make sure you are on an up-to-date browser.</h3>') }
+} catch (e) { console.error("Fatal error during app initialization:", e); window.__loadError('<h3 style="margin:40px 20px">The application failed to load. Please try again later. Make sure you are on an up-to-date browser.</h3><br><button onclick=location.reload()>Reload</button>') }

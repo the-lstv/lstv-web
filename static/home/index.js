@@ -19,29 +19,30 @@ website.register(document.currentScript, function(context, container) {
         tabs.destroy();
     });
 
-    // This guarantees that we update both on load, dynamic load, and live changes
-    const panelContent = Array.from(container.getAll('.container > *'));
+    const panel = container.get('.container');
+    const panelContent = container.get(".settings-container");
+    const loginNotice = LS.Create('div', { inner: [N("h3", "You are not logged in"), N("button", {
+        textContent: "Log in",
+        class: "pill",
+        onclick() {
+            website.showLoginToolbar();
+        }
+    })], class: "login-notice container-content" });
+
     website.watchUser((loggedIn, userFragment) => {
         if(!loggedIn) {
-            panelContent.forEach(el => el.remove());
-            container.get('.container').append(LS.Create('div', { inner: [N("h3", "You are not logged in"), N("button", {
-                textContent: "Log in",
-                class: "pill",
-                onclick() {
-                    website.showLoginToolbar();
-                }
-            })], class: "login-notice" }));
+            panelContent.remove();
+            panel.append(loginNotice);
             return;
         } else {
-            if(container.get('.login-notice')) {
-                container.get('.login-notice').remove();
-                panelContent.forEach(el => container.get('.container').append(el));
-            }
+            panelContent.style.display = "";
+            loginNotice.remove();
+            panel.append(panelContent);
         }
     });
 
     context.registerSPAExtension("/home/", (page) => {
-        container.get('.container').classList.remove('sidebar-menu-visible');
+        panel.classList.remove('sidebar-menu-visible');
         tabs.set(page || "home");
     });
 
@@ -53,11 +54,13 @@ website.register(document.currentScript, function(context, container) {
     const siteScriptsOnce = new Set();
     const siteScripts = {
         profile() {
-            const editingUser = LS.Reactive.fork("editingUser", website.userFragment);
             const confirmButtons = container.get('.profile-editor-confirm-buttons');
+            let editingUser = LS.Reactive.fork("editingUser", website.userFragment);
 
-            website.once("user-loaded", () => {
-                editingUser.__reset(); // Reset the reactive user data
+            website.watchUser((loggedIn, userFragment) => {
+                if(loggedIn) {
+                    editingUser.__reset(); // Reset the reactive user data
+                }
             });
 
             editingUser.__binding.on("mutated", () => {
@@ -75,11 +78,13 @@ website.register(document.currentScript, function(context, container) {
                 e.returnValue = '';
             });
 
+            const _profile_about_length = container.get('#profile-about-length');
+            const _profile_about = container.get("#profile-about");
             function updateTextAreaLength() {
-                container.get('#profile-about-length').textContent = `${O("#profile-about").value.length}/500`;
+                _profile_about_length && (_profile_about_length.textContent = `${_profile_about.value.length}/500`);
             }
 
-            O("#profile-avatar").on("change", function() {
+            container.get("#profile-avatar").on("change", function() {
                 const file = this.files[0];
 
                 if (file) {
@@ -95,14 +100,14 @@ website.register(document.currentScript, function(context, container) {
                 this.value = "";
             });
 
-            O("#profile-remove-avatar").on("click", function() {
+            container.get("#profile-remove-avatar").on("click", function() {
                 editingUser.pfp = null;
             });
 
-            O("#profile-banner").on("change", function() {
+            container.get("#profile-banner").on("change", function() {
                 const file = this.files[0];
 
-                const fullscreenBanner = O(".profile-editor-container .profile").classList.contains("fullscreen-banner");
+                const fullscreenBanner = container.get(".profile-editor-container .profile").classList.contains("fullscreen-banner");
 
                 const width = fullscreenBanner ? 170 : 340;
                 const height = fullscreenBanner ? 240 : 160;
@@ -121,40 +126,40 @@ website.register(document.currentScript, function(context, container) {
                 this.value = "";
             });
 
-            O("#profile-remove-banner").on("click", function() {
+            container.get("#profile-remove-banner").on("click", function() {
                 editingUser.banner = null;
             });
 
-            O("#profile-displayname").on("input", function() {
+            container.get("#profile-displayname").on("input", function() {
                 editingUser.displayname = this.value;
             });
 
-            O("#profile-about").on("input", function() {
+            container.get("#profile-about").on("input", function() {
                 editingUser.bio = this.value;
                 updateTextAreaLength();
             });
 
-            O("#profile-save").on("click", function() {
+            container.get("#profile-save").on("click", function() {
                 saveProfile();
             });
 
-            O("#profile-reset").on("click", function() {
+            container.get("#profile-reset").on("click", function() {
                 resetProfile();
             });
 
-            O("#mature-content").on("change", function() {
+            container.get("#mature-content").on("change", function() {
                 editingUser.mature_content = this.checked;
             });
 
-            O("#fullscreen-banner").on("change", function() {
+            container.get("#fullscreen-banner").on("change", function() {
                 editingUser.fullscreen_banner = this.checked;
             });
 
-            O("#secret-glossy-style").on("change", function() {
+            container.get("#secret-glossy-style").on("change", function() {
                 editingUser.profile_style = this.checked ? "glossy" : null;
             });
 
-            const links_table = O("#links");
+            const links_table = container.get("#links");
             for(const link of website.userFragment.external_links || []) {
                 const row = document.createElement("tr");
                 row.innerHTML = `
@@ -167,6 +172,11 @@ website.register(document.currentScript, function(context, container) {
             const blobs = {};
 
             function openCropper(file, options) {
+                if(!LS.ImageCropper) {
+                    console.error("ImageCropper module not loaded (yet).");
+                    return;
+                }
+
                 const cropper = new LS.ImageCropper(file, {
                     ...options,
                     createURL: true,
@@ -337,12 +347,12 @@ website.register(document.currentScript, function(context, container) {
                         label: "Confirm",
                         onClick() {
                             const patch = { password: confirmationModal.container.querySelector("input").value };
-                            const changedUsername = O("#settings-username").value;
-                            const changedEmail = O("#settings-email").value;
+                            const changedUsername = container.get("#settings-username").value;
+                            const changedEmail = container.get("#settings-email").value;
                             const changedPassword = newPasswordField.querySelector("input").value;
 
                             if (changedPassword) {
-                                if(O("#confirm-new-password").value !== changedPassword) {
+                                if(container.get("#confirm-new-password").value !== changedPassword) {
                                     LS.Modal.buildEphemeral({
                                         title: "Password mismatch",
                                         content: "The new passwords do not match.",
@@ -386,13 +396,13 @@ website.register(document.currentScript, function(context, container) {
                 ]
             });
 
-            O("#settings-save-changes").on("click", function() {
+            container.get("#settings-save-changes").on("click", function() {
                 newPasswordField.style.display = "none";
                 clearInputs();
                 confirmationModal.open();
             });
 
-            O("#account-change-password").on("click", function() {
+            container.get("#account-change-password").on("click", function() {
                 newPasswordField.style.display = "block";
                 clearInputs();
                 newPasswordField.querySelector("input").focus();
@@ -422,7 +432,7 @@ website.register(document.currentScript, function(context, container) {
                 tabs.set("app-setup");
             });
 
-            O("#app-setup-form").on("submit", function() {
+            container.get("#app-setup-form").on("submit", function() {
                 const form = document.forms['app-setup-form'];
                 const payload = {
                     name: String(form['app-name'].value).trim(),

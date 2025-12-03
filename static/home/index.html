@@ -2,7 +2,7 @@
 
 <head>
     @use (/home/index.css, /home/index.js[defer]);
-    @use (ls.js.ImageCropper:5.2.0);
+    @use (ls.js.ImageCropper:5.2.0) { async }
 
     @page {
         title: "LSTV | User settings";
@@ -21,409 +21,411 @@
 </div>
 
 <div .container .width-container .level-0>
-    <div .menu .sidebar-items .level-n1>
-        <div .grouped-buttons>
-            <a .ls-button .elevated href="/home" data-tab-id="home"><i .bi-house-fill /><span>Home</span></a>
+    <div .container-content .settings-container style="display: none">
+        <div .menu .sidebar-items .level-n1>
+            <div .grouped-buttons>
+                <a .ls-button .elevated href="/home" data-tab-id="home"><i .bi-house-fill /><span>Home</span></a>
+            </div>
+
+            <span .menu-category-title>Account</span>
+
+            <div .grouped-buttons>
+                <a .ls-button .elevated href="/home/account" data-tab-id="account"><i .bi-person-fill /><span>Account</span></a>
+                <a .ls-button .elevated href="/home/profile" data-tab-id="profile"><i .bi-person-badge /><span>Profile</span></a>
+            </div>
+
+            <span .menu-category-title>Applications</span>
+            <div .grouped-buttons>
+                <a .ls-button .elevated href="/home/apps" data-tab-id="apps"><i .bi-app-indicator /><span>Applications</span></a>
+            </div>
+            
+            <span .menu-category-title>Developers</span>
+            <div .grouped-buttons>
+                <a .ls-button .elevated href="/home/dev" data-tab-id="dev"><i .bi-app /><span>My applications</span></a>
+                <a .ls-button .elevated href="/home/sub-users" data-tab-id="sub-users"><i .bi-robot /><span>Bot accounts</span></a>
+                <a .ls-button .elevated href="/home/keys" data-tab-id="keys"><i .bi-key-fill /><span>API Keys</span></a>
+                <a .ls-button .elevated href="/home/api" data-tab-id="api"><i .bi-file-earmark-text /><span>API Documentation</span></a>
+            </div>
+
+            <span .menu-category-title>Help</span>
+            <div .grouped-buttons>
+                <a .ls-button .elevated href="/home/support" data-tab-id="support"><i .bi-bug-fill /><span>Report a bug</span></a>
+                <a .ls-button .elevated href="/chat"><i .bi-chat-left-fill /><span>Write us</span></a>
+                <a .ls-button .elevated target="_blank" href="/tos"><i .bi-shield-lock-fill /><span>Terms Of Service</span><i .bi-box-arrow-up-right .external-indicator /></a>
+                <a .ls-button .elevated target="_blank" href="/privacy-policy"><i .bi-shield-lock /><span>Privacy Policy</span><i .bi-box-arrow-up-right .external-indicator /></a>
+            </div>
         </div>
 
-        <span .menu-category-title>Account</span>
+        <div .sidebar-content .ls-slide-animation>
+            <ls-tab tab-id="home" tab-title="Home">
+                <h1>Welcome, {{ user.displayname:DisplayName }}!</h1>
+            </ls-tab>
 
-        <div .grouped-buttons>
-            <a .ls-button .elevated href="/home/account" data-tab-id="account"><i .bi-person-fill /><span>Account</span></a>
-            <a .ls-button .elevated href="/home/profile" data-tab-id="profile"><i .bi-person-badge /><span>Profile</span></a>
-        </div>
 
-        <span .menu-category-title>Applications</span>
-        <div .grouped-buttons>
-            <a .ls-button .elevated href="/home/apps" data-tab-id="apps"><i .bi-app-indicator /><span>Applications</span></a>
-        </div>
+            <ls-tab tab-id="account" tab-title="Account">
+                <ls-div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px; margin-top: 0">
+                    <div {{ user.pfp:ProfilePicture(64px) }} style="height: 64px" />
+                    <div>
+                        <h2 {{ user.displayname:DisplayName }} style="margin: 0; font-weight: 700" />
+                        <a .ls-button .elevated href="/home/profile" style="padding: 2px 16px"><i .bi-pencil-fill /> Customize profile</a>
+                    </div>
+                </ls-div>
+
+                <hr>
+
+                <ls-div .margin-v-xlarge>
+                    <h3>Change details</h3>
         
-        <span .menu-category-title>Developers</span>
-        <div .grouped-buttons>
-            <a .ls-button .elevated href="/home/dev" data-tab-id="dev"><i .bi-app /><span>My applications</span></a>
-            <a .ls-button .elevated href="/home/sub-users" data-tab-id="sub-users"><i .bi-robot /><span>Bot accounts</span></a>
-            <a .ls-button .elevated href="/home/keys" data-tab-id="keys"><i .bi-key-fill /><span>API Keys</span></a>
-            <a .ls-button .elevated href="/home/api" data-tab-id="api"><i .bi-file-earmark-text /><span>API Documentation</span></a>
-        </div>
+                    <ls-div>
+                        <label for="settings-username">Username</label> <br>
+                        <input type="text" name="username" id="settings-username" {{ user.username }} placeholder="Username" autocomplete="username">
+                    </ls-div>
+        
+                    <ls-div>
+                        <label for="settings-email">Email</label> <br>
+                        <input type="email" name="email" id="settings-email" {{ user.email }} placeholder="Email" autocomplete="email">
+                    </ls-div>
 
-        <span .menu-category-title>Help</span>
-        <div .grouped-buttons>
-            <a .ls-button .elevated href="/home/support" data-tab-id="support"><i .bi-bug-fill /><span>Report a bug</span></a>
-            <a .ls-button .elevated href="/chat"><i .bi-chat-left-fill /><span>Write us</span></a>
-            <a .ls-button .elevated target="_blank" href="/tos"><i .bi-shield-lock-fill /><span>Terms Of Service</span><i .bi-box-arrow-up-right .external-indicator /></a>
-            <a .ls-button .elevated target="_blank" href="/privacy-policy"><i .bi-shield-lock /><span>Privacy Policy</span><i .bi-box-arrow-up-right .external-indicator /></a>
-        </div>
-    </div>
-
-    <div .sidebar-content .ls-slide-animation>
-        <ls-tab tab-id="home" tab-title="Home">
-            <h1>Welcome, {{ user.displayname:DisplayName }}!</h1>
-        </ls-tab>
-
-
-        <ls-tab tab-id="account" tab-title="Account">
-            <ls-div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px; margin-top: 0">
-                <div {{ user.pfp:ProfilePicture(64px) }} style="height: 64px" />
-                <div>
-                    <h2 {{ user.displayname:DisplayName }} style="margin: 0; font-weight: 700" />
-                    <a .ls-button .elevated href="/home/profile" style="padding: 2px 16px"><i .bi-pencil-fill /> Customize profile</a>
-                </div>
-            </ls-div>
-
-            <hr>
-
-            <ls-div .margin-v-xlarge>
-                <h3>Change details</h3>
-    
-                <ls-div>
-                    <label for="settings-username">Username</label> <br>
-                    <input type="text" name="username" id="settings-username" {{ user.username }} placeholder="Username" autocomplete="username">
-                </ls-div>
-    
-                <ls-div>
-                    <label for="settings-email">Email</label> <br>
-                    <input type="email" name="email" id="settings-email" {{ user.email }} placeholder="Email" autocomplete="email">
+                    <button .elevated #settings-save-changes>
+                        <i .bi-check-lg /> Save changes
+                    </button>
                 </ls-div>
 
-                <button .elevated #settings-save-changes>
-                    <i .bi-check-lg /> Save changes
-                </button>
-            </ls-div>
+                <hr>
 
-            <hr>
+                <ls-div .margin-v-xlarge>
+                    <h3>Password</h3>
+                    <button .ls-button .elevated #account-change-password>Change password</button>
+                </ls-div>
 
-            <ls-div .margin-v-xlarge>
-                <h3>Password</h3>
-                <button .ls-button .elevated #account-change-password>Change password</button>
-            </ls-div>
+                <hr>
 
-            <hr>
-
-            <ls-div .margin-v-xlarge>
-                <h3>Delete Account</h3>
-                You can disable your account temporarily and enable it later. <br> <br>
-                <button ls-accent="red" disabled ls-tooltip="This option is currently unavailable." .ls-button .elevated>Disable Account</button>
-                <button ls-accent="red" .ls-button>Delete Account</button>
-            </ls-div>
-        </ls-tab>
+                <ls-div .margin-v-xlarge>
+                    <h3>Delete Account</h3>
+                    You can disable your account temporarily and enable it later. <br> <br>
+                    <button ls-accent="red" disabled ls-tooltip="This option is currently unavailable." .ls-button .elevated>Disable Account</button>
+                    <button ls-accent="red" .ls-button>Delete Account</button>
+                </ls-div>
+            </ls-tab>
 
 
-        <ls-tab tab-id="profile" tab-title="Profile" style="padding-bottom: 60px">
-            <div .profile-editor-container>
-                <div style="flex: 1">
-                    <h2 style="margin-top: 0">Profile Editor <ls-box .inline .text-tag>Beta</ls-box></h2>
-                    <p>Customize your profile with a banner, avatar, and display name.</p>
+            <ls-tab tab-id="profile" tab-title="Profile" style="padding-bottom: 60px">
+                <div .profile-editor-container>
+                    <div style="flex: 1">
+                        <h2 style="margin-top: 0">Profile Editor <ls-box .inline .text-tag>Beta</ls-box></h2>
+                        <p>Customize your profile with a banner, avatar, and display name.</p>
 
-                    <ls-div .margin-v-xlarge>
-                        <h3 for="profile-displayname" role="label">Display Name</h3>
-                        <input type="text" name="displayname" #profile-displayname {{ editingUser.displayname }} placeholder="Display Name" autocomplete="name" maxlength="45" />
-                    </ls-div>
+                        <ls-div .margin-v-xlarge>
+                            <h3 for="profile-displayname" role="label">Display Name</h3>
+                            <input type="text" name="displayname" #profile-displayname {{ editingUser.displayname }} placeholder="Display Name" autocomplete="name" maxlength="45" />
+                        </ls-div>
 
-                    <hr>
+                        <hr>
 
-                    <ls-div .margin-v-xlarge>
-                        <h3>Avatar</h3>
-                        <span .settings-subtext>Supported animated formats: WebM, mp4, or gif*</span>
-                        <input type="file" hidden name="avatar" #profile-avatar accept="image/*,video/*">
-                        <label for="profile-avatar" .ls-button .elevated>
-                            <i .bi-image></i> Change Avatar
-                        </label>
-                        <button .clear #profile-remove-avatar>Remove avatar</button>
-                    </ls-div>
+                        <ls-div .margin-v-xlarge>
+                            <h3>Avatar</h3>
+                            <span .settings-subtext>Supported animated formats: WebM, mp4, or gif*</span>
+                            <input type="file" hidden name="avatar" #profile-avatar accept="image/*,video/*">
+                            <label for="profile-avatar" .ls-button .elevated>
+                                <i .bi-image></i> Change Avatar
+                            </label>
+                            <button .clear #profile-remove-avatar>Remove avatar</button>
+                        </ls-div>
 
-                    <hr>
+                        <hr>
 
-                    <ls-div .margin-v-xlarge>
-                        <h3>Profile Banner</h3>
-                        <span .settings-subtext>Supported animated formats: WebM, mp4, or gif*</span>
-                        <span .settings-subtext>Recommended size: 680x320 pixels</span>
-                        <input type="file" hidden name="banner" #profile-banner accept="image/*,video/*">
-                        <label for="profile-banner" .ls-button .elevated>
-                            <i .bi-image></i> Change Banner
-                        </label>
+                        <ls-div .margin-v-xlarge>
+                            <h3>Profile Banner</h3>
+                            <span .settings-subtext>Supported animated formats: WebM, mp4, or gif*</span>
+                            <span .settings-subtext>Recommended size: 680x320 pixels</span>
+                            <input type="file" hidden name="banner" #profile-banner accept="image/*,video/*">
+                            <label for="profile-banner" .ls-button .elevated>
+                                <i .bi-image></i> Change Banner
+                            </label>
 
-                        <button .clear #profile-remove-banner>Remove banner</button>
+                            <button .clear #profile-remove-banner>Remove banner</button>
 
-                        <br>
-                        <br>
+                            <br>
+                            <br>
 
-                        <label .ls-checkbox>
-                            <input type="checkbox" id="fullscreen-banner" name="fullscreen-banner" {{ editingUser.fullscreen_banner }}>
-                            Fullscreen banner
-                            <span />
-                        </label>
-                    </ls-div>
+                            <label .ls-checkbox>
+                                <input type="checkbox" id="fullscreen-banner" name="fullscreen-banner" {{ editingUser.fullscreen_banner }}>
+                                Fullscreen banner
+                                <span />
+                            </label>
+                        </ls-div>
 
 
-                    <span style="display: inline" .settings-subtext ls-tooltip="Some GIFs may be unstable.
-We convert GIFs to WebM anyway, so using MP4/WebM
-directly may be better and have much better quality." ls-tooltip-detached>*GIF is not recommended <i .bi-info-circle /></span>
+                        <span style="display: inline" .settings-subtext ls-tooltip="Some GIFs may be unstable.
+    We convert GIFs to WebM anyway, so using MP4/WebM
+    directly may be better and have much better quality." ls-tooltip-detached>*GIF is not recommended <i .bi-info-circle /></span>
 
-                    <hr>
+                        <hr>
 
-                    <ls-div .margin-v-xlarge>
-                        <h3>About Me</h3>
-                        <span .settings-subtext>You can use markdown and links.</span>
-                        <ls-text-input .has-textarea>
-                            <textarea name="about" #profile-about placeholder="Tell us about yourself..." maxlength="500" {{ editingUser.bio || '' }}></textarea>
-                            <div .ls-text-input-label #profile-about-length></div>
-                        </ls-text-input>
-                    </ls-div>
+                        <ls-div .margin-v-xlarge>
+                            <h3>About Me</h3>
+                            <span .settings-subtext>You can use markdown and links.</span>
+                            <ls-text-input .has-textarea>
+                                <textarea name="about" #profile-about placeholder="Tell us about yourself..." maxlength="500" {{ editingUser.bio || '' }}></textarea>
+                                <div .ls-text-input-label #profile-about-length></div>
+                            </ls-text-input>
+                        </ls-div>
 
-                    <hr>
+                        <hr>
 
-                    <ls-div .margin-v-xlarge style="opacity: .5" ls-tooltip="This feature is not yet available to everyone" ls-tooltip-detached>
-                        <div style="pointer-events: none">
-                            <h3>Profile Links</h3>
-                            <span .settings-subtext>Links to your social media or personal website.</span>
-                            <div .ls-table-wrap style="max-width: 400px">
-                                <table>
-                                    <thead><tr><th>Platform</th><th>Link</th></tr></thead>
-                                    <tbody #links></tbody>
-                                </table>
-                                <div role="caption" .ls-tfoot>
-                                    <button .square .clear ls-tooltip aria-label="Add Link" #add-link style="height: 24px"><i .bi-plus-lg /></button>
-                                    <button .square .clear ls-tooltip aria-label="Remove all" #clear-links style="height: 24px"><i .bi-trash-fill /></button>
+                        <ls-div .margin-v-xlarge style="opacity: .5" ls-tooltip="This feature is not yet available to everyone" ls-tooltip-detached>
+                            <div style="pointer-events: none">
+                                <h3>Profile Links</h3>
+                                <span .settings-subtext>Links to your social media or personal website.</span>
+                                <div .ls-table-wrap style="max-width: 400px">
+                                    <table>
+                                        <thead><tr><th>Platform</th><th>Link</th></tr></thead>
+                                        <tbody #links></tbody>
+                                    </table>
+                                    <div role="caption" .ls-tfoot>
+                                        <button .square .clear ls-tooltip aria-label="Add Link" #add-link style="height: 24px"><i .bi-plus-lg /></button>
+                                        <button .square .clear ls-tooltip aria-label="Remove all" #clear-links style="height: 24px"><i .bi-trash-fill /></button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </ls-div>
+                        </ls-div>
 
-                    <hr>
+                        <hr>
 
-                    <ls-div .margin-v-xlarge>
-                        <h3>Glossy style <ls-box .inline .text-tag>LIMITED EDITION</ls-box></h3>
-                        <span .settings-subtext>Limited edition glossy style for your profile.</span>
+                        <ls-div .margin-v-xlarge>
+                            <h3>Glossy style <ls-box .inline .text-tag>LIMITED EDITION</ls-box></h3>
+                            <span .settings-subtext>Limited edition glossy style for your profile.</span>
 
-                        <label .ls-checkbox>
-                            <input type="checkbox" id="secret-glossy-style" name="secret-glossy-style" {{ editingUser.profile_style }}>
-                            Enable
-                            <span />
-                        </label>
-                    </ls-div>
+                            <label .ls-checkbox>
+                                <input type="checkbox" id="secret-glossy-style" name="secret-glossy-style" {{ editingUser.profile_style }}>
+                                Enable
+                                <span />
+                            </label>
+                        </ls-div>
 
-                    <ls-div .margin-v-xlarge>
-                        <h3>Mature Content</h3>
-                        <span .settings-subtext>If your profile media or content contains mature content, you must check this. Your profile will be hidden from some people. Remember to see our ToS to see what's allowed.</span>
+                        <ls-div .margin-v-xlarge>
+                            <h3>Mature Content</h3>
+                            <span .settings-subtext>If your profile media or content contains mature content, you must check this. Your profile will be hidden from some people. Remember to see our ToS to see what's allowed.</span>
 
-                        <label .ls-checkbox>
-                            <input type="checkbox" id="mature-content" name="mature-content" {{ editingUser.mature_content }}>
-                            My profile contains mature content
-                            <span />
-                        </label>
-                    </ls-div>
-                </div>
-
-                <div>
-                    <div style="position: sticky; top: 10px">
-                        <div .profile .profile-block .level-1>
-                            <div .profile-banner .editable {{ editingUser.banner:ProfileBanner }} />
-                            <div .profile-avatar .editable {{ editingUser.pfp:ProfilePicture(120px) }} />
-        
-                            <div .profile-content>
-                                <ls-box .contained .level-2 style="border-radius: var(--border-radius-large)">
-                                    <h2 {{ editingUser.displayname:DisplayName }} style="margin-bottom: 0; font-weight: 700" />
-                                    {{ editingUser.username:ProfileUsername }}
-                                </ls-box>
-        
-                                {{ editingUser.bio:ProfileBio(true) }}
-                                {{ editingUser.profileLinks:ProfileLinks }}
-                            </div>
-    
-                            <span hidden {{ editingUser.profile_style:ProfileEffects(style) }} />
-                            <span hidden {{ editingUser.fullscreen_banner:ProfileEffects(fullscreen-banner) }} />
-                        </div>
-
-                        <ls-div>
-                            <button .pill .elevated onclick="this.parentElement.parentElement.children[0].setAttribute('ls-theme', 'light')"><i .bi-sun-fill /> Try light mode</button>
-                            <button .pill .elevated onclick="this.parentElement.parentElement.children[0].setAttribute('ls-theme', 'dark')"><i .bi-moon-stars-fill /> Try dark mode</button>
+                            <label .ls-checkbox>
+                                <input type="checkbox" id="mature-content" name="mature-content" {{ editingUser.mature_content }}>
+                                My profile contains mature content
+                                <span />
+                            </label>
                         </ls-div>
                     </div>
-                </div>
-            </div>
-        </ls-tab>
 
-        <ls-tab tab-id="apps" tab-title="My applications">D</ls-tab>
-
-        <ls-tab tab-id="dev" tab-title="Developer Applications">
-            <div #dev-apps-list></div>
-        </ls-tab>
-
-        <ls-tab tab-id="app-setup" tab-title="Create an app" #app-setup-tab>
-            <form  #app-setup-form onsubmit="return false">
-                <div style="display: flex; overflow: auto; flex-direction: column; gap: 32px; padding-bottom: 80px">
-                    <h1 style="margin: 0">Create an application!</h1>
-                    <input class="clear" type="text" id="app-name" placeholder="Project name" aria-label="Project name">
-    
                     <div>
-                        <label for="app-description">Description <ls-box class="inline text-tag">Optional</ls-box></label> <br>
-                        <textarea style="height: 150px; resize: none; margin-top: 10px" id="app-description" placeholder="Enter a brief description of your application"></textarea> <br>
+                        <div style="position: sticky; top: 10px">
+                            <div .profile .profile-block .level-1>
+                                <div .profile-banner .editable {{ editingUser.banner:ProfileBanner }} />
+                                <div .profile-avatar .editable {{ editingUser.pfp:ProfilePicture(120px) }} />
+            
+                                <div .profile-content>
+                                    <ls-box .contained .level-2 style="border-radius: var(--border-radius-large)">
+                                        <h2 {{ editingUser.displayname:DisplayName }} style="margin-bottom: 0; font-weight: 700" />
+                                        {{ editingUser.username:ProfileUsername }}
+                                    </ls-box>
+            
+                                    {{ editingUser.bio:ProfileBio(true) }}
+                                    {{ editingUser.profileLinks:ProfileLinks }}
+                                </div>
+        
+                                <span hidden {{ editingUser.profile_style:ProfileEffects(style) }} />
+                                <span hidden {{ editingUser.fullscreen_banner:ProfileEffects(fullscreen-banner) }} />
+                            </div>
+
+                            <ls-div>
+                                <button .pill .elevated onclick="this.parentElement.parentElement.children[0].setAttribute('ls-theme', 'light')"><i .bi-sun-fill /> Try light mode</button>
+                                <button .pill .elevated onclick="this.parentElement.parentElement.children[0].setAttribute('ls-theme', 'dark')"><i .bi-moon-stars-fill /> Try dark mode</button>
+                            </ls-div>
+                        </div>
                     </div>
-    
-                    <div>
-                        <label for="app-type">Primary purpose <ls-box class="inline text-tag">Optional</ls-box></label> <br>
-                        <ls-select id="app-type" style="margin-top: 10px" placeholder="What are you building?">
-                            <ls-option value="web">Web Application</ls-option>
-                            <ls-option value="software">Mobile/Desktop Application</ls-option>
-                            <ls-option value="game">Game</ls-option>
-                            <ls-option value="bot">Bot</ls-option>
-                            <ls-option value="other">Other</ls-option>
-                        </ls-select>
-    
-                        <script>
-                        class LSSelect extends HTMLElement {
-                            constructor() {
-                                super();
-                                this.selected = '';
-                                this.options = [];
-                            }
-    
-                            connectedCallback() {
-                                this.setAttribute('role', 'combobox');
-                                this.setAttribute('tabindex', '0');
-                                this._render();
-    
-                                this.addEventListener('click', () => this.toggle());
-                                this.addEventListener('keydown', (e) => {
-                                    if (e.key === 'Enter' || e.key === ' ') {
-                                        e.preventDefault();
-                                        this.toggle();
-                                    } else if (e.key === 'Escape') {
-                                        this.close();
-                                    } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-                                        e.preventDefault();
-                                        const currentIndex = this.options.findIndex(opt => opt.value === this.selected);
-                                        const newIndex = e.key === 'ArrowDown' 
-                                            ? Math.min(currentIndex + 1, this.options.length - 1)
-                                            : Math.max(currentIndex - 1, 0);
-                                        this.selectOption(this.options[newIndex].value);
-                                    }
-                                });
-    
-                                document.addEventListener('click', (e) => {
-                                    if (!this.contains(e.target)) this.close();
-                                });
-                            }
-    
-                            _render() {
-                                // const select = this.querySelector('select') || document.createElement('select');
-                                // select.style.display = 'none';
-    
-                                let selectedOption = null;
-                                this.options = [];
-                                for(const opt of this.querySelectorAll('ls-option')) {
-                                    if (opt.selected) selectedOption = opt;
-                                    opt.setAttribute('role', 'option');
-    
-                                    const option = {
-                                        value: opt.value || opt.getAttribute('value') || opt.textContent,
-                                        text: opt.getAttribute("label") || opt.textContent,
-                                        selected: opt.getAttribute("selected") !== null,
-                                        optionElement: opt,
-                                        element: N({
-                                            class: "ls-list-item ls-select-option",
-                                            textContent: opt.textContent,
-                                            tabindex: -1
-                                        })
-                                    };
-    
-                                    option.element.dataset.value = option.value;
-                                    this.options.push(option);
-    
-                                    option.element.addEventListener('click', (event) => {
-                                        event.stopPropagation();
-                                        this.selectOption(option);
+                </div>
+            </ls-tab>
+
+            <ls-tab tab-id="apps" tab-title="My applications">D</ls-tab>
+
+            <ls-tab tab-id="dev" tab-title="Developer Applications">
+                <div #dev-apps-list></div>
+            </ls-tab>
+
+            <ls-tab tab-id="app-setup" tab-title="Create an app" #app-setup-tab>
+                <form  #app-setup-form onsubmit="return false">
+                    <div style="display: flex; overflow: auto; flex-direction: column; gap: 32px; padding-bottom: 80px">
+                        <h1 style="margin: 0">Create an application!</h1>
+                        <input class="clear" type="text" id="app-name" placeholder="Project name" aria-label="Project name">
+        
+                        <div>
+                            <label for="app-description">Description <ls-box class="inline text-tag">Optional</ls-box></label> <br>
+                            <textarea style="height: 150px; resize: none; margin-top: 10px" id="app-description" placeholder="Enter a brief description of your application"></textarea> <br>
+                        </div>
+        
+                        <div>
+                            <label for="app-type">Primary purpose <ls-box class="inline text-tag">Optional</ls-box></label> <br>
+                            <ls-select id="app-type" style="margin-top: 10px" placeholder="What are you building?">
+                                <ls-option value="web">Web Application</ls-option>
+                                <ls-option value="software">Mobile/Desktop Application</ls-option>
+                                <ls-option value="game">Game</ls-option>
+                                <ls-option value="bot">Bot</ls-option>
+                                <ls-option value="other">Other</ls-option>
+                            </ls-select>
+        
+                            <script>
+                            class LSSelect extends HTMLElement {
+                                constructor() {
+                                    super();
+                                    this.selected = '';
+                                    this.options = [];
+                                }
+        
+                                connectedCallback() {
+                                    this.setAttribute('role', 'combobox');
+                                    this.setAttribute('tabindex', '0');
+                                    this._render();
+        
+                                    this.addEventListener('click', () => this.toggle());
+                                    this.addEventListener('keydown', (e) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                            e.preventDefault();
+                                            this.toggle();
+                                        } else if (e.key === 'Escape') {
+                                            this.close();
+                                        } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                                            e.preventDefault();
+                                            const currentIndex = this.options.findIndex(opt => opt.value === this.selected);
+                                            const newIndex = e.key === 'ArrowDown' 
+                                                ? Math.min(currentIndex + 1, this.options.length - 1)
+                                                : Math.max(currentIndex - 1, 0);
+                                            this.selectOption(this.options[newIndex].value);
+                                        }
                                     });
-    
-                                    opt.remove();
+        
+                                    document.addEventListener('click', (e) => {
+                                        if (!this.contains(e.target)) this.close();
+                                    });
                                 }
-    
-                                this._labelTarget = this.querySelector('.ls-select-display .ls-select-label-target, .ls-select-display');
-    
-                                this.handle = this.querySelector('.ls-select-display') || N({
-                                    class: "ls-select-display",
-                                    textContent: selectedOption ? selectedOption.textContent : (this.getAttribute("placeholder") || 'Select an option')
-                                }).addTo(this);
-                            }
-    
-                            toggle() {
-    
-                            }
-    
-                            open() {
-    
-                            }
-    
-                            close() {
-    
-                            }
-    
-                            selectOption(value) {
-                                const option = typeof value === "object" && this.options.indexOf(value) !== -1? value: this.options.find(opt => opt.value === value);
-                                if(!option) return;
-    
-                                this.selected = option;
-                                if(this._labelTarget) this._labelTarget.textContent = option?.text || '';
-                                this.dispatchEvent(new Event('change', { bubbles: true, detail: { value } }));
-                                this.close();
-                            }
-    
-                            get value() {
-                                return this.selected.value || null;
-                            }
-    
-                            set value(val) {
-                                this.selectOption(val);
-                            }
-                        }
-    
-                        customElements.define('ls-select', LSSelect);
-    
-                        LS.LoadComponent(class Menu extends LS.Component {
-                            constructor(element, options = {}) {
-                                super();
-                                this.open = false;
-    
-                                const isElement = element instanceof HTMLElement;
-    
-                                this.container = (isElement? element : N({
-                                    class: "ls-menu"
-                                }));
-    
-                                this.options = options || !isElement? element: {};
-                            }
-    
-                            addItems(items) {
-                                for(const item of items) {
+        
+                                _render() {
+                                    // const select = this.querySelector('select') || document.createElement('select');
+                                    // select.style.display = 'none';
+        
+                                    let selectedOption = null;
+                                    this.options = [];
+                                    for(const opt of this.querySelectorAll('ls-option')) {
+                                        if (opt.selected) selectedOption = opt;
+                                        opt.setAttribute('role', 'option');
+        
+                                        const option = {
+                                            value: opt.value || opt.getAttribute('value') || opt.textContent,
+                                            text: opt.getAttribute("label") || opt.textContent,
+                                            selected: opt.getAttribute("selected") !== null,
+                                            optionElement: opt,
+                                            element: N({
+                                                class: "ls-list-item ls-select-option",
+                                                textContent: opt.textContent,
+                                                tabindex: -1
+                                            })
+                                        };
+        
+                                        option.element.dataset.value = option.value;
+                                        this.options.push(option);
+        
+                                        option.element.addEventListener('click', (event) => {
+                                            event.stopPropagation();
+                                            this.selectOption(option);
+                                        });
+        
+                                        opt.remove();
+                                    }
+        
+                                    this._labelTarget = this.querySelector('.ls-select-display .ls-select-label-target, .ls-select-display');
+        
+                                    this.handle = this.querySelector('.ls-select-display') || N({
+                                        class: "ls-select-display",
+                                        textContent: selectedOption ? selectedOption.textContent : (this.getAttribute("placeholder") || 'Select an option')
+                                    }).addTo(this);
+                                }
+        
+                                toggle() {
+        
+                                }
+        
+                                open() {
+        
+                                }
+        
+                                close() {
+        
+                                }
+        
+                                selectOption(value) {
+                                    const option = typeof value === "object" && this.options.indexOf(value) !== -1? value: this.options.find(opt => opt.value === value);
+                                    if(!option) return;
+        
+                                    this.selected = option;
+                                    if(this._labelTarget) this._labelTarget.textContent = option?.text || '';
+                                    this.dispatchEvent(new Event('change', { bubbles: true, detail: { value } }));
+                                    this.close();
+                                }
+        
+                                get value() {
+                                    return this.selected.value || null;
+                                }
+        
+                                set value(val) {
+                                    this.selectOption(val);
                                 }
                             }
-                        }, { global: true, name: "Menu" });
-                        </script>
+        
+                            customElements.define('ls-select', LSSelect);
+        
+                            LS.LoadComponent(class Menu extends LS.Component {
+                                constructor(element, options = {}) {
+                                    super();
+                                    this.open = false;
+        
+                                    const isElement = element instanceof HTMLElement;
+        
+                                    this.container = (isElement? element : N({
+                                        class: "ls-menu"
+                                    }));
+        
+                                    this.options = options || !isElement? element: {};
+                                }
+        
+                                addItems(items) {
+                                    for(const item of items) {
+                                    }
+                                }
+                            }, { global: true, name: "Menu" });
+                            </script>
+                        </div>
                     </div>
-                </div>
-    
-                <div .bottom-buttons>
-                    <button type="submit" .pill #app-create>Create Application</button>
-                </div>
-            </form>
-        </ls-tab>
+        
+                    <div .bottom-buttons>
+                        <button type="submit" .pill #app-create>Create Application</button>
+                    </div>
+                </form>
+            </ls-tab>
 
-        <ls-tab tab-id="sub-users" tab-title="Bot Accounts">F</ls-tab>
-        <ls-tab tab-id="keys" tab-title="API Keys">G</ls-tab>
-        <ls-tab tab-id="api" tab-title="API Documentation">H</ls-tab>
-        <ls-tab tab-id="support" tab-title="Support / Write us">I</ls-tab>
-    </div>
+            <ls-tab tab-id="sub-users" tab-title="Bot Accounts">F</ls-tab>
+            <ls-tab tab-id="keys" tab-title="API Keys">G</ls-tab>
+            <ls-tab tab-id="api" tab-title="API Documentation">H</ls-tab>
+            <ls-tab tab-id="support" tab-title="Support / Write us">I</ls-tab>
+        </div>
 
-    <div .profile-editor-confirm-buttons .level-1>
-        <span>You have unsaved changes</span>
+        <div .profile-editor-confirm-buttons .level-1>
+            <span>You have unsaved changes</span>
 
-        <div>
-            <button .elevated .pill #profile-reset>
-                <i .bi-x-lg /> Discard
-            </button>
-            <button .elevated .pill #profile-save ls-accent="green">
-                <i .bi-check-lg /> Save Changes
-            </button>
+            <div>
+                <button .elevated .pill #profile-reset>
+                    <i .bi-x-lg /> Discard
+                </button>
+                <button .elevated .pill #profile-save ls-accent="green">
+                    <i .bi-check-lg /> Save Changes
+                </button>
+            </div>
         </div>
     </div>
 </div>
