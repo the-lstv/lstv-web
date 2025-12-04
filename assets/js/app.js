@@ -1683,7 +1683,6 @@ const kernel = new class Kernel extends LoggerContext {
 
             this.loadUser();
             this.#initializeToolbars();
-            this.#initializePings();
 
             // Display content
             document.querySelector(".loaderContainer").style.display = "none";
@@ -1818,6 +1817,8 @@ const kernel = new class Kernel extends LoggerContext {
         website.events.emit("user-changed", [ isLoggedIn, this.userFragment ]);
         // website.events.emit("user-loaded", [ isLoggedIn ]);
         website.events.completed("user-loaded");
+
+        if(!this.__pingsInitialized) this.#initializePings();
     }
 
     handleSPAExtension(href, extension, targetElement) {
@@ -2039,6 +2040,27 @@ const kernel = new class Kernel extends LoggerContext {
                         icon: "bi-shield-lock",
                         description: "Privacy settings",
                         children: [
+                            {
+                                name: "statistics",
+                                icon: "bi-bar-chart",
+                                description: "Toggle anonymous statistics sharing",
+                                onCalled(enabled) {
+                                    localStorage.setItem("DISABLE_STATS", !enabled);
+                                    terminalWriter.log("Statistics sharing " + (enabled ? "enabled - Thank you for helping our website run better!" : "disabled - No statistics data will be sent from this browser from now on."));
+
+                                    if(!enabled) {
+                                        terminalWriter.log("Warning: This setting is not saved to your account and is specific to this browser. Make sure to update this setting on other devices.");
+                                        terminalWriter.log("Note: Statistics data is anonymized, not shared with 3rd parties and does not include sensitive information - consider keeping this setting enabled to help us improve the platform.");
+                                    }
+                                },
+                                inputs: [
+                                    {
+                                        name: "enabled",
+                                        type: "boolean",
+                                        default: true
+                                    }
+                                ]
+                            },
                             {
                                 name: "set-mode",
                                 icon: "bi-incognito",
@@ -2632,12 +2654,16 @@ const kernel = new class Kernel extends LoggerContext {
 
     /**
      * Anonymous statistics pings, helps to check for connectivity, check for updates from the server & receive remote updates, etc.
-     * Do not disable unless you have a *very* good reason to, this is *not* invasive telemetry - privacy is fully respected (https://lstv.space/privacy-policy), and *nothing* is ever shared with 3rd parties for any reason.
+     * Do not disable completely unless you have a *very* good reason to, this is *not* invasive telemetry - privacy is fully respected (https://lstv.space/privacy-policy), and *nothing* is ever shared with 3rd parties for any reason.
+     * If you want to limit the data sent to almost nothing without breaking the site, disable statistics sharing (settings privacy statistics false).
      * 
      * Timings are rounded to reduce precision for privacy.
      */
     #initializePings() {
-        const PING_URL = '/ping';
+        if (this.__pingsInitialized) return;
+        this.__pingsInitialized = true;
+
+        const PING_URL = '/check-in';
         const SESSION_ID = website.utils.generateIdentifier(); // True random ID
         let current_interval = 15000, first = true;
 
@@ -2656,19 +2682,22 @@ const kernel = new class Kernel extends LoggerContext {
 
                 ...first ? {
                     platform: navigator.platform,
-                    loadTime: Math.round(this.ttl),
+                    ttl: Math.round(this.ttl),
                     ttfp: Math.round(Date.now() - window.__loadTime),
                     origin: location.origin,
-                    performanceMode: window.LOW_PERFORMANCE_MODE ? "low" : "normal", // User-set, does not relate to hardware,
+                    performanceMode: window.LOW_PERFORMANCE_MODE ? "low" : "normal", // User-set, does not relate to hardware capabilities
                     ls_version: LS.version
                 } : {}
             }: {
-                sessionID: SESSION_ID,
                 kernel: KERNEL_VERSION,
                 uptimeMs: Math.round(Date.now() - window.__loadTime),
+
+                // This further tells the server to avoid collecting anything, like IP addresses
                 statsDisabled: true,
 
                 ...first ? {
+                    // ttfp and ttl is not sensitive and helps me see how the website performs for others in the real world
+                    ttl: Math.round(this.ttl),
                     ttfp: Math.round(Date.now() - window.__loadTime)
                 } : {}
             });
