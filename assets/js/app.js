@@ -10,7 +10,7 @@
 
 // --- SOME PRE-INITIALIZATION STUFF ---
 
-const KERNEL_VERSION = (typeof __buildVersion !== "undefined")? __buildVersion: "1.2.0-beta";
+const KERNEL_VERSION = (typeof __buildVersion !== "undefined")? __buildVersion: "1.2.1-beta";
 window.cacheKey = "?mtime=" + document.currentScript.src.split("?mtime=")[1];
 if(!window.LS || typeof LS !== "object" || LS.v < 5) {
     window.__loadError('<h3 style="margin:40px 20px">The application framework failed to load. Please try again later.</h3>')
@@ -719,7 +719,7 @@ class ContentContext extends LS.EventHandler {
  */
 class Viewport {
     constructor(name, element, options = {}) {
-        this.name = name;
+        this.name = name || "default";
         this.target = element;
         this.current = null;
         this.history = [];
@@ -773,7 +773,7 @@ class Viewport {
                 page = kernel.registerPage(path, {
                     src: location.origin + path,
                     // Inherit sandbox options if provided in navigation options
-                    sandbox: options.sandbox || null
+                    sandboxMode: options.sandbox || options.sandboxMode || null
                 });
             }
         }
@@ -851,6 +851,168 @@ class Viewport {
             ]
         }));
     }
+
+    destroy(destroyContent = false) {
+        if (destroyContent && this.current) {
+            this.current.destroy();
+        }
+        this.target.remove();
+        this.current = null;
+        this.history = null;
+        this.options = null;
+    }
+}
+
+
+/**
+ * Thread class
+ * Used to summon separate threads (web-workers). You can think of it as "processes", managed by the kernel.
+ * They offer isolated execution environments for apps & execution control.
+ */
+class Thread extends LS.EventHandler {
+    constructor(scriptURL, options = {}) {
+        super();
+
+        this.scriptURL = scriptURL;
+        this.options = options;
+
+        this.__destroyed = false;
+        this.worker = new Worker(scriptURL, options);
+
+        // API to be worked on
+        this.worker.onmessage = (event) => {
+            const data = event.data;
+            this.emit("message", [data]);
+        }
+
+        kernel.threads.add(this);
+    }
+
+    static fromCode(code, options = {}) {
+        const blob = new Blob([code], { type: 'application/javascript' });
+        const url = URL.createObjectURL(blob);
+        const thread = new Thread(url, options);
+        URL.revokeObjectURL(url);
+        return thread;
+    }
+
+    postMessage(data) {
+        if(!this.__destroyed) this.worker.postMessage(data);
+    }
+
+    terminate() {
+        if(this.__destroyed) return;
+        this.emit("terminate");
+        this.worker.terminate();
+        kernel.threads.delete(this);
+        this.events.clear();
+        this.worker = null;
+        this.__destroyed = true;
+        this.options = null;
+        this.scriptURL = null;
+    }
+}
+
+
+/**
+ * Window class
+ * Spawns a draggable & resizable memory-safe manageable floating window.
+ */
+
+class Window extends Viewport {
+    constructor(name, options = {}) {
+        super(name, N({
+            class: 'window-content-container viewport-content',
+        }), options);
+
+        this.isWindow = true;
+
+        this.windowElement = N('div', {
+            class: 'window-container',
+            inner: [
+                N('div', {
+                    class: 'window-header',
+                    inner: [
+                        N('span', { class: 'window-title', textContent: this.name }),
+                        {
+                            class: 'window-header-buttons',
+                            inner: [
+                                N('button', {
+                                    class: 'window-minimize-button square elevated',
+                                    inner: [
+                                        N('i', { class: 'bi-dash-lg' })
+                                    ],
+                                    onclick: () => this.minimize()
+                                }),
+                                N('button', {
+                                    class: 'window-maximize-button square elevated',
+                                    inner: [
+                                        N('i', { class: 'bi-fullscreen' })
+                                    ],
+                                    onclick: () => this.maximize()
+                                }),
+                                N('button', {
+                                    class: 'window-close-button square elevated',
+                                    accent: "red",
+                                    inner: [
+                                        N('i', { class: 'bi-x-lg' })
+                                    ],
+                                    onclick: () => this.close()
+                                }),
+                            ]
+                        }
+                    ]
+                }),
+
+                this.target
+            ]
+        });
+
+        let startX, startY;
+        this.windowHandle = LS.Util.touchHandle(this.windowElement.querySelector('.window-header'), {
+            onStart: (event, cancel, x, y) => {
+                const rect = this.windowElement.getBoundingClientRect();
+                startX = x - rect.left;
+                startY = y - rect.top;
+            },
+
+            onMove: (x, y) => {
+                const screenW = window.innerWidth;
+                const screenH = window.innerHeight;
+                const winW = this.windowElement.offsetWidth;
+                const winH = this.windowElement.offsetHeight;
+
+                let left = x - startX;
+                let top = y - startY;
+
+                // Restrict to min 10,10 and max vw-10-winW, vh-10-winH
+                left = Math.max(10, Math.min(left, screenW - 10 - winW));
+                top = Math.max(10, Math.min(top, screenH - 10 - winH));
+
+                this.windowElement.style.left = left + 'px';
+                this.windowElement.style.top = top + 'px';
+            }
+        });
+
+        LS.Resize.set(this.windowElement, {
+            sides: true,
+            corners: true,
+            styled: false,
+            minWidth: 300,
+            minHeight: 100,
+            ...options.resizeOptions || {}
+        });
+
+        // To be worked on
+        document.body.appendChild(this.windowElement);
+    }
+
+    close(destroyContent = true) {
+        LS.Resize.remove(this.windowElement);
+        this.windowHandle.destroy();
+        this.windowElement.remove();
+        this.destroy(destroyContent); // Propagates all the way down to destroying the content context
+    }
 }
 
 
@@ -864,6 +1026,8 @@ const website = {
     LoggerContext,
     ContentContext,
     Viewport,
+    Thread,
+    Window,
 
     // Constants
     isLocalhost: location.hostname.endsWith("localhost"),
@@ -1345,6 +1509,8 @@ const kernel = new class Kernel extends LoggerContext {
     pageCache = new Map();
 
     aliasMap = new Map();
+
+    threads = new Set();
 
     queryParams = LS.Util.params();
     userFragment = LS.Reactive.wrap("user", {});
@@ -1988,6 +2154,10 @@ const kernel = new class Kernel extends LoggerContext {
                     );
                     terminalWriter.log(
                         `%cViewports:%c ${kernel.viewports.size}`,
+                        "color:var(--accent);font-weight:bold", "color:inherit"
+                    );
+                    terminalWriter.log(
+                        `%cThreads:%c ${kernel.threads.size}`,
                         "color:var(--accent);font-weight:bold", "color:inherit"
                     );
                     terminalWriter.log(
@@ -2676,6 +2846,7 @@ const kernel = new class Kernel extends LoggerContext {
                 kernel: KERNEL_VERSION,
                 pagesLoaded: kernel.pageCache.size,
                 viewports: kernel.viewports.size,
+                threads: kernel.threads.size,
                 currentPage: kernel.viewport.current?.path, // Does not include query or fragments, neither things like the content being viewed (eg. /post/123 will likely show up as just /post))
                 userLoggedIn: website.isLoggedIn, // No identifiable info, just yes/no
                 uptimeMs: Math.round(Date.now() - window.__loadTime),
@@ -2689,6 +2860,7 @@ const kernel = new class Kernel extends LoggerContext {
                     ls_version: LS.version
                 } : {}
             }: {
+                sessionID: SESSION_ID,
                 kernel: KERNEL_VERSION,
                 uptimeMs: Math.round(Date.now() - window.__loadTime),
 

@@ -1109,3 +1109,48 @@ ls-text-input.has-textarea {
     width: 100%;
     max-width: 400px;
 }
+
+
+/**
+* Part: Windows
+*/
+
+.window-container {
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    border-radius: var(--border-radius);
+    outline: 1px solid var(--accent-mix-20);
+    box-shadow: 0 10px 30px 5px rgba(0, 0, 0, .4);
+    background: var(--surface-0);
+    z-index: 9000000;
+}
+
+.window-content-container {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.window-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--surface-1);
+    padding-left: 16px;
+}
+
+.window-title {
+    pointer-events: none;
+}
+
+.window-header-buttons {
+    padding: 4px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.ls-dragging iframe, .ls-dragging .page {
+    pointer-events: none;
+}
