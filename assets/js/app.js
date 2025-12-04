@@ -10,7 +10,7 @@
 
 // --- SOME PRE-INITIALIZATION STUFF ---
 
-const KERNEL_VERSION = "1.2.0-beta";
+const KERNEL_VERSION = (typeof __buildVersion !== "undefined")? __buildVersion: "1.2.0-beta";
 window.cacheKey = "?mtime=" + document.currentScript.src.split("?mtime=")[1];
 if(!window.LS || typeof LS !== "object" || LS.v < 5) {
     window.__loadError('<h3 style="margin:40px 20px">The application framework failed to load. Please try again later.</h3>')
@@ -2726,9 +2726,12 @@ const kernel = new class Kernel extends LoggerContext {
                         first = false;
                         current_interval = Math.min(current_interval + 5000, 60000);
                         setTimeout(sendPing, current_interval);
+                    }).catch(() => {
+                        setTimeout(sendPing, current_interval);
                     });
                 } else {
                     current_interval = Math.max(current_interval - 5000, 10000);
+                    setTimeout(sendPing, current_interval);
                 }
             }).catch(() => {
                 setTimeout(sendPing, 5000);
