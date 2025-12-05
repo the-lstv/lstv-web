@@ -73,7 +73,7 @@
             const errorBox = container.querySelector('.error');
             container.querySelector('.loader').remove();
             if (message) errorBox.querySelector('.message').innerHTML = message;
-            errorBox.hidden = false;
+            errorBox.style.display = 'flex';
         }
 
         window.LOW_PERFORMANCE_MODE = localStorage.getItem("LOW_PERFORMANCE_MODE") === "true";
@@ -86,11 +86,19 @@
              */
             register(script, callback) {
                 window.__init.push({ script, callback });
-            }
+            },
+
+            loaded: false
         }
+
+        window.addEventListener("DOMContentLoaded", () => {
+            if(!window.LS || !window.website?.loaded) {
+                window.__loadError();
+            }
+        });
     </script>
 
-    @use (ls:5.2.4[flat, tooltips, toast, reactive, tabs, animation, resize, modal], bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800", "IBM Plex Mono:wght@400;600;800"]);
+    @use (ls:5.2.5[flat, tooltips, toast, reactive, tabs, animation, resize, modal], bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800", "IBM Plex Mono:wght@400;600;800"]);
     @use (~/assets/css/main.css, ~/assets/js/app.js[defer], ~/assets/js/pallete.js);
 
     @page {
@@ -114,7 +122,7 @@
     <div .loaderContainer>
         <div .loader />
 
-        <div .error hidden>
+        <div .error style="display: none">
             <h3 .message>The application failed to load. Please try again later.<br>Make sure you are on an up-to-date browser.</h3>
             <button onclick=location.reload()>Reload</button>
         </div>
@@ -136,34 +144,11 @@
                 <span .headerTitle>LSTV</span> <span .headerText />
             </a>
 
-            <div #headerButtons>
-                <!-- <button disabled ls-tooltip="Log in" #accountsButton .level-1 .pill .elevated aria-label="Log in or view profile">
-                    {{ user.username ?? 'Log-In' }}
-
-                    <div #profilePicturePreview>
-                        <i .bi-person-fill />
-                    </div>
-                </button>
-
-                <button ls-tooltip="Applications" .level-1 #appsButton .pill .elevated aria-label="View applications">
-                    <i .bi-grid-fill /> <span .label>Apps</span>
-                </button>
-
-                <button ls-tooltip="Assistant" #assistantButton .pill.elevated aria-label="Open Assistant">
-                    <i .bi-stars />
-                </button>
-
-                <button ls-tooltip="Command Palette" #commandPaletteButton .pill.elevated aria-label="Open Command Palette">
-                    <i .bi-terminal />
-                </button>
-
-                <button ls-tooltip="Customize" #themeButton .pill.elevated aria-label="Customize the site appearance">
-                    <i .bi-sun-fill /> <i .bi-palette-fill />
-                </button>
-
-                <button id="moreButton" ls-tooltip="More options" .pill .elevated aria-label="More options">
+            <div .headerButtonsContainer>
+                <div .headerButtons></div>
+                <button #moreButton ls-tooltip="More options" .pill .elevated aria-label="More options">
                     <i .bi-caret-down-fill />
-                </button> -->
+                </button>
             </div>
 
         </nav>
@@ -361,16 +346,12 @@
                 </div>
             </div>
 
+            <div .toolbar #toolbarMore></div>
+
         </div>
 
         <main #viewport>
             <div><template::content /></div>
         </main>
     </div>
-
-    <script .whitelist>
-        if(!window.LS) {
-            window.__loadError();
-        }
-    </script>
 </body>

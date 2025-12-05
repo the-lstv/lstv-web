@@ -1051,8 +1051,9 @@ const website = {
     Viewport,
     Thread,
     Window,
-
+    
     // Constants
+    loaded: true,
     isLocalhost: location.hostname.endsWith("localhost"),
     isEmbedded: window.self !== window.top,
     cdn: "https://cdn.extragon.cloud",
@@ -1456,7 +1457,7 @@ const website = {
 
         website.headerWindowCurrent = id;
 
-        Q("#headerButtons > button.open").forEach(element => element.classList.remove("open"));
+        website.panelItems.values().forEach((item) => item.element.classList.remove("open"));
         if (button) button.classList.add("open");
     },
 
@@ -1468,16 +1469,18 @@ const website = {
 
         website.isToolbarOpen = false;
 
-        Q("#headerButtons > button.open").forEach(element => element.classList.remove("open"));
+        website.panelItems.values().forEach((item) => item.element.classList.remove("open"));
     },
 
     showLoginToolbar(toggle = false) {
-        O("#accountsButton").focus();
+        const accountsButton = website.panelItems.get("accountsButton").element;
+
+        accountsButton.focus();
         setTimeout(() => {
             if(!toggle && website.isToolbarOpen && website.headerWindowCurrent === "toolbarLogin") return;
 
             website.loginTabs.set(website.isLoggedIn? "account": "default", true);
-            website.toolbarOpen("toolbarLogin", toggle, O("#accountsButton"));
+            website.toolbarOpen("toolbarLogin", toggle, accountsButton);
 
             if(!website.isLoggedIn) setTimeout(() => {
                 O("#loginPopup")?.querySelector("button,input")?.focus();
@@ -1515,14 +1518,36 @@ const website = {
         styled: false
     }),
 
-    panelItems: [
-        { id: "accountsButton", label: N({ reactive: "user.username ?? 'Log-In'" }), description: "View and edit your profile or log-in", icon: "bi-person-fill" },
-        { id: "appsButton", label: "Apps", description: "View applications", icon: "bi-grid-fill" },
-        { id: "assistantButton", label: "Assistant", description: "Open Assistant", icon: "bi-stars" },
-        { id: "commandPaletteButton", label: "Command Palette", description: "Open Command Palette", icon: "bi-terminal" },
-        { id: "themeButton", label: "Customize", description: "Customize the site appearance", icon: "bi-palette-fill" },
-        { id: "moreButton", label: "More options", description: "Show all options", icon: "bi-caret-down-fill" }
-    ]
+    panelItems: new Map([
+        ["accountsButton", { label: "Account", showIcon: false, buttonLabel: { class: "accountsButton", inner: [{ reactive: "user.username ?? 'Log-In'" }, { class: "profile-picture-preview", inner: { tag: "i", class: "bi-person-fill" } }] }, description: "View and edit your profile or log-in", icon: "bi-person-fill", onclick: () => website.showLoginToolbar(true) }],
+        ["appsButton", { label: "Apps", tooltip: "Applications", description: "View applications", icon: "bi-grid-fill", onclick() { website.toolbarOpen("toolbarApps", true, this) } }],
+        ["assistantButton", { showLabel: false, label: "Assistant", description: "Open Assistant", icon: "bi-stars", onclick() {
+            website.toolbarOpen("toolbarAssistant", true, this);
+
+            if(!window.__assistantLoading) {
+                window._assistantCallback = null;
+                window.__assistantLoading = true;
+
+                setTimeout(async () => {
+                    M.LoadScript("/~/assets/js/assistant.js" + window.cacheKey, (error) => {
+                        if(error || typeof window._assistantCallback !== "function") {
+                            LS.Toast.show("Sorry, assistant failed to load. Please try again later.")
+                            return;
+                        }
+
+                        window._assistantCallback(website, kernel.auth);
+                    })
+                }, 0);
+            }
+        } }],
+        ["commandPaletteButton", { showLabel: false, label: "Command Palette", description: "Open Command Palette", icon: "bi-terminal", onclick() {
+            website.toolbarClose();
+            website.palette.open();
+        }}],
+        ["themeButton", { buttonLabel: N('i', { class: "bi-palette-fill" }), label: "Customize", description: "Customize the site appearance", icon: "bi-palette-fill", onclick() {
+            website.toolbarOpen("toolbarTheme", true, this);
+        }}]
+    ])
 }
 
 website.events = new LS.EventHandler(website);
@@ -1761,7 +1786,6 @@ const kernel = new class Kernel extends LoggerContext {
         website.viewport = this.viewport = new Viewport('main', document.getElementById('viewport'), {
             kernel: this
         });
-            this.#initializeToolbars();
 
         this.ttl = Date.now() - window.__loadTime;
         this.log('Kernel initialized, version %c' + this.version + '%c, time since first load: ' + this.ttl + 'ms', 'font-weight:bold', 'font-weight:normal');
@@ -1806,7 +1830,8 @@ const kernel = new class Kernel extends LoggerContext {
         });
 
         LS.Color.on("theme-changed", () => {
-            O("#themeButton i").className = "bi-" + (website.theme == "light"? "moon-stars-fill": "sun-fill");
+            const themeButton = website.panelItems.get("themeButton").element;
+            themeButton.querySelector("i").className = "bi-" + (website.theme == "light"? "moon-stars-fill": "sun-fill");
         });
 
         this.auth.on("user-updated", (patch) => {
@@ -1880,8 +1905,8 @@ const kernel = new class Kernel extends LoggerContext {
                 window.__init = null;
             }
 
+            this.#initializeToolbars();
             this.loadUser();
-            // this.#initializeToolbars();
 
             // Display content
             document.querySelector(".loaderContainer").style.display = "none";
@@ -2010,8 +2035,7 @@ const kernel = new class Kernel extends LoggerContext {
             this.userFragment = LS.Reactive.wrap("user", {});
         }
 
-        O("#accountsButton").disabled = false;
-        O("#accountsButton").ls_tooltip = isLoggedIn ? "Manage profiles": "Log in";
+        website.panelItems.get("accountsButton").element.disabled = false;
 
         website.events.emit("user-changed", [ isLoggedIn, this.userFragment ]);
         // website.events.emit("user-loaded", [ isLoggedIn ]);
@@ -2041,7 +2065,6 @@ const kernel = new class Kernel extends LoggerContext {
         const paletteBar = O("#commandPaletteBar");
         const paletteContainer = O("#commandPalette");
         const terminalContainer = O("#commandTerminal");
-        const commandPaletteButton = O("#commandPaletteButton");
         const terminalOutput = terminalContainer.querySelector(".terminal-output");
 
         const paletteLogger = new LoggerContext("Command Palette");
@@ -2069,10 +2092,7 @@ const kernel = new class Kernel extends LoggerContext {
             logger: paletteLogger
         });
 
-        commandPaletteButton.onclick = () => {
-            website.toolbarClose();
-            palette.open();
-        };
+        website.palette = palette;
 
         let terminalHidden = true;
         const terminalObserver = new MutationObserver(() => {
@@ -2249,11 +2269,10 @@ const kernel = new class Kernel extends LoggerContext {
                                 description: "Toggle anonymous statistics sharing",
                                 onCalled(enabled) {
                                     localStorage.setItem("DISABLE_STATS", !enabled);
-                                    terminalWriter.log("Statistics sharing " + (enabled ? "enabled - Thank you for helping our website run better!" : "disabled - No statistics data will be sent from this browser from now on."));
+                                    terminalWriter.log("Statistics sharing " + (enabled ? "enabled - Thank you!" : "disabled - No statistics data will be sent from this browser from now on."));
 
                                     if(!enabled) {
                                         terminalWriter.log("Warning: This setting is not saved to your account and is specific to this browser. Make sure to update this setting on other devices.");
-                                        terminalWriter.log("Note: Statistics data is anonymized, not shared with 3rd parties and does not include sensitive information - consider keeping this setting enabled to help us improve the platform.");
                                     }
                                 },
                                 inputs: [
@@ -2261,24 +2280,6 @@ const kernel = new class Kernel extends LoggerContext {
                                         name: "enabled",
                                         type: "boolean",
                                         default: true
-                                    }
-                                ]
-                            },
-                            {
-                                name: "set-mode",
-                                icon: "bi-incognito",
-                                description: "Set privacy mode",
-                                onCalled(mode) { console.log("Privacy mode:", mode); },
-                                inputs: [
-                                    {
-                                        name: "mode",
-                                        type: "list",
-                                        description: "Privacy mode",
-                                        list: [
-                                            { name: "Public", value: "public", icon: "bi-unlock" },
-                                            { name: "Friends", value: "friends", icon: "bi-people" },
-                                            { name: "Private", value: "private", icon: "bi-lock" }
-                                        ]
                                     }
                                 ]
                             }
@@ -2309,223 +2310,6 @@ const kernel = new class Kernel extends LoggerContext {
             },
 
             {
-                name: "user",
-                icon: "bi-person",
-                description: "User related commands",
-                children: [
-                    {
-                        name: "profile",
-                        icon: "bi-person-badge",
-                        description: "Show user profile",
-                        onCalled(username) { console.log("Profile for", username); },
-                        inputs: [
-                            { name: "username", type: "string", description: "Username to lookup", icon: "bi-at" }
-                        ]
-                    },
-                    {
-                        name: "set-color",
-                        icon: "bi-droplet",
-                        description: "Set accent color",
-                        onCalled(color) { console.log("Accent color set to", color); },
-                        inputs: [
-                            { name: "color", type: "color", description: "Pick a color" }
-                        ]
-                    },
-                    {
-                        name: "set-avatar",
-                        icon: "bi-image",
-                        description: "Set profile picture",
-                        onCalled(file) { console.log("Avatar file:", file); },
-                        inputs: [
-                            { name: "avatar", type: "file", description: "Upload an image" }
-                        ]
-                    },
-                    {
-                        name: "set-active",
-                        icon: "bi-toggle-on",
-                        description: "Set user active status",
-                        inputs: [
-                            { name: "active", type: "boolean", description: "Active?" }
-                        ]
-                    }
-                ]
-            },
-            {
-                name: "math",
-                icon: "bi-calculator",
-                description: "Math operations",
-                children: [
-                    {
-                        name: "add",
-                        icon: "bi-plus",
-                        description: "Add two numbers",
-                        onCalled(a, b) { terminalWriter.log("Sum:", a + b); },
-                        inputs: [
-                            { name: "a", type: "number", description: "First number" },
-                            { name: "b", type: "number", description: "Second number" }
-                        ]
-                    },
-                    {
-                        name: "subtract",
-                        icon: "bi-dash",
-                        description: "Subtract two numbers",
-                        onCalled(a, b) { terminalWriter.log("Difference:", a - b); },
-                        inputs: [
-                            { name: "a", type: "number", description: "First number" },
-                            { name: "b", type: "number", description: "Second number" }
-                        ]
-                    },
-                    {
-                        name: "multiply",
-                        icon: "bi-x",
-                        description: "Multiply two numbers",
-                        onCalled(a, b) { terminalWriter.log("Product:", a * b); },
-                        inputs: [
-                            { name: "a", type: "number", description: "First number" },
-                            { name: "b", type: "number", description: "Second number" }
-                        ]
-                    },
-                    {
-                        name: "divide",
-                        icon: "bi-slash",
-                        description: "Divide two numbers",
-                        onCalled(a, b) { 
-                            if (b === 0) terminalWriter.log("Error: Division by zero");
-                            else terminalWriter.log("Quotient:", a / b); 
-                        },
-                        inputs: [
-                            { name: "a", type: "number", description: "Dividend" },
-                            { name: "b", type: "number", description: "Divisor" }
-                        ]
-                    },
-                    {
-                        name: "power",
-                        icon: "bi-caret-up-fill",
-                        description: "Raise a number to a power",
-                        onCalled(a, b) { terminalWriter.log(`${a} ^ ${b} =`, Math.pow(a, b)); },
-                        inputs: [
-                            { name: "a", type: "number", description: "Base" },
-                            { name: "b", type: "number", description: "Exponent" }
-                        ]
-                    },
-                    {
-                        name: "sqrt",
-                        icon: "bi-square-root",
-                        description: "Square root",
-                        onCalled(a) { 
-                            if (a < 0) terminalWriter.log("Error: Negative input");
-                            else terminalWriter.log(`√${a} =`, Math.sqrt(a)); 
-                        },
-                        inputs: [
-                            { name: "a", type: "number", description: "Number" }
-                        ]
-                    },
-                    {
-                        name: "abs",
-                        icon: "bi-arrow-up-right",
-                        description: "Absolute value",
-                        onCalled(a) { terminalWriter.log(`|${a}| =`, Math.abs(a)); },
-                        inputs: [
-                            { name: "a", type: "number", description: "Number" }
-                        ]
-                    },
-                    {
-                        name: "round",
-                        icon: "bi-circle",
-                        description: "Round to nearest integer",
-                        onCalled(a) { terminalWriter.log(`round(${a}) =`, Math.round(a)); },
-                        inputs: [
-                            { name: "a", type: "number", description: "Number" }
-                        ]
-                    },
-                    {
-                        name: "floor",
-                        icon: "bi-arrow-down",
-                        description: "Floor (round down)",
-                        onCalled(a) { terminalWriter.log(`floor(${a}) =`, Math.floor(a)); },
-                        inputs: [
-                            { name: "a", type: "number", description: "Number" }
-                        ]
-                    },
-                    {
-                        name: "ceil",
-                        icon: "bi-arrow-up",
-                        description: "Ceil (round up)",
-                        onCalled(a) { terminalWriter.log(`ceil(${a}) =`, Math.ceil(a)); },
-                        inputs: [
-                            { name: "a", type: "number", description: "Number" }
-                        ]
-                    },
-                    {
-                        name: "sin",
-                        icon: "bi-activity",
-                        description: "Sine (degrees)",
-                        onCalled(a) { terminalWriter.log(`sin(${a}°) =`, Math.sin(a * Math.PI / 180)); },
-                        inputs: [
-                            { name: "a", type: "number", description: "Degrees" }
-                        ]
-                    },
-                    {
-                        name: "cos",
-                        icon: "bi-activity",
-                        description: "Cosine (degrees)",
-                        onCalled(a) { terminalWriter.log(`cos(${a}°) =`, Math.cos(a * Math.PI / 180)); },
-                        inputs: [
-                            { name: "a", type: "number", description: "Degrees" }
-                        ]
-                    },
-                    {
-                        name: "tan",
-                        icon: "bi-activity",
-                        description: "Tangent (degrees)",
-                        onCalled(a) { terminalWriter.log(`tan(${a}°) =`, Math.tan(a * Math.PI / 180)); },
-                        inputs: [
-                            { name: "a", type: "number", description: "Degrees" }
-                        ]
-                    },
-                    {
-                        name: "log",
-                        icon: "bi-graph-up",
-                        description: "Logarithm base 10",
-                        onCalled(a) { 
-                            if (a <= 0) terminalWriter.log("Error: Non-positive input");
-                            else terminalWriter.log(`log10(${a}) =`, Math.log10(a)); 
-                        },
-                        inputs: [
-                            { name: "a", type: "number", description: "Number" }
-                        ]
-                    },
-                    {
-                        name: "ln",
-                        icon: "bi-graph-up-arrow",
-                        description: "Natural logarithm",
-                        onCalled(a) { 
-                            if (a <= 0) terminalWriter.log("Error: Non-positive input");
-                            else terminalWriter.log(`ln(${a}) =`, Math.log(a)); 
-                        },
-                        inputs: [
-                            { name: "a", type: "number", description: "Number" }
-                        ]
-                    },
-                    {
-                        name: "exp",
-                        icon: "bi-lightning",
-                        description: "Exponential (e^x)",
-                        onCalled(a) { terminalWriter.log(`e^${a} =`, Math.exp(a)); },
-                        inputs: [
-                            { name: "a", type: "number", description: "Exponent" }
-                        ]
-                    },
-                    {
-                        name: "pi",
-                        icon: "bi-circle-half",
-                        description: "Value of π",
-                        onCalled() { terminalWriter.log("π =", Math.PI); },
-                        inputs: []
-                    }
-                ]
-            },
-            {
                 name: "echo",
                 alias: ["print"],
                 icon: "bi-chat",
@@ -2534,78 +2318,6 @@ const kernel = new class Kernel extends LoggerContext {
                 inputs: [
                     { name: "text", type: "string", description: "Text to echo" }
                 ]
-            },
-            {
-                name: "toggle-feature",
-                icon: "bi-lightning",
-                description: "Toggle a feature on/off",
-                onCalled(enabled) { console.log("Feature enabled:", enabled); },
-                inputs: [
-                    { name: "enabled", type: "boolean", description: "Enable feature?" }
-                ]
-            },
-            {
-                name: "upload-file",
-                icon: "bi-upload",
-                description: "Upload a file",
-                onCalled(file) { console.log("File uploaded:", file); },
-                inputs: [
-                    { name: "file", type: "file", description: "Choose a file" }
-                ]
-            },
-            {
-                name: "choose-option",
-                icon: "bi-list-check",
-                description: "Choose from a list",
-                onCalled(option) { console.log("Option chosen:", option); },
-                inputs: [
-                    {
-                        name: "option",
-                        type: "list",
-                        description: "Pick one",
-                        list: [
-                            { name: "Alpha", value: "alpha", icon: "bi-1-circle", description: "First option" },
-                            { name: "Beta", value: "beta", icon: "bi-2-circle", description: "Second option" },
-                            { name: "Gamma", value: "gamma", icon: "bi-3-circle", description: "Third option" }
-                        ]
-                    }
-                ]
-            },
-            {
-                name: "dynamic-children",
-                icon: "bi-diagram-3",
-                description: "Command with dynamic children",
-                children: () => {
-                    const items = [];
-                    for(let i = 1; i <= 5; i++) {
-                        items.push({
-                            name: `item-${i}`,
-                            icon: "bi-file-earmark",
-                            description: `Dynamic item number ${i}`,
-                            onCalled() { console.log(`Dynamic item ${i} selected`); }
-                        });
-                    }
-                    return items;
-                }
-            },
-            {
-                name: "dynamic-async-children",
-                icon: "bi-hourglass-split",
-                description: "Command with async dynamic children",
-                children: () => new Promise((resolve) => {
-                    setTimeout(() => {
-                        const items = [];
-                        for(let i = 1; i <= 3; i++) {
-                            items.push({
-                                name: `async-item-${i}`,
-                                icon: "bi-file-earmark-text",
-                                description: `Async dynamic item number ${i}`,
-                                onCalled() { console.log(`Async dynamic item ${i} selected`); }
-                            });
-                        }
-                        resolve(items);
-                    }, 500);
-                })
             }
         ]);
     }
@@ -2613,49 +2325,71 @@ const kernel = new class Kernel extends LoggerContext {
     #initializeToolbars() {
         const nav = O("#app > nav");
         const moreButton = O("#moreButton");
-        const container = O("#headerButtons");
+        const container = O(".headerButtons");
 
-        const menu = LS.Create({
-            class: "dropdown-menu"
-        }).addTo(container);
+        moreButton.addEventListener("click", () => {
+            website.toolbarOpen("toolbarMore", true, moreButton);
+        });
+
+        const menu = O("#toolbarMore");
 
         const navPadding = 28 + 5;
         const gap = 10;
 
         const collapseItems = new website.utils.FrameScheduler(() => {
-            const availableSpace = nav.clientWidth - navPadding - moreButton.clientWidth - (nav.firstElementChild?.clientWidth || 0);
+            const availableSpace = nav.clientWidth - navPadding - gap - moreButton.clientWidth - (nav.firstElementChild?.clientWidth || 0);
 
-            let takenSpace = 0;
-            for (const item of website.panelItems) {
-                if(item === moreButton || item === menu) continue;
+            let takenSpace = 0, hasCollapsedItems = false;
+            for (const item of website.panelItems.values()) {
                 if(!item.element) {
-                    item.element = LS.Create({
-                        id: item.id || null,
+                    const icon = item.showIcon === false ? null : { tag: "i", class: item.icon };
+
+                    item.element = LS.Create("button", {
                         class: "toolbar-button pill elevated",
-                        attributes: {
-                            "aria-label": item.description,
-                        },
-                        tooltip: item.label,
-                        inner: [{ tag: "i", class: item.icon }, item.label],
-                        // onClick: item.onCalled
+                        attributes: { "aria-label": item.description },
+                        tooltip: item.tooltip || item.label,
+                        inner: item.showLabel !== false? [icon, item.buttonLabel || item.label]: icon,
+                        onclick: () => {
+                            if(item.onclick) item.onclick.call(item.element);
+                        }
                     });
+
+                    container.appendChild(item.element);
                 }
 
-                const detached = item.classList.contains("detached");
-                const w = item.clientWidth + gap;
+                const detached = item.element.classList.contains("detached");
+                const w = item.element.clientWidth + gap;
                 takenSpace += w;
 
                 if(takenSpace > availableSpace) {
+                    hasCollapsedItems = true;
                     if(detached) continue;
-                    item.classList.add("detached");
-                    item.remove();
-                    menu.appendChild(item);
+                    item.element.classList.add("detached");
+
+                    if(!item.menuElement) {
+                        item.menuElement = LS.Create({
+                            class: "toolbar-menu-item",
+                            attributes: { "aria-label": item.description },
+                            inner: [{ tag: "i", class: item.icon }, { tag: "span", innerText: item.label }],
+                            onclick: () => {
+                                if(item.onclick) item.onclick.call(item.element);
+                            }
+                        })
+                    }
+
+                    menu.appendChild(item.menuElement);
                 } else {
                     if(!detached) continue;
-                    item.classList.remove("detached");
-                    item.remove();
-                    container.appendChild(item);
+                    item.element.classList.remove("detached");
+                    if(item.menuElement && item.menuElement.parentElement) {
+                        item.menuElement.parentElement.removeChild(item.menuElement);
+                    }
                 }
+            }
+
+            // Close the toolbar if no items are collapsed and it's currently open
+            if (!hasCollapsedItems && website.isToolbarOpen && website.headerWindowCurrent === "toolbarMore") {
+                website.toolbarClose();
             }
 
             moreButton.style.display = (availableSpace + moreButton.clientWidth) < takenSpace ? "inline-flex" : "none";
@@ -2678,16 +2412,13 @@ const kernel = new class Kernel extends LoggerContext {
             collapseItems.schedule();
         });
 
-        O("#accountsButton").on("click", () => website.showLoginToolbar(true));
-
         O("#logOutButton").on("click", function (){
             kernel.auth.logout(() => {
                 LS.Toast.show("Logged out successfully.", {
                     timeout: 2000
                 });
-                website.toolbarClose();
-                // location.reload();
 
+                website.toolbarClose();
                 kernel.loadUser();
                 website.loginTabs.set("default");
             });
@@ -2788,7 +2519,7 @@ const kernel = new class Kernel extends LoggerContext {
 
                 redirectAfterLogin();
             });
-        
+  
             return false;
         });
 
@@ -2808,14 +2539,6 @@ const kernel = new class Kernel extends LoggerContext {
         });
 
         website.loginTabs.set(location.pathname.startsWith("/login") ? "login" : location.pathname.startsWith("/sign-up") ?  "register" : "default");
-
-        O("#appsButton").on("click", function (){
-            website.toolbarOpen("toolbarApps", true, this);
-        })
-
-        O("#themeButton").on("click", function (){
-            website.toolbarOpen("toolbarTheme", true, this);
-        })
 
         O("#randomPassword").on("click", function (){
             const password = website.utils.generateSecurePassword(12);
@@ -2854,26 +2577,6 @@ const kernel = new class Kernel extends LoggerContext {
                 localStorage.setItem("ls-accent", this.value);
             });
         }
-
-        O("#assistantButton").on("click", (event) => {
-            website.toolbarOpen("toolbarAssistant", true, event.currentTarget);
-
-            if(!window.__assistantLoading) {
-                window._assistantCallback = null;
-                window.__assistantLoading = true;
-
-                setTimeout(async () => {
-                    M.LoadScript("/~/assets/js/assistant.js" + window.cacheKey, (error) => {
-                        if(error || typeof window._assistantCallback !== "function") {
-                            LS.Toast.show("Sorry, assistant failed to load. Please try again later.")
-                            return;
-                        }
-        
-                        window._assistantCallback(website, this.auth);
-                    })
-                }, 0);
-            }
-        })
 
         website.viewportElement.on("click", () => {
             website.toolbarClose();
