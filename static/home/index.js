@@ -1,24 +1,11 @@
 website.register(document.currentScript, function(context, container) {
-    const auth = context.requestPermission(["auth"]).auth;
-
     context.setOptions({
         // title: "User Settings",
         dynamicAccount: true,
         path: "/home"
     });
 
-    context.on("resume", () => {
-        
-    });
-
-    context.on("suspend", () => {
-
-    });
-
-    context.on("destroy", () => {
-        tabs.destroy();
-    });
-
+    const auth = context.requestPermission(["auth"]).auth;
     const panel = container.get('.container');
     const panelContent = container.get(".settings-container");
     const loginNotice = LS.Create('div', { inner: [N("h3", "You are not logged in"), N("button", {
@@ -28,6 +15,15 @@ website.register(document.currentScript, function(context, container) {
             website.showLoginToolbar();
         }
     })], class: "login-notice container-content" });
+
+    const tabs = new LS.Tabs(container.querySelector('.sidebar-content'), {
+        list: false
+    });
+
+    context.registerSPAExtension("/home/", (page) => {
+        panel.classList.remove('sidebar-menu-visible');
+        tabs.set(page || "home");
+    });
 
     website.watchUser((loggedIn, userFragment) => {
         if(!loggedIn) {
@@ -41,14 +37,10 @@ website.register(document.currentScript, function(context, container) {
         }
     });
 
-    context.registerSPAExtension("/home/", (page) => {
-        panel.classList.remove('sidebar-menu-visible');
-        tabs.set(page || "home");
-    });
-
-    const initial_page = location.pathname.split("/").slice(2)[0] || "home";
-    const tabs = new LS.Tabs(container.querySelector('.sidebar-content'), {
-        list: false
+    context.on("destroy", () => {
+        // Technically *should* destroy everything else as there should be nothing pointing to anything here
+        // But I'm not sure
+        tabs.destroy();
     });
 
     const siteScriptsOnce = new Set();
@@ -484,5 +476,5 @@ website.register(document.currentScript, function(context, container) {
         }
     });
 
-    tabs.set(initial_page);
+    tabs.set(location.pathname.split("/").slice(2)[0] || "home");
 });

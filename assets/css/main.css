@@ -81,10 +81,8 @@ nav {
     box-shadow: 0 0 60px 0px var(--accent-40);
 }
 
-#headerButtons .hidden {
-    visibility: hidden;
+#headerButtons .detached {
     position: absolute;
-    pointer-events: none;
 }
 
 #accountsButton {

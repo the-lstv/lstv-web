@@ -51,6 +51,7 @@ class LoggerContext {
     }
 
     writeLog(func = console.log, tagStyle, message, ...data) {
+        if(this.__destroyed) return;
         const isString = typeof message === 'string';
         if(!isString) data.unshift(message);
         func.call(this.writer, this.tag + (isString ? " " + message : ''), tagStyle + this.tagStyle, 'color: inherit; font-weight: normal;', ...data);
@@ -71,6 +72,14 @@ class LoggerContext {
 
     info(...data) {
         this.writeLog(this.writer.info || this.writer.log, 'color: #9b59b6;', ...data);
+    }
+
+    destroy() {
+        this.logContext = null;
+        this.writer = null;
+        this.tag = null;
+        this.tagStyle = null;
+        this.__destroyed = true;
     }
 }
 
@@ -256,6 +265,9 @@ class ContentContext extends LS.EventHandler {
             this.setOptions(options);
         }
 
+        this.logContext = new LoggerContext(`Context:${this.#path || this.src || this.id}`);
+        this.log = this.logContext.log.bind(this.logContext);
+
         // this.on("resume", async () => {});
 
         this.on("suspend", () => {
@@ -302,6 +314,7 @@ class ContentContext extends LS.EventHandler {
                 }
                 if (!stillUsed) AssetManager.remove(style);
             }
+
             for (const script of this.scripts) {
                 let stillUsed = false;
                 for (const ctx of kernel.pageCache.values()) {
@@ -315,6 +328,11 @@ class ContentContext extends LS.EventHandler {
 
             this.scripts = null;
             this.styles = null;
+
+            if(this.logContext) {
+                this.log("Context destroyed");
+                this.logContext.destroy();
+            }
         });
     }
 
@@ -443,6 +461,9 @@ class ContentContext extends LS.EventHandler {
         }
 
         this.state = "loading";
+        this.prepareEvent("loaded", {
+            completed: false // Uncomplete the event
+        });
 
         if(this.src && this.sandboxMode !== "iframe" && !this.loaded) {
             await (this.loadPromise || this.fromURL());
@@ -461,6 +482,8 @@ class ContentContext extends LS.EventHandler {
             this.#loadCSS(),
             this.#loadJS()
         ]);
+
+        this.completed("loaded"); // Assets have finished loading
 
         if(this.destroyed) return this;
 
@@ -1491,6 +1514,15 @@ const website = {
         selector: ".login-toolbar-page",
         styled: false
     }),
+
+    panelItems: [
+        { id: "accountsButton", label: N({ reactive: "user.username ?? 'Log-In'" }), description: "View and edit your profile or log-in", icon: "bi-person-fill" },
+        { id: "appsButton", label: "Apps", description: "View applications", icon: "bi-grid-fill" },
+        { id: "assistantButton", label: "Assistant", description: "Open Assistant", icon: "bi-stars" },
+        { id: "commandPaletteButton", label: "Command Palette", description: "Open Command Palette", icon: "bi-terminal" },
+        { id: "themeButton", label: "Customize", description: "Customize the site appearance", icon: "bi-palette-fill" },
+        { id: "moreButton", label: "More options", description: "Show all options", icon: "bi-caret-down-fill" }
+    ]
 }
 
 website.events = new LS.EventHandler(website);
@@ -1729,6 +1761,7 @@ const kernel = new class Kernel extends LoggerContext {
         website.viewport = this.viewport = new Viewport('main', document.getElementById('viewport'), {
             kernel: this
         });
+            this.#initializeToolbars();
 
         this.ttl = Date.now() - window.__loadTime;
         this.log('Kernel initialized, version %c' + this.version + '%c, time since first load: ' + this.ttl + 'ms', 'font-weight:bold', 'font-weight:normal');
@@ -1848,7 +1881,7 @@ const kernel = new class Kernel extends LoggerContext {
             }
 
             this.loadUser();
-            this.#initializeToolbars();
+            // this.#initializeToolbars();
 
             // Display content
             document.querySelector(".loaderContainer").style.display = "none";
@@ -2580,6 +2613,12 @@ const kernel = new class Kernel extends LoggerContext {
     #initializeToolbars() {
         const nav = O("#app > nav");
         const moreButton = O("#moreButton");
+        const container = O("#headerButtons");
+
+        const menu = LS.Create({
+            class: "dropdown-menu"
+        }).addTo(container);
+
         const navPadding = 28 + 5;
         const gap = 10;
 
@@ -2587,16 +2626,35 @@ const kernel = new class Kernel extends LoggerContext {
             const availableSpace = nav.clientWidth - navPadding - moreButton.clientWidth - (nav.firstElementChild?.clientWidth || 0);
 
             let takenSpace = 0;
-            for (const i of Q("#headerButtons > *")) {
-                if(i === moreButton) continue;
+            for (const item of website.panelItems) {
+                if(item === moreButton || item === menu) continue;
+                if(!item.element) {
+                    item.element = LS.Create({
+                        id: item.id || null,
+                        class: "toolbar-button pill elevated",
+                        attributes: {
+                            "aria-label": item.description,
+                        },
+                        tooltip: item.label,
+                        inner: [{ tag: "i", class: item.icon }, item.label],
+                        // onClick: item.onCalled
+                    });
+                }
 
-                const w = i.clientWidth + gap;
+                const detached = item.classList.contains("detached");
+                const w = item.clientWidth + gap;
                 takenSpace += w;
 
                 if(takenSpace > availableSpace) {
-                    i.classList.add("hidden");
+                    if(detached) continue;
+                    item.classList.add("detached");
+                    item.remove();
+                    menu.appendChild(item);
                 } else {
-                    i.classList.remove("hidden");
+                    if(!detached) continue;
+                    item.classList.remove("detached");
+                    item.remove();
+                    container.appendChild(item);
                 }
             }
 
@@ -2919,4 +2977,4 @@ const kernel = new class Kernel extends LoggerContext {
 }
 
 
-} catch (e) { console.error("Fatal error during app initialization:", e); window.__loadError('<h3 style="margin:40px 20px">The application failed to load. Please try again later. Make sure you are on an up-to-date browser.</h3><br><button onclick=location.reload()>Reload</button>') }
+} catch (e) { console.error("Fatal error during app initialization:", e); window.__loadError() }
