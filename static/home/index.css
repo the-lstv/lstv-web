@@ -14,14 +14,18 @@
 }
 
 .container {
-    display: flex;
     border-radius: var(--border-radius-xxlarge);
-    min-height: 200px;
-    flex: 1;
     position: relative;
     outline: 1px solid var(--accent-mix-20);
     box-shadow: 0 10px 20px 0 #0002;
-    overflow: hidden;
+    min-height: 200px;
+    height: 100%;
+}
+
+.container .container-content {
+    display: flex;
+    height: 100%;
+    flex: 1;
 }
 
 .top {
@@ -330,4 +334,14 @@ textarea#profile-about {
 
 .bottom-buttons {
     margin: 0 auto;
+}
+
+.login-notice {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 12px;
 }

@@ -1,0 +1,54 @@
+<script>
+    (function () {
+        const needs = [];
+        const head = document.head;
+
+        // ES6–ES2019 features missing in Chrome 58 / Firefox 57
+        if (!('noModule' in HTMLScriptElement.prototype)) {
+            if (!Array.prototype.includes) needs.push('Array.prototype.includes');
+            if (typeof Object.entries !== 'function') needs.push('Object.entries');
+            if (typeof Object.values !== 'function') needs.push('Object.values');
+            if (!('flat' in Array.prototype)) needs.push('Array.prototype.flat');
+            if (!Promise.prototype.finally) needs.push('Promise.prototype.finally');
+            if (!('padStart' in String.prototype)) needs.push('String.prototype.padStart');
+            if (!('padEnd' in String.prototype)) needs.push('String.prototype.padEnd');
+        }
+
+        // If ES features needed, load core-js modules (tiny, on-demand)
+        if (needs.length > 0) {
+            const esScript = document.createElement('script');
+            esScript.src = `https://cdn.jsdelivr.net/npm/core-js-bundle@3.38.1/minified.js`;
+            esScript.async = true;
+            head.prepend(esScript);
+        }
+
+        // fetch API (core-js doesn't cover it)
+        if (!('fetch' in window)) {
+            const fetchScript = document.createElement('script');
+            fetchScript.src = 'https://cdn.jsdelivr.net/npm/whatwg-fetch@3.6.20/dist/fetch.umd.js';
+            fetchScript.async = true;
+            head.prepend(fetchScript);
+        }
+
+        // URL + URLSearchParams (core-js/web modules)
+        if (!('URL' in window) || !('URLSearchParams' in window)) {
+            const urlScript = document.createElement('script');
+            urlScript.src = 'https://cdn.jsdelivr.net/npm/core-js@3.38.1/modules/web.url.js';
+            urlScript.async = true;
+            head.prepend(urlScript);
+
+            const uspScript = document.createElement('script');
+            uspScript.src = 'https://cdn.jsdelivr.net/npm/core-js@3.38.1/modules/web.url-search-params.js';
+            uspScript.async = true;
+            head.prepend(uspScript);
+        }
+
+        // Custom Elements v1 / Shadow DOM (webcomponentsjs bundle, unchanged)
+        if (!('customElements' in window) || !('attachShadow' in Element.prototype)) {
+            const wcScript = document.createElement('script');
+            wcScript.src = 'https://cdn.jsdelivr.net/npm/@webcomponents/webcomponentsjs@2.8.0/webcomponents-bundle.js';
+            wcScript.async = true;
+            head.prepend(wcScript);
+        }
+    })();
+</script>

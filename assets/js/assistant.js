@@ -93,7 +93,7 @@ class MD_Renderer {
     }
 }
 
-window._assistantCallback = async (app, auth) => {
+window._assistantCallback = async (website, auth) => {
     window.__assistant = true;
 
     let TOKEN;
@@ -115,7 +115,7 @@ window._assistantCallback = async (app, auth) => {
     const container = O("#toolbarAssistant");
     const chatInput = O("#assistant-input");
 
-    app.assistant = {
+    website.assistant = {
         GET: 1,
         POST: 2,
         PUT: 3,
@@ -349,7 +349,7 @@ window._assistantCallback = async (app, auth) => {
     autoResize(chatInput);
 
     chatInput.on("keydown", async (e) => {
-        if (e.key === 'Enter' && !e.shiftKey && !app.assistant.generating) {
+        if (e.key === 'Enter' && !e.shiftKey && !website.assistant.generating) {
             e.preventDefault();
             document.forms["assistantForm"].dispatchEvent(new Event("submit", { cancelable: true }));
         }
@@ -371,7 +371,7 @@ window._assistantCallback = async (app, auth) => {
         event.preventDefault();
         const message = chatInput.value.trim();
 
-        if (app.assistant.generating) {
+        if (website.assistant.generating) {
             console.warn("Already generating a response, please wait.");
             return false;
         }
@@ -385,9 +385,9 @@ window._assistantCallback = async (app, auth) => {
 
             if (exampleContainer) exampleContainer.style.display = "none";
 
-            app.assistant.generating = true;
+            website.assistant.generating = true;
 
-            app.assistant.chatContainer.appendChild(N('div', {
+            website.assistant.chatContainer.appendChild(N('div', {
                 class: 'message-container message-user',
                 inner: [
                     N('div', {
@@ -402,7 +402,7 @@ window._assistantCallback = async (app, auth) => {
             const renderer = new MD_Renderer(renderingTarget);
             const parser = smd.parser(renderer);
 
-            const wasScrolledAtBottom = app.assistant.chatContainer.scrollHeight - app.assistant.chatContainer.scrollTop === app.assistant.chatContainer.clientHeight;
+            const wasScrolledAtBottom = website.assistant.chatContainer.scrollHeight - website.assistant.chatContainer.scrollTop === website.assistant.chatContainer.clientHeight;
 
             const messageElement = N('div', {
                 class: 'message-container message-assistant',
@@ -414,12 +414,12 @@ window._assistantCallback = async (app, auth) => {
                 ]
             });
 
-            app.assistant.chatContainer.appendChild(messageElement);
+            website.assistant.chatContainer.appendChild(messageElement);
 
-            if(!app.isLoggedIn) {
+            if(!website.isLoggedIn) {
                 messageElement.setAttribute("ls-accent", "red");
                 renderingTarget.textContent = "You must be logged in to use the assistant.";
-                app.assistant.generating = false;
+                website.assistant.generating = false;
                 return;
             }
 
@@ -431,7 +431,7 @@ window._assistantCallback = async (app, auth) => {
             const onChunk = (chunk) => {
                 if (chunk === null) {
                     // Stream ended
-                    app.assistant.generating = false;
+                    website.assistant.generating = false;
                     smd.parser_end(parser);
                     return;
                 }
@@ -462,19 +462,19 @@ window._assistantCallback = async (app, auth) => {
                     smd.parser_write(parser, chunk);
 
                     if(wasScrolledAtBottom) {
-                        app.assistant.chatContainer.scrollTop = app.assistant.chatContainer.scrollHeight;
+                        website.assistant.chatContainer.scrollTop = website.assistant.chatContainer.scrollHeight;
                     }
                     return;
                 }
 
                 if (chunk.type === 'info') {
-                    app.assistant.currentChat = chunk;
+                    website.assistant.currentChat = chunk;
                     return;
                 }
 
                 if (chunk.error) {
                     console.error("Error in response:", chunk.error);
-                    app.assistant.generating = false;
+                    website.assistant.generating = false;
                     return;
                 }
 
@@ -482,15 +482,15 @@ window._assistantCallback = async (app, auth) => {
             };
 
             try {
-                if (app.assistant.currentChat) {
-                    await app.assistant.postMessage(app.assistant.currentChat._id, content, onChunk).catch(error => { throw error; });
+                if (website.assistant.currentChat) {
+                    await website.assistant.postMessage(website.assistant.currentChat._id, content, onChunk).catch(error => { throw error; });
                 } else {
-                    await app.assistant.createChat(content, onChunk).catch(error => { throw error; });
+                    await website.assistant.createChat(content, onChunk).catch(error => { throw error; });
                 }
             } catch (error) {
                 console.error(error);
 
-                app.assistant.generating = false;
+                website.assistant.generating = false;
                 messageElement.setAttribute("ls-accent", "red");
                 renderingTarget.textContent = "An error occurred while processing your request. Please try again later.";
             }

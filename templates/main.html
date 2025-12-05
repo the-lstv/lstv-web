@@ -1,5 +1,7 @@
 <head>
 
+    <!-- @import (/~/assets/html/polyfil.html); -->
+
     <style>
         body {
             /* Eye-saver! */
@@ -18,13 +20,18 @@
             }
         }
 
-        .loaderContainer {
+        .loaderContainer, .loaderContainer > .error {
             width: 100%;
             height: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
             flex-direction: column;
+        }
+
+        .loaderContainer .message {
+            text-align: center;
+            margin: 40px 20px;
         }
 
         @keyframes l1 { to { transform: rotate(.5turn) } }
@@ -58,11 +65,20 @@
         @keyframes l5 { to {rotate: 1turn} }
     </style>
 
-    <script>
+    <script .whitelist>
         window.__loadTime = Date.now();
         window.__init = [];
+        window.__loadError = (message) => {
+            const container = document.querySelector('.loaderContainer');
+            const errorBox = container.querySelector('.error');
+            container.querySelector('.loader').remove();
+            if (message) errorBox.querySelector('.message').innerHTML = message;
+            errorBox.style.display = 'flex';
+        }
 
-        window.app = {
+        window.LOW_PERFORMANCE_MODE = localStorage.getItem("LOW_PERFORMANCE_MODE") === "true";
+
+        window.website = {
             /**
              * Requests scoped access. This is required to access the website APIs.
              * @param {HTMLScriptElement|string} script - The script tag or unique identifier.
@@ -70,12 +86,20 @@
              */
             register(script, callback) {
                 window.__init.push({ script, callback });
-            }
+            },
+
+            loaded: false
         }
+
+        window.addEventListener("DOMContentLoaded", () => {
+            if(!window.LS || !window.website?.loaded) {
+                window.__loadError();
+            }
+        });
     </script>
 
-    @use (ls:5.2.2[flat, tooltips, toast, reactive, tabs, animation, modal], bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800", "IBM Plex Mono:wght@400;600;800"]);
-    @use (~/assets/css/main.css, ~/assets/js/app.js[defer]);
+    @use (ls:5.2.5[flat, tooltips, toast, reactive, tabs, animation, resize, modal], bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800", "IBM Plex Mono:wght@400;600;800"]);
+    @use (~/assets/css/main.css, ~/assets/js/app.js[defer], ~/assets/js/pallete.js);
 
     @page {
         style: flat;
@@ -90,15 +114,21 @@
 </head>
 
 <body .level-0>
-    <script>
+    <script .whitelist>
         // Apply theme based on user preference
         document.body.setAttribute("ls-theme", localStorage.getItem("ls-theme") || (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches? "light": "dark"));
     </script>
 
     <div .loaderContainer>
-        <div .loader/>
+        <div .loader />
+
+        <div .error style="display: none">
+            <h3 .message>The application failed to load. Please try again later.<br>Make sure you are on an up-to-date browser.</h3>
+            <button onclick=location.reload()>Reload</button>
+        </div>
+
         <noscript>
-            <h3 style="margin:40px 20px">You need to enable JavaScript to be able to access this website!</h3>
+            <h3 .message>You need to enable JavaScript to be able to access this website!</h3>
         </noscript>
     </div>
 
@@ -114,48 +144,52 @@
                 <span .headerTitle>LSTV</span> <span .headerText />
             </a>
 
-            <div #headerButtons>
-                <button disabled ls-tooltip="Log in" #accountsButton .level-1 .pill .elevated aria-label="Log in or view profile">
-                    {{ user.username ?? 'Log-In' }}
-
-                    <div #profilePicturePreview>
-                        <i .bi-person-fill />
-                    </div>
-                </button>
-
-                <button ls-tooltip="Applications" .level-1 #appsButton .pill .elevated aria-label="View applications">
-                    <i .bi-grid-fill /> <span .label>Apps</span>
-                </button>
-
-                <button ls-tooltip="Assistant" #assistantButton .pill.elevated aria-label="Open Assistant">
-                    <i .bi-stars />
-                </button>
-
-                <button ls-tooltip="Customize" #themeButton .pill.elevated aria-label="Customize the site appearance">
-                    <i .bi-sun-fill /> <i .bi-palette-fill />
-                </button>
-
-                <button id="moreButton" ls-tooltip="More options" .pill .elevated aria-label="More options">
-                    <i .bi-three-dots-vertical></i>
+            <div .headerButtonsContainer>
+                <div .headerButtons></div>
+                <button #moreButton ls-tooltip="More options" .pill .elevated aria-label="More options">
+                    <i .bi-caret-down-fill />
                 </button>
             </div>
 
         </nav>
 
-        <div #toolbars .level-1 .ls-slide-animation style="display: none">
+        <div #topOverlay style="display: none">
+            <div #commandTerminal .level-n3 style="display: none">
+                <div .terminal-output />
+            </div>
+    
+            <div #commandPaletteBar .level-n3>
+                <div #commandPalette onclick="this.querySelector('.command-input').focus()">
+                    <div .completion-menu></div>
+        
+                    <i .bi-terminal .command-icon />
 
+                    <div .textContainer>
+                        <span .command-selection></span>
+                        <span .command-caret></span>
+                        <span .command-text></span><span .command-hint></span>
+                        <input type="text" .command-input autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Command palette input">
+                    </div>
+                </div>
+    
+                <div .command-palette-buttons>
+                    <button ls-tooltip="Close" .square .clear aria-label="Close command palette"><i .bi-x-lg /></button>
+                </div>
+            </div>
+        </div>
+
+        <div #toolbars .level-1 .ls-slide-animation style="display: none">
             <div .toolbar #toolbarApps>
                 <h3>Applications</h3>
-                <div>
-                </div>
+                <div></div>
             </div>
 
             <div .toolbar #toolbarTheme>
                 <h3>Customize</h3>
                 <ls-box .elevated .inline>
-                    <button .elevated ls-tooltip aria-label="Dark theme" onclick="app.theme = 'dark'"> <i class="bi-moon-stars-fill" /> </button>
-                    <button .elevated ls-tooltip aria-label="Light theme" onclick="app.theme = 'light'"> <i class="bi-sun-fill" /> </button>
-                    <button .elevated ls-tooltip aria-label="Set to system default" onclick='localStorage.removeItem("ls-theme"); LS.Color.setAdaptiveTheme()'> <i class="bi-arrow-clockwise" /> </button>
+                    <button .elevated ls-tooltip aria-label="Dark theme" onclick="website.theme = 'dark'"> <i class="bi-moon-stars-fill" /> </button>
+                    <button .elevated ls-tooltip aria-label="Light theme" onclick="website.theme = 'light'"> <i class="bi-sun-fill" /> </button>
+                    <button .elevated ls-tooltip aria-label="Set to system default" onclick='localStorage.removeItem("ls-theme"); LS.Color.setAdaptiveTheme()'> <i class="bi-laptop" /> </button>
                 </ls-box>
 
                 <br>
@@ -166,6 +200,12 @@
                         <i .bi-eyedropper />
                     </button>
                 </ls-box>
+
+                <ls-div .grouped-buttons style="margin: 18px 30px 24px">
+                    <button>
+                        <i class="bi-pencil-fill"></i><span>Edit panel</span>
+                    </button>
+                </ls-div>
             </div>
 
             <div .toolbar .level-n1 #toolbarAssistant>
@@ -208,8 +248,8 @@
                     </span>
 
                     <div .buttons>
-                        <button onclick="app.loginTabs.set('login')" #login .pill>Log-In</button>
-                        <button onclick="app.loginTabs.set('register')" .pill.elevated>Create account</button>
+                        <button onclick="website.loginTabs.set('login')" #login .pill>Log-In</button>
+                        <button onclick="website.loginTabs.set('register')" .pill.elevated>Create account</button>
                     </div>
                 </div>
 
@@ -225,7 +265,7 @@
                         <button .pill.elevated type="submit">Log in</button>
                     </form>
 
-                    <span>Don't have one? <a href="#" onclick="app.loginTabs.set('register')">Sign up</a></span>
+                    <span>Don't have one? <a href="#" onclick="website.loginTabs.set('register')">Sign up</a></span>
                 </div>
 
                 <div .login-toolbar-page tab-id="register">
@@ -257,7 +297,7 @@
                         <button .pill.elevated type="submit">Continue</button>
                     </form>
 
-                    <span>Want to log-in? <a href="#" onclick="app.loginTabs.set('login')">Log in</a></span>
+                    <span>Want to log-in? <a href="#" onclick="website.loginTabs.set('login')">Log in</a></span>
                 </div>
 
                 <div .login-toolbar-page tab-id="register-step2">
@@ -297,7 +337,7 @@
                     </ls-div>
 
                     <ls-div .profile-buttons .grouped-buttons>
-                        <button .elevated onclick="app.loginTabs.set('login')"><i .bi-arrow-left-right /><span>Switch accounts</span></button>
+                        <button .elevated onclick="website.loginTabs.set('login')"><i .bi-arrow-left-right /><span>Switch accounts</span></button>
                         <button .elevated #logOutButton><i .bi-box-arrow-right /><span>Log out</span></button>
                     </ls-div>
     
@@ -306,11 +346,12 @@
                 </div>
             </div>
 
+            <div .toolbar #toolbarMore></div>
+
         </div>
 
         <main #viewport>
             <div><template::content /></div>
         </main>
     </div>
-
 </body>

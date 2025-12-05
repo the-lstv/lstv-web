@@ -1,4 +1,11 @@
-app.register('chat', function(app, page, container) {
+website.register(document.currentScript, function(context, container) {
+    context.setOptions({
+        title: "Chat",
+        dynamicAccount: true
+    });
+
+    website.watchUser((loggedIn, fragment) => {
+    });
 
     LS.Resize.set(O("#chat-right-area"), {
         left: true,

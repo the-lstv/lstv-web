@@ -1,33 +1,58 @@
-app.register('home', function(app, page, container) {
-    page.title = "User Settings";
-
-    const auth = app.requestPermission("auth");
-
-    app.once("user-loaded", () => {
-        if(!app.isLoggedIn) {
-            location.replace("/login?continue=" + encodeURIComponent(location.pathname));
-            return;
-        }
-    })
-
-    page.registerSPAExtension("/home/", (page) => {
-        container.get('.container').classList.remove('sidebar-menu-visible');
-        tabs.set(page || "home");
+website.register(document.currentScript, function(context, container) {
+    context.setOptions({
+        // title: "User Settings",
+        dynamicAccount: true,
+        path: "/home"
     });
 
-    const initial_page = location.pathname.split("/").slice(2)[0] || "home";
+    const auth = context.requestPermission(["auth"]).auth;
+    const panel = container.get('.container');
+    const panelContent = container.get(".settings-container");
+    const loginNotice = LS.Create('div', { inner: [N("h3", "You are not logged in"), N("button", {
+        textContent: "Log in",
+        class: "pill",
+        onclick() {
+            website.showLoginToolbar();
+        }
+    })], class: "login-notice container-content" });
+
     const tabs = new LS.Tabs(container.querySelector('.sidebar-content'), {
         list: false
     });
 
-    const siteScriptsOnce = [];
+    context.registerSPAExtension("/home/", (page) => {
+        panel.classList.remove('sidebar-menu-visible');
+        tabs.set(page || "home");
+    });
+
+    website.watchUser((loggedIn, userFragment) => {
+        if(!loggedIn) {
+            panelContent.remove();
+            panel.append(loginNotice);
+            return;
+        } else {
+            panelContent.style.display = "";
+            loginNotice.remove();
+            panel.append(panelContent);
+        }
+    });
+
+    context.on("destroy", () => {
+        // Technically *should* destroy everything else as there should be nothing pointing to anything here
+        // But I'm not sure
+        tabs.destroy();
+    });
+
+    const siteScriptsOnce = new Set();
     const siteScripts = {
         profile() {
-            const editingUser = LS.Reactive.fork("editingUser", app.userFragment);
             const confirmButtons = container.get('.profile-editor-confirm-buttons');
+            let editingUser = LS.Reactive.fork("editingUser", website.userFragment);
 
-            app.once("user-loaded", () => {
-                editingUser.__reset(); // Reset the reactive user data
+            website.watchUser((loggedIn, userFragment) => {
+                if(loggedIn) {
+                    editingUser.__reset(); // Reset the reactive user data
+                }
             });
 
             editingUser.__binding.on("mutated", () => {
@@ -45,11 +70,13 @@ app.register('home', function(app, page, container) {
                 e.returnValue = '';
             });
 
+            const _profile_about_length = container.get('#profile-about-length');
+            const _profile_about = container.get("#profile-about");
             function updateTextAreaLength() {
-                container.get('#profile-about-length').textContent = `${O("#profile-about").value.length}/500`;
+                _profile_about_length && (_profile_about_length.textContent = `${_profile_about.value.length}/500`);
             }
 
-            O("#profile-avatar").on("change", function() {
+            container.get("#profile-avatar").on("change", function() {
                 const file = this.files[0];
 
                 if (file) {
@@ -65,14 +92,14 @@ app.register('home', function(app, page, container) {
                 this.value = "";
             });
 
-            O("#profile-remove-avatar").on("click", function() {
+            container.get("#profile-remove-avatar").on("click", function() {
                 editingUser.pfp = null;
             });
 
-            O("#profile-banner").on("change", function() {
+            container.get("#profile-banner").on("change", function() {
                 const file = this.files[0];
 
-                const fullscreenBanner = O(".profile-editor-container .profile").classList.contains("fullscreen-banner");
+                const fullscreenBanner = container.get(".profile-editor-container .profile").classList.contains("fullscreen-banner");
 
                 const width = fullscreenBanner ? 170 : 340;
                 const height = fullscreenBanner ? 240 : 160;
@@ -91,41 +118,41 @@ app.register('home', function(app, page, container) {
                 this.value = "";
             });
 
-            O("#profile-remove-banner").on("click", function() {
+            container.get("#profile-remove-banner").on("click", function() {
                 editingUser.banner = null;
             });
 
-            O("#profile-displayname").on("input", function() {
+            container.get("#profile-displayname").on("input", function() {
                 editingUser.displayname = this.value;
             });
 
-            O("#profile-about").on("input", function() {
+            container.get("#profile-about").on("input", function() {
                 editingUser.bio = this.value;
                 updateTextAreaLength();
             });
 
-            O("#profile-save").on("click", function() {
+            container.get("#profile-save").on("click", function() {
                 saveProfile();
             });
 
-            O("#profile-reset").on("click", function() {
+            container.get("#profile-reset").on("click", function() {
                 resetProfile();
             });
 
-            O("#mature-content").on("change", function() {
+            container.get("#mature-content").on("change", function() {
                 editingUser.mature_content = this.checked;
             });
 
-            O("#fullscreen-banner").on("change", function() {
+            container.get("#fullscreen-banner").on("change", function() {
                 editingUser.fullscreen_banner = this.checked;
             });
 
-            O("#secret-glossy-style").on("change", function() {
+            container.get("#secret-glossy-style").on("change", function() {
                 editingUser.profile_style = this.checked ? "glossy" : null;
             });
 
-            const links_table = O("#links");
-            for(const link of app.userFragment.external_links || []) {
+            const links_table = container.get("#links");
+            for(const link of website.userFragment.external_links || []) {
                 const row = document.createElement("tr");
                 row.innerHTML = `
                     <td>${link.platform}</td>
@@ -137,6 +164,11 @@ app.register('home', function(app, page, container) {
             const blobs = {};
 
             function openCropper(file, options) {
+                if(!LS.ImageCropper) {
+                    console.error("ImageCropper module not loaded (yet).");
+                    return;
+                }
+
                 const cropper = new LS.ImageCropper(file, {
                     ...options,
                     createURL: true,
@@ -193,7 +225,7 @@ app.register('home', function(app, page, container) {
                         if (blobs.pfp) formData.append("file", blobs.pfp.blob, "avatar." + (editingUser.__animated_pfp ? "webm" : "webp"));
                         if (blobs.banner) formData.append("file", blobs.banner.blob, "banner." + (editingUser.__animated_banner ? "webm" : "webp"));
 
-                        const response = await fetch(app.cdn + "/upload?intent=avatar&origin_id=" + editingUser.id, {
+                        const response = await fetch(website.cdn + "/upload?intent=avatar&origin_id=" + editingUser.id, {
                             method: "POST",
                             body: formData
                         });
@@ -307,12 +339,12 @@ app.register('home', function(app, page, container) {
                         label: "Confirm",
                         onClick() {
                             const patch = { password: confirmationModal.container.querySelector("input").value };
-                            const changedUsername = O("#settings-username").value;
-                            const changedEmail = O("#settings-email").value;
+                            const changedUsername = container.get("#settings-username").value;
+                            const changedEmail = container.get("#settings-email").value;
                             const changedPassword = newPasswordField.querySelector("input").value;
 
                             if (changedPassword) {
-                                if(O("#confirm-new-password").value !== changedPassword) {
+                                if(container.get("#confirm-new-password").value !== changedPassword) {
                                     LS.Modal.buildEphemeral({
                                         title: "Password mismatch",
                                         content: "The new passwords do not match.",
@@ -325,11 +357,11 @@ app.register('home', function(app, page, container) {
                                 patch.newPassword = changedPassword;
                             }
 
-                            if (changedUsername && app.userFragment.username !== changedUsername) {
+                            if (changedUsername && website.userFragment.username !== changedUsername) {
                                 patch.username = changedUsername;
                             }
 
-                            if (changedEmail && app.userFragment.email !== changedEmail) {
+                            if (changedEmail && website.userFragment.email !== changedEmail) {
                                 patch.email = changedEmail;
                             }
 
@@ -356,13 +388,13 @@ app.register('home', function(app, page, container) {
                 ]
             });
 
-            O("#settings-save-changes").on("click", function() {
+            container.get("#settings-save-changes").on("click", function() {
                 newPasswordField.style.display = "none";
                 clearInputs();
                 confirmationModal.open();
             });
 
-            O("#account-change-password").on("click", function() {
+            container.get("#account-change-password").on("click", function() {
                 newPasswordField.style.display = "block";
                 clearInputs();
                 newPasswordField.querySelector("input").focus();
@@ -371,7 +403,7 @@ app.register('home', function(app, page, container) {
         },
 
         dev() {
-            app.fetch("v1/apps/list", {}, (error, response) => {
+            website.fetch("v1/apps/list", {}, (error, response) => {
                 if (error) {
                     console.error("Failed to fetch app list:", error);
                     return;
@@ -391,6 +423,31 @@ app.register('home', function(app, page, container) {
 
                 tabs.set("app-setup");
             });
+
+            container.get("#app-setup-form").on("submit", function() {
+                const form = document.forms['app-setup-form'];
+                const payload = {
+                    name: String(form['app-name'].value).trim(),
+                    description: String(form['app-description'].value).trim(),
+                    slug: "",
+                }
+                website.fetch("v1/apps/create", {
+                    method: "POST",
+                    body: {}
+                }, (error, response) => {
+                    if (error) {
+                        LS.Modal.buildEphemeral({
+                            title: "App creation failed",
+                            content: error.error || error.message || "Sorry, an error occurred while creating your app. Please try again later. If this persists, please contact us.",
+                            buttons: [
+                                { label: "Ok" }
+                            ]
+                        });
+                        return;
+                    }
+                });
+                return false;
+            });
         }
     }
 
@@ -398,9 +455,9 @@ app.register('home', function(app, page, container) {
         const view = tabs.currentElement();
         const oldElement = tabs.tabs.get(old)?.element;
 
-        if(!siteScriptsOnce.includes(tab) && siteScripts[tab]) {
+        if(!siteScriptsOnce.has(tab) && siteScripts[tab]) {
             siteScripts[tab]?.();
-            siteScriptsOnce.push(tab);
+            siteScriptsOnce.add(tab);
         }
 
         LS.Animation.slideInToggle(view, oldElement);
@@ -419,5 +476,5 @@ app.register('home', function(app, page, container) {
         }
     });
 
-    tabs.set(initial_page);
+    tabs.set(location.pathname.split("/").slice(2)[0] || "home");
 });

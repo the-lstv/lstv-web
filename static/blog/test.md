@@ -1,5 +1,5 @@
 ## Hi! I'm Lukas.
-I don't know how well you know me, but I am a software developer, designer, and beginning composer, as well as the owner of this website.
+I don't know how well you know me, but long story short, I am a software developer, designer, and beginning composer, as well as the owner of this website.
 Here is a small timeline of where I started and how I got here.
 I am 18 as of May 2nd 2025.
 
@@ -36,6 +36,7 @@ Some of my interests:
 - Music composition and sound design
 - Optimization and performance
 - Science, chemistry, and physics
+- Astronomy and space exploration
 - Aesthetics (including Frutiger Aero, which has a special place in my heart <3)
 - Open source software (Yes, I use Linux)
 - Nokia phones (all eras from monochrome, S60, to Symbian Belle)
