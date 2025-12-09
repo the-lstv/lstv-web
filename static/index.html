@@ -698,9 +698,12 @@ website.register(document.currentScript, (context, container) => {
 
     // Lifecycle: Suspend (page hidden)
     context.on("suspend", () => {
-        if(cloudsRenderer) cloudsRenderer.paused = true;
-        if(blurRenderer) blurRenderer.paused = true;
-        wordStopped = true;
+        // We can destroy the homepage to free resources
+        return context.destroy();
+
+        // if(cloudsRenderer) cloudsRenderer.paused = true;
+        // if(blurRenderer) blurRenderer.paused = true;
+        // wordStopped = true;
     });
 
     // Lifecycle: Destroy (page unloaded)

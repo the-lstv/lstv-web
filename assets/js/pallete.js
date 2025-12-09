@@ -37,7 +37,6 @@ class CommandPalette {
      * @property {Function} [onError] - Callback when command fails
      * @property {Function} [onClose] - Callback when palette is closed
      * @property {Function} [onOpen] - Callback when palette is opened
-     * @property {string[]} [shortcuts] - Global keyboard shortcuts to open palette
      * @property {Object} [logger] - Custom logger object with log/error/warn methods
      */
 
@@ -124,7 +123,6 @@ class CommandPalette {
         // Defer hidden inputs creation
 
         this.#bindEvents();
-        this.#bindGlobalShortcuts();
     }
 
     #ensureInitialized() {
@@ -558,52 +556,6 @@ class CommandPalette {
         };
         document.addEventListener('mousedown', outsideHandler, { signal, passive: true });
         document.addEventListener('touchstart', outsideHandler, { signal, passive: true });
-    }
-
-    #bindGlobalShortcuts() {
-        const { shortcuts } = this.#options;
-        if (!shortcuts || !Array.isArray(shortcuts) || shortcuts.length === 0) return;
-
-        const signal = this.#abortController.signal;
-        document.addEventListener('keydown', (e) => this.#handleGlobalKeyDown(e), { signal });
-    }
-
-    #handleGlobalKeyDown(event) {
-        const { shortcuts } = this.#options;
-        if (!shortcuts) return;
-
-        for (const shortcut of shortcuts) {
-            if (this.#matchesShortcut(event, shortcut)) {
-                event.preventDefault();
-                this.open();
-                return;
-            }
-        }
-    }
-
-    #matchesShortcut(event, shortcut) {
-        const parts = shortcut.toLowerCase().split('+');
-        const key = parts.pop();
-
-        const requireCtrl = parts.includes('ctrl') || parts.includes('control');
-        const requireShift = parts.includes('shift');
-        const requireAlt = parts.includes('alt');
-        const requireMeta = parts.includes('meta') || parts.includes('cmd') || parts.includes('command');
-
-        if (requireCtrl !== event.ctrlKey) return false;
-        if (requireShift !== event.shiftKey) return false;
-        if (requireAlt !== event.altKey) return false;
-        if (requireMeta !== event.metaKey) return false;
-
-        const eventKey = event.key.toLowerCase();
-        if (eventKey === key) return true;
-
-        if (key === 'space' && event.code === 'Space') return true;
-        if (key === 'enter' && eventKey === 'enter') return true;
-        if (key === 'esc' && eventKey === 'escape') return true;
-        if (key === 'escape' && eventKey === 'escape') return true;
-
-        return false;
     }
 
     #handleKeyDown(event) {

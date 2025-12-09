@@ -98,8 +98,8 @@
         });
     </script>
 
-    @use (ls:5.2.6[flat, tooltips, toast, reactive, tabs, animation, resize, modal], bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800", "IBM Plex Mono:wght@400;600;800"]);
-    @use (~/assets/css/main.css, ~/assets/js/app.js[defer], ~/assets/js/pallete.js);
+    @use (ls:5.2.7[flat, tooltips, toast, reactive, tabs, animation, resize, modal], bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800", "IBM Plex Mono:wght@400;600;800"]);
+    @use (~/assets/css/main.css, ~/assets/js/pallete.js[defer], ~/assets/js/app.js[defer]);
 
     @page {
         style: flat;
@@ -137,17 +137,23 @@
     </div>
 
     <div #app hidden>
-        <nav .level-1>
+        <nav #topPanel .level-1>
 
-            <a href="/" .homeButton aria-label="LSTV Homepage">
-                <svg xmlns="http://www.w3.org/2000/svg" width="21" height="15" fill="none"><path d="M19.1689 12.3682V13.7529H19.1182L18.3242 12.3682H19.1689ZM14.9346 13.7529H2.3457L8.63965 2.81445L14.9346 13.7529ZM19.1689 6.82617V8.48926H16.0996L15.1465 6.82617H19.1689ZM19.1689 1.5625V2.94727H12.9219L12.1279 1.5625H19.1689Z" stroke="currentColor" stroke-width="2.494"/></svg>
-                <span .headerTitle>LSTV</span> <span .headerText />
-            </a>
+            <div .headerLeftContainer>
+                <a href="/" .homeButton aria-label="LSTV Homepage">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="21" height="15" fill="none"><path d="M19.1689 12.3682V13.7529H19.1182L18.3242 12.3682H19.1689ZM14.9346 13.7529H2.3457L8.63965 2.81445L14.9346 13.7529ZM19.1689 6.82617V8.48926H16.0996L15.1465 6.82617H19.1689ZM19.1689 1.5625V2.94727H12.9219L12.1279 1.5625H19.1689Z" stroke="currentColor" stroke-width="2.494"/></svg>
+                    <span .headerTitle>LSTV</span> <span .headerText />
+                </a>
+
+                <button #musicButton ls-tooltip="Music player <kbd>Ctrl+M</kbd>" .pill aria-label="Open music player">
+                    <i .bi-vinyl-fill /> <span .music-player-status>Stopped</span>
+                </button>
+            </div>
 
             <div .headerButtonsContainer>
                 <div .headerButtons></div>
                 <button #moreButton ls-tooltip="More options" .pill .elevated aria-label="More options">
-                    <i .bi-caret-down-fill />
+                    <i .bi-list />
                 </button>
             </div>
 
@@ -343,6 +349,27 @@
     
                     <span hidden {{ user.profile_style:ProfileEffects(style) }} />
                     <span hidden {{ user.fullscreen_banner:ProfileEffects(fullscreen-banner) }} />
+                </div>
+            </div>
+
+            <div .toolbar #musicPlayer>
+                <div .music-player-info>
+                    <span .music-player-title>Lorem Ipsum</span>
+                    <span .music-player-artist>Dolor Sit Amet</span>
+                </div>
+
+                <div .music-player-progress>
+                    <div .music-player-progress-bar>
+                        <div .music-player-progress-filled></div>
+                    </div>
+                </div>
+
+                <div .music-player-controls>
+                    <button .circle .clear .music-player-like ls-tooltip aria-label="Like"><i .bi-hand-thumbs-up /></button>
+                    <button .circle .clear .music-player-prev ls-tooltip aria-label="Previous"><i .bi-skip-start-fill /></button>
+                    <button .circle .clear .music-player-play-pause ls-tooltip aria-label="Play/Pause"><i .bi-play-fill /></button>
+                    <button .circle .clear .music-player-next ls-tooltip aria-label="Next"><i .bi-skip-end-fill /></button>
+                    <button .circle .clear .music-player-repeat ls-tooltip aria-label="Repeat"><i .bi-arrow-repeat /></button>
                 </div>
             </div>
 

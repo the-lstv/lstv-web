@@ -34,14 +34,12 @@ body {
 
 
 /* Part: Header */
-nav {
-    background: var(--elevate-2);
+#topPanel {
     padding: 8px 14px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     position: relative;
-    -webkit-user-select: none;
     user-select: none;
     z-index: 50;
     height: var(--header-height);
@@ -63,19 +61,19 @@ nav {
     gap: 10px;
 }
 
-.headerButtons button {
+#topPanel button {
     margin: 0;
     font-size: .9rem;
     display: flex;
     gap: 8px;
 }
 
-.headerButtons button.open {
+#topPanel button.open {
     background: var(--elevate-0) !important;
     outline: 3px solid var(--accent-mix-10);
 }
 
-.headerButtons button::after {
+#topPanel button::after {
     content: "";
     transition: box-shadow 0.2s;
     z-index: -1;
@@ -84,11 +82,11 @@ nav {
     border-radius: inherit;
 }
 
-.headerButtons button.open::after {
+#topPanel button.open::after {
     box-shadow: 0 0 60px 0px var(--accent-40);
 }
 
-.headerButtons .detached {
+#topPanel button.detached {
     position: absolute !important;
     pointer-events: none;
     top: -9999px;
@@ -633,6 +631,7 @@ main > div {
     left: 0;
     right: 0;
     max-width: 650px;
+    padding: 0 10px;
     margin: 0 auto;
     z-index: 1000;
     display: flex;
@@ -1157,4 +1156,58 @@ ls-text-input.has-textarea {
 
 .ls-dragging iframe, .ls-dragging .page {
     pointer-events: none;
+}
+
+
+/**
+* Part: Music Player
+*/
+
+#musicButton {
+    padding: 4px 12px;
+    align-items: center;
+    max-width: 150px;
+}
+
+.music-player-status {
+    text-overflow: ellipsis;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    flex: 1 1 auto;
+}
+
+#musicPlayer {
+    padding: 8px 24px;
+    display: flex;
+    flex-direction: column;
+    background: var(--accent-20);
+    gap: 8px;
+}
+
+@media only screen and (min-width: 600px) {
+    #musicPlayer {
+        margin-right: 50vw;
+        transform: translateX(50%);
+    }
+}
+
+[ls-theme="light"] #musicPlayer {
+    background: var(--accent-90);
+}
+
+.headerLeftContainer {
+    display: flex;
+    gap: 12px;
+}
+
+.music-player-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.music-player-artist {
+    font-size: smaller;
+    color: var(--surface-9);
 }

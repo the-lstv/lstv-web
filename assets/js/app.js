@@ -10,12 +10,14 @@
 
 // --- SOME PRE-INITIALIZATION STUFF ---
 
-const KERNEL_VERSION = (typeof __buildVersion !== "undefined")? __buildVersion: "1.2.1-beta";
+const KERNEL_VERSION = (typeof __buildVersion !== "undefined")? __buildVersion: "1.2.2-beta";
 window.cacheKey = "?mtime=" + document.currentScript.src.split("?mtime=")[1];
 if(!window.LS || typeof LS !== "object" || LS.v < 5) {
     window.__loadError('<h3 style="margin:40px 20px">The application framework failed to load. Please try again later.</h3>')
     throw new Error("Fatal error: Missing LS, or it's too old! Make sure it was loaded properly! Aborting.");
 }
+
+const scriptingLoadTime = Date.now();
 
 // Console welcome message
 console.log(
@@ -280,7 +282,7 @@ class ContentContext extends LS.EventHandler {
         });
 
         this.on("destroy", () => {
-            this.emit("suspend");
+            if(this.state !== "suspended") this.emit("suspend");
             this.state = "destroyed";
             this.content?.remove();
             this.content = null;
@@ -1026,6 +1028,8 @@ class Window extends Viewport {
             ...options.resizeOptions || {}
         });
 
+        kernel.windows.add(this);
+
         // To be worked on
         document.body.appendChild(this.windowElement);
     }
@@ -1034,6 +1038,7 @@ class Window extends Viewport {
         LS.Resize.remove(this.windowElement);
         this.windowHandle.destroy();
         this.windowElement.remove();
+        kernel.windows.delete(this);
         this.destroy(destroyContent); // Propagates all the way down to destroying the content context
     }
 }
@@ -1457,7 +1462,11 @@ const website = {
 
         website.headerWindowCurrent = id;
 
-        website.panelItems.values().forEach((item) => item.element.classList.remove("open"));
+        document.getElementById("musicButton").classList.remove("open");
+        document.getElementById("moreButton").classList.remove("open");
+        for(const item of website.panelItems.values()) {
+            item.element.classList.remove("open");
+        }
         if (button) button.classList.add("open");
     },
 
@@ -1469,7 +1478,11 @@ const website = {
 
         website.isToolbarOpen = false;
 
-        website.panelItems.values().forEach((item) => item.element.classList.remove("open"));
+        document.getElementById("musicButton").classList.remove("open");
+        document.getElementById("moreButton").classList.remove("open");
+        for(const item of website.panelItems.values()) {
+            item.element.classList.remove("open");
+        }
     },
 
     showLoginToolbar(toggle = false) {
@@ -1540,7 +1553,7 @@ const website = {
                 }, 0);
             }
         } }],
-        ["commandPaletteButton", { showLabel: false, label: "Command Palette", description: "Open Command Palette", icon: "bi-terminal", onclick() {
+        ["commandPaletteButton", { showLabel: false, label: "Command Palette", tooltip: "Command Palette <kbd>Ctrl+Shift+P</kbd>", description: "Open Command Palette", icon: "bi-terminal", onclick() {
             website.toolbarClose();
             website.palette.open();
         }}],
@@ -1569,10 +1582,16 @@ const kernel = new class Kernel extends LoggerContext {
 
     threads = new Set();
 
+    windows = new Set();
+
+    shortcutManager = new LS.ShortcutManager();
+
     queryParams = LS.Util.params();
     userFragment = LS.Reactive.wrap("user", {});
 
     SPAExtensions = [];
+
+    MAX_THREADS = (navigator.hardwareConcurrency || 4) * 2;
 
     /**
      * Auth manager
@@ -1926,6 +1945,8 @@ const kernel = new class Kernel extends LoggerContext {
 
         if (!website.isEmbedded) this.#initializeCommandPalette();
         website.emit("ready");
+
+        this.ttl_scripting = Date.now() - scriptingLoadTime;
     }
 
     /**
@@ -2079,8 +2100,6 @@ const kernel = new class Kernel extends LoggerContext {
 
             fontWidth: 9.6 * 1.2,
 
-            shortcuts: ['ctrl+shift+p', 'ctrl+k'],
-
             onClose(){
                 LS.Animation.fadeOut(topBar, 300, "down");
             },
@@ -2090,6 +2109,10 @@ const kernel = new class Kernel extends LoggerContext {
             },
 
             logger: paletteLogger
+        });
+
+        this.shortcutManager.register(['ctrl+shift+p', 'ctrl+k'], () => {
+            palette.open();
         });
 
         website.palette = palette;
@@ -2188,13 +2211,18 @@ const kernel = new class Kernel extends LoggerContext {
                 icon: 'bi-info',
                 description: "Show kernel information",
                 async onCalled() {
+                    terminalOutput.appendChild(N('img', {
+                        src: '/~/assets/image/kernel-icon.png?' + KERNEL_VERSION,
+                        style: 'margin:auto;display:block'
+                    }));
+
                     terminalWriter.log(
                         `%clstv.space%c kernel`,
                         "color:var(--accent);font-weight:bold;font-size:1.2em",
                         "color:inherit;font-weight:bold;font-size:1.2em"
                     );
                     terminalWriter.log(
-                        `%cVersion:%c ${kernel.version}`,
+                        `%cVersion:%c ${kernel.version} (Zen)`,
                         "color:var(--accent);font-weight:bold", "color:inherit"
                     );
                     terminalWriter.log(
@@ -2202,19 +2230,27 @@ const kernel = new class Kernel extends LoggerContext {
                         "color:var(--accent);font-weight:bold", "color:inherit"
                     );
                     terminalWriter.log(
-                        `%cPages loaded:%c ${kernel.pageCache.size}`,
-                        "color:var(--accent);font-weight:bold", "color:inherit"
-                    );
-                    terminalWriter.log(
                         `%cViewports:%c ${kernel.viewports.size}`,
                         "color:var(--accent);font-weight:bold", "color:inherit"
                     );
                     terminalWriter.log(
-                        `%cThreads:%c ${kernel.threads.size}`,
+                        `%cPages:%c ${kernel.pageCache.size} / 20`,
                         "color:var(--accent);font-weight:bold", "color:inherit"
                     );
                     terminalWriter.log(
-                        `%cUser loaded:%c ${await kernel.auth.isLoggedIn() ? "Yes" : "No"}`,
+                        `%cThreads:%c ${kernel.threads.size} / ${kernel.MAX_THREADS}`,
+                        "color:var(--accent);font-weight:bold", "color:inherit"
+                    );
+                    terminalWriter.log(
+                        `%cWindows:%c ${kernel.windows.size}`,
+                        "color:var(--accent);font-weight:bold", "color:inherit"
+                    );
+                    terminalWriter.log(
+                        `%cSigned in:%c ${await kernel.auth.isLoggedIn() ? "Yes" : "No"}`,
+                        "color:var(--accent);font-weight:bold", "color:inherit"
+                    );
+                    terminalWriter.log(
+                        `%cLoadtime:%c ${Math.round(kernel.ttl)}ms (${Math.round(kernel.ttl_scripting)}ms without network)`,
                         "color:var(--accent);font-weight:bold", "color:inherit"
                     );
                     const uptimeMs = Date.now() - window.__loadTime;
@@ -2323,7 +2359,7 @@ const kernel = new class Kernel extends LoggerContext {
     }
 
     #initializeToolbars() {
-        const nav = O("#app > nav");
+        const nav = O("#topPanel");
         const moreButton = O("#moreButton");
         const container = O(".headerButtons");
 
@@ -2335,6 +2371,20 @@ const kernel = new class Kernel extends LoggerContext {
 
         const navPadding = 28 + 5;
         const gap = 10;
+        
+        for (const item of website.panelItems.values()) {
+            if(item.shortcuts) {
+                this.shortcutManager.register(item.shortcuts, () => {
+                    if(item.onclick) item.onclick.call(item.element);
+                });
+            }
+        }
+
+        const musicButton = document.getElementById("musicButton");
+
+        this.shortcutManager.register('ctrl+m', musicButton.onclick = () => {
+            website.toolbarOpen("musicPlayer", true, musicButton);
+        });
 
         const collapseItems = new website.utils.FrameScheduler(() => {
             const availableSpace = nav.clientWidth - navPadding - gap - moreButton.clientWidth - (nav.firstElementChild?.clientWidth || 0);
@@ -2599,6 +2649,11 @@ const kernel = new class Kernel extends LoggerContext {
         let current_interval = 15000, first = true;
 
         const sendPing = (beacon = false) => {
+            if (document.hidden) {
+                setTimeout(() => sendPing(beacon), current_interval);
+                return;
+            }
+
             const STATS_DISABLED = localStorage.getItem("DISABLE_STATS") === "true";
 
             const data = JSON.stringify(!STATS_DISABLED? {

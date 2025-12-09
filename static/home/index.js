@@ -16,6 +16,11 @@ website.register(document.currentScript, function(context, container) {
         }
     })], class: "login-notice container-content" });
 
+    const menuButton = container.get('.menu-button');
+    menuButton.on("click", function() {
+        panel.toggleClass('sidebar-menu-visible');
+    });
+
     const tabs = new LS.Tabs(container.querySelector('.sidebar-content'), {
         list: false
     });
@@ -433,7 +438,10 @@ website.register(document.currentScript, function(context, container) {
                 }
                 website.fetch("v1/apps/create", {
                     method: "POST",
-                    body: {}
+                    body: JSON.stringify(payload),
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
                 }, (error, response) => {
                     if (error) {
                         LS.Modal.buildEphemeral({
