@@ -69,8 +69,11 @@ body {
 }
 
 #topPanel button.open {
-    background: var(--elevate-0) !important;
     outline: 3px solid var(--accent-mix-10);
+}
+
+#topPanel button.elevated.open {
+    background: var(--elevate-0) !important;
 }
 
 #topPanel button::after {
@@ -173,6 +176,8 @@ body {
     top: var(--topOffset);
     right: 10px;
     background: none;
+
+    pointer-events: none !important;
 }
 
 .toolbar {
@@ -1183,12 +1188,41 @@ ls-text-input.has-textarea {
     flex-direction: column;
     background: var(--accent-20);
     gap: 8px;
+    user-select: none;
+}
+
+#musicPlayer::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+}
+
+[ls-theme="dark"] #musicPlayer::before {
+    background: radial-gradient(transparent, #0005);
+}
+
+.music-player-cover {
+    position: absolute;
+    inset: 0;
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+    opacity: 0.3;
+    z-index: -2;
+    display: none;
 }
 
 @media only screen and (min-width: 600px) {
-    #musicPlayer {
+    .toolbar.center {
         margin-right: 50vw;
         transform: translateX(50%);
+    }
+
+    .toolbar.left {
+        margin-right: 100vw;
+        transform: translateX(calc(100% + 20px));
     }
 }
 

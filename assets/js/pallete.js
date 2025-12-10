@@ -316,6 +316,11 @@ class CommandPalette {
 
         this.#options.onExecute?.(trimmed, command, args);
 
+        if (this.__closeAfterExecute) {
+            this.close();
+            this.__closeAfterExecute = false;
+        }
+
         try {
             const fn = command.onCalled;
             let result = null;
@@ -426,6 +431,19 @@ class CommandPalette {
         if (this.menuElement) {
             this.menuElement.style.display = 'none';
         }
+    }
+
+
+    /**
+     * Opens the palette with a pre-filled command
+     * @param {string} command - The command to pre-fill the input with
+     */
+    openWithCommand(command) {
+        if(!this.isOpen) this.__closeAfterExecute = true;
+
+        this.open();
+        this.focus();
+        this.value = command;
     }
 
     /**

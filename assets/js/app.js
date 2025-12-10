@@ -17,7 +17,9 @@ if(!window.LS || typeof LS !== "object" || LS.v < 5) {
     throw new Error("Fatal error: Missing LS, or it's too old! Make sure it was loaded properly! Aborting.");
 }
 
+// Forward declarations
 const scriptingLoadTime = Date.now();
+const shortcutManager = new LS.ShortcutManager();
 
 // Console welcome message
 console.log(
@@ -841,7 +843,7 @@ class Viewport {
                 if (!options.browserTriggered && !options.initial) {
                     history.pushState({ path }, document.title, page.path);
                 }
-                website.toolbarClose();
+                website.closeToolbar();
             }
 
             kernel.log(`Navigated to ${path} in ${this.name}`);
@@ -1433,56 +1435,67 @@ const website = {
         return kernel.userFragment;
     },
 
+    collapseItems: { schedule() {} },
+
     // NOTE: This is a cached result, and so may not be up to date. Wherever you can, use await kernel.auth.isLoggedIn(); instead.
     isLoggedIn: false,
-
     isToolbarOpen: false,
 
-    // Utility functions
+    toolbarsContainer: document.getElementById("toolbars"),
 
-    toolbarOpen(id, toggle, button) {
-        if(website.headerWindowCurrent == id && website.isToolbarOpen) {
-            if(toggle) website.toolbarClose();
+    openToolbar(name, toggle = false) {
+        if(website.currentToolbar == name && website.isToolbarOpen) {
+            if(toggle) website.closeToolbar();
             return;
         }
 
-        const view = document.getElementById(id);
-        if(!view) return;
+        const toolbar = website.toolbars.get(name);
+        if(!toolbar) return;
 
-        const oldElement = O(".toolbar.visible");
+        const previousToolbar = website.toolbars.get(website.currentToolbar);
+        if(previousToolbar) {
+            if(typeof previousToolbar.onClose === "function") previousToolbar.onClose();
 
-        view.style.transition = (!website.isToolbarOpen || !oldElement)? "none" : "";
-
-        LS.Animation.slideInToggle(view, oldElement);
-
-        if (!website.isToolbarOpen) LS.Animation.fadeIn(O("#toolbars"), null, "up");
-        website.isToolbarOpen = true;
-
-        LS.invoke("toolbar-open", id);
-
-        website.headerWindowCurrent = id;
-
-        document.getElementById("musicButton").classList.remove("open");
-        document.getElementById("moreButton").classList.remove("open");
-        for(const item of website.panelItems.values()) {
-            item.element.classList.remove("open");
+            if(previousToolbar.panelItem) {
+                const element = previousToolbar.panelItem instanceof HTMLElement? previousToolbar.panelItem : website.panelItems.get(previousToolbar.panelItem)?.element;
+                if(element) element.classList.remove("open");
+            }
         }
-        if (button) button.classList.add("open");
+
+        if(typeof toolbar.onOpen === "function") toolbar.onOpen();
+
+        toolbar.element.style.transition = (!website.isToolbarOpen || !previousToolbar?.element)? "none" : "";
+        LS.Animation.slideInToggle(toolbar.element, previousToolbar?.element || null);
+        if (!website.isToolbarOpen) LS.Animation.fadeIn(website.toolbarsContainer, null, "up");
+
+        website.isToolbarOpen = true;
+        website.currentToolbar = name;
+        website.invoke("toolbar-open", name);
+
+        const button = toolbar.panelItem instanceof HTMLElement? toolbar.panelItem : website.panelItems.get(toolbar.panelItem)?.element;
+        if(button) button.classList.add("open");
+
+        return toolbar;
     },
 
-    toolbarClose() {
+    closeToolbar() {
         if(!website.isToolbarOpen) return;
 
-        LS.Animation.fadeOut(O("#toolbars"), null, "down");
-        LS.invoke("toolbar-close");
+        LS.Animation.fadeOut(website.toolbarsContainer, null, "down");
 
-        website.isToolbarOpen = false;
+        const toolbar = website.toolbars.get(website.currentToolbar);
+        if(toolbar) {
+            if(typeof toolbar.onClose === "function") toolbar.onClose();
+            const button = toolbar.panelItem instanceof HTMLElement? toolbar.panelItem : website.panelItems.get(toolbar.panelItem)?.element;
+            if(button) button.classList.remove("open");
+        }
 
-        document.getElementById("musicButton").classList.remove("open");
-        document.getElementById("moreButton").classList.remove("open");
         for(const item of website.panelItems.values()) {
             item.element.classList.remove("open");
         }
+
+        website.isToolbarOpen = false;
+        website.invoke("toolbar-close");
     },
 
     showLoginToolbar(toggle = false) {
@@ -1490,10 +1503,9 @@ const website = {
 
         accountsButton.focus();
         setTimeout(() => {
-            if(!toggle && website.isToolbarOpen && website.headerWindowCurrent === "toolbarLogin") return;
+            if(!toggle && website.isToolbarOpen && website.currentToolbar === "toolbarLogin") return;
 
-            website.loginTabs.set(website.isLoggedIn? "account": "default", true);
-            website.toolbarOpen("toolbarLogin", toggle, accountsButton);
+            website.openToolbar("login", toggle);
 
             if(!website.isLoggedIn) setTimeout(() => {
                 O("#loginPopup")?.querySelector("button,input")?.focus();
@@ -1532,35 +1544,253 @@ const website = {
     }),
 
     panelItems: new Map([
-        ["accountsButton", { label: "Account", showIcon: false, buttonLabel: { class: "accountsButton", inner: [{ reactive: "user.username ?? 'Log-In'" }, { class: "profile-picture-preview", inner: { tag: "i", class: "bi-person-fill" } }] }, description: "View and edit your profile or log-in", icon: "bi-person-fill", onclick: () => website.showLoginToolbar(true) }],
-        ["appsButton", { label: "Apps", tooltip: "Applications", description: "View applications", icon: "bi-grid-fill", onclick() { website.toolbarOpen("toolbarApps", true, this) } }],
+        ["accountsButton", { label: "Account", showIcon: false, buttonLabel: { class: "accountsButton", inner: [{ reactive: "user.username ?? 'Log-In'" }, { class: "profile-picture-preview", inner: { tag: "i", class: "bi-person-fill" } }] }, description: "View and edit your profile or log-in", icon: "bi-person-fill", onclick: () => website.openToolbar("login") }],
+
+        ["appsButton", { label: "Apps", tooltip: "Applications", description: "View applications", icon: "bi-grid-fill", onclick() { website.openToolbar("apps", true) } }],
+
         ["assistantButton", { showLabel: false, label: "Assistant", description: "Open Assistant", icon: "bi-stars", onclick() {
-            website.toolbarOpen("toolbarAssistant", true, this);
-
-            if(!window.__assistantLoading) {
-                window._assistantCallback = null;
-                window.__assistantLoading = true;
-
-                setTimeout(async () => {
-                    M.LoadScript("/~/assets/js/assistant.js" + window.cacheKey, (error) => {
-                        if(error || typeof window._assistantCallback !== "function") {
-                            LS.Toast.show("Sorry, assistant failed to load. Please try again later.")
-                            return;
-                        }
-
-                        window._assistantCallback(website, kernel.auth);
-                    })
-                }, 0);
-            }
+            website.openToolbar("assistant", true);
         } }],
+
         ["commandPaletteButton", { showLabel: false, label: "Command Palette", tooltip: "Command Palette <kbd>Ctrl+Shift+P</kbd>", description: "Open Command Palette", icon: "bi-terminal", onclick() {
-            website.toolbarClose();
+            website.closeToolbar();
             website.palette.open();
         }}],
+
         ["themeButton", { buttonLabel: N('i', { class: "bi-palette-fill" }), label: "Customize", description: "Customize the site appearance", icon: "bi-palette-fill", onclick() {
-            website.toolbarOpen("toolbarTheme", true, this);
+            website.openToolbar("theme", true);
         }}]
-    ])
+    ]),
+
+    toolbars: new Map([
+        ["login", {
+            element: O("#toolbarLogin"),
+            name: "Account",
+            description: "View and edit your profile or log-in",
+            panelItem: "accountsButton",
+            onOpen() {
+                website.loginTabs.set(website.isLoggedIn? "account": "default", true);
+            }
+        }],
+
+        ["apps", {
+            element: O("#toolbarApps"),
+            name: "Apps",
+            description: "View applications",
+            panelItem: "appsButton"
+        }],
+
+        ["assistant", {
+            element: O("#toolbarAssistant"),
+            name: "Assistant",
+            description: "Open Assistant",
+            panelItem: "assistantButton",
+            onOpen() {
+                if(!window.__assistantLoading) {
+                    window._assistantCallback = null;
+                    window.__assistantLoading = true;
+
+                    setTimeout(async () => {
+                        M.LoadScript("/~/assets/js/assistant.js" + window.cacheKey, (error) => {
+                            if(error || typeof window._assistantCallback !== "function") {
+                                LS.Toast.show("Sorry, assistant failed to load. Please try again later.")
+                                return;
+                            }
+
+                            window._assistantCallback(website, kernel.auth);
+                        })
+                    }, 0);
+                }
+            }
+        }],
+
+        ["theme", {
+            element: O("#toolbarTheme"),
+            name: "Theme",
+            description: "Customize the site appearance",
+            panelItem: "themeButton"
+        }],
+
+        ["musicPlayer", {
+            element: O("#musicPlayer"),
+            name: "Music Player",
+            description: "Control music playback",
+            get panelItem() { return website.musicPlayer.musicStatusElement; }
+        }],
+
+        ["more", {
+            element: O("#toolbarMore"),
+            name: "More",
+            description: "More options",
+            panelItem: "moreButton"
+        }]
+    ]),
+
+    musicPlayer: new class MusicPlayer {
+        constructor() {
+            this.toolbarElement = O("#musicPlayer");
+            if(!this.toolbarElement) {
+                console.warn("Music Player toolbar element not found.");
+                return;
+            }
+
+            this.audio = new Audio();
+            this.titleElement = this.toolbarElement.querySelector(".music-player-title");
+            this.artistElement = this.toolbarElement.querySelector(".music-player-artist");
+            this.coverElement = this.toolbarElement.querySelector(".music-player-cover");
+
+            // Panel
+            this.musicStatusElement = N("button", {
+                id: "musicButton",
+                class: "pill",
+                tooltip: "Music Player <kbd>Ctrl+M</kbd>",
+                attr: { "aria-label": "Open music player" },
+                inner: [
+                    { tag: "i", class: "bi-vinyl-fill" },
+                    { tag: "span", class: "music-player-status", inner: "Stopped" }
+                ]
+            });
+            
+            this.musicStatusText = this.musicStatusElement.querySelector(".music-player-status");
+            
+            this.playButtonElement = this.toolbarElement.querySelector(".music-player-play-pause");
+            this.playButtonElement.onclick = () => {
+                this.playToggle();
+            };
+
+            this.repeatMode = "off";
+            this.repeatButtonElement = this.toolbarElement.querySelector(".music-player-repeat");
+            this.repeatButtonElement.onclick = () => {
+                this.toggleRepeatMode();
+            };
+
+            shortcutManager.register('ctrl+m', this.musicStatusElement.onclick = () => {
+                website.openToolbar("musicPlayer", true);
+            });
+
+            this.musicStatusElement.style.display = "none";
+            O(".headerLeftContainer").appendChild(this.musicStatusElement);
+        }
+
+        setCover(imageURL = null) {
+            this.toolbarElement.removeAttribute("ls-accent");
+            this.musicStatusElement.removeAttribute("ls-accent");
+            this.coverElement.style.display = "none";
+            if(!imageURL) {
+                return;
+            }
+
+            this.coverElement.onload = () => {
+                this.coverElement.style.display = "block";
+                
+                const color = LS.Color.fromImage(this.coverElement);
+                LS.Color.update("music-cover", color);
+
+                this.toolbarElement.setAttribute("ls-accent", "music-cover");
+                this.musicStatusElement.setAttribute("ls-accent", "music-cover");
+            }
+
+            this.coverElement.src = imageURL;
+        }
+
+        setDetails(details, playImmediately = false) {
+            this.currentDetails = {
+                title: details.title || "Unknown Title",
+                artist: details.artist || "Unknown Artist",
+                album: details.album || "",
+                cover: details.cover || null,
+                source: details.source || null
+            }
+
+            this.musicStatusText.textContent = this.titleElement.textContent = this.currentDetails.title;
+            this.artistElement.textContent = this.currentDetails.artist;
+            this.setCover(this.currentDetails.cover);
+
+            LS.Animation.fadeIn(this.musicStatusElement, 300, "right");
+            this.audio.src = this.currentDetails.source;
+
+            website.collapseItems.schedule();
+            setTimeout(() => {
+                website.collapseItems.schedule();
+            }, 10);
+
+            if(playImmediately) {
+                this.play();
+            }
+
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: this.currentDetails.title,
+                    artist: this.currentDetails.artist,
+                    album: this.currentDetails.album,
+                    artwork: this.currentDetails.artwork || this.currentDetails.cover ? [
+                        { src: this.currentDetails.cover, sizes: '96x96', type: 'image/png' },
+                        { src: this.currentDetails.cover, sizes: '128x128', type: 'image/png' },
+                        { src: this.currentDetails.cover, sizes: '192x192', type: 'image/png' },
+                        { src: this.currentDetails.cover, sizes: '256x256', type: 'image/png' },
+                        { src: this.currentDetails.cover, sizes: '384x384', type: 'image/png' },
+                        { src: this.currentDetails.cover, sizes: '512x512', type: 'image/png' }
+                    ] : []
+                });
+
+                navigator.mediaSession.setActionHandler('play', () => this.play());
+                navigator.mediaSession.setActionHandler('pause', () => this.pause());
+                navigator.mediaSession.setActionHandler('stop', () => {
+                    this.pause();
+                    this.stopped();
+                    this.audio.currentTime = 0;
+                });
+            }
+        }
+
+        stopped() {
+            this.musicStatusText.textContent = "Stopped";
+            this.titleElement.textContent = "No music playing";
+            this.artistElement.textContent = "";
+            this.setCover(null);
+            this.currentDetails = null;
+            LS.Animation.fadeOut(this.musicStatusElement, 300, "right");
+        }
+
+        playToggle() {
+            if(this.audio.paused) {
+                this.play();
+            } else {
+                this.pause();
+            }
+        }
+
+        play() {
+            this.audio.play();
+            this.playButtonElement.querySelector("i").className = "bi-pause-fill";
+        }
+
+        pause() {
+            this.audio.pause();
+            this.playButtonElement.querySelector("i").className = "bi-play-fill";
+        }
+
+        toggleRepeatMode() {
+            if(this.repeatMode === "off") {
+                this.repeatMode = "one";
+                this.repeatButtonElement.classList.add("active");
+                this.repeatButtonElement.querySelector("i").className = "bi-repeat-1";
+                this.repeatButtonElement.setAttribute("ls-tooltip", LS.Tooltips.set("Repeat One").position(this.repeatButtonElement).container.textContent);
+                this.audio.loop = true;
+            } else if(this.repeatMode === "one") {
+                this.repeatMode = "all";
+                this.repeatButtonElement.querySelector("i").className = "bi-arrow-right";
+                this.repeatButtonElement.setAttribute("ls-tooltip", LS.Tooltips.set("Repeat All").position(this.repeatButtonElement).container.textContent);
+                this.audio.loop = false;
+            } else {
+                this.repeatMode = "off";
+                this.repeatButtonElement.classList.remove("active");
+                this.repeatButtonElement.querySelector("i").className = "bi-repeat";
+                this.repeatButtonElement.setAttribute("ls-tooltip", LS.Tooltips.set("Repeat Off").position(this.repeatButtonElement).container.textContent);
+                this.audio.loop = false;
+            }
+        }
+    },
 }
 
 website.events = new LS.EventHandler(website);
@@ -1584,7 +1814,7 @@ const kernel = new class Kernel extends LoggerContext {
 
     windows = new Set();
 
-    shortcutManager = new LS.ShortcutManager();
+    shortcutManager = shortcutManager;
 
     queryParams = LS.Util.params();
     userFragment = LS.Reactive.wrap("user", {});
@@ -2148,67 +2378,9 @@ const kernel = new class Kernel extends LoggerContext {
 
         palette.register([
             {
-                name: "set-accent",
-                icon: "bi-palette2",
-                description: "Set an accent color",
-
-                onCalled(color) {
-                    if(color.startsWith("#")) {
-                        LS.Color.update('custom', color);
-                        LS.Color.setAccent('custom');
-                    } else {
-                        LS.Color.setAccent(color);
-                    }
-
-                    "white" === color ? localStorage.removeItem("ls-accent") : localStorage.setItem("ls-accent", color)
-                },
-
-                inputs: [
-                    { name: "preset", type: "list", list: [ { name: "custom", icon: "bi-palette2", type: "color" }, ...website.ACCENT_COLORS.map(accent => ({
-                        name: accent,
-                        icon: `bi-circle-fill`,
-                        accentColor: accent,
-                        value: accent
-                    }))] }
-                ]
-            },
-
-            {
-                name: "set-theme",
-                icon: "bi-palette",
-                description: "Set user theme",
-                onCalled(theme) {
-                    if (theme === "system") {
-                        localStorage.removeItem("ls-theme"); LS.Color.setAdaptiveTheme();
-                    } else {
-                        website.theme = theme;
-                    }
-                },
-                inputs: [
-                    {
-                        name: "theme",
-                        type: "list",
-                        list: [
-                            { name: "Light", value: "light", icon: "bi-brightness-high" },
-                            { name: "Dark", value: "dark", icon: "bi-moon" },
-                            { name: "System", value: "system", icon: "bi-laptop" }
-                        ]
-                    }
-                ]
-            },
-
-            {
-                name: "clear",
-                icon: "bi-trash",
-                alias: ["clear-terminal", "cls"],
-                description: "Clear the terminal output",
-                onCalled() { terminalOutput.innerHTML = "" }
-            },
-
-            {
                 name: "kernel-info",
                 alias: ["kernel-version", "version"],
-                icon: 'bi-info',
+                icon: 'bi-cpu-fill',
                 description: "Show kernel information",
                 async onCalled() {
                     terminalOutput.appendChild(N('img', {
@@ -2346,6 +2518,93 @@ const kernel = new class Kernel extends LoggerContext {
             },
 
             {
+                name: "set-accent",
+                icon: "bi-palette2",
+                description: "Set an accent color",
+
+                onCalled(color) {
+                    if(color.startsWith("#")) {
+                        LS.Color.update('custom', color);
+                        LS.Color.setAccent('custom');
+                    } else {
+                        LS.Color.setAccent(color);
+                    }
+
+                    "white" === color ? localStorage.removeItem("ls-accent") : localStorage.setItem("ls-accent", color)
+                },
+
+                inputs: [
+                    { name: "preset", type: "list", list: [ { name: "custom", icon: "bi-palette2", type: "color" }, ...website.ACCENT_COLORS.map(accent => ({
+                        name: accent,
+                        icon: `bi-circle-fill`,
+                        accentColor: accent,
+                        value: accent
+                    }))] }
+                ]
+            },
+
+            {
+                name: "set-theme",
+                icon: "bi-palette",
+                description: "Set user theme",
+                onCalled(theme) {
+                    if (theme === "system") {
+                        localStorage.removeItem("ls-theme"); LS.Color.setAdaptiveTheme();
+                    } else {
+                        website.theme = theme;
+                    }
+                },
+                inputs: [
+                    {
+                        name: "theme",
+                        type: "list",
+                        list: [
+                            { name: "Light", value: "light", icon: "bi-brightness-high" },
+                            { name: "Dark", value: "dark", icon: "bi-moon" },
+                            { name: "System", value: "system", icon: "bi-laptop" }
+                        ]
+                    }
+                ]
+            },
+
+            {
+                name: "toolbar",
+                icon: "bi-tools",
+                description: "Toolbars",
+                children: [
+                    {
+                        name: "open",
+                        description: "Open a toolbar",
+
+                        onCalled(toolbar) {
+                            website.openToolbar(toolbar);
+                        },
+
+                        inputs: [
+                            {
+                                name: "toolbar",
+                                type: "list",
+                                list: [
+                                    { name: "Accounts", value: "login", icon: "bi-person-circle" },
+                                    { name: "Apps", value: "apps", icon: "bi-app" },
+                                    { name: "Music Player", value: "musicPlayer", icon: "bi-music-note" },
+                                    { name: "Customize website", value: "theme", icon: "bi-brush" },
+                                    { name: "Assistant", value: "assistant", icon: "bi-robot" }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        name: "close",
+                        description: "Close the toolbar",
+                        onCalled() {
+                            website.closeToolbar();
+                        }
+                    }
+                ]
+            },
+
+            {
                 name: "echo",
                 alias: ["print"],
                 icon: "bi-chat",
@@ -2354,6 +2613,22 @@ const kernel = new class Kernel extends LoggerContext {
                 inputs: [
                     { name: "text", type: "string", description: "Text to echo" }
                 ]
+            },
+
+            {
+                name: "clear",
+                icon: "bi-trash",
+                alias: ["clear-terminal", "cls"],
+                description: "Clear the terminal output",
+                onCalled() { terminalOutput.innerHTML = "" }
+            },
+
+            {
+                name: "close",
+                alias: ["exit"],
+                icon: "bi-x-circle",
+                description: "Close the command palette",
+                onCalled() { website.palette.close() }
             }
         ]);
     }
@@ -2364,7 +2639,7 @@ const kernel = new class Kernel extends LoggerContext {
         const container = O(".headerButtons");
 
         moreButton.addEventListener("click", () => {
-            website.toolbarOpen("toolbarMore", true, moreButton);
+            website.openToolbar("more", true);
         });
 
         const menu = O("#toolbarMore");
@@ -2380,12 +2655,6 @@ const kernel = new class Kernel extends LoggerContext {
             }
         }
 
-        const musicButton = document.getElementById("musicButton");
-
-        this.shortcutManager.register('ctrl+m', musicButton.onclick = () => {
-            website.toolbarOpen("musicPlayer", true, musicButton);
-        });
-
         const collapseItems = new website.utils.FrameScheduler(() => {
             const availableSpace = nav.clientWidth - navPadding - gap - moreButton.clientWidth - (nav.firstElementChild?.clientWidth || 0);
 
@@ -2393,12 +2662,13 @@ const kernel = new class Kernel extends LoggerContext {
             for (const item of website.panelItems.values()) {
                 if(!item.element) {
                     const icon = item.showIcon === false ? null : { tag: "i", class: item.icon };
+                    const buttonLabel = item.buttonLabel || item.label;
 
                     item.element = LS.Create("button", {
                         class: "toolbar-button pill elevated",
                         attributes: { "aria-label": item.description },
                         tooltip: item.tooltip || item.label,
-                        inner: item.showLabel !== false? [icon, item.buttonLabel || item.label]: icon,
+                        inner: item.showLabel !== false? [icon, N("span", { inner: buttonLabel, class: typeof buttonLabel === "string" ? "label" : "" })]: icon,
                         onclick: () => {
                             if(item.onclick) item.onclick.call(item.element);
                         }
@@ -2438,8 +2708,8 @@ const kernel = new class Kernel extends LoggerContext {
             }
 
             // Close the toolbar if no items are collapsed and it's currently open
-            if (!hasCollapsedItems && website.isToolbarOpen && website.headerWindowCurrent === "toolbarMore") {
-                website.toolbarClose();
+            if (!hasCollapsedItems && website.isToolbarOpen && website.currentToolbar === "toolbarMore") {
+                website.closeToolbar();
             }
 
             moreButton.style.display = (availableSpace + moreButton.clientWidth) < takenSpace ? "inline-flex" : "none";
@@ -2458,9 +2728,17 @@ const kernel = new class Kernel extends LoggerContext {
         });
 
         collapseItems.schedule();
-        addEventListener("resize", () => {
+        window.addEventListener("resize", () => {
             collapseItems.schedule();
         });
+
+        if(window.visualViewport) {
+            window.visualViewport.addEventListener("resize", () => {
+                collapseItems.schedule();
+            });
+        }
+
+        website.collapseItems = collapseItems;
 
         O("#logOutButton").on("click", function (){
             kernel.auth.logout(() => {
@@ -2468,7 +2746,7 @@ const kernel = new class Kernel extends LoggerContext {
                     timeout: 2000
                 });
 
-                website.toolbarClose();
+                website.closeToolbar();
                 kernel.loadUser();
                 website.loginTabs.set("default");
             });
@@ -2507,7 +2785,7 @@ const kernel = new class Kernel extends LoggerContext {
 
             // Update user without reloading
             kernel.loadUser().then(() => {
-                website.toolbarClose();
+                website.closeToolbar();
                 website.loginTabs.set("default");
             });
         }
@@ -2629,7 +2907,7 @@ const kernel = new class Kernel extends LoggerContext {
         }
 
         website.viewportElement.on("click", () => {
-            website.toolbarClose();
+            website.closeToolbar();
         })
     }
 

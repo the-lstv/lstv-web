@@ -144,10 +144,6 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="21" height="15" fill="none"><path d="M19.1689 12.3682V13.7529H19.1182L18.3242 12.3682H19.1689ZM14.9346 13.7529H2.3457L8.63965 2.81445L14.9346 13.7529ZM19.1689 6.82617V8.48926H16.0996L15.1465 6.82617H19.1689ZM19.1689 1.5625V2.94727H12.9219L12.1279 1.5625H19.1689Z" stroke="currentColor" stroke-width="2.494"/></svg>
                     <span .headerTitle>LSTV</span> <span .headerText />
                 </a>
-
-                <button #musicButton ls-tooltip="Music player <kbd>Ctrl+M</kbd>" .pill aria-label="Open music player">
-                    <i .bi-vinyl-fill /> <span .music-player-status>Stopped</span>
-                </button>
             </div>
 
             <div .headerButtonsContainer>
@@ -352,7 +348,8 @@
                 </div>
             </div>
 
-            <div .toolbar #musicPlayer>
+            <div .toolbar .left #musicPlayer>
+                <img .music-player-cover alt="Music cover art" crossorigin="anonymous">
                 <div .music-player-info>
                     <span .music-player-title>Lorem Ipsum</span>
                     <span .music-player-artist>Dolor Sit Amet</span>
@@ -369,7 +366,7 @@
                     <button .circle .clear .music-player-prev ls-tooltip aria-label="Previous"><i .bi-skip-start-fill /></button>
                     <button .circle .clear .music-player-play-pause ls-tooltip aria-label="Play/Pause"><i .bi-play-fill /></button>
                     <button .circle .clear .music-player-next ls-tooltip aria-label="Next"><i .bi-skip-end-fill /></button>
-                    <button .circle .clear .music-player-repeat ls-tooltip aria-label="Repeat"><i .bi-arrow-repeat /></button>
+                    <button .circle .clear .music-player-repeat ls-tooltip="Repeat Off" aria-label="Toggle repeat modes"><i .bi-arrow-repeat /></button>
                 </div>
             </div>
 
