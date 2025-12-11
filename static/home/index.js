@@ -426,10 +426,14 @@ website.register(document.currentScript, function(context, container) {
                     listElement.add(appElement);
                 }
 
+                // tabs.set("app-setup");
+            });
+
+            container.querySelector(".create-app-button").addEventListener("click", function() {
                 tabs.set("app-setup");
             });
 
-            container.get("#app-setup-form").on("submit", function() {
+            container.querySelector("#app-setup-form").addEventListener("submit", function() {
                 const form = document.forms['app-setup-form'];
                 const payload = {
                     name: String(form['app-name'].value).trim(),

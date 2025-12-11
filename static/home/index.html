@@ -58,7 +58,7 @@
 
         <div .sidebar-content .ls-slide-animation>
             <ls-tab tab-id="home" tab-title="Home">
-                <svg .home-triangle xmlns="http://www.w3.org/2000/svg" viewBox="0 0 165 143" fill="none"><path d="M82.273 0l82.273 142.5H0L82.273 0z" fill="currentColor"/></svg>
+                <svg .home-triangle viewBox="0 0 165 143" fill="none"><path d="M82.273 0l82.273 142.5H0L82.273 0z" fill="currentColor"/></svg>
                 <div style="text-align: center">
                     <h2 style="margin: 0">Welcome, {{ user.displayname:DisplayName }}!</h2>
                     <h3 style="margin: 0">Select what do you want to do.</h3>
@@ -246,6 +246,7 @@
             <ls-tab tab-id="apps" tab-title="My applications">D</ls-tab>
 
             <ls-tab tab-id="dev" tab-title="Developer Applications">
+                <button .create-app-button><i .bi-plus-lg /> Create application</button>
                 <div #dev-apps-list></div>
             </ls-tab>
 

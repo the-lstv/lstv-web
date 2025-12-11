@@ -1642,15 +1642,17 @@ const website = {
 
             this.menuContainer = this.toolbarElement.querySelector(".music-menu");
 
-            let menuOpen = false;
-            this.toolbarElement.querySelector(".music-menu-toggle").onclick = () => {
-                menuOpen = !menuOpen;
-                if(!menuOpen) {
-                    LS.Animation.fadeOut(this.menuContainer, 300, "bottom");
-                    return;
+            if(this.menuContainer) {
+                let menuOpen = false;
+                this.toolbarElement.querySelector(".music-menu-toggle").onclick = () => {
+                    menuOpen = !menuOpen;
+                    if(!menuOpen) {
+                        LS.Animation.fadeOut(this.menuContainer, 300, "bottom");
+                        return;
+                    }
+    
+                    LS.Animation.fadeIn(this.menuContainer, 300, "bottom");
                 }
-
-                LS.Animation.fadeIn(this.menuContainer, 300, "bottom");
             }
 
             // Panel
