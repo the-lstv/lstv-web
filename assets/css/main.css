@@ -1177,14 +1177,6 @@ ls-text-input.has-textarea {
     max-width: 150px;
 }
 
-.music-player-status {
-    text-overflow: ellipsis;
-    min-width: 0;
-    overflow: hidden;
-    white-space: nowrap;
-    flex: 1 1 auto;
-}
-
 #musicPlayer {
     user-select: none;
     overflow: visible;
@@ -1222,6 +1214,7 @@ ls-text-input.has-textarea {
     gap: 8px;
     width: 100%;
     z-index: 2;
+    overflow: hidden;
 }
 
 .music-player-controls {
@@ -1290,6 +1283,16 @@ ls-text-input.has-textarea {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+}
+
+.text-overflow-nowrap {
+    min-width: 0;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    flex: 1 1 auto;
+    width: 100%;
+    text-align: left;
 }
 
 .music-player-artist {

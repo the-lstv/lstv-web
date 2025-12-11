@@ -1663,7 +1663,7 @@ const website = {
                 attr: { "aria-label": "Open music player" },
                 inner: [
                     { tag: "i", class: "bi-vinyl-fill" },
-                    { tag: "span", class: "music-player-status", inner: "Stopped" }
+                    { tag: "span", class: "music-player-status text-overflow-nowrap", inner: "Stopped" }
                 ]
             });
             
@@ -2604,6 +2604,7 @@ const kernel = new class Kernel extends LoggerContext {
 
                         onCalled(toolbar) {
                             website.openToolbar(toolbar);
+                            website.palette.close();
                         },
 
                         inputs: [

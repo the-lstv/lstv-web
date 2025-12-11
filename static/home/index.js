@@ -425,8 +425,6 @@ website.register(document.currentScript, function(context, container) {
 
                     listElement.add(appElement);
                 }
-
-                // tabs.set("app-setup");
             });
 
             container.querySelector(".create-app-button").addEventListener("click", function() {
