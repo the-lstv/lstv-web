@@ -1638,6 +1638,20 @@ const website = {
             this.titleElement = this.toolbarElement.querySelector(".music-player-title");
             this.artistElement = this.toolbarElement.querySelector(".music-player-artist");
             this.coverElement = this.toolbarElement.querySelector(".music-player-cover");
+            this.coverArtElement = this.toolbarElement.querySelector(".music-player-art");
+
+            this.menuContainer = this.toolbarElement.querySelector(".music-menu");
+
+            let menuOpen = false;
+            this.toolbarElement.querySelector(".music-menu-toggle").onclick = () => {
+                menuOpen = !menuOpen;
+                if(!menuOpen) {
+                    LS.Animation.fadeOut(this.menuContainer, 300, "bottom");
+                    return;
+                }
+
+                LS.Animation.fadeIn(this.menuContainer, 300, "bottom");
+            }
 
             // Panel
             this.musicStatusElement = N("button", {
@@ -1672,16 +1686,20 @@ const website = {
             O(".headerLeftContainer").appendChild(this.musicStatusElement);
         }
 
-        setCover(imageURL = null) {
+        setCover(imageURL = null, coverArtURL = null) {
             this.toolbarElement.removeAttribute("ls-accent");
             this.musicStatusElement.removeAttribute("ls-accent");
             this.coverElement.style.display = "none";
+            this.toolbarElement.classList.remove("has-cover");
+
             if(!imageURL) {
                 return;
             }
 
             this.coverElement.onload = () => {
                 this.coverElement.style.display = "block";
+                this.coverArtElement.style.display = "block";
+                this.toolbarElement.classList.add("has-cover");
                 
                 const color = LS.Color.fromImage(this.coverElement);
                 LS.Color.update("music-cover", color);
@@ -1690,7 +1708,13 @@ const website = {
                 this.musicStatusElement.setAttribute("ls-accent", "music-cover");
             }
 
+            this.coverElement.onerror = () => {
+                this.coverElement.style.display = "none";
+                this.coverArtElement.style.display = "none";
+            }
+
             this.coverElement.src = imageURL;
+            this.coverArtElement.src = coverArtURL || imageURL;
         }
 
         setDetails(details, playImmediately = false) {

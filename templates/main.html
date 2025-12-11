@@ -181,12 +181,12 @@
         </div>
 
         <div #toolbars .level-1 .ls-slide-animation style="display: none">
-            <div .toolbar #toolbarApps>
+            <div .toolbar .toolbar-styled #toolbarApps>
                 <h3>Applications</h3>
                 <div></div>
             </div>
 
-            <div .toolbar #toolbarTheme>
+            <div .toolbar .toolbar-styled #toolbarTheme>
                 <h3>Customize</h3>
                 <ls-box .elevated .inline>
                     <button .elevated ls-tooltip aria-label="Dark theme" onclick="website.theme = 'dark'"> <i class="bi-moon-stars-fill" /> </button>
@@ -210,7 +210,7 @@
                 </ls-div>
             </div>
 
-            <div .toolbar .level-n1 #toolbarAssistant>
+            <div .toolbar .toolbar-styled .level-n1 #toolbarAssistant>
                 <div .loading>
                     <div .loader></div>
                 </div>
@@ -239,7 +239,7 @@
                 </div>
             </div>
 
-            <div .toolbar #toolbarLogin .level-1 .ls-slide-animation>
+            <div .toolbar .toolbar-styled #toolbarLogin .level-1 .ls-slide-animation>
                 <div .login-toolbar-page tab-id="default" #loginPopup>
                     <svg width="45" height="37" fill="none"><rect y="17" width="30" height="10" rx="5" fill="#fcc21b"/><rect x="15" width="30" height="10" rx="5" fill="#ed6c30"/><g fill="#40c0e7"><rect width="10" height="10" rx="5"/><rect x="35" y="17" width="10" height="10" rx="5"/></g></svg>
 
@@ -349,28 +349,70 @@
             </div>
 
             <div .toolbar .left #musicPlayer>
-                <img .music-player-cover alt="Music cover art" crossorigin="anonymous">
-                <div .music-player-info>
-                    <span .music-player-title>Lorem Ipsum</span>
-                    <span .music-player-artist>Dolor Sit Amet</span>
-                </div>
-
-                <div .music-player-progress>
-                    <div .music-player-progress-bar>
-                        <div .music-player-progress-filled></div>
+                <div .music-player .toolbar-styled>
+                    <img .music-player-cover alt="Music cover background" crossorigin="anonymous">
+                    <img .music-player-art alt="Music cover art" crossorigin="anonymous">
+    
+                    <div .music-player-container>
+                        <div .music-player-info>
+                            <span .music-player-title>Lorem Ipsum</span>
+                            <span .music-player-artist>Dolor Sit Amet</span>
+                        </div>
+        
+                        <div .music-player-progress>
+                            <div .music-player-progress-bar>
+                                <div .music-player-progress-filled></div>
+                            </div>
+                        </div>
+        
+                        <div .music-player-controls>
+                            <button .circle .clear .music-player-like ls-tooltip aria-label="Like"><i .bi-hand-thumbs-up /></button>
+                            <button .circle .clear .music-player-prev ls-tooltip aria-label="Previous"><i .bi-skip-start-fill /></button>
+                            <button .circle .clear .music-player-play-pause ls-tooltip aria-label="Play/Pause"><i .bi-play-fill /></button>
+                            <button .circle .clear .music-player-next ls-tooltip aria-label="Next"><i .bi-skip-end-fill /></button>
+                            <button .circle .clear .music-player-repeat ls-tooltip="Repeat Off" aria-label="Toggle repeat modes"><i .bi-arrow-repeat /></button>
+                        </div>
                     </div>
                 </div>
 
-                <div .music-player-controls>
-                    <button .circle .clear .music-player-like ls-tooltip aria-label="Like"><i .bi-hand-thumbs-up /></button>
-                    <button .circle .clear .music-player-prev ls-tooltip aria-label="Previous"><i .bi-skip-start-fill /></button>
-                    <button .circle .clear .music-player-play-pause ls-tooltip aria-label="Play/Pause"><i .bi-play-fill /></button>
-                    <button .circle .clear .music-player-next ls-tooltip aria-label="Next"><i .bi-skip-end-fill /></button>
-                    <button .circle .clear .music-player-repeat ls-tooltip="Repeat Off" aria-label="Toggle repeat modes"><i .bi-arrow-repeat /></button>
+                <div .music-menu .toolbar-styled style="display: none">
+                    StuffLS.Animation.fadeIn($0, 300, "bottom")
+LS.Animation.fadeIn($0, 300, "bottom")
+LS.Animation.fadeIn($0, 300, "bottom")
+LS.Animation.fadeIn($0, 300, "bottom")
+LS.Animation.fadeIn($0, 300, "bottom")
+LS.Animation.fadeIn($0, 300, "bottom")
+LS.Animation.fadeIn($0, 300, "bottom")
+LS.Animation.fadeIn($0, 300, "bottom")
+LS.Animation.fadeIn($0, 300, "bottom")
+LS.Animation.fadeIn($0, 300, "bottom")
+LS.Animation.fadeIn($0, 300, "bottom")
+LS.Animation.fadeIn($0, 300, "bottom")
+LS.Animation.fadeIn($0, 300, "bottom")
+LS.Animation.fadeIn($0, 300, "bottom")
+LS.Animation.fadeIn($0, 300, "bottom")
+LS.Animation.fadeIn($0, 300, "bottom")
+LS.Animation.fadeIn($0, 300, "bottom")
+LS.Animation.fadeIn($0, 300, "bottom")
+LS.Animation.fadeIn($0, 300, "bottom")
+LS.Animation.fadeIn($0, 300, "bottom")
+LS.Animation.fadeIn($0, 300, "bottom")
+LS.Animation.fadeIn($0, 300, "bottom")
+LS.Animation.fadeIn($0, 300, "bottom")
+LS.Animation.fadeIn($0, 300, "bottom")
+LS.Animation.fadeIn($0, 300, "bottom")
+LS.Animation.fadeIn($0, 300, "bottom")
+LS.Animation.fadeIn($0, 300, "bottom")
+LS.Animation.fadeIn($0, 300, "bottom")
+LS.Animation.fadeIn($0, 300, "bottom")
+LS.Animation.fadeIn($0, 300, "bottom")
+
                 </div>
+
+                <button .music-menu-toggle style="padding: 0px 12px" aria-label="Expand music player"><i .bi-caret-down-fill /></i></button>
             </div>
 
-            <div .toolbar #toolbarMore></div>
+            <div .toolbar .toolbar-styled #toolbarMore></div>
 
         </div>
 
