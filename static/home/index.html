@@ -21,42 +21,64 @@
 </div>
 
 <div .container .width-container .level-0>
+    <div .loadingIndicator>
+        <div .ui-loader></div> <br>
+        <h3>Loading...</h3>
+    </div>
+
     <div .container-content .settings-container style="display: none">
-        <div .menu .sidebar-items .level-n1>
-            <div .grouped-buttons>
-                <a .ls-button .elevated href="/home" data-tab-id="home"><i .bi-house-fill /><span>Home</span></a>
-            </div>
+        <ls-tabs .menu .sidebar-items .level-n1>
+            <ls-tab tab-id="home">
+                <div .grouped-buttons>
+                    <a .ls-button .elevated href="/home" data-tab-id="home"><i .bi-house-fill /><span>Home</span></a>
+                </div>
 
-            <span .menu-category-title>Account</span>
+                <span .menu-category-title>Account</span>
 
-            <div .grouped-buttons>
-                <a .ls-button .elevated href="/home/account" data-tab-id="account"><i .bi-person-fill /><span>Account</span></a>
-                <a .ls-button .elevated href="/home/profile" data-tab-id="profile"><i .bi-person-badge /><span>Profile</span></a>
-            </div>
+                <div .grouped-buttons>
+                    <a .ls-button .elevated href="/home/account" data-tab-id="account"><i .bi-person-fill /><span>Account</span></a>
+                    <a .ls-button .elevated href="/home/profile" data-tab-id="profile"><i .bi-person-badge /><span>Profile</span></a>
+                </div>
 
-            <span .menu-category-title>Applications</span>
-            <div .grouped-buttons>
-                <a .ls-button .elevated href="/home/apps" data-tab-id="apps"><i .bi-app-indicator /><span>Apps</span></a>
-            </div>
-            
-            <span .menu-category-title>Developers</span>
-            <div .grouped-buttons>
-                <a .ls-button .elevated href="/home/dev" data-tab-id="dev"><i .bi-app /><span>Applications</span></a>
-                <a .ls-button .elevated href="/home/sub-users" data-tab-id="sub-users"><i .bi-robot /><span>Bot accounts</span></a>
-                <a .ls-button .elevated href="/home/keys" data-tab-id="keys"><i .bi-key-fill /><span>API Keys</span></a>
-                <a .ls-button .elevated href="/home/api" data-tab-id="api"><i .bi-file-earmark-text /><span>API Documentation</span></a>
-            </div>
+                <span .menu-category-title>Applications</span>
+                <div .grouped-buttons>
+                    <a .ls-button .elevated href="/home/apps" data-tab-id="apps"><i .bi-app-indicator /><span>Apps</span></a>
+                </div>
+                
+                <span .menu-category-title>Developers</span>
+                <div .grouped-buttons>
+                    <a .ls-button .elevated href="/home/applications" data-tab-id="applications"><i .bi-app /><span>Applications</span></a>
+                    <a .ls-button .elevated href="/home/sub-users" data-tab-id="sub-users"><i .bi-robot /><span>Bot accounts</span></a>
+                    <a .ls-button .elevated href="/home/keys" data-tab-id="keys"><i .bi-key-fill /><span>API Keys</span></a>
+                    <a .ls-button .elevated href="/home/api" data-tab-id="api"><i .bi-file-earmark-text /><span>API Documentation</span></a>
+                </div>
 
-            <span .menu-category-title>Help</span>
-            <div .grouped-buttons>
-                <a .ls-button .elevated href="/home/support" data-tab-id="support"><i .bi-bug-fill /><span>Report a bug</span></a>
-                <a .ls-button .elevated href="/chat"><i .bi-chat-left-fill /><span>Write us</span></a>
-                <a .ls-button .elevated target="_blank" href="/tos"><i .bi-shield-lock-fill /><span>Terms Of Service</span><i .bi-box-arrow-up-right .external-indicator /></a>
-                <a .ls-button .elevated target="_blank" href="/privacy-policy"><i .bi-shield-lock /><span>Privacy Policy</span><i .bi-box-arrow-up-right .external-indicator /></a>
-            </div>
-        </div>
+                <span .menu-category-title>Help</span>
+                <div .grouped-buttons>
+                    <a .ls-button .elevated href="/home/support" data-tab-id="support"><i .bi-bug-fill /><span>Report a bug</span></a>
+                    <a .ls-button .elevated href="/chat/user/admin"><i .bi-chat-left-fill /><span>Write us</span></a>
+                    <a .ls-button .elevated target="_blank" href="/tos"><i .bi-shield-lock-fill /><span>Terms Of Service</span><i .bi-box-arrow-up-right .external-indicator /></a>
+                    <a .ls-button .elevated target="_blank" href="/privacy-policy"><i .bi-shield-lock /><span>Privacy Policy</span><i .bi-box-arrow-up-right .external-indicator /></a>
+                </div>
+            </ls-tab>
 
-        <div .sidebar-content .ls-slide-animation>
+            <ls-tab tab-id="application">
+                <div .grouped-buttons>
+                    <a .ls-button .elevated href="/home/applications"><i .bi-arrow-return-left /><span>Back</span></a>
+                </div>
+
+                <span .menu-category-title>Edit</span>
+
+                <div .grouped-buttons>
+                    <a base-href="/home/applications/$id/details" .ls-button .elevated><i .bi-pencil-fill /><span>Edit Application</span></a>
+                    <a base-href="/home/applications/$id/store" .ls-button .elevated><i .bi-shop /><span>Store Page</span></a>
+                    <a base-href="/home/applications/$id/team" .ls-button .elevated><i .bi-people-fill /><span>Team</span></a>
+                    <a base-href="/home/applications/$id/delete" .ls-button .elevated ls-accent="red"><i .bi-trash-fill /><span>Delete Application</span></a>
+                </div>
+            </ls-tab>
+        </ls-tabs>
+
+        <div .sidebar-content>
             <ls-tab tab-id="home" tab-title="Home">
                 <svg .home-triangle viewBox="0 0 165 143" fill="none"><path d="M82.273 0l82.273 142.5H0L82.273 0z" fill="currentColor"/></svg>
                 <div style="text-align: center">
@@ -247,302 +269,43 @@
                 You currently don't have any connected applications.
             </ls-tab>
 
-            <ls-tab tab-id="dev" tab-title="Developer Applications">
-                <button .create-app-button><i .bi-plus-lg /> Create application</button>
-                <div #dev-apps-list></div>
+            <ls-tab tab-id="applications" tab-title="Developer Applications">
+                <button .create-app-button .pill .elevated><i .bi-plus-lg /> Create application</button>
+                <div #dev-apps-list>
+                    <div .loadingContent></div>
+                </div>
             </ls-tab>
 
-            <ls-tab tab-id="app-setup" tab-title="Create an app" #app-setup-tab>
-                <form  #app-setup-form onsubmit="return false">
+            <ls-tab tab-id="applications/create" tab-title="Create an app" #app-setup-tab>
+                <form #app-setup-form onsubmit="return false">
                     <div style="display: flex; overflow: auto; flex-direction: column; gap: 32px; padding-bottom: 80px">
                         <h1 style="margin: 0">Create an application!</h1>
                         <input class="clear" type="text" id="app-name" placeholder="Project name" aria-label="Project name">
-        
+
                         <div>
-                            <label for="app-description">Description <ls-box class="inline text-tag">Optional</ls-box></label> <br>
+                            <label for="app-description">Description <ls-box class="inline text-tag">Optional</ls-box> <i class="bi-markdown-fill" ls-tooltip="Supports markdown"></i></label> <br>
                             <textarea style="height: 150px; resize: none; margin-top: 10px" id="app-description" placeholder="Enter a brief description of your application"></textarea> <br>
                         </div>
-        
+
                         <div>
-                            <label for="app-type">Primary purpose <ls-box class="inline text-tag">Optional</ls-box></label> <br>
-                            <ls-select id="app-type" style="margin-top: 10px" placeholder="What are you building?">
-                                <ls-option value="web">Web Application</ls-option>
-                                <ls-option value="software">Mobile/Desktop Application</ls-option>
-                                <ls-option value="game">Game</ls-option>
-                                <ls-option value="bot">Bot</ls-option>
-                                <ls-option value="other">Other</ls-option>
-                            </ls-select>
-        
-                            <script>
-                            LS.LoadComponent(class Menu extends LS.Component {
-                                static index = 0;
-
-                                constructor(element, options = {}) {
-                                    super();
-                                    this.isOpen = false;
-
-                                    this.items = [];
-                                    this.selectedItem = null;
-        
-                                    const isElement = element instanceof HTMLElement;
-        
-                                    this.container = (isElement? element : N({
-                                        class: "ls-menu"
-                                    }));
-
-                                    this.options = LS.Util.defaults({
-                                        fixed: false,
-                                    }, options || !isElement? element: {});
-
-                                    if(this.options.fixed) {
-                                        LS.once("body-available", () => {
-                                            this.container.addTo(LS._topLayer.querySelector('.ls-dropdown-layer') || N({
-                                                class: "ls-dropdown-layer"
-                                            }).addTo(LS._topLayer));
-                                        });
-                                    }
-                                }
-
-                                render() {
-                                    for(const item of this.items) {
-                                        if(!item.element) {
-                                            if(item.type === "label") {
-                                                item.element = N({
-                                                    class: "ls-menu-label",
-                                                    textContent: item.text
-                                                });
-                                            } else {
-                                                item.element = N({
-                                                    class: "ls-list-item ls-menu-item",
-                                                    textContent: item.text,
-                                                    tabindex: -1
-                                                });
-
-                                                item.element.dataset.value = item.value;
-                                                item.element.addEventListener('click', (event) => {
-                                                    event.stopPropagation();
-                                                    this.select(item);
-                                                });
-                                            }
-                                        }
-
-                                        this.container.appendChild(item.element);
-                                    }
-                                }
-
-                                select(item) {
-                                    this.emit("select", [item]);
-                                    this.selectedItem = item;
-                                }
-
-                                add(item) {
-                                    this.items.push(item);
-                                }
-
-                                remove(item) {
-                                    const index = this.items.indexOf(item);
-                                    if(index === -1) return;
-                                    this.items.splice(index, 1);
-                                    this.container.removeChild(item.element);
-                                }
-        
-                                addItems(items) {
-                                    for(const item of items) {
-                                        this.add(item);
-                                    }
-                                }
-
-                                toggle() {
-                                    if(this.isOpen) {
-                                        this.close();
-                                    } else {
-                                        this.open();
-                                    }
-                                }
-
-                                open() {
-                                    if(this.isOpen) return;
-                                    this.isOpen = true;
-                                    this.emit("open");
-
-                                    if(LS.Animation) {
-                                        LS.Animation.fadeIn(this.container, 200, "down");
-                                    } else {
-                                        this.container.style.display = 'block';
-                                    }
-                                }
-                                
-                                close() {
-                                    if(!this.isOpen) return;
-                                    this.isOpen = false;
-                                    this.emit("close");
-
-                                    if(LS.Animation) {
-                                        LS.Animation.fadeOut(this.container, 200, "down");
-                                    } else {
-                                        this.container.style.display = 'none';
-                                    }
-                                }
-
-                                navigate(direction) {
-                                    if(this.items.length === 0) return;
-        
-                                    let currentIndex = this.items.findIndex(opt => opt.value === this.selectedItem?.value);
-                                    let newIndex = direction === 1 
-                                        ? Math.min(currentIndex + 1, this.items.length - 1)
-                                        : Math.max(currentIndex - 1, 0);
-        
-                                    this.select(this.items[newIndex]);
-                                }
-                            }, { global: true, name: "Menu" });
-
-                            customElements.define('ls-select', class LSSelect extends HTMLElement {
-                                constructor() {
-                                    super();
-                                    this.options = [];
-                                }
-
-                                connectedCallback() {
-                                    if(!LS.GetComponent("Menu")) {
-                                        console.error("LSSelect requires LS.Menu component to be loaded.");
-
-                                        LS.on("component-loaded", (component) => {
-                                            if(component.name === "Menu") {
-                                                this.connectedCallback();
-                                                return LS.REMOVE_LISTENER;
-                                            }
-                                        });
-                                        return;
-                                    }
-
-                                    this.menu = new LS.Menu({ fixed: true, searchable: this.hasAttribute('searchable') });
-
-                                    this.menu.on("select", (item) => {
-                                        this.handle.textContent = item.text;
-                                        this.dispatchEvent(new Event('change', { bubbles: true, detail: { value: item.value, item } }));
-                                    });
-
-                                    this.menu.on("open", (item) => {
-                                        this.setAttribute('aria-expanded', 'true');
-
-                                        // Positioning
-                                        const rect = this.getBoundingClientRect();
-                                        this.menu.container.style.minWidth = rect.width + 'px';
-                                        this.menu.container.style.left = rect.left + 'px';
-                                        this.menu.container.style.top = (rect.bottom + 4) + 'px';
-                                    });
-
-                                    this.menu.on("close", (item) => {
-                                        this.setAttribute('aria-expanded', 'false');
-                                    });
-
-                                    this.setAttribute('role', 'combobox');
-                                    this.setAttribute('tabindex', '0');
-                                    this._render();
-        
-                                    this.addEventListener('mousedown', () => this.toggle());
-                                    this.addEventListener('keydown', (e) => {
-                                        if (e.key === 'Enter' || e.key === ' ') {
-                                            e.preventDefault();
-                                            this.toggle();
-                                        } else if (e.key === 'Escape') {
-                                            this.close();
-                                        } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-                                            e.preventDefault();
-                                            this.menu.navigate(e.key === 'ArrowDown' ? 1 : -1);
-                                        }
-                                    });
-        
-                                    document.addEventListener('click', (e) => {
-                                        if (!this.contains(e.target)) this.close();
-                                    });
-                                }
-
-                                _render() {
-                                    // const select = this.querySelector('select') || document.createElement('select');
-                                    // select.style.display = 'none';
-        
-                                    let selectedOption = null;
-                                    this.options = [];
-
-                                    for(const opt of this.querySelectorAll('ls-option, option, optgroup')) {
-                                        if (opt.selected || opt.getAttribute("selected") !== null) selectedOption = opt;
-                                        opt.setAttribute('role', 'option');
-        
-                                        const option = opt.tagName.toLowerCase() === 'optgroup'? {
-                                            type: "label",
-                                            text: opt.getAttribute("label") || '',
-                                        }: {
-                                            value: opt.value || opt.getAttribute('value') || opt.textContent,
-                                            text: opt.getAttribute("label") || opt.textContent,
-                                            selected: opt.getAttribute("selected") !== null,
-                                            optionElement: opt,
-                                            element: N({
-                                                class: "ls-list-item ls-select-option",
-                                                textContent: opt.textContent,
-                                                tabindex: -1
-                                            })
-                                        };
-        
-                                        if(option.type !== "label") {
-                                            option.element.dataset.value = option.value;
-                                            option.element.addEventListener('click', (event) => {
-                                                event.stopPropagation();
-                                                this.selectOption(option);
-                                            });
-
-                                            opt.remove();
-                                        }
-
-                                        this.menu.add(option); // Moves the element to the menu
-                                    }
-
-                                    this.handle = this.querySelector('.ls-select-display') || N({
-                                        class: "ls-select-display",
-                                        textContent: selectedOption ? selectedOption.textContent : (this.getAttribute("placeholder") || 'Select an option')
-                                    }).addTo(this);
-
-                                    this._labelTarget = this.querySelector('.ls-select-display .ls-select-label-target, .ls-select-display');
-
-                                    this.menu.render();
-                                }
-
-                                addOption(option) {
-                                    this.menu.add(option);
-                                }
-
-                                toggle() {
-                                    this.menu.toggle();
-                                }
-        
-                                open() {
-                                    this.menu.open();
-                                }
-
-                                close() {
-                                    this.menu.close();
-                                }
-        
-                                selectOption(value) {
-                                    this.menu.select(value);
-                                }
-        
-                                get value() {
-                                    return this.menu.selectedItem?.value || '';
-                                }
-        
-                                set value(val) {
-                                    this.menu.select(val);
-                                }
-                            });
-                            </script>
+                            <label for="app-type">Primary purpose <ls-box class="inline text-tag">Optional</ls-box></label><br>
                         </div>
                     </div>
-        
+
                     <div .bottom-buttons>
                         <button type="submit" .pill #app-create>Create Application</button>
                     </div>
                 </form>
+            </ls-tab>
+
+            <ls-tab tab-id="applications/details" tab-title="Edit application">
+                <div .loadingIndicator>
+                    <div .ui-loader></div>
+                </div>
+
+                <div .loadingContent>
+                    Hi
+                </div>
             </ls-tab>
 
             <ls-tab tab-id="sub-users" tab-title="Bot Accounts">F</ls-tab>

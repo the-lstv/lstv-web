@@ -66,7 +66,7 @@ class MD_Renderer {
         case smd.EQUATION_BLOCK:  slot = document.createElement("equation-block"); break
         case smd.EQUATION_INLINE: slot = document.createElement("equation-inline"); break
         }
-    
+
         data.nodes[++data.index] = parent.appendChild(slot)
     }
 
@@ -120,11 +120,11 @@ window._assistantCallback = async (website, auth) => {
         POST: 2,
         PUT: 3,
         DELETE: 4,
-    
+
         methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    
+
         api: "https://api.extragon." + (location.origin.endsWith("localhost")? "localhost": "cloud") + '/arisen',
-    
+
         cache: {
             user: null,
             models: null,
@@ -148,19 +148,19 @@ window._assistantCallback = async (website, auth) => {
         async request(method, endpoint, data = null, asBuffer = false) {
             const url = `${this.api}/${endpoint}`;
             const methodName = this.methods[method - 1];
-    
+
             const options = {
                 method: methodName,
                 headers: {
                     'Authorization': `Bearer ${await getToken()}`
                 }
             };
-    
+
             if (data) {
                 options.body = JSON.stringify(data);
                 options.headers['Content-Type'] = 'application/json';
             }
-    
+
             try {
                 const response = await fetch(url, options);
                 if (!response.ok) {
@@ -175,7 +175,7 @@ window._assistantCallback = async (website, auth) => {
                 throw error;
             }
         },
-    
+
         async getUser() {
             try {
                 return await this.request(this.GET, 'user');
@@ -184,7 +184,7 @@ window._assistantCallback = async (website, auth) => {
                 throw error;
             }
         },
-    
+
         async patchUser(data) {
             try {
                 return await this.request(this.PUT, 'user', data);
@@ -193,7 +193,7 @@ window._assistantCallback = async (website, auth) => {
                 throw error;
             }
         },
-    
+
         async getChats() {
             try {
                 return await this.request(this.GET, 'chats');
@@ -202,7 +202,7 @@ window._assistantCallback = async (website, auth) => {
                 throw error;
             }
         },
-    
+
         async getChat(chatId) {
             try {
                 return await this.request(this.GET, `chat/${chatId}`);
@@ -211,7 +211,7 @@ window._assistantCallback = async (website, auth) => {
                 throw error;
             }
         },
-    
+
         async getModels() {
             try {
                 return await this.request(this.GET, 'models');
@@ -220,7 +220,7 @@ window._assistantCallback = async (website, auth) => {
                 throw error;
             }
         },
-    
+
         async createChat(chatData, onChunk = () => {}) {
             let first = true, info = null;
             try {
@@ -229,7 +229,7 @@ window._assistantCallback = async (website, auth) => {
                         first = false;
                         info = chunk;
                     }
-    
+
                     onChunk(chunk, info);
                 });
             } catch (error) {
@@ -237,7 +237,7 @@ window._assistantCallback = async (website, auth) => {
                 throw error;
             }
         },
-    
+
         async importChat(data) {
             try {
                 return await this.request(this.POST, 'chat/import', data);
@@ -246,7 +246,7 @@ window._assistantCallback = async (website, auth) => {
                 throw error;
             }
         },
-    
+
         async postMessage(chatId, data, onChunk) {
             try {
                 return await this.openStream(`chat/${chatId}`, data, onChunk);
@@ -255,7 +255,7 @@ window._assistantCallback = async (website, auth) => {
                 throw error;
             }
         },
-    
+
         async updateChat(chatId, data) {
             try {
                 return await this.request(this.PUT, `chat/${chatId}`, data);
@@ -264,7 +264,7 @@ window._assistantCallback = async (website, auth) => {
                 throw error;
             }
         },
-    
+
         async getSystemPrompt(modelId) {
             try {
                 return await this.request(this.GET, `getSystemPrompt/${modelId || ''}`);
@@ -294,26 +294,26 @@ window._assistantCallback = async (website, auth) => {
                 },
                 body: typeof postData === "string"? postData: JSON.stringify(postData)
             });
-    
+
             if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-    
+
             const reader = res.body.getReader();
             const decoder = new TextDecoder();
-    
+
             let buffer = "";
-    
+
             let done = false;
             while (!done) {
                 const { value, done: doneReading } = await reader.read();
                 done = doneReading;
                 if (value) {
                     const chunk = decoder.decode(value, { stream: true });
-    
+
                     buffer += chunk;
-    
+
                     let lines = buffer.split("\n");
                     buffer = lines.pop(); // incomplete line stays in buffer
-    
+
                     for (const line of lines) {
                         if (line.startsWith("data: ")) {
                             const dataStr = line.slice(6);
@@ -326,10 +326,10 @@ window._assistantCallback = async (website, auth) => {
                     }
                 }
             }
-    
+
             onChunk(null);
         },
-    
+
         async deleteChat(chatId) {
             try {
                 return await this.request(this.DELETE, `chat/${chatId}`);
@@ -504,9 +504,9 @@ window._assistantCallback = async (website, auth) => {
             const background_canvas = N("canvas", {
                 class: "background",
             });
-    
+
             const main_shader_renderer = new CombinedShaderRenderer(background_canvas, { width: 1024, height: 1024 });
-    
+
             main_shader_renderer.addShaderContext(ShaderSource.blurredColors(main_shader_renderer.gl), {
                 u_time: { type: "uniform1f", value: a => [(a / 1e3)] },
                 alpha: { type: "uniform1f", value: [0.6] },

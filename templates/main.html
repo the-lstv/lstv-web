@@ -49,7 +49,7 @@
             content: "";
             position: absolute;
             inset: -8% 0;
-            background: conic-gradient(#0000 35%,#0B486B,#0000 65%);
+            background: conic-gradient(#0000 35%,var(--accent, #0B486B),#0000 65%);
             animation: l5 2s linear infinite;
         }
 
@@ -98,7 +98,7 @@
         });
     </script>
 
-    @use (ls:5.2.7[flat, tooltips, toast, reactive, tabs, animation, resize, modal], bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800", "IBM Plex Mono:wght@400;600;800"]);
+    @use (ls:5.2.7[flat, tooltips, toast, menu, reactive, tabs, animation, resize, modal], bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800", "IBM Plex Mono:wght@400;600;800"]);
     @use (~/assets/css/main.css, ~/assets/js/pallete.js[defer], ~/assets/js/app.js[defer]);
 
     @page {
@@ -159,7 +159,7 @@
             <div #commandTerminal .level-n3 style="display: none">
                 <div .terminal-output />
             </div>
-    
+
             <div #commandPaletteBar .level-n3>
                 <div #commandPalette onclick="this.querySelector('.command-input').focus()">
                     <div .completion-menu></div>
@@ -173,7 +173,7 @@
                         <input type="text" .command-input autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Command palette input">
                     </div>
                 </div>
-    
+
                 <div .command-palette-buttons>
                     <button ls-tooltip="Close" .square .clear aria-label="Close command palette"><i .bi-x-lg /></button>
                 </div>
@@ -220,7 +220,7 @@
                         <h1>Assistant</h1>
                         <span>Powered by <a href="https://ai.lstv.space">Arisen</a></span>
                     </div>
-    
+
                     <div .generated-content></div>
 
                     <ls-div .assistant-intro .margin-h-small>
@@ -229,7 +229,7 @@
                     </ls-div>
 
                     <ls-div .assistant-examples />
-    
+
                     <form .input-container name="assistantForm" onsubmit="return false">
                         <div .input-wrapper>
                             <textarea rows="1" .clear name="Assistant input" id="assistant-input" placeholder="Type a message..." aria-label="Assistant input" required></textarea>
@@ -342,7 +342,7 @@
                         <button .elevated onclick="website.loginTabs.set('login')"><i .bi-arrow-left-right /><span>Switch accounts</span></button>
                         <button .elevated #logOutButton><i .bi-box-arrow-right /><span>Log out</span></button>
                     </ls-div>
-    
+
                     <span hidden {{ user.profile_style:ProfileEffects(style) }} />
                     <span hidden {{ user.fullscreen_banner:ProfileEffects(fullscreen-banner) }} />
                 </div>
@@ -352,7 +352,7 @@
                 <div .music-player .toolbar-styled>
                     <img .music-player-cover alt="Music cover background" crossorigin="anonymous">
                     <img .music-player-art alt="Music cover art" crossorigin="anonymous">
-    
+
                     <div .music-player-container>
                         <div .music-player-info>
                             <span .text-overflow-nowrap .music-player-title>Lorem Ipsum</span>

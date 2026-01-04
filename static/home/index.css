@@ -42,10 +42,26 @@
 
 .menu {
     width: 320px;
+    max-width: 320px;
     overflow: auto;
     padding: 15px;
     border-radius: var(--border-radius-xxlarge);
+    position: relative;
     --scrollbar-size: 3px;
+}
+
+/* Account for padding in absolute position */
+.menu > ls-tab {
+    left: 15px;
+    right: 15px;
+}
+
+.sidebar-content ls-tab {
+    left: 30px;
+    right: 30px;
+    bottom: 30px;
+    top: 30px;
+    min-height: 100%;
 }
 
 .menu-button {
@@ -75,11 +91,6 @@
 
 .sidebar-content hr {
     max-width: 500px;
-}
-
-.sidebar-content ls-tab {
-    left: 30px;
-    right: 30px;
 }
 
 [data-tab-id] {
@@ -161,6 +172,7 @@
     opacity: 0;
     transition: opacity .2s, transform .2s;
     pointer-events: none;
+    z-index: 9000;
 }
 
 .profile-editor-confirm-buttons.visible {
@@ -260,7 +272,7 @@ textarea#profile-about {
         background-color: #0008;
         opacity: 0;
     }
-    
+
     .container.sidebar-menu-visible::before {
         opacity: 1;
     }
@@ -276,14 +288,14 @@ textarea#profile-about {
     .profile-editor-confirm-buttons button {
         width: 100%;
     }
-    
+
     .profile-editor-confirm-buttons {
         padding-left: 10px !important;
         flex-direction: column;
         right: 30px;
         left: 30px;
     }
-    
+
     .profile-editor-confirm-buttons > div {
         width: 100%;
         display: flex;
@@ -332,6 +344,54 @@ textarea#profile-about {
     width: 400px;
 }
 
+.dev-app-entry {
+    background: var(--elevate);
+    display: flex;
+    padding: 20px;
+    border-radius: var(--border-radius-xlarge);
+    gap: 18px;
+    align-items: center;
+    user-select: none;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+#dev-apps-list .loadingContent {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+span.app-name {
+    font-size: 2em;
+}
+
+span.app-id {
+    color: var(--surface-8);
+    font-family: "JetBrains Mono", monospace;
+}
+
+.app-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.app-icon {
+    width: 74px;
+    height: 74px;
+    background: none !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    color: var(--surface-8);
+    border-radius: var(--border-radius-medium);
+    object-fit: cover;
+}
+
 .bottom-buttons {
     margin: 0 auto;
 }
@@ -346,7 +406,7 @@ textarea#profile-about {
     gap: 12px;
 }
 
-[tab-id=home] {
+.sidebar-content [tab-id=home] {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -357,4 +417,16 @@ textarea#profile-about {
 
 .home-triangle {
     height: 100px;
+}
+
+.loadingIndicator, .loadingContent {
+    width: 100%;
+    height: 100%;
+}
+
+.loadingIndicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
 }

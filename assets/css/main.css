@@ -185,11 +185,11 @@ body {
     max-height: calc(100vh - 90px);
     width: 300px;
     overflow: auto;
-    
+
     right: 0;
-    
+
     /* height: 20rem; */
-    
+
     /* --background: var(--surface-0);
     --elevate-0: var(--surface-n1);
     --elevate-n1: var(--surface-n2);
@@ -1164,6 +1164,10 @@ ls-text-input.has-textarea {
 
 .ls-dragging iframe, .ls-dragging .page {
     pointer-events: none;
+}
+
+ls-tab:not(.tab-active) {
+    display: none;
 }
 
 

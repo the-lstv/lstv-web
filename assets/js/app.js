@@ -3,7 +3,7 @@
     Author: Lukas (thelstv)
     Copyright: (c) https://lstv.space
 
-    Last modified: 2025
+    Last modified: 2026
     See: https://github.com/the-lstv/lstv-web
 */
 
@@ -254,6 +254,8 @@ class ContentContext extends LS.EventHandler {
         this.styles = [];
         this.scripts = [];
 
+        this.SPAPatterns = [];
+
         this.content = null;
         this.destroyed = false;
 
@@ -292,12 +294,15 @@ class ContentContext extends LS.EventHandler {
             kernel.contexts.delete(this.id);
             kernel.pageCache.delete(this.#path);
 
-            let i = 0;
-            for(const [,, page] of kernel.SPAExtensions) {
-                if(page === this) {
-                    kernel.SPAExtensions.splice(i, 1);
-                }
-                i++;
+            // let i = 0;
+            // for(const [,, page] of kernel.SPAExtensions) {
+            //     if(page === this) {
+            //         kernel.SPAExtensions.splice(i, 1);
+            //     }
+            //     i++;
+            // }
+            for(const pattern of this.SPAPatterns) {
+                kernel.SPAExtensions.remove(pattern, this);
             }
 
             if(this.aliases) for(const alias of this.aliases) {
@@ -513,9 +518,19 @@ class ContentContext extends LS.EventHandler {
     }
 
     // TODO: This needs to be worked on
-    registerSPAExtension(path, handler) {
-        path = website.utils.normalizePath(path || this.#path);
-        kernel.SPAExtensions.push([path, handler, this]);
+    registerSPAExtension(pattern, handler) {
+        if (Array.isArray(pattern)) {
+            for (const p of pattern) {
+                this.registerSPAExtension(p, handler);
+            }
+            return;
+        }
+
+        pattern = website.utils.normalizePath(pattern || this.#path);
+        kernel.SPAExtensions.add(pattern, [kernel.SPAExtensions.getBasePath(pattern), handler, this]);
+        this.SPAPatterns.push(pattern);
+        // kernel.SPAExtensions.push([path, handler, this]);
+        // kernel.SPAExtensions.sort((a, b) => b[0].length - a[0].length);
     }
 
     requestPermission(permissions = []) {
@@ -576,10 +591,10 @@ class ContentContext extends LS.EventHandler {
                     reject(new Error(`${response.status} ${response.statusText}`));
                     return;
                 }
-    
+
                 const text = await response.text();
                 if (this.destroyed) return;
-    
+
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(text, 'text/html');
 
@@ -777,7 +792,7 @@ class Viewport {
         }
 
         // 1. Check for SPA Extensions (Routes)
-        const SPAExtension = options.browserTriggered? null: kernel.SPAExtensions.find(([extpath]) => (path + "/").startsWith(extpath));
+        const SPAExtension = options.browserTriggered? null: kernel.resolveSPAExtension(path);
         if (SPAExtension) {
             if (SPAExtension[2] !== this.current) {
                 // We need to navigate to the base page first
@@ -996,21 +1011,21 @@ class Window extends Viewport {
         });
 
         let startX, startY;
-        this.windowHandle = LS.Util.touchHandle(this.windowElement.querySelector('.window-header'), {
-            onStart: (event, cancel, x, y) => {
+        this.windowHandle = new LS.Util.TouchHandle(this.windowElement.querySelector('.window-header'), {
+            onStart: (event) => {
                 const rect = this.windowElement.getBoundingClientRect();
-                startX = x - rect.left;
-                startY = y - rect.top;
+                startX = event.x - rect.left;
+                startY = event.y - rect.top;
             },
 
-            onMove: (x, y) => {
+            onMove: (event) => {
                 const screenW = window.innerWidth;
                 const screenH = window.innerHeight;
                 const winW = this.windowElement.offsetWidth;
                 const winH = this.windowElement.offsetHeight;
 
-                let left = x - startX;
-                let top = y - startY;
+                let left = event.x - startX;
+                let top = event.y - startY;
 
                 // Restrict to min 10,10 and max vw-10-winW, vh-10-winH
                 left = Math.max(10, Math.min(left, screenW - 10 - winW));
@@ -1058,7 +1073,7 @@ const website = {
     Viewport,
     Thread,
     Window,
-    
+
     // Constants
     loaded: true,
     isLocalhost: location.hostname.endsWith("localhost"),
@@ -1319,71 +1334,6 @@ const website = {
                 password += charset[array[i] % charset.length];
             }
             return password;
-        },
-
-        /**
-         * A simple switch that triggers a callback when its value changes, but does nothing if it doesn't.
-         */
-        Switch: class Switch {
-            constructor(onSet) {
-                this.value = false;
-                this.onSet = onSet;
-            }
-
-            set(value) {
-                if(this.value === value) return;
-                this.value = value;
-                this.onSet(this.value);
-            }
-
-            on() {
-                this.set(true);
-            }
-
-            off() {
-                this.set(false);
-            }
-        },
-
-        /**
-         * Schedules a callback to run on the next animation frame, avoiding multiple calls within the same frame.
-         */
-        FrameScheduler: class FrameScheduler {
-            constructor(callback) {
-                this.callback = callback;
-                this.queued = false;
-            }
-
-            schedule() {
-                if(this.queued) return;
-                this.queued = true;
-
-                requestAnimationFrame(() => {
-                    if(this.queued && this.callback) this.callback();
-                    this.queued = false;
-                });
-            }
-
-            cancel() {
-                this.queued = false;
-            }
-        },
-
-        /**
-         * Ensures a callback is only run once.
-         */
-        RunOnce: class RunOnce {
-            constructor(callback) {
-                this.callback = callback;
-                this.hasRun = false;
-            }
-
-            run() {
-                if(this.hasRun) return;
-                this.hasRun = true;
-                this.callback();
-                this.callback = null;
-            }
         }
     },
 
@@ -1548,11 +1498,11 @@ const website = {
 
         ["appsButton", { label: "Apps", tooltip: "Applications", description: "View applications", icon: "bi-grid-fill", onclick() { website.openToolbar("apps", true) } }],
 
-        ["assistantButton", { showLabel: false, label: "Assistant", description: "Open Assistant", icon: "bi-stars", onclick() {
-            website.openToolbar("assistant", true);
-        } }],
+        // ["assistantButton", { showLabel: false, label: "Assistant", description: "Open Assistant", icon: "bi-stars", onclick() {
+        //     website.openToolbar("assistant", true);
+        // } }],
 
-        ["commandPaletteButton", { showLabel: false, label: "Command Palette", tooltip: "Command Palette <kbd>Ctrl+Shift+P</kbd>", description: "Open Command Palette", icon: "bi-terminal", onclick() {
+        ["commandPaletteButton", { showLabel: false, label: "Command Palette", tooltip: "Command Palette", description: "Open Command Palette", icon: "bi-terminal", onclick() {
             website.closeToolbar();
             website.palette.open();
         }}],
@@ -1650,7 +1600,7 @@ const website = {
                         LS.Animation.fadeOut(this.menuContainer, 300, "bottom");
                         return;
                     }
-    
+
                     LS.Animation.fadeIn(this.menuContainer, 300, "bottom");
                 }
             }
@@ -1824,6 +1774,302 @@ window.website = website;
 
 
 /**
+ * Simple routing class to match groups and wildcards.
+ * Taken from Akeno
+ */
+class Matcher {
+    constructor(options = {}, info = null) {
+        this.exactMatches = new Map();
+        this.wildcards = new WildcardMatcher(options.segmentChar || "/", []);
+        this.fallback = null;
+        this.options = options;
+    }
+
+    *expandPattern(pattern) {
+        if (typeof pattern !== 'string') {
+            throw new Error('Pattern must be a string');
+        }
+
+        // Expand only groups not preceded by '!'. Negated groups are preserved for the matcher.
+        let searchFrom = 0;
+        while (true) {
+            const group = pattern.indexOf('{', searchFrom);
+            if (group === -1) break;
+            const prevChar = group > 0 ? pattern[group - 1] : null;
+            if (prevChar !== '!') {
+                const endGroup = pattern.indexOf('}', group);
+                if (endGroup === -1) {
+                    throw new Error(`Unmatched group in pattern: ${pattern}`);
+                }
+
+                const groupValues = pattern.slice(group + 1, endGroup);
+                const patternStart = pattern.slice(0, group);
+                const patternEnd = pattern.slice(endGroup + 1);
+
+                for (let value of groupValues.split(',')) {
+                    value = value.trim();
+                    const next = patternStart + value + (value === "" && patternEnd.startsWith('.') ? patternEnd.slice(1) : patternEnd);
+                    yield* this.expandPattern(next);
+                }
+                return;
+            }
+            searchFrom = group + 1;
+        }
+
+        if(pattern[pattern.length - 1] === '/') {
+            pattern = pattern.slice(0, -1);
+        }
+        yield pattern;
+    }
+
+    add(pattern, handler) {
+        if(Array.isArray(pattern)) {
+            for(const p of pattern) {
+                this.add(p, handler);
+            }
+            return;
+        }
+
+        if (typeof pattern !== 'string' || !handler) {
+            throw new Error('Invalid route definition');
+        }
+
+        if (pattern.endsWith('.')) {
+            pattern = pattern.slice(0, -1);
+        }
+
+        if (pattern === '*' || pattern === '**') {
+            this.fallback = handler;
+            return;
+        }
+
+        if (!pattern) {
+            return;
+        }
+
+        // Expand pattern groups (non-negated only)
+        for (const expandedPattern of this.expandPattern(pattern)) {
+            // Route patterns with wildcards or negated groups to the wildcard matcher
+            if (expandedPattern.indexOf('*') !== -1 || expandedPattern.indexOf('!{') !== -1) {
+                this.wildcards.add(expandedPattern, handler);
+                continue;
+            }
+
+            const existingHandler = this.exactMatches.get(expandedPattern);
+            if (existingHandler && existingHandler !== handler) {
+                if(this.options.mergeObjects) {
+                    handler = Object.assign(existingHandler, handler);
+                    continue;
+                }
+
+                this.warn(`Warning: Route already exists for domain: ${expandedPattern}, it is being overwritten.`);
+            }
+
+            this.exactMatches.set(expandedPattern, handler);
+        }
+    }
+
+    clear() {
+        this.exactMatches.clear();
+        this.wildcards.patterns = [];
+        this.fallback = null;
+    }
+
+    remove(pattern) {
+        if (typeof pattern !== 'string') {
+            throw new Error('Invalid route pattern');
+        }
+
+        for (const expandedPattern of this.expandPattern(pattern)) {
+            this.exactMatches.delete(expandedPattern);
+            this.wildcards.filter(route => route.pattern !== expandedPattern);
+        }
+    }
+
+    getBasePath(pattern) {
+        const specialIndex = Math.min(
+            pattern.indexOf('{') !== -1 ? pattern.indexOf('{') : Infinity,
+            pattern.indexOf('*') !== -1 ? pattern.indexOf('*') : Infinity
+        );
+        
+        if (specialIndex !== Infinity) {
+            pattern = pattern.slice(0, specialIndex);
+        }
+
+        return pattern.replace(/[/!]+$/, '');
+    }
+
+    match(input) {
+        // Check exact matches first
+        const handler = this.exactMatches.get(input);
+        if (handler) {
+            return handler;
+        }
+
+        // Check wildcard matches
+        const wildcardHandler = this.wildcards.match(input);
+        if (wildcardHandler) {
+            return wildcardHandler;
+        }
+
+        // If no specific route found, return the fallback route
+        if (this.fallback) {
+            return this.fallback;
+        }
+
+        return false;
+    }
+}
+
+class WildcardMatcher {
+    constructor(segmentChar = "/", patterns = []) {
+        this.segmentChar = segmentChar || "/";
+        this.patterns = patterns || [];
+    }
+
+    add(pattern, handler = pattern) {
+        const rawParts = this.split(pattern);
+        const parts = rawParts.map(p => {
+            if (p.length > 3 && p.startsWith('!{') && p.endsWith('}')) {
+                const values = p.slice(2, -1).split(',').map(v => v.trim()).filter(v => v !== '');
+                return { type: 'negSet', set: new Set(values) };
+            }
+            return p;
+        });
+
+        // Try to merge with an existing pattern that differs by exactly one string segment
+        for (const existing of this.patterns) {
+            if (existing.handler !== handler || existing.parts.length !== parts.length) continue;
+
+            let diffIndex = -1;
+            let canMerge = true;
+
+            for (let i = 0; i < parts.length; i++) {
+                const existingPart = existing.parts[i];
+                const newPart = parts[i];
+
+                // Check if parts are equal
+                if (existingPart === newPart) continue;
+
+                // Check if existing is a set and new part is a string that can be added
+                if (typeof existingPart === 'object' && existingPart && existingPart.type === 'set' && typeof newPart === 'string') {
+                    if (diffIndex !== -1) { canMerge = false; break; }
+                    diffIndex = i;
+                    continue;
+                }
+
+                // Check if both are strings (can be converted to set)
+                if (typeof existingPart === 'string' && typeof newPart === 'string') {
+                    if (diffIndex !== -1) { canMerge = false; break; }
+                    diffIndex = i;
+                    continue;
+                }
+
+                // Parts are incompatible
+                canMerge = false;
+                break;
+            }
+
+            if (canMerge && diffIndex !== -1) {
+                const existingPart = existing.parts[diffIndex];
+                const newPart = parts[diffIndex];
+
+                if (typeof existingPart === 'object' && existingPart.type === 'set') {
+                    // Add to existing set
+                    existingPart.set.add(newPart);
+                } else {
+                    // Convert string to set
+                    existing.parts[diffIndex] = { type: 'set', set: new Set([existingPart, newPart]) };
+                }
+                return;
+            }
+        }
+
+        this.patterns.push({ parts, handler, pattern });
+        this.patterns.sort((a, b) => b.parts.length - a.parts.length);
+    }
+
+    filter(callback) {
+        this.patterns = this.patterns.filter(callback);
+        return this;
+    }
+
+    split(path) {
+        if (path === "" || !path) return [""];
+        if (path[0] !== this.segmentChar) path = this.segmentChar + path;
+        return path.split(this.segmentChar);
+    }
+
+    /**
+     * Fast wildcard matching with segment support.
+     * @param {string|array} input - The input string or array of segments to match against.
+     */
+    match(input) {
+        const path = Array.isArray(input) ? input : this.split(input);
+
+        for (const { parts, handler } of this.patterns) {
+            // Exact match
+            if (parts.length === 1) {
+                const only = parts[0];
+                if (only === "**" || (typeof only === 'string' && path.length === 1 && ((only === "*" && path[0] !== "") || only === path[0]))) {
+                    return handler;
+                }
+
+                if (typeof only === 'object' && only) {
+                    if (only.type === 'negSet' && path.length === 1 && path[0] !== "" && !only.set.has(path[0])) {
+                        return handler;
+                    }
+                    if (only.type === 'set' && path.length === 1 && only.set.has(path[0])) {
+                        return handler;
+                    }
+                }
+                continue;
+            }
+
+            let pi = 0, si = 0;
+            let starPi = -1, starSi = -1;
+
+            while (si < path.length) {
+                const part = parts[pi];
+                if (pi < parts.length && part === "**") {
+                    starPi = pi;
+                    starSi = si;
+                    pi++;
+                } else if (pi < parts.length && part === "*") {
+                    if (path[si] === "") break;
+                    pi++;
+                    si++;
+                } else if (pi < parts.length && typeof part === 'object' && part) {
+                    if (part.type === 'negSet') {
+                        if (path[si] === "" || part.set.has(path[si])) break;
+                    } else if (part.type === 'set') {
+                        if (path[si] === "" || !part.set.has(path[si])) break;
+                    }
+                    pi++;
+                    si++;
+                } else if (pi < parts.length && part === path[si]) {
+                    pi++;
+                    si++;
+                } else if (starPi !== -1) {
+                    pi = starPi + 1;
+                    starSi++;
+                    si = starSi;
+                } else {
+                    break;
+                }
+            }
+
+            while (pi < parts.length && parts[pi] === "**") pi++;
+            if (pi === parts.length && si === path.length) {
+                return handler;
+            }
+        }
+        return null;
+    }
+}
+
+
+/**
  * Kernel class
  * Main application kernel, handles global state, navigation, authentication, and content contexts.
  */
@@ -1845,7 +2091,7 @@ const kernel = new class Kernel extends LoggerContext {
     queryParams = LS.Util.params();
     userFragment = LS.Reactive.wrap("user", {});
 
-    SPAExtensions = [];
+    SPAExtensions = new Matcher();
 
     MAX_THREADS = (navigator.hardwareConcurrency || 4) * 2;
 
@@ -1887,7 +2133,7 @@ const kernel = new class Kernel extends LoggerContext {
                 }
 
                 const { id, error, data } = e.data;
-    
+
                 const cb = this.callbacks.get(id);
                 if (cb) {
                     if (error) {
@@ -1897,7 +2143,7 @@ const kernel = new class Kernel extends LoggerContext {
                         if (cb.callback) cb.callback(null, data);
                         if (cb.resolve) cb.resolve(data);
                     }
-    
+
                     this.callbacks.delete(id);
                 }
             });
@@ -1956,7 +2202,7 @@ const kernel = new class Kernel extends LoggerContext {
                     }
                 }, 1000);
             };
-    
+
             this.iframe.onerror = error;
         }
 
@@ -1978,7 +2224,7 @@ const kernel = new class Kernel extends LoggerContext {
         login(username, password, callback) {
             return this.postMessage('login', { username, password }, callback);
         }
-    
+
         register(user, callback) {
             return this.postMessage('register', { user }, callback);
         }
@@ -2106,7 +2352,7 @@ const kernel = new class Kernel extends LoggerContext {
 
         LS.Color.on("theme-changed", () => {
             const themeButton = website.panelItems.get("themeButton").element;
-            themeButton.querySelector("i").className = "bi-" + (website.theme == "light"? "moon-stars-fill": "sun-fill");
+            if (themeButton) themeButton.querySelector("i").className = "bi-" + (website.theme == "light"? "moon-stars-fill": "sun-fill");
         });
 
         this.auth.on("user-updated", (patch) => {
@@ -2186,6 +2432,7 @@ const kernel = new class Kernel extends LoggerContext {
             // Display content
             document.querySelector(".loaderContainer").style.display = "none";
             website.container.style.display = "flex";
+            website.emit("dom-ready");
         });
 
         // --- Debug ONLY ---
@@ -2241,8 +2488,37 @@ const kernel = new class Kernel extends LoggerContext {
      */
     getPage(path) {
         path = website.utils.normalizePath(path);
-        const page = this.pageCache.get(path) || this.aliasMap.get(path) || (this.SPAExtensions.find(([extpath]) => (path + "/").startsWith(extpath + "/"))?.[2]);
-        return page || null;
+        const page = this.pageCache.get(path) || this.aliasMap.get(path);
+        if (page) return page;
+
+        const spaMatch = this.resolveSPAExtension(path);
+        return spaMatch?.[2] || null;
+    }
+
+    /**
+     * Resolve SPA extension for a given path, if any.
+     * @param {string} path - The path to resolve.
+     * @returns {Array|null}
+     */
+    resolveSPAExtension(path) {
+        path = website.utils.normalizePath(path);
+        return this.SPAExtensions.match(path);
+    }
+
+    /**
+     * https://stackoverflow.com/a/66120819/14541617
+     */
+    #isClass(func) {
+        // Class constructor is also a function
+        if (!(func && func.constructor === Function) || func.prototype === undefined)
+            return false;
+
+        // This is a class that extends other class
+        if (Function.prototype !== Object.getPrototypeOf(func))
+            return true;
+
+        // Usually a function will only have 'constructor' in the prototype
+        return Object.getOwnPropertyNames(func.prototype).length > 1;
     }
 
     /**
@@ -2287,11 +2563,18 @@ const kernel = new class Kernel extends LoggerContext {
 
         if (context) {
             this.log("Registered module for context", context.path || context.id);
-            if (callback) callback(context, context.content);
         } else {
-            // Fallback: Use current page if we can't determine context
             this.warn("Registering module to global/unknown context", script);
-            if (callback) callback(kernel.viewport.current, kernel.viewport.current?.content);
+        }
+
+        if (callback) {
+            // Fallback: Use current page if we can't determine context
+            const ctx = context? context: kernel.viewport.current, ctxContent = context? context?.content: kernel.viewport.current?.content;
+            if(this.#isClass(callback)) {
+                new callback(ctx, ctxContent);
+            } else {
+                callback(ctx, ctxContent);
+            }
         }
     }
 
@@ -2312,10 +2595,11 @@ const kernel = new class Kernel extends LoggerContext {
             this.userFragment = LS.Reactive.wrap("user", {});
         }
 
-        website.panelItems.get("accountsButton").element.disabled = false;
+        // There should never be a situation where accountsButton doesn't exist, yet it has happened to me. How..
+        const accountsButton = website.panelItems.get("accountsButton").element;
+        if (accountsButton) accountsButton.disabled = false;
 
         website.events.emit("user-changed", [ isLoggedIn, this.userFragment ]);
-        // website.events.emit("user-loaded", [ isLoggedIn ]);
         website.events.completed("user-loaded");
 
         if(!this.__pingsInitialized) this.#initializePings();
@@ -2682,7 +2966,7 @@ const kernel = new class Kernel extends LoggerContext {
             }
         }
 
-        const collapseItems = new website.utils.FrameScheduler(() => {
+        const collapseItems = new LS.Util.FrameScheduler(() => {
             const availableSpace = nav.clientWidth - navPadding - gap - moreButton.clientWidth - (nav.firstElementChild?.clientWidth || 0);
 
             let takenSpace = 0, hasCollapsedItems = false;
@@ -2744,7 +3028,7 @@ const kernel = new class Kernel extends LoggerContext {
         });
 
         const resizeMessageContainer = document.getElementById("resizeMessage");
-        const resizeMessageSwitch = new website.utils.Switch((on) => {
+        const resizeMessageSwitch = new LS.Util.Switch((on) => {
             if(on) {
                 resizeMessageContainer.style.display = "flex";
                 website.container.style.display = "none";
@@ -2754,7 +3038,7 @@ const kernel = new class Kernel extends LoggerContext {
             }
         });
 
-        collapseItems.schedule();
+        collapseItems.callback();
         window.addEventListener("resize", () => {
             collapseItems.schedule();
         });
