@@ -1080,6 +1080,16 @@ const website = {
     isEmbedded: window.self !== window.top,
     cdn: "https://cdn.extragon.cloud",
 
+    BADGES: [
+        { icon: "owner.png", label: "Owner", id: 0 },
+        { icon: "developer.png", label: "Developer at lstv.space", id: 1 },
+        { icon: "supporter.png", label: "Supporter", id: 2 },
+        { icon: "early_supporter.png", label: "Early Supporter", id: 3 },
+        { icon: "bug_hunter.png", label: "Bug Hunter", id: 4 },
+        { icon: "community_helper.png", label: "Community Helper", id: 5 },
+        { icon: "moderator.png", label: "Moderator", id: 6 },
+    ],
+
     views: {
         getProfilePictureView(source, args, element, user) {
             const filename = (source && typeof source === "object")? source.pfp: source;
@@ -1096,7 +1106,6 @@ const website = {
             const src = filename? filename.startsWith("blob:")? filename : website.cdn + '/file/' + filename + (!isAnimated? "?size=" + IMAGE_RESOLUTION: ""): "/assets/image/default.svg";
 
             const img = N(isAnimated ? "video" : "img", {
-                src,
                 alt: "Profile Picture",
                 class: "profile-picture",
                 draggable: false,
@@ -1117,12 +1126,34 @@ const website = {
                     }
                     this.src = "/assets/image/default.svg"
                 },
+
                 ...isAnimated && {
-                    autoplay: true,
+                    autoplay: false,
                     loop: true,
-                    muted: true
+                    muted: true,
+                    preload: "none"
                 }
             });
+
+            img.setAttribute("loading", "lazy");
+            img.setAttribute("preload", "none");
+
+            if(isAnimated) {
+                img.setAttribute("data-src", src);
+                const observer = new IntersectionObserver((entries) => {
+                    if (entries[0].isIntersecting) {
+                        if (img.dataset.src) {
+                            img.src = img.dataset.src;
+                            img.load();
+                            img.removeAttribute("data-src");
+                        }
+                        observer.disconnect();
+                    }
+                });
+                observer.observe(img);
+            } else {
+                img.src = src;
+            }
 
             const wrapper = N("div", {
                 class: "profile-picture-wrapper" + (user.username === "admin" ? " secret-frame-experiment" : ""),
@@ -1137,17 +1168,20 @@ const website = {
 
         getBannerView(source, args, element, user) {
             const filename = (source && typeof source === "object")? source.banner: source;
-            
+
             if(filename) {
                 const src = filename.startsWith("blob:")? filename : website.cdn + '/file/' + filename;
                 const isAnimated = user.__animated_banner || filename.endsWith(".webm");
 
                 const img = N(isAnimated? "video" : "img", {
-                    src,
                     alt: "Banner Picture",
                     class: "banner-media",
                     draggable: false,
                     onerror() { this.remove() },
+                    attributes: {
+                        alt: "Banner Image",
+                        preload: "none"
+                    },
                     ...isAnimated && {
                         autoplay: true,
                         loop: true,
@@ -1155,8 +1189,53 @@ const website = {
                     }
                 });
 
+                img.setAttribute("loading", "lazy");
+                img.setAttribute("preload", "none");
+
+                if(isAnimated) {
+                    img.setAttribute("data-src", src);
+                    const observer = new IntersectionObserver((entries) => {
+                        if (entries[0].isIntersecting) {
+                            if (img.dataset.src) {
+                                img.src = img.dataset.src;
+                                img.load();
+                                img.removeAttribute("data-src");
+                            }
+                            observer.disconnect();
+                        }
+                    });
+                    observer.observe(img);
+                } else {
+                    img.src = src;
+                }
+
                 return img;
             } else return null;
+        },
+
+        getProfileBadgesView(source, args, element) {
+            const badges = source && (Array.isArray(source) ? source : Array.isArray(source.profileBadges) ? source.profileBadges : []);
+            element.style.display = badges && badges.length ? "flex" : "none";
+            if (!badges || !badges.length) return;
+
+            return N("div", {
+                class: "badges-container",
+                inner: badges.map(badge => {
+                    const badgeInfo = website.BADGES.find(b => b.id === badge);
+                    if (!badgeInfo) return null;
+
+                    return N("div", {
+                        class: "profile-badge",
+                        tooltip: badgeInfo.label,
+                        inner: N("img", {
+                            src: "/assets/image/badges/" + badgeInfo.icon,
+                            alt: badgeInfo.label,
+                            width: 24,
+                            height: 24
+                        })
+                    });
+                })
+            });
         },
 
         getLinksView(source, args, element) {
@@ -2312,6 +2391,7 @@ const kernel = new class Kernel extends LoggerContext {
         this.log('Kernel initialized, version %c' + this.version + '%c, time since first load: ' + this.ttl + 'ms', 'font-weight:bold', 'font-weight:normal');
 
         LS.Reactive.registerType("ProfilePicture", website.views.getProfilePictureView);
+        LS.Reactive.registerType("ProfileBadges", website.views.getProfileBadgesView);
         LS.Reactive.registerType("ProfileBanner", website.views.getBannerView);
         LS.Reactive.registerType("ProfileLinks", website.views.getLinksView);
         LS.Reactive.registerType("ProfileBio", website.views.getBioView);
@@ -3039,6 +3119,7 @@ const kernel = new class Kernel extends LoggerContext {
         });
 
         collapseItems.callback();
+        collapseItems.schedule();
         window.addEventListener("resize", () => {
             collapseItems.schedule();
         });

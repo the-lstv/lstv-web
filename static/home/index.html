@@ -1,7 +1,7 @@
 #template /templates/main.html
 
 <head>
-    @use (/home/index.css, /home/index.js[defer]);
+    @use (/home/index.css, /home/index.js[defer], ~/assets/js/shader.js[defer]);
     @use (ls.js.ImageCropper:5.2.7) { async }
 
     @page {
@@ -70,10 +70,10 @@
                 <span .menu-category-title>Edit</span>
 
                 <div .grouped-buttons>
-                    <a base-href="/home/applications/$id/details" .ls-button .elevated><i .bi-pencil-fill /><span>Edit Application</span></a>
-                    <a base-href="/home/applications/$id/store" .ls-button .elevated><i .bi-shop /><span>Store Page</span></a>
-                    <a base-href="/home/applications/$id/team" .ls-button .elevated><i .bi-people-fill /><span>Team</span></a>
-                    <a base-href="/home/applications/$id/delete" .ls-button .elevated ls-accent="red"><i .bi-trash-fill /><span>Delete Application</span></a>
+                    <a base-href="/home/applications/$id/details" data-tab-id="applications/details" .ls-button .elevated><i .bi-pencil-fill /><span>Edit Application</span></a>
+                    <a base-href="/home/applications/$id/store" data-tab-id="applications/store" .ls-button .elevated><i .bi-shop /><span>Store Page</span></a>
+                    <a base-href="/home/applications/$id/team" data-tab-id="applications/team" .ls-button .elevated><i .bi-people-fill /><span>Team</span></a>
+                    <a base-href="/home/applications/$id/delete" data-tab-id="applications/delete" .ls-button .elevated ls-accent="red"><i .bi-trash-fill /><span>Delete Application</span></a>
                 </div>
             </ls-tab>
         </ls-tabs>
@@ -184,7 +184,7 @@
                         <hr>
 
                         <ls-div .margin-v-xlarge>
-                            <h3>About Me</h3>
+                            <h3>About Me  <i class="bi-markdown-fill" ls-tooltip="Supports markdown"></i></h3>
                             <span .settings-subtext>You can use markdown and links.</span>
                             <ls-text-input .has-textarea>
                                 <textarea name="about" #profile-about placeholder="Tell us about yourself..." maxlength="500" {{ editingUser.bio || '' }}></textarea>
@@ -245,6 +245,7 @@
                                 <div .profile-content>
                                     <ls-box .contained .level-2 style="border-radius: var(--border-radius-large)">
                                         <h2 {{ editingUser.displayname:DisplayName }} style="margin-bottom: 0; font-weight: 700" />
+                                        {{ editingUser.badges:ProfileBadges }}
                                         {{ editingUser.username:ProfileUsername }}
                                     </ls-box>
             
@@ -272,6 +273,9 @@
             <ls-tab tab-id="applications" tab-title="Developer Applications">
                 <button .create-app-button .pill .elevated><i .bi-plus-lg /> Create application</button>
                 <div #dev-apps-list>
+                    <div .loadingIndicator>
+                        <div .ui-loader></div>
+                    </div>
                     <div .loadingContent></div>
                 </div>
             </ls-tab>
@@ -299,13 +303,15 @@
             </ls-tab>
 
             <ls-tab tab-id="applications/details" tab-title="Edit application">
-                <div .loadingIndicator>
-                    <div .ui-loader></div>
-                </div>
+                Something
+            </ls-tab>
 
-                <div .loadingContent>
-                    Hi
-                </div>
+            <ls-tab tab-id="applications/store" tab-title="Store page">
+                Something
+            </ls-tab>
+
+            <ls-tab tab-id="applications/team" tab-title="Team management">
+                Something
             </ls-tab>
 
             <ls-tab tab-id="sub-users" tab-title="Bot Accounts">F</ls-tab>

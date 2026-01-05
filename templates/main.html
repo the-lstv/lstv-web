@@ -324,6 +324,7 @@
                 <div .login-toolbar-page tab-id="account" .profile style="padding-bottom: 10px">
                     <div .profile-banner {{ user.banner:ProfileBanner }} />
                     <div .profile-avatar {{ user.pfp:ProfilePicture(120px) }} />
+
                     <h2 {{ user.displayname:DisplayName }} style="margin-bottom: 0; font-weight: 700" />
 
                     <a .ls-button .elevated .circle ls-tooltip aria-label="Edit profile" #editProfileButton href="/home/profile">

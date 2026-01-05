@@ -1056,6 +1056,14 @@ main > div {
     text-align: left;
 }
 
+.grouped-buttons :is(button, .ls-button):not(:only-child, :focus-visible) {
+    outline: none !important;
+}
+
+.grouped-buttons :is(button, .ls-button):focus {
+    z-index: 1;
+}
+
 .grouped-buttons :is(button, .ls-button) > i:first-child {
     margin-right: 10px !important;
     -webkit-text-stroke-width: 0.4px;

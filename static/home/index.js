@@ -23,12 +23,11 @@ website.register(document.currentScript, class {
     init() {
         // -- SPA Extensions
         this.context.registerSPAExtension("/home/{,*}", (page) => {
-            this.tabs.set(page || "home");
+            this.handleNavigation();
         });
 
         this.context.registerSPAExtension("/home/applications/{*,*/details,*/store,*/team,*/delete}", (page) => {
-            page = page.substring(page.indexOf("/") + 1);
-            this.tabs.set("applications/" + (page || "details"));
+            this.handleNavigation();
         });
 
 
@@ -36,7 +35,7 @@ website.register(document.currentScript, class {
         this.panel = this.container.querySelector('.container');
         this.panelContent = this.container.querySelector(".settings-container");
 
-        this.loginSwitch = new LS.Util.ElementSwitch(LS.Create('div', {
+        this.loginSwitch = new LS.Util.ElementSwitch([this.container.querySelector('.loadingIndicator'), LS.Create('div', {
             class: "login-notice container-content",
             inner: [
                 N("h3", "You are not logged in"),
@@ -46,15 +45,10 @@ website.register(document.currentScript, class {
                     onclick: () => website.showLoginToolbar()
                 })
             ]
-        }), this.panelContent, {
+        }), this.panelContent], null, {
             mode: "dom",
             parent: this.panel,
             initial: -1
-        });
-
-        this.loadingSwitch = new LS.Util.ElementSwitch(this.container.querySelector('.loadingIndicator'), this.panelContent, {
-            mode: "dom",
-            parent: this.panel
         });
 
         const menuButton = this.container.querySelector('.menu-button');
@@ -74,6 +68,7 @@ website.register(document.currentScript, class {
         // -- Lifecycle
         this.tabs.on("changed", (tab) => this.handleTabChange(tab));
         this.context.on("destroy", () => this.destroy());
+        window.s = this;
 
         // First thing that we do, is we wait for the user state to be ready.
         // Once that happens this callback will be called, including future changes, as this page should update user state dynamically.
@@ -84,25 +79,44 @@ website.register(document.currentScript, class {
 
     handleUserStateChange(loggedIn) {
         if (!loggedIn) {
-            this.loginSwitch.back();
+            this.loginSwitch.set(1);
             return;
         }
 
         this.loginSwitch.front();
 
         if (!this.firstLoadDone) {
-            this.panelContent.style.display = "";
-
-            const segments = location.pathname.split("/");
-            if (segments[2] === "applications" && segments[3]) {
-                if(!this.developerAppEditor) this.developerAppEditor = new DeveloperAppEditor(this);
-                this.tabs.set("applications/" + (segments[4] || "details"));
-                return;
-            }
-
-            this.tabs.set(segments[2] || "home");
-            this.sidebarTabs.set("home");
             this.firstLoadDone = true;
+            this.panelContent.style.display = "";
+            this.handleNavigation();
+        }
+    }
+    
+    handleNavigation() {
+        const segments = location.pathname.split("/").filter(Boolean);
+        segments.shift();
+
+        switch(segments[0]) {
+            case "applications":
+                if (segments[1]) {
+                    if(segments[2] === "delete") {
+                        LS.Modal.buildEphemeral({
+                            title: "Are you sure?",
+                            content: LS.Create({ innerHTML: "This will permanently delete your application and any related resources.<br><br>You can restore it within 30 days." }),
+                            buttons: [{ label: "Cancel", class: "elevated" },  { label: "Continue", accent: "red" }]
+                        });
+                        return;
+                    }
+
+                    if(!this.developerAppEditor) this.developerAppEditor = new DeveloperAppEditor(this);
+                    this.tabs.set("applications/" + (segments[2] || "details"));
+                    break;
+                }
+
+            default:
+                this.tabs.set(segments[0] || "home");
+                this.sidebarTabs.set("home");
+                break;
         }
     }
 
@@ -223,7 +237,7 @@ class DeveloperAppEditor {
 
             for (let app of response) {
                 if(!app.previewElement) app.previewElement = LS.Create("a", {
-                    class: "dev-app-entry ls-plain",
+                    class: "app-entry ls-plain",
                     href: "/home/applications/" + app.id + "/details",
                     inner: [
                         {
