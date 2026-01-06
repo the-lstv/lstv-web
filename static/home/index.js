@@ -149,7 +149,7 @@ website.register(document.currentScript, class {
                 this.tabHandlers.account = new AccountHandler(this.container, this.auth);
                 this.tabHandlers.account?.init();
             } else if (tab === "applications" && !this.tabHandlers.applications) {
-                this.tabHandlers.applications = new ApplicationsHandler(this.container, this.developerAppEditor, this.tabs);
+                this.tabHandlers.applications = new ApplicationsHandler(this, this.developerAppEditor, this.tabs);
                 this.tabHandlers.applications?.init();
             }
 
@@ -226,7 +226,7 @@ class DeveloperAppEditor {
     update() {
         this.loadingSwitch.back();
 
-        website.fetch("v1/apps/list", {}, (error, response) => {
+        website.fetch("v1/apps/list?publisher=@me", {}, (error, response) => {
             if (error) {
                 console.error("Failed to fetch app list:", error);
                 return;
@@ -668,14 +668,15 @@ class AccountHandler {
  * Handles developer applications management
  */
 class ApplicationsHandler {
-    constructor(container, developerAppEditor, tabs) {
-        this.container = container;
+    constructor(parent, developerAppEditor, tabs) {
+        this.parent = parent;
+        this.container = parent.container;
         this.developerAppEditor = developerAppEditor;
         this.tabs = tabs;
     }
 
     init() {
-        this.container.querySelector(".create-app-button").addEventListener("click", () => {
+        this.parent.panelContent.querySelector(".create-app-button").addEventListener("click", () => {
             this.tabs.set("applications/create");
         });
 
@@ -684,13 +685,32 @@ class ApplicationsHandler {
     }
 
     setupForm() {
-        const typeSelectAnchor = this.container.querySelector("#app-setup-form [for='app-type'] ~ br");
-        typeSelectAnchor.addAfter(LS.Create('ls-select', {
-            id: "app-type",
-            style: { marginTop: '10px' },
-            class: "elevated pill",
-            value: "other",
-            options: this.getCategoryOptions()
+        this.parent.panelContent.querySelector('#app-setup-form').appendChild(LS.Create("form", {
+            id: "app-setup-form",
+            onsubmit: () => false,
+            inner: [
+                { style: "display: flex; overflow: auto; flex-direction: column; gap: 32px; padding-bottom: 80px", inner: [
+                    { tag: "h1", inner: "Create an application!", style: "margin: 0" },
+                    { tag: "input", class: "clear", type: "text", id: "app-name", placeholder: "Project name", "aria-label": "Project name" },
+                    { inner: [
+                        { tag: "label", for: "app-description", inner: [ "Description ", LS.Create("ls-box", { class: "inline text-tag", inner: "Optional" }), LS.Create("i", { class: "bi-markdown-fill", "ls-tooltip": "Supports markdown" }) ] },
+                        { tag: "br" },
+                        { tag: "textarea", style: "height: 150px; resize: none; margin-top: 10px", id: "app-description", placeholder: "Enter a brief description of your application" },
+                        { tag: "br" }
+                    ] },
+                    { inner: [
+                        { tag: "label", for: "app-type", inner: [ "Primary purpose ", LS.Create("ls-box", { class: "inline text-tag", inner: "Optional" }) ] },
+                        { tag: "br" },
+                        LS.Create('ls-select', {
+                            id: "app-type",
+                            style: { marginTop: '10px' },
+                            class: "elevated pill",
+                            value: "other",
+                            options: this.getCategoryOptions()
+                        })
+                    ] }
+                ] }
+            ]
         }));
 
         this.container.querySelector("#app-setup-form").addEventListener("submit", (e) => {

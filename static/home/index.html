@@ -237,22 +237,24 @@
                     </div>
 
                     <div>
-                        <div style="position: sticky; top: 10px">
+                        <div style="position: sticky">
                             <div .profile .profile-block .level-1>
                                 <div .profile-banner .editable {{ editingUser.banner:ProfileBanner }} />
                                 <div .profile-avatar .editable {{ editingUser.pfp:ProfilePicture(120px) }} />
-            
+
                                 <div .profile-content>
                                     <ls-box .contained .level-2 style="border-radius: var(--border-radius-large)">
-                                        <h2 {{ editingUser.displayname:DisplayName }} style="margin-bottom: 0; font-weight: 700" />
-                                        {{ editingUser.badges:ProfileBadges }}
+                                        <div .profile-header>
+                                            <h2 {{ editingUser.displayname:DisplayName }} style="margin-bottom: 0; font-weight: 700" />
+                                            {{ editingUser.badges:ProfileBadges }}
+                                        </div>
                                         {{ editingUser.username:ProfileUsername }}
                                     </ls-box>
-            
+
                                     {{ editingUser.bio:ProfileBio(true) }}
                                     {{ editingUser.profileLinks:ProfileLinks }}
                                 </div>
-        
+
                                 <span hidden {{ editingUser.profile_style:ProfileEffects(style) }} />
                                 <span hidden {{ editingUser.fullscreen_banner:ProfileEffects(fullscreen-banner) }} />
                             </div>
@@ -280,31 +282,9 @@
                 </div>
             </ls-tab>
 
-            <ls-tab tab-id="applications/create" tab-title="Create an app" #app-setup-tab>
-                <form #app-setup-form onsubmit="return false">
-                    <div style="display: flex; overflow: auto; flex-direction: column; gap: 32px; padding-bottom: 80px">
-                        <h1 style="margin: 0">Create an application!</h1>
-                        <input class="clear" type="text" id="app-name" placeholder="Project name" aria-label="Project name">
+            <ls-tab tab-id="applications/create" tab-title="Create an app" #app-setup-tab></ls-tab>
 
-                        <div>
-                            <label for="app-description">Description <ls-box class="inline text-tag">Optional</ls-box> <i class="bi-markdown-fill" ls-tooltip="Supports markdown"></i></label> <br>
-                            <textarea style="height: 150px; resize: none; margin-top: 10px" id="app-description" placeholder="Enter a brief description of your application"></textarea> <br>
-                        </div>
-
-                        <div>
-                            <label for="app-type">Primary purpose <ls-box class="inline text-tag">Optional</ls-box></label><br>
-                        </div>
-                    </div>
-
-                    <div .bottom-buttons>
-                        <button type="submit" .pill #app-create>Create Application</button>
-                    </div>
-                </form>
-            </ls-tab>
-
-            <ls-tab tab-id="applications/details" tab-title="Edit application">
-                Something
-            </ls-tab>
+            <ls-tab tab-id="applications/details" tab-title="Edit application"></ls-tab>
 
             <ls-tab tab-id="applications/store" tab-title="Store page">
                 Something

@@ -1082,12 +1082,13 @@ const website = {
 
     BADGES: [
         { icon: "owner.png", label: "Owner", id: 0 },
-        { icon: "developer.png", label: "Developer at lstv.space", id: 1 },
-        { icon: "supporter.png", label: "Supporter", id: 2 },
+        { icon: "developer.webp", label: "Developer at lstv.space", id: 1 },
+        { icon: "supporter.webp", label: "Supporter", id: 2 },
         { icon: "early_supporter.png", label: "Early Supporter", id: 3 },
         { icon: "bug_hunter.png", label: "Bug Hunter", id: 4 },
         { icon: "community_helper.png", label: "Community Helper", id: 5 },
-        { icon: "moderator.png", label: "Moderator", id: 6 },
+        { icon: "moderator.webp", label: "Moderator", id: 6 },
+        { icon: "legacy.webp", label: "Legacy (2018-2023) account", id: -1 },
     ],
 
     views: {
@@ -1214,7 +1215,7 @@ const website = {
         },
 
         getProfileBadgesView(source, args, element) {
-            const badges = source && (Array.isArray(source) ? source : Array.isArray(source.profileBadges) ? source.profileBadges : []);
+            const badges = source && (Array.isArray(source) ? source : Array.isArray(source.badges) ? source.badges : []);
             element.style.display = badges && badges.length ? "flex" : "none";
             if (!badges || !badges.length) return;
 
@@ -1229,9 +1230,7 @@ const website = {
                         tooltip: badgeInfo.label,
                         inner: N("img", {
                             src: "/assets/image/badges/" + badgeInfo.icon,
-                            alt: badgeInfo.label,
-                            width: 24,
-                            height: 24
+                            alt: badgeInfo.label
                         })
                     });
                 })
