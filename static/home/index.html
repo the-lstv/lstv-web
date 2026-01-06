@@ -237,7 +237,7 @@
                     </div>
 
                     <div>
-                        <div style="position: sticky">
+                        <div style="position: sticky; top: 30px">
                             <div .profile .profile-block .level-1>
                                 <div .profile-banner .editable {{ editingUser.banner:ProfileBanner }} />
                                 <div .profile-avatar .editable {{ editingUser.pfp:ProfilePicture(120px) }} />
@@ -255,8 +255,7 @@
                                     {{ editingUser.profileLinks:ProfileLinks }}
                                 </div>
 
-                                <span hidden {{ editingUser.profile_style:ProfileEffects(style) }} />
-                                <span hidden {{ editingUser.fullscreen_banner:ProfileEffects(fullscreen-banner) }} />
+                                {{ editingUser.profileEffects:ProfileEffects }}
                             </div>
 
                             <ls-div>

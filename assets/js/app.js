@@ -1157,7 +1157,7 @@ const website = {
             }
 
             const wrapper = N("div", {
-                class: "profile-picture-wrapper" + (user.username === "admin" ? " secret-frame-experiment" : ""),
+                class: "profile-picture-wrapper",
                 inner: img
             });
 
@@ -1277,7 +1277,7 @@ const website = {
                 class: "profile-bio",
                 innerHTML: website.utils.basicMarkDown(bio)
             })
-        },
+        }
     },
 
     utils: {
@@ -2413,18 +2413,33 @@ const kernel = new class Kernel extends LoggerContext {
 
         LS.Reactive.registerType("ProfileEffects", (value, args, element, user) => {
             const profile = element.closest(".profile");
+            if(!profile) return null;
 
-            if(args[0] === "style") {
-                if(profile && value) {
-                    profile.setAttribute("profile-style", value);
-                } else {
-                    profile.removeAttribute("profile-style");
-                }
+            const effects = value || user.profileEffects || {};
+
+            if(effects?.avatar?.id) {
+                profile.setAttribute("avatar-effect", effects.avatar.id);
+                profile.style.setProperty("--glow-primary", effects.avatar.primary || "var(--accent)");
+                profile.style.setProperty("--glow-secondary", effects.avatar.secondary || "var(--accent-80)");
+            } else {
+                profile.removeAttribute("avatar-effect");
+                profile.style.removeProperty("--glow-primary");
+                profile.style.removeProperty("--glow-secondary");
             }
 
-            if (args[0] === "fullscreen-banner") {
-                profile.classList.toggle("fullscreen-banner", !!user.fullscreen_banner);
+            if(effects?.style?.id) {
+                profile.setAttribute("profile-style", effects.style.id);
+            } else {
+                profile.removeAttribute("profile-style");
             }
+
+            if(effects?.style?.accent) {
+                profile.setAttribute("ls-accent", effects.style.accent);
+            } else {
+                profile.removeAttribute("ls-accent");
+            }
+
+            profile.classList.toggle("fullscreen-banner", !!effects?.banner?.fullscreen);
 
             return null;
         });

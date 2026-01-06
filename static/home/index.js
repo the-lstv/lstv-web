@@ -313,6 +313,8 @@ class ProfileHandler {
         this.blobs = {};
         this.editingUser = LS.Reactive.fork("editingUser", website.userFragment);
         this.confirmButtons = container.get('.profile-editor-confirm-buttons');
+
+        window.editingUser = this.editingUser;
     }
 
     init() {

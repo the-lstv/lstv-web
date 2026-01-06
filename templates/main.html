@@ -344,8 +344,7 @@
                         <button .elevated #logOutButton><i .bi-box-arrow-right /><span>Log out</span></button>
                     </ls-div>
 
-                    <span hidden {{ user.profile_style:ProfileEffects(style) }} />
-                    <span hidden {{ user.fullscreen_banner:ProfileEffects(fullscreen-banner) }} />
+                    {{ editingUser.profileEffects:ProfileEffects }}
                 </div>
             </div>
 

@@ -881,6 +881,12 @@ main > div {
     pointer-events: none;
     user-select: none;
     object-fit: contain;
+    transition: .2s transform, .2s filter;
+}
+
+.profile-badge:hover img {
+    transform: scale(1.5) scaleX(-1);
+    filter: drop-shadow(2px 4px 6px black);
 }
 
 .profile-header {
@@ -946,6 +952,45 @@ main > div {
 [profile-style=glossy] ls-box::after {
     height: 50%;
     opacity: 40%;
+}
+
+.profile {
+    --glow-primary: var(--accent);
+    --glow-secondary: var(--accent-80);
+}
+
+[avatar-effect=glow] .profile-picture-wrapper::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: var(--border-radius-circle);
+    z-index: 1;
+    animation: glow-pulse 4s ease-in-out infinite, spin 4s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes glow-pulse {
+    0%, 100% {
+        box-shadow:
+            10px 10px 16px 0 var(--glow-primary),
+            -10px -10px 16px -10px var(--glow-primary) inset,
+            -10px -10px 32px 0 var(--glow-secondary),
+            10px 10px 24px -10px var(--glow-secondary) inset;
+    }
+
+    50% {
+        box-shadow:
+            0 0 10px -5px var(--glow-primary),
+            0 0 10px -5px var(--glow-primary) inset,
+            0 0 10px -5px var(--glow-secondary),
+            0 0 10px -5px var(--glow-secondary) inset;
+    }
 }
 
 .profile-block {
