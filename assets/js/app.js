@@ -1088,7 +1088,7 @@ const website = {
         { icon: "bug_hunter.png", label: "Bug Hunter", id: 4 },
         { icon: "community_helper.png", label: "Community Helper", id: 5 },
         { icon: "moderator.webp", label: "Moderator", id: 6 },
-        { icon: "legacy.webp", label: "Legacy (2018-2023) account", id: -1 },
+        { icon: "legacy.webp", label: "Legacy (2018-2024) account", id: -1 },
     ],
 
     views: {
@@ -1214,10 +1214,14 @@ const website = {
             } else return null;
         },
 
-        getProfileBadgesView(source, args, element) {
+        getProfileBadgesView(source, args, element, user) {
             const badges = source && (Array.isArray(source) ? source : Array.isArray(source.badges) ? source.badges : []);
             element.style.display = badges && badges.length ? "flex" : "none";
             if (!badges || !badges.length) return;
+
+            if((user.legacy || +user.createdAt.slice(0, 4) <= 2024) && !badges.includes(-1)) {
+                badges.push(-1); // Legacy badge
+            }
 
             return N("div", {
                 class: "badges-container",
