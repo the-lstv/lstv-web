@@ -189,7 +189,7 @@ website.register(document.currentScript, (context, container) => {
         coding_years: year - 2016,
         design_years: year - 2021,
         music_years: year - 2024.5, // Technically 2023, but I won't count that
-        age: year - 2007,
+        age: Math.floor((Date.now() - 1178064000000) / 31556952000),
         name: "Lukáš",
         name_alt: "Lukas",
         location: "Czech Republic",

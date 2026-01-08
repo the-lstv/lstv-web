@@ -324,17 +324,17 @@ class ProfileHandler {
     }
 
     setupUserWatcher() {
-        this.editingUser.__binding.on("mutated", () => {
+        this.editingUser.__bind.on("mutated", () => {
             this.confirmButtons.classList.add("visible");
         });
 
-        this.editingUser.__binding.on("reset", () => {
+        this.editingUser.__bind.on("reset", () => {
             this.updateTextAreaLength();
         });
 
         website.watchUser((loggedIn, userFragment) => {
             if (loggedIn) {
-                this.editingUser.__reset();
+                this.editingUser.__bind.reset();
             }
         });
 
@@ -358,7 +358,7 @@ class ProfileHandler {
         this.container.get("#profile-save").on("click", () => this.saveProfile());
         this.container.get("#profile-reset").on("click", () => this.resetProfile());
         this.container.get("#mature-content").on("change", (e) => this.editingUser.mature_content = e.target.checked);
-        this.container.get("#fullscreen-banner").on("change", (e) => this.editingUser.fullscreen_banner = e.target.checked);
+        this.container.get("#fullscreen-banner").on("change", (e) => this.editingUser.profileEffects.banner.fullscreen = e.target.checked);
         this.container.get("#secret-glossy-style").on("change", (e) => this.editingUser.profile_style = e.target.checked ? "glossy" : null);
     }
 
@@ -492,7 +492,7 @@ class ProfileHandler {
             this.confirmButtons.classList.remove("visible");
             this.cleanupBlobs();
             LS.Toast.show("Profile updated successfully!", { timeout: 3000 });
-            this.editingUser.__reset();
+            this.editingUser.__bind.reset();
         });
     }
 
@@ -531,7 +531,7 @@ class ProfileHandler {
     }
 
     resetProfile() {
-        this.editingUser.__reset();
+        this.editingUser.__bind.reset();
         this.blobs.pfp = null;
         this.blobs.banner = null;
         this.confirmButtons.classList.remove("visible");
