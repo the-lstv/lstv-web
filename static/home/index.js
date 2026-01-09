@@ -359,7 +359,7 @@ class ProfileHandler {
         this.container.get("#profile-reset").on("click", () => this.resetProfile());
         this.container.get("#mature-content").on("change", (e) => this.editingUser.mature_content = e.target.checked);
         this.container.get("#fullscreen-banner").on("change", (e) => this.editingUser.profileEffects.banner.fullscreen = e.target.checked);
-        this.container.get("#secret-glossy-style").on("change", (e) => this.editingUser.profile_style = e.target.checked ? "glossy" : null);
+        this.container.get("#secret-glossy-style").on("change", (e) => this.editingUser.profileEffects.style.id = e.target.checked ? "glossy" : null);
     }
 
     setupExternalLinks() {
@@ -463,6 +463,20 @@ class ProfileHandler {
         });
     }
 
+    contentModerationError(profanity) {
+        console.log(profanity);
+        
+        return N({
+            inner: [
+                "Couldn't update due to the following restricted content that is not allowed in this context:",
+                N("ul", {
+                    inner: profanity.map(item => N("li", `Word "${item.censored}", reason: "${item.notes}${item.illegal? " - refers to illegal content or practices" : ""}" (language: "${item.lang}", score ${item.severity}/5)`))
+                }),
+                N("p", "Please contact us if this is a mistake.")
+            ]
+        });
+    }
+
     async saveProfile() {
         this.disableButtons();
 
@@ -474,16 +488,18 @@ class ProfileHandler {
             }
         }
 
-        const patch = this.editingUser.__data;
+        const patch = this.editingUser.__bind.object;
         if (this.blobs.pfp?.uploadResult) patch.pfp = this.blobs.pfp.uploadResult.name;
         if (this.blobs.banner?.uploadResult) patch.banner = this.blobs.banner.uploadResult.name;
 
         this.auth.patch(patch, (error) => {
             this.enableButtons();
             if (error) {
+                console.log(error);
+                
                 LS.Modal.buildEphemeral({
                     title: "Update failed",
-                    content: error.error || error.message || "Sorry, an error occurred while updating your profile. Please try again later.",
+                    content: (error?.error?.profanity && this.contentModerationError(error.error.profanity)) || error.error || error.message || "Sorry, an error occurred while updating your profile. Please try again later.",
                     buttons: [{ label: "Ok" }]
                 });
                 return;

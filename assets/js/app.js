@@ -2199,6 +2199,8 @@ const kernel = new class Kernel extends LoggerContext {
 
             this.hello = false;
             window.addEventListener('message', e => {
+                if (e.origin !== this.iframeOrigin) return;
+
                 if (!this.hello) {
                     if (e.data.data.initialized) {
                         this.hello = true;
@@ -2206,8 +2208,6 @@ const kernel = new class Kernel extends LoggerContext {
                         return;
                     } else return;
                 }
-
-                if (e.origin !== this.iframeOrigin) return;
 
                 if (e.data.event && !e.data.id) {
                     this.emit(e.data.event, [e.data.data]);
@@ -2340,6 +2340,22 @@ const kernel = new class Kernel extends LoggerContext {
         getIntentToken(scope, intents, callback) {
             return this.postMessage('getIntentToken', { scope, intents }, callback);
         }
+
+        listAccounts(callback) {
+            return this.postMessage('listAccounts', null, callback);
+        }
+
+        getActiveAccount(callback) {
+            return this.postMessage('getActiveAccount', null, callback);
+        }
+
+        removeAccount(accountId, callback) {
+            return this.postMessage('removeAccount', { accountId }, callback);
+        }
+
+        switchAccount(accountId, callback) {
+            return this.postMessage('switchAccount', { accountId }, callback);
+        }
     }
 
     clearAllOtherPages(){
@@ -2419,7 +2435,9 @@ const kernel = new class Kernel extends LoggerContext {
             const profile = element.closest(".profile");
             if(!profile) return null;
 
-            const effects = value || user.profileEffects || {};
+            console.log(user.profileEffects);
+
+            const effects = user.profileEffects || {};
 
             if(effects?.avatar?.id) {
                 profile.setAttribute("avatar-effect", effects.avatar.id);
@@ -2457,6 +2475,10 @@ const kernel = new class Kernel extends LoggerContext {
             if (patch) {
                 Object.assign(this.userFragment, patch);
             }
+        });
+
+        this.auth.on("account-switched", (reason, from, to) => {
+
         });
 
         const originalState = location.pathname;

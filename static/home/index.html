@@ -218,7 +218,7 @@
                             <span .settings-subtext>Limited edition glossy style for your profile.</span>
 
                             <label .ls-checkbox>
-                                <input type="checkbox" id="secret-glossy-style" name="secret-glossy-style" {{ editingUser.profile_style }}>
+                                <input type="checkbox" id="secret-glossy-style" name="secret-glossy-style" {{ editingUser.profileEffects.style.id == 'glossy' }}>
                                 Enable
                                 <span />
                             </label>
