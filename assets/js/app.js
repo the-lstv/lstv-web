@@ -67,7 +67,7 @@ class LoggerContext {
         const isString = typeof message === 'string';
         if(!isString) data.unshift(message);
         func.call(this.writer, this._tag + (isString ? " " + message : ''), tagStyle + this._tagStyle, 'color: inherit; font-weight: normal;', ...data);
-        website.emit('global-log-stream', [this.logContext, message, ...data]);
+        if (window.website?.emit) website.emit('global-log-stream', [this.logContext, message, ...data]);
     }
 
     log(...data) {
@@ -170,7 +170,10 @@ const AssetManager = new class {
     registerScript(source, element, execute = true){
         const key = this.fuzzKey(source);
         this.scripts.set(key, element);
-        if (execute) document.head.appendChild(element);
+        if (execute) {
+            document.head.appendChild(element);
+            element.remove();
+        }
     }
 
     requireStyle(source) {
@@ -188,7 +191,6 @@ const AssetManager = new class {
             style.onload = () => resolve(style);
             style.onerror = (e) => reject(e);
             this.registerStyle(source, style);
-            document.head.appendChild(style);
         });
     }
 
@@ -203,7 +205,6 @@ const AssetManager = new class {
             script.onload = () => resolve(script);
             script.onerror = (e) => reject(e);
             this.registerScript(script.src, script);
-            document.head.appendChild(script);
         });
     }
 
@@ -309,6 +310,8 @@ class ContentContext extends LS.Context {
         for (const script of this.scripts) {
             if (!script.isConnected) {
                 document.head.appendChild(script);
+                script.remove();
+
                 if (script.src && !script.hasAttribute("data-loaded")) {
                     if(this.destroyed) return;
 
@@ -443,11 +446,11 @@ class ContentContext extends LS.Context {
 
         if(this.destroyed) return this;
 
-        for(const child of Array.from(targetElement.children)) {
-            child.remove();
-        }
-
         if(targetElement) {
+            for(const child of Array.from(targetElement.children)) {
+                child.remove();
+            }
+
             if (this.sandboxMode === "shadow") {
                 if (!targetElement.shadowRoot) targetElement.attachShadow({ mode: 'open' });
                 targetElement.shadowRoot.replaceChildren(this.content);
@@ -545,7 +548,7 @@ class ContentContext extends LS.Context {
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(text, 'text/html');
 
-                const newContent = doc.querySelector('#viewport').firstElementChild;
+                const newContent = doc.querySelector('#viewport')?.firstElementChild;
                 if (!newContent) {
                     this.error = 404;
                     reject(new Error("404 Not Found"));
@@ -575,6 +578,7 @@ class ContentContext extends LS.Context {
 
     processAssetsOnNode(element) {
         for (const style of element.querySelectorAll('link[rel="stylesheet"], style')) {
+            if(style.hasAttribute('data-asset-ignore') || style.classList.contains('whitelist')) continue;
             if(style.href) {
                 if(AssetManager.whitelist.has(AssetManager.fuzzKey(style.href || ''))) continue;
 
@@ -612,7 +616,6 @@ class ContentContext extends LS.Context {
                 let scriptElement = AssetManager.cloneScript(script);
                 scriptElement.registeringContext = this;
                 this.scripts.push(scriptElement);
-                script.remove();
             }
         }
     }
@@ -2354,10 +2357,6 @@ const kernel = new class Kernel extends LoggerContext {
             return result;
         }
 
-        getUserFragment(callback) {
-            return this.postMessage('getUserFragment', null, callback);
-        }
-
         patch(patch, callback) {
             return this.postMessage('patch', { patch }, callback);
         }
@@ -3458,7 +3457,9 @@ const kernel = new class Kernel extends LoggerContext {
                     origin: location.origin,
                     performanceMode: window.LOW_PERFORMANCE_MODE ? "low" : "normal", // User-set, does not relate to hardware capabilities
                     ls_version: LS.version
-                } : {}
+                } : {},
+
+                ...beacon? { quit: true }: {}
             }: {
                 sessionID: SESSION_ID,
                 kernel: KERNEL_VERSION,
@@ -3476,7 +3477,6 @@ const kernel = new class Kernel extends LoggerContext {
 
             if(beacon) {
                 // Sent when ending a session naturally
-                data.quit = true;
                 navigator.sendBeacon(PING_URL, data);
                 return;
             }
