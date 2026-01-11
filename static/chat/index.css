@@ -20,3 +20,20 @@
 #server-list {
     width: 100px;
 }
+
+.loadingIndicator, .loadingContent, .login-notice {
+    width: 100%;
+    height: 100%;
+}
+
+.loadingIndicator, .login-notice {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.server-item-icon {
+    width: 60px;
+    height: 60px;
+}

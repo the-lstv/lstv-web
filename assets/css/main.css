@@ -1414,3 +1414,27 @@ ls-tab:not(.tab-active) {
     position: relative;
     z-index: -1;
 }
+
+.accounts-list {
+    user-select: none;
+}
+
+.account-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: large;
+}
+
+.account-item.active {
+    background: var(--elevate-1) !important;
+    pointer-events: none;
+}
+
+.account-item.active::before {
+    content: "\F272";
+    position: absolute;
+    right: 20px;
+    font-family: bootstrap-icons !important;
+    font-weight: 400 !important;
+}

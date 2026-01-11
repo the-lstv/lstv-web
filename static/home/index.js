@@ -2,202 +2,6 @@
  * TODO: Requires a lot of refactoration, this is temporary
  */
 
-/**
- * Main page module
- */
-website.register(document.currentScript, class {
-    constructor(context, container) {
-        this.context = context;
-        this.context.setOptions({
-            dynamicAccount: true,
-            path: "/home"
-        });
-
-        this.container = container;
-        this.auth = context.requestPermission(["auth"]).auth;
-        this.siteScriptsOnce = new Set();
-        this.tabHandlers = {};
-        this.init();
-    }
-
-    init() {
-        // -- SPA Extensions
-        this.context.registerSPAExtension("/home/{,*}", (page) => {
-            this.handleNavigation();
-        });
-
-        this.context.registerSPAExtension("/home/applications/{*,*/details,*/store,*/team,*/delete}", (page) => {
-            this.handleNavigation();
-        });
-
-
-        // -- DOM elements
-        this.panel = this.container.querySelector('.container');
-        this.panelContent = this.container.querySelector(".settings-container");
-
-        this.loginSwitch = new LS.Util.ElementSwitch([this.container.querySelector('.loadingIndicator'), LS.Create('div', {
-            class: "login-notice container-content",
-            inner: [
-                N("h3", "You are not logged in"),
-                N("button", {
-                    textContent: "Log in",
-                    class: "pill",
-                    onclick: () => website.showLoginToolbar()
-                })
-            ]
-        }), this.panelContent], null, {
-            mode: "dom",
-            parent: this.panel,
-            initial: -1
-        });
-
-        const menuButton = this.container.querySelector('.menu-button');
-        menuButton.addEventListener("click", () => this.panel.toggleClass('sidebar-menu-visible'));
-
-        // -- Tabs
-        this.tabs = new LS.Tabs(this.panelContent.querySelector('.sidebar-content'), {
-            list: false,
-            slideAnimation: true
-        });
-
-        this.sidebarTabs = new LS.Tabs(this.panelContent.querySelector('.menu'), {
-            list: false,
-            slideAnimation: true
-        });
-
-        // -- Lifecycle
-        this.tabs.on("changed", (tab) => this.handleTabChange(tab));
-        this.context.on("destroy", () => this.destroy());
-        window.s = this;
-
-        // First thing that we do, is we wait for the user state to be ready.
-        // Once that happens this callback will be called, including future changes, as this page should update user state dynamically.
-        website.watchUser((loggedIn, userFragment) => {
-            this.handleUserStateChange(loggedIn);
-        });
-    }
-
-    handleUserStateChange(loggedIn) {
-        if (!loggedIn) {
-            this.loginSwitch.set(1);
-            return;
-        }
-
-        this.loginSwitch.front();
-
-        if (!this.firstLoadDone) {
-            this.firstLoadDone = true;
-            this.panelContent.style.display = "";
-            this.handleNavigation();
-        }
-    }
-    
-    handleNavigation() {
-        const segments = location.pathname.split("/").filter(Boolean);
-        segments.shift();
-
-        switch(segments[0]) {
-            case "applications":
-                if (segments[1]) {
-                    if(segments[2] === "delete") {
-                        LS.Modal.buildEphemeral({
-                            title: "Are you sure?",
-                            content: LS.Create({ innerHTML: "This will permanently delete your application and any related resources.<br><br>You can restore it within 30 days." }),
-                            buttons: [{ label: "Cancel", class: "elevated" },  { label: "Continue", accent: "red" }]
-                        });
-                        return;
-                    }
-
-                    if(!this.developerAppEditor) this.developerAppEditor = new DeveloperAppEditor(this);
-                    this.tabs.set("applications/" + (segments[2] || "details"));
-                    break;
-                }
-
-            default:
-                this.tabs.set(segments[0] || "home");
-                this.sidebarTabs.set("home");
-                break;
-        }
-    }
-
-    handleTabChange(tab) {
-        const view = this.tabs.currentElement();
-        this.panel.classList.remove('sidebar-menu-visible');
-
-        let sidebarTab = "home";
-
-        if (tab.startsWith("applications")) {
-            if(!this.developerAppEditor) this.developerAppEditor = new DeveloperAppEditor(this);
-
-            if(tab.indexOf("/") !== -1) {
-                if(!tab.endsWith("/create")) {
-                    sidebarTab = "application";
-                    this.developerAppEditor.load();
-                }
-    
-                // TODO
-            }
-        }
-
-        this.sidebarTabs.set(sidebarTab);
-
-        if (!this.siteScriptsOnce.has(tab)) {
-            if (tab === "profile" && !this.tabHandlers.profile) {
-                this.tabHandlers.profile = new ProfileHandler(this.container, this.auth);
-                this.tabHandlers.profile?.init();
-            } else if (tab === "account" && !this.tabHandlers.account) {
-                this.tabHandlers.account = new AccountHandler(this.container, this.auth);
-                this.tabHandlers.account?.init();
-            } else if (tab === "applications" && !this.tabHandlers.applications) {
-                this.tabHandlers.applications = new ApplicationsHandler(this, this.developerAppEditor, this.tabs);
-                this.tabHandlers.applications?.init();
-            }
-
-            this.siteScriptsOnce.add(tab);
-        }
-
-        this.container.querySelector('.title').textContent = view.getAttribute("tab-title") || "User Settings";
-
-        const button = this.container.querySelector(`[data-tab-id="${tab}"]`);
-        const activeButton = this.container.querySelector(`.menu .active`);
-
-        if (activeButton) {
-            activeButton.classList.remove('active', 'level-1');
-        }
-
-        if (button) {
-            button.classList.add('active', 'level-1');
-        }
-    }
-
-    destroy() {
-        this.tabs.destroy();
-        this.tabs = null;
-
-        this.sidebarTabs.destroy();
-        this.sidebarTabs = null;
-
-        this.loginSwitch.destroy();
-        this.loginSwitch = null;
-
-        this.developerAppEditor.destroy();
-        this.developerAppEditor = null;
-
-        for (const handlerKey in this.tabHandlers) {
-            this.tabHandlers[handlerKey].destroy();
-        }
-        this.tabHandlers = {};
-
-        this.container = null;
-        this.context = null;
-        this.auth = null;
-        this.panel = null;
-        this.panelContent = null;
-        this.__destroyed = true;
-    }
-});
-
-
 // Constants
 const APP_CATEGORY_ICONS = {
     web: "bi-globe",
@@ -210,12 +14,12 @@ const APP_CATEGORY_ICONS = {
     other: "bi-three-dots"
 };
 
-
 /**
  * Manages developer applications
  */
-class DeveloperAppEditor {
+class DeveloperAppEditor extends LS.Context {
     constructor(context) {
+        super();
         this.context = context;
         this.currentAppId = null;
         this.list = [];
@@ -306,14 +110,15 @@ class DeveloperAppEditor {
 /**
  * Handles user profile editing
  */
-class ProfileHandler {
-    constructor(container, auth) {
-        this.container = container;
+class ProfileHandler extends LS.Context {
+    constructor(context, auth) {
+        super();
+        this.context = context;
+        this.container = context.container;
         this.auth = auth;
         this.blobs = {};
         this.editingUser = LS.Reactive.fork("editingUser", website.userFragment);
-        this.confirmButtons = container.get('.profile-editor-confirm-buttons');
-
+        this.confirmButtons = this.container.get('.profile-editor-confirm-buttons');
         window.editingUser = this.editingUser;
     }
 
@@ -330,12 +135,6 @@ class ProfileHandler {
 
         this.editingUser.__bind.on("reset", () => {
             this.updateTextAreaLength();
-        });
-
-        website.watchUser((loggedIn, userFragment) => {
-            if (loggedIn) {
-                this.editingUser.__bind.reset();
-            }
         });
 
         window.addEventListener('beforeunload', (e) => {
@@ -577,9 +376,11 @@ class ProfileHandler {
 /**
  * Handles account settings
  */
-class AccountHandler {
-    constructor(container, auth) {
-        this.container = container;
+class AccountHandler extends LS.Context {
+    constructor(context, auth) {
+        super();
+        this.context = context;
+        this.container = context.container;
         this.auth = auth;
     }
 
@@ -685,8 +486,9 @@ class AccountHandler {
 /**
  * Handles developer applications management
  */
-class ApplicationsHandler {
+class ApplicationsHandler extends LS.Context {
     constructor(parent, developerAppEditor, tabs) {
+        super();
         this.parent = parent;
         this.container = parent.container;
         this.developerAppEditor = developerAppEditor;
@@ -774,3 +576,193 @@ class ApplicationsHandler {
         });
     }
 }
+
+
+/**
+ * Main page module
+ */
+website.register(document.currentScript, class extends LS.Context {
+    constructor(context, container) {
+        super();
+        this.context = context;
+        this.context.setOptions({
+            dynamicAccount: true,
+            path: "/home"
+        });
+
+        this.container = container;
+        this.auth = context.requestPermission(["auth"]).auth;
+        this.siteScriptsOnce = new Set();
+        this.tabHandlers = {};
+        this.init();
+    }
+
+    init() {
+        // -- SPA Extensions
+        this.context.registerSPAExtension("/home/{,*}", (page) => {
+            this.handleNavigation();
+        });
+
+        this.context.registerSPAExtension("/home/applications/{*,*/details,*/store,*/team,*/delete}", (page) => {
+            this.handleNavigation();
+        });
+
+        // -- DOM elements
+        this.panel = this.container.querySelector('.container');
+        this.panelContent = this.container.querySelector(".settings-container");
+
+        this.loginSwitch = this.addDestroyable(new LS.Util.ElementSwitch([this.container.querySelector('.loadingIndicator'), LS.Create('div', {
+            class: "login-notice container-content",
+            inner: [
+                N("h3", "You are not logged in"),
+                N("button", {
+                    textContent: "Log in",
+                    class: "pill",
+                    onclick: () => website.showLoginToolbar()
+                })
+            ]
+        }), this.panelContent], null, {
+            mode: "dom",
+            parent: this.panel,
+            initial: -1
+        }));
+
+        const menuButton = this.container.querySelector('.menu-button');
+        menuButton.addEventListener("click", () => this.panel.toggleClass('sidebar-menu-visible'));
+
+        // -- Tabs
+        this.tabs = this.addDestroyable(new LS.Tabs(this.panelContent.querySelector('.sidebar-content'), {
+            list: false,
+            slideAnimation: true
+        }));
+
+        this.sidebarTabs = this.addDestroyable(new LS.Tabs(this.panelContent.querySelector('.menu'), {
+            list: false,
+            slideAnimation: true
+        }));
+
+        // -- Lifecycle
+        this.tabs.on("changed", (tab) => this.handleTabChange(tab));
+        this.context.on("destroy", () => this.destroy());
+        window.s = this;
+
+        // First thing that we do, is we wait for the user state to be ready.
+        // Once that happens this callback will be called, including future changes, as this page should update user state dynamically.
+        this.context.watchUser((loggedIn, userFragment) => {
+            this.handleUserStateChange(loggedIn);
+        });
+    }
+
+    handleUserStateChange(loggedIn) {
+        if (!loggedIn) {
+            this.loginSwitch.set(1);
+            return;
+        }
+
+        if(this.tabHandlers.profile && this.tabHandlers.profile.editingUser) {
+            this.tabHandlers.profile.editingUser.__bind.reset(true);
+        }
+
+        this.loginSwitch.front();
+
+        if (!this.firstLoadDone) {
+            this.firstLoadDone = true;
+            this.panelContent.style.display = "";
+            this.handleNavigation();
+        }
+    }
+    
+    handleNavigation() {
+        const segments = location.pathname.split("/").filter(Boolean);
+        segments.shift();
+
+        switch(segments[0]) {
+            case "applications":
+                if (segments[1]) {
+                    if(segments[2] === "delete") {
+                        LS.Modal.buildEphemeral({
+                            title: "Are you sure?",
+                            content: LS.Create({ innerHTML: "This will permanently delete your application and any related resources.<br><br>You can restore it within 30 days." }),
+                            buttons: [{ label: "Cancel", class: "elevated" },  { label: "Continue", accent: "red" }]
+                        });
+                        return;
+                    }
+
+                    if(!this.developerAppEditor) this.developerAppEditor = new DeveloperAppEditor(this);
+                    this.tabs.set("applications/" + (segments[2] || "details"));
+                    break;
+                }
+
+            default:
+                this.tabs.set(segments[0] || "home");
+                this.sidebarTabs.set("home");
+                break;
+        }
+    }
+
+    handleTabChange(tab) {
+        const view = this.tabs.currentElement();
+        this.panel.classList.remove('sidebar-menu-visible');
+
+        let sidebarTab = "home";
+
+        if (tab.startsWith("applications")) {
+            if(!this.developerAppEditor) this.developerAppEditor = new DeveloperAppEditor(this);
+
+            if(tab.indexOf("/") !== -1) {
+                if(!tab.endsWith("/create")) {
+                    sidebarTab = "application";
+                    this.developerAppEditor.load();
+                }
+    
+                // TODO
+            }
+        }
+
+        this.sidebarTabs.set(sidebarTab);
+
+        if (!this.siteScriptsOnce.has(tab)) {
+            if (tab === "profile" && !this.tabHandlers.profile) {
+                this.tabHandlers.profile = new ProfileHandler(this, this.auth);
+                this.tabHandlers.profile?.init();
+            } else if (tab === "account" && !this.tabHandlers.account) {
+                this.tabHandlers.account = new AccountHandler(this, this.auth);
+                this.tabHandlers.account?.init();
+            } else if (tab === "applications" && !this.tabHandlers.applications) {
+                this.tabHandlers.applications = new ApplicationsHandler(this, this.developerAppEditor, this.tabs);
+                this.tabHandlers.applications?.init();
+            }
+
+            this.siteScriptsOnce.add(tab);
+        }
+
+        this.container.querySelector('.title').textContent = view.getAttribute("tab-title") || "User Settings";
+
+        const button = this.container.querySelector(`[data-tab-id="${tab}"]`);
+        const activeButton = this.container.querySelector(`.menu .active`);
+
+        if (activeButton) {
+            activeButton.classList.remove('active', 'level-1');
+        }
+
+        if (button) {
+            button.classList.add('active', 'level-1');
+        }
+    }
+
+    destroy() {
+        if(this.destroyed) return;
+        for (const handlerKey in this.tabHandlers) {
+            this.tabHandlers[handlerKey].destroy();
+        }
+
+        this.tabHandlers = {};
+
+        this.container = null;
+        this.context = null;
+        this.auth = null;
+        this.panel = null;
+        this.panelContent = null;
+        super.destroy();
+    }
+});

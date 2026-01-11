@@ -14,6 +14,12 @@
     <a href="/tos/text.html" target="_blank" class="ls-button">Open plaintext version</a>
 </div>
 
+<script>
+    website.register(document.currentScript, (context) => {
+        context.setOptions({ aliases: ["/terms", "/terms-of-service", "/tos"] });
+    });
+</script>
+
 <style>
     pre {
         max-width: 800px;

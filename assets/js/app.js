@@ -10,7 +10,7 @@
 
 // --- SOME PRE-INITIALIZATION STUFF ---
 
-const KERNEL_VERSION = (typeof __buildVersion !== "undefined")? __buildVersion: "1.2.2-beta";
+const KERNEL_VERSION = (typeof __buildVersion !== "undefined")? __buildVersion: "1.2.3-beta";
 window.cacheKey = "?mtime=" + document.currentScript.src.split("?mtime=")[1];
 if(!window.LS || typeof LS !== "object" || LS.v < 5) {
     window.__loadError('<h3 style="margin:40px 20px">The application framework failed to load. Please try again later.</h3>')
@@ -41,9 +41,17 @@ try {
 class LoggerContext {
     constructor(context, writer = null) {
         this.logContext = context;
-        this.tag = `%c[${context}]%c`;
-        this.tagStyle = 'font-weight: bold';
+        this._tag = `%c[${context}]%c`;
+        this._tagStyle = 'font-weight: bold';
         this._writer = writer;
+    }
+
+    set tag(value) {
+        this._tag = `%c[${value}]%c`;
+    }
+
+    set tagStyle(style) {
+        this._tagStyle = style;
     }
 
     get writer() {
@@ -58,7 +66,7 @@ class LoggerContext {
         if(this.__destroyed) return;
         const isString = typeof message === 'string';
         if(!isString) data.unshift(message);
-        func.call(this.writer, this.tag + (isString ? " " + message : ''), tagStyle + this.tagStyle, 'color: inherit; font-weight: normal;', ...data);
+        func.call(this.writer, this._tag + (isString ? " " + message : ''), tagStyle + this._tagStyle, 'color: inherit; font-weight: normal;', ...data);
         website.emit('global-log-stream', [this.logContext, message, ...data]);
     }
 
@@ -80,9 +88,9 @@ class LoggerContext {
 
     destroy() {
         this.logContext = null;
-        this.writer = null;
-        this.tag = null;
-        this.tagStyle = null;
+        this._writer = null;
+        this._tag = null;
+        this._tagStyle = null;
         this.__destroyed = true;
     }
 }
@@ -241,7 +249,7 @@ const AssetManager = new class {
  * Partly handles context management.
  * (This does not equal a whole application, and application may have multiple content contexts.)
  */
-class ContentContext extends LS.EventHandler {
+class ContentContext extends LS.Context {
     #path = null;
 
     constructor(options = {}) {
@@ -256,8 +264,9 @@ class ContentContext extends LS.EventHandler {
 
         this.SPAPatterns = [];
 
+        this.modules = new Set();
+
         this.content = null;
-        this.destroyed = false;
 
         // FIXME: Sandboxing needs to be better implemented
 
@@ -275,74 +284,6 @@ class ContentContext extends LS.EventHandler {
         this.log = this.logContext.log.bind(this.logContext);
 
         // this.on("resume", async () => {});
-
-        this.on("suspend", () => {
-            this.state = "suspended";
-            for(const style of this.styles) {
-                style.disabled = true;
-            }
-
-            this.content?.remove();
-        });
-
-        this.on("destroy", () => {
-            if(this.state !== "suspended") this.emit("suspend");
-            this.state = "destroyed";
-            this.content?.remove();
-            this.content = null;
-            this.events.clear();
-            kernel.contexts.delete(this.id);
-            kernel.pageCache.delete(this.#path);
-
-            // let i = 0;
-            // for(const [,, page] of kernel.SPAExtensions) {
-            //     if(page === this) {
-            //         kernel.SPAExtensions.splice(i, 1);
-            //     }
-            //     i++;
-            // }
-            for(const pattern of this.SPAPatterns) {
-                kernel.SPAExtensions.remove(pattern, this);
-            }
-
-            if(this.aliases) for(const alias of this.aliases) {
-                kernel.aliasMap.delete(alias);
-            }
-
-            this.loadPromise = null;
-            this.destroyed = true;
-
-            // Unload assets that are not used elsewhere
-            for (const style of this.styles) {
-                let stillUsed = false;
-                for (const ctx of kernel.pageCache.values()) {
-                    if (ctx !== this && ctx.styles && ctx.styles.includes(style)) {
-                        stillUsed = true;
-                        break;
-                    }
-                }
-                if (!stillUsed) AssetManager.remove(style);
-            }
-
-            for (const script of this.scripts) {
-                let stillUsed = false;
-                for (const ctx of kernel.pageCache.values()) {
-                    if (ctx !== this && ctx.scripts && ctx.scripts.includes(script)) {
-                        stillUsed = true;
-                        break;
-                    }
-                }
-                if (!stillUsed) AssetManager.remove(script);
-            }
-
-            this.scripts = null;
-            this.styles = null;
-
-            if(this.logContext) {
-                this.log("Context destroyed");
-                this.logContext.destroy();
-            }
-        });
     }
 
     async #loadCSS(){
@@ -462,6 +403,12 @@ class ContentContext extends LS.EventHandler {
             this.#path = newPath;
             kernel.pageCache.set(newPath, this);
         }
+
+        if(options.contextName) {
+            this.logContext.tag = `Context:${options.contextName}`;
+        }
+
+        if(options.hasOwnProperty("destroyOnUnload")) this.destroyOnUnload = options.destroyOnUnload || false;
     }
 
     async render(targetElement = null){
@@ -555,7 +502,7 @@ class ContentContext extends LS.EventHandler {
             return this;
         }
 
-        this.replaceContent(N('div', {
+        this.replaceContent(LS.Create({
             class: 'page page-content',
             innerHTML: text
         }));
@@ -729,7 +676,17 @@ class ContentContext extends LS.EventHandler {
      * The context will still exist and be kept in memory.
      */
     suspend(){
+        this.state = "suspended";
+        for(const style of this.styles) {
+            style.disabled = true;
+        }
+
+        this.content?.remove();
         this.emit("suspend");
+
+        if(this.destroyOnUnload) {
+            this.destroy();
+        }
         return this;
     }
 
@@ -743,14 +700,89 @@ class ContentContext extends LS.EventHandler {
     }
 
     /**
+     * Equivalent to website.watchUser, but scoped to this context.
+     * @param {*} callback 
+     */
+    watchUser(callback) {
+        website.once("user-loaded", () => {
+            if(this.destroyed) return;
+
+            callback(website.isLoggedIn, website.userFragment);
+            this.addExternalEventListener(website, "user-changed", callback);
+        });
+    }
+
+    /**
      * Destroys the context, unloads assets and removes content.
      * After destroying, the context is no longer usable.
      * WARNING: This will not magically stop any running scripts unless sandboxed as an iframe.
      * You MUST make sure you properly clean up in the "suspend" handler.
      */
     destroy(){
+        if(this.destroyed || this.state === "destroyed") return;
+        this.state = "destroyed";
+
+        if(this.state !== "suspended") this.emit("suspend");
         this.emit("destroy");
-        return this;
+
+        for(const module of this.modules) {
+            if(typeof module.destroy === "function") {
+                module.destroy();
+            }
+        }
+
+        this.content?.remove();
+        this.content = null;
+        kernel.contexts.delete(this.id);
+        kernel.pageCache.delete(this.#path);
+
+        if(kernel.viewport.current === this) {
+            kernel.viewport.current = null;
+        }
+
+        for(const pattern of this.SPAPatterns) {
+            kernel.SPAExtensions.remove(pattern, this);
+        }
+
+        if(this.aliases) for(const alias of this.aliases) {
+            kernel.aliasMap.delete(alias);
+        }
+
+        this.loadPromise = null;
+
+        // Unload assets that are not used elsewhere
+        for (const style of this.styles) {
+            let stillUsed = false;
+            for (const ctx of kernel.pageCache.values()) {
+                if (ctx !== this && ctx.styles && ctx.styles.includes(style)) {
+                    stillUsed = true;
+                    break;
+                }
+            }
+            if (!stillUsed) AssetManager.remove(style);
+        }
+
+        for (const script of this.scripts) {
+            let stillUsed = false;
+            for (const ctx of kernel.pageCache.values()) {
+                if (ctx !== this && ctx.scripts && ctx.scripts.includes(script)) {
+                    stillUsed = true;
+                    break;
+                }
+            }
+            if (!stillUsed) AssetManager.remove(script);
+        }
+
+        this.scripts = null;
+        this.styles = null;
+
+        if(this.logContext) {
+            this.log("Context destroyed");
+            this.logContext.destroy();
+        }
+
+        // Clears the rest of the context including events
+        super.destroy();
     }
 }
 
@@ -879,17 +911,17 @@ class Viewport {
             child.remove();
         }
 
-        this.target.appendChild(LS.Create('div', {
+        this.target.appendChild(LS.Create({
             class: 'error_page',
             inner: [
-                LS.Create('h1', { textContent: String(status) }),
+                { tag: "h1", textContent: String(status) },
                 { class: 'marqueeBar', inner: [[
-                    LS.Create('span', { textContent: website.errorMessages[status] || 'Unexpected error.' }),
-                    LS.Create('span', { textContent: website.errorMessages[status] || 'Unexpected error.' }),
+                    { tag: 'span', textContent: website.errorMessages[status] || 'Unexpected error.' },
+                    { tag: 'span', textContent: website.errorMessages[status] || 'Unexpected error.' },
                 ]]},
-                LS.Create('br'),
-                LS.Create('br'),
-                LS.Create('a', { href: '/', textContent: 'Go back home?' })
+                { tag: 'br' },
+                { tag: 'br' },
+                { tag: 'a', href: '/', textContent: 'Go back home?' }
             ]
         }));
     }
@@ -969,38 +1001,35 @@ class Window extends Viewport {
 
         this.isWindow = true;
 
-        this.windowElement = N('div', {
+        this.windowElement = LS.Create({
             class: 'window-container',
             inner: [
-                N('div', {
+                ({
                     class: 'window-header',
                     inner: [
-                        N('span', { class: 'window-title', textContent: this.name }),
+                        { class: 'window-title', textContent: this.name, tag: 'span' },
                         {
                             class: 'window-header-buttons',
                             inner: [
-                                N('button', {
+                                {
+                                    tag: 'button',
                                     class: 'window-minimize-button square elevated',
-                                    inner: [
-                                        N('i', { class: 'bi-dash-lg' })
-                                    ],
+                                    inner: { tag: 'i', class: 'bi-dash-lg' },
                                     onclick: () => this.minimize()
-                                }),
-                                N('button', {
+                                },
+                                {
+                                    tag: 'button',
                                     class: 'window-maximize-button square elevated',
-                                    inner: [
-                                        N('i', { class: 'bi-fullscreen' })
-                                    ],
+                                    inner: { tag: 'i', class: 'bi-fullscreen' },
                                     onclick: () => this.maximize()
-                                }),
-                                N('button', {
+                                },
+                                {
+                                    tag: 'button',
                                     class: 'window-close-button square elevated',
                                     accent: "red",
-                                    inner: [
-                                        N('i', { class: 'bi-x-lg' })
-                                    ],
+                                    inner: { tag: 'i', class: 'bi-x-lg' },
                                     onclick: () => this.close()
-                                }),
+                                },
                             ]
                         }
                     ]
@@ -1103,7 +1132,7 @@ const website = {
                 );
             }
 
-            const isAnimated = filename && user.__animated_pfp || filename && filename.endsWith(".webm");
+            const isAnimated = filename && (user && user.__animated_pfp) || filename && filename.endsWith(".webm");
             const src = filename? filename.startsWith("blob:")? filename : website.cdn + '/file/' + filename + (!isAnimated? "?size=" + IMAGE_RESOLUTION: ""): "/assets/image/default.svg";
 
             const img = N(isAnimated ? "video" : "img", {
@@ -1156,7 +1185,7 @@ const website = {
                 img.src = src;
             }
 
-            const wrapper = N("div", {
+            const wrapper = LS.Create({
                 class: "profile-picture-wrapper",
                 inner: img
             });
@@ -1223,16 +1252,16 @@ const website = {
                 badges.push(-1); // Legacy badge
             }
 
-            return N("div", {
+            return LS.Create({
                 class: "badges-container",
                 inner: badges.map(badge => {
                     const badgeInfo = website.BADGES.find(b => b.id === badge);
                     if (!badgeInfo) return null;
 
-                    return N("div", {
+                    return LS.Create({
                         class: "profile-badge",
                         tooltip: badgeInfo.label,
-                        inner: N("img", {
+                        inner: LS.Create("img", {
                             src: "/assets/image/badges/" + badgeInfo.icon,
                             alt: badgeInfo.label
                         })
@@ -1247,12 +1276,12 @@ const website = {
 
             if (!links || !links.length) return;
 
-            return N("div", {
+            return LS.Create({
                 class: "links-container",
                 inner: links.map(link => {
                     const linkInfo = website.LINKS[link.type.toUpperCase()];
 
-                    return N("a", {
+                    return LS.Create("a", {
                         href: link.type === "url" ? link.link : linkInfo.scheme + link.link,
                         target: "_blank",
                         rel: "noopener noreferrer",
@@ -1463,7 +1492,6 @@ const website = {
 
     // TODO: Multi-account support
     get userFragment() {
-        console.warn("website.userFragment used.");
         return kernel.userFragment;
     },
 
@@ -1546,13 +1574,12 @@ const website = {
     },
 
     /**
-     * Requests scoped access. This is required to access the website APIs.
-     * @param {HTMLScriptElement|string} script - The script tag or unique identifier.
-     * @param {Function} callback - The initialization callback function.
-     * @deprecated
+     * Register a module/script scope. This scope can request permissions and access APIs.
+     * @param {*} script Script tag or unique identifier of the context.
+     * @param {LS.Context} runtimeContext Class extending or instance of LS.Context holding the module logic. This class must either: implement a .destroy() method that calls super.destroy(), or subscribe to context.on("destroy") and guarantee proper cleanup. The context will be passed as the first argument.
      */
-    register(script, callback) {
-        return kernel.registerModule(script, callback);
+    register(script, runtimeContext) {
+        return kernel.registerModule(script, runtimeContext);
     },
 
     /**
@@ -1560,6 +1587,8 @@ const website = {
      * Reliable method to ensure up-to-date user data at any point without race conditions.
      * TODO: Move to isolated contexts to avoid leaking the user fragment.
      * @param {Function} callback - The function to call with user data updates.
+     * 
+     * @warning Do NOT use this inside page contexts, use context.watchUser(). Otherwise you this may get called on dead code.
      */
     watchUser(callback) {
         // user-loaded is a completed event, meaning it will call immediately
@@ -1625,7 +1654,7 @@ const website = {
                     setTimeout(async () => {
                         M.LoadScript("/~/assets/js/assistant.js" + window.cacheKey, (error) => {
                             if(error || typeof window._assistantCallback !== "function") {
-                                LS.Toast.show("Sorry, assistant failed to load. Please try again later.")
+                                LS.Toast.show("Sorry, assistant failed to load. Please try again later.");
                                 return;
                             }
 
@@ -1857,7 +1886,7 @@ window.website = website;
 
 /**
  * Simple routing class to match groups and wildcards.
- * Taken from Akeno
+ * Taken from Akeno (https://github.com/the-lstv/akeno)
  */
 class Matcher {
     constructor(options = {}, info = null) {
@@ -2435,8 +2464,6 @@ const kernel = new class Kernel extends LoggerContext {
             const profile = element.closest(".profile");
             if(!profile) return null;
 
-            console.log(user.profileEffects);
-
             const effects = user.profileEffects || {};
 
             if(effects?.avatar?.id) {
@@ -2541,7 +2568,7 @@ const kernel = new class Kernel extends LoggerContext {
             this.__loaded = true;
             if (window.__init) {
                 for (const initEntry of window.__init) {
-                    this.registerModule(initEntry.script, initEntry.callback, context);
+                    this.registerModule(initEntry.script, initEntry.runtimeContext, context);
                 }
                 window.__init = null;
             }
@@ -2626,30 +2653,19 @@ const kernel = new class Kernel extends LoggerContext {
     }
 
     /**
-     * https://stackoverflow.com/a/66120819/14541617
-     */
-    #isClass(func) {
-        // Class constructor is also a function
-        if (!(func && func.constructor === Function) || func.prototype === undefined)
-            return false;
-
-        // This is a class that extends other class
-        if (Function.prototype !== Object.getPrototypeOf(func))
-            return true;
-
-        // Usually a function will only have 'constructor' in the prototype
-        return Object.getOwnPropertyNames(func.prototype).length > 1;
-    }
-
-    /**
      * Register a module/script scope with the application. This scope can request permissions and access APIs.
      * @param {*} script Script tag or unique identifier
-     * @param {*} callback Initialization callback
+     * @param {LS.Context} runtimeContext Class extending or instance of LS.Context holding the module logic. This class must either: implement a .destroy() method that calls super.destroy(), or subscribe to context.on("destroy") and guarantee proper cleanup. The context will be passed as the first argument.
      */
-    registerModule(script, callback, context = null) {
+    registerModule(script, runtimeContext, context = null) {
+        if(!runtimeContext || (typeof runtimeContext !== "function" && typeof runtimeContext !== "object")) {
+            this.error("registerModule requires a valid runtimeContext class or instance, got:", runtimeContext);
+            return null;
+        }
+
         if (window.__init !== null && !this.__loaded) {
             // Still initializing
-            window.__init.push({ script, callback });
+            window.__init.push({ script, runtimeContext });
             return;
         }
 
@@ -2685,17 +2701,73 @@ const kernel = new class Kernel extends LoggerContext {
             this.log("Registered module for context", context.path || context.id);
         } else {
             this.warn("Registering module to global/unknown context", script);
+            // Fallback: Use current page if we can't determine context
+            context = kernel.viewport.current;
         }
 
-        if (callback) {
-            // Fallback: Use current page if we can't determine context
-            const ctx = context? context: kernel.viewport.current, ctxContent = context? context?.content: kernel.viewport.current?.content;
-            if(this.#isClass(callback)) {
-                new callback(ctx, ctxContent);
-            } else {
-                callback(ctx, ctxContent);
-            }
+        const ctxContent = context? context?.content: kernel.viewport.current?.content;
+
+        const isClass = typeof runtimeContext === "function" && LS.Util.isClass(runtimeContext);
+        if(!(runtimeContext instanceof LS.Context) && !isClass) {
+            this.warn("Warning: registerModule runtimeContext should be a class extending LS.Context or an instance of LS.Context. Otherwise memory leaks are more likely. Violating context: ", context);
         }
+
+        if (runtimeContext) {
+            let moduleInstance = null;
+
+            try {
+                if(isClass) {
+                    moduleInstance = new runtimeContext(context, ctxContent);
+                } else if(runtimeContext instanceof LS.Context) {
+                    runtimeContext.initialize(context, ctxContent);
+                    moduleInstance = runtimeContext;
+                } else if (typeof runtimeContext === "function") {
+                    moduleInstance = new LS.Context();
+                    runtimeContext.call(moduleInstance, context, ctxContent);
+                } else {
+                    this.error("registerModule runtimeContext must be a class extending LS.Context or an instance of LS.Context, got:", runtimeContext);
+                    return null;
+                }
+    
+                context.modules.add(moduleInstance);
+            } catch (e) {
+                this.error("Error initializing module for context", context.path || context.id, e);
+                return null;
+            }
+
+            return moduleInstance;
+        }
+    }
+
+    async loadUserList() {
+        const accounts = await this.auth.listAccounts();
+        website.accounts = accounts && accounts.accounts || [];
+
+        const list = website.toolbars.get("login").element.querySelector(".accounts-list");
+        list.innerHTML = "";
+
+        for (const account of website.accounts) {
+            const item = LS.Create("button", { class: 'account-item elevated', tabindex: 0, inner: [
+                website.views.getProfilePictureView(account.pfp, [ 32 ]),
+                N('span', { class: 'account-username', textContent: account.username })
+            ]});
+
+            if(accounts && accounts.activeAccountId === account.id) {
+                item.classList.add("active");
+            }
+
+            item.onclick = () => {
+                this.auth.switchAccount(account.id).then(() => {
+                    this.loadUser();
+                }).catch(error => {
+                    LS.Toast.show("Failed to switch account: " + error.message, { accent: "red" });
+                });
+            };
+
+            list.appendChild(item);
+        }
+
+        website.events.emit("user-list-updated", [ website.accounts ]);
     }
 
     async loadUser() {
@@ -2706,14 +2778,16 @@ const kernel = new class Kernel extends LoggerContext {
         if (isLoggedIn) {
             try {
                 const user = await this.auth.getUserFragment();
-                Object.assign(this.userFragment, user);
+                this.userFragment.__bind.swapObject(user);
             } catch (error) {
                 console.error("Failed to load user fragment:", error);
                 isLoggedIn = false;
             }
         } else {
-            this.userFragment = LS.Reactive.wrap("user", {});
+            this.userFragment.__bind.swapObject({});
         }
+
+        this.loadUserList();
 
         // There should never be a situation where accountsButton doesn't exist, yet it has happened to me. How..
         const accountsButton = website.panelItems.get("accountsButton").element;
@@ -2814,7 +2888,7 @@ const kernel = new class Kernel extends LoggerContext {
                 description: "Show kernel information",
                 async onCalled() {
                     terminalOutput.appendChild(N('img', {
-                        src: '/~/assets/image/kernel-icon.png?' + KERNEL_VERSION,
+                        src: '/~/assets/image/kernel-icons/kernel-' + KERNEL_VERSION.slice(0, 3) + '.png?v=' + KERNEL_VERSION[4],
                         style: 'margin:auto;display:block'
                     }));
 

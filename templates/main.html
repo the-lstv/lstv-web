@@ -82,10 +82,10 @@
             /**
              * Requests scoped access. This is required to access the website APIs.
              * @param {HTMLScriptElement|string} script - The script tag or unique identifier.
-             * @param {Function} callback - The initialization callback function.
+             * @param {LS.Context} runtimeContext - The initialization context instance or class.
              */
-            register(script, callback) {
-                window.__init.push({ script, callback });
+            register(script, runtimeContext) {
+                window.__init.push({ script, runtimeContext });
             },
 
             loaded: false
@@ -255,6 +255,15 @@
                     </div>
                 </div>
 
+                <div .login-toolbar-page tab-id="switch">
+                    <h2 .login-popout-title>Switch Account</h2>
+
+                    <div .accounts-list .grouped-buttons></div> <br>
+
+                    <button .pill.elevated onclick="website.loginTabs.set('account')">Back</button>
+                    <button .pill.elevated onclick="website.loginTabs.set('login')"><i .bi-plus-lg></i> Add Account</button>
+                </div>
+
                 <div .login-toolbar-page tab-id="login">
                     <h2 .login-popout-title>Login</h2>
 
@@ -340,7 +349,7 @@
                     </ls-div>
 
                     <ls-div .profile-buttons .grouped-buttons>
-                        <button .elevated onclick="website.loginTabs.set('login')"><i .bi-arrow-left-right /><span>Switch accounts</span></button>
+                        <button .elevated onclick="website.loginTabs.set('switch')"><i .bi-arrow-left-right /><span>Switch accounts</span></button>
                         <button .elevated #logOutButton><i .bi-box-arrow-right /><span>Log out</span></button>
                     </ls-div>
 
