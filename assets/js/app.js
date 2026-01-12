@@ -432,6 +432,7 @@ class ContentContext extends LS.Context {
         if(this.sandboxMode === "iframe" && !(this.content instanceof HTMLIFrameElement)) {
             this.replaceContent(); // Create iframe
         } else if (!this.content) {
+            this.error = 500;
             return;
         }
 
@@ -805,6 +806,20 @@ class Viewport {
         this.target.viewportInstance = this;
 
         (options.kernel || kernel).viewports.set(this.name, this);
+
+        this.__errorPage = LS.Create({
+            class: 'error_page',
+            inner: [
+                (this.__errorPageStatus = LS.Create({ tag: "h1" })),
+                { class: 'marqueeBar', inner: [[
+                    (this.__errorPageMessage1 = { tag: 'span', textContent: 'Unexpected error.' }),
+                    (this.__errorPageMessage2 = { tag: 'span', textContent: 'Unexpected error.' }),
+                ]]},
+                { tag: 'br' },
+                { tag: 'br' },
+                { tag: 'a', href: '/', textContent: 'Go back home?' }
+            ]
+        });
     }
 
     /**
@@ -879,10 +894,12 @@ class Viewport {
 
         // Load and Render new page
         try {
-            if (page.error) {
-                this.errorPage(page.error);
-            } else {
+            if (!page.error) {
                 await page.render(this.target);
+            }
+
+            if(page.error) {
+                this.errorPage(page.error);
             }
 
             this.current = page;
@@ -914,19 +931,10 @@ class Viewport {
             child.remove();
         }
 
-        this.target.appendChild(LS.Create({
-            class: 'error_page',
-            inner: [
-                { tag: "h1", textContent: String(status) },
-                { class: 'marqueeBar', inner: [[
-                    { tag: 'span', textContent: website.errorMessages[status] || 'Unexpected error.' },
-                    { tag: 'span', textContent: website.errorMessages[status] || 'Unexpected error.' },
-                ]]},
-                { tag: 'br' },
-                { tag: 'br' },
-                { tag: 'a', href: '/', textContent: 'Go back home?' }
-            ]
-        }));
+        this.__errorPageStatus.textContent = String(status);
+        this.__errorPageMessage1.textContent = website.errorMessages[status] || 'Unexpected error.';
+        this.__errorPageMessage2.textContent = this.__errorPageMessage1.textContent;
+        this.target.appendChild(this.__errorPage);
     }
 
     destroy(destroyContent = false) {
@@ -1091,6 +1099,9 @@ class Window extends Viewport {
         this.destroy(destroyContent); // Propagates all the way down to destroying the content context
     }
 }
+
+// Enables closing the toolbar via esc
+const ToolbarStackRef = { close() { website.closeToolbar() } };
 
 
 /**
@@ -1534,6 +1545,7 @@ const website = {
         website.isToolbarOpen = true;
         website.currentToolbar = name;
         website.invoke("toolbar-open", name);
+        LS.Stack.push(ToolbarStackRef);
 
         const button = toolbar.panelItem instanceof HTMLElement? toolbar.panelItem : website.panelItems.get(toolbar.panelItem)?.element;
         if(button) button.classList.add("open");
@@ -1545,20 +1557,22 @@ const website = {
         if(!website.isToolbarOpen) return;
 
         LS.Animation.fadeOut(website.toolbarsContainer, null, "down");
-
+        
         const toolbar = website.toolbars.get(website.currentToolbar);
+        
         if(toolbar) {
             if(typeof toolbar.onClose === "function") toolbar.onClose();
             const button = toolbar.panelItem instanceof HTMLElement? toolbar.panelItem : website.panelItems.get(toolbar.panelItem)?.element;
             if(button) button.classList.remove("open");
         }
-
+        
         for(const item of website.panelItems.values()) {
             item.element.classList.remove("open");
         }
 
         website.isToolbarOpen = false;
         website.invoke("toolbar-close");
+        LS.Stack.remove(ToolbarStackRef);
     },
 
     showLoginToolbar(toggle = false) {
@@ -2213,11 +2227,14 @@ const kernel = new class Kernel extends LoggerContext {
      * Auth manager
      */
     auth = new class Auth extends LS.EventHandler {
+        #iframeURL = null;
+        #iframeOrigin = null;
+
         constructor() {
             super();
 
-            this.iframeOrigin = `https://auth.extragon.${website.isLocalhost? "localhost": "cloud"}`;
-            this.iframeURL = `${this.iframeOrigin}/bridge.html`;
+            this.#iframeOrigin = `https://auth.extragon.${website.isLocalhost? "localhost": "cloud"}`;
+            this.#iframeURL = `${this.#iframeOrigin}/bridge.html`;
 
             this.ready = false;
             this.loading = false;
@@ -2231,7 +2248,7 @@ const kernel = new class Kernel extends LoggerContext {
 
             this.hello = false;
             window.addEventListener('message', e => {
-                if (e.origin !== this.iframeOrigin) return;
+                if (e.origin !== this.#iframeOrigin) return;
 
                 if (!this.hello) {
                     if (e.data.data.initialized) {
@@ -2294,12 +2311,12 @@ const kernel = new class Kernel extends LoggerContext {
             this.loading = true;
             this.iframe = document.createElement('iframe');
             this.iframe.sandbox = "allow-scripts allow-same-origin";
-            this.iframe.src = this.iframeURL;
+            this.iframe.src = this.#iframeURL;
             this.iframe.style.display = 'none';
-            document.body.appendChild(this.iframe);
+            this.iframe.loading = 'eager';
 
             this.iframe.onload = () => {
-                this.iframe.contentWindow.postMessage({ type: 'init', nonce: this.nonce }, this.iframeOrigin);
+                this.iframe.contentWindow.postMessage({ type: 'init', nonce: this.nonce }, this.#iframeOrigin);
                 this.ready = true;
                 if (callback) callback();
                 if (this.startupQueue.length > 0) {
@@ -2317,6 +2334,7 @@ const kernel = new class Kernel extends LoggerContext {
                 }, 1000);
             };
 
+            document.body.appendChild(this.iframe);
             this.iframe.onerror = error;
         }
 
@@ -2330,7 +2348,7 @@ const kernel = new class Kernel extends LoggerContext {
                         return;
                     }
 
-                    this.iframe.contentWindow.postMessage({ action, id, ...data, nonce: this.nonce }, this.iframeOrigin);
+                    this.iframe.contentWindow.postMessage({ action, id, ...data, nonce: this.nonce }, this.#iframeOrigin);
                 });
             });
         }
@@ -2507,43 +2525,6 @@ const kernel = new class Kernel extends LoggerContext {
 
         });
 
-        const originalState = location.pathname;
-
-        // Event listener for back/forward buttons (for single-page app behavior)
-        window.addEventListener('popstate', function (event) {
-            const href = event.state? event.state.path: originalState;
-            kernel.viewport.navigate(href, { pushState: false });
-        });
-
-        window.addEventListener('click', function (event) {
-            const targetElement = event.target.closest("a");
-
-            if (targetElement && targetElement.tagName === 'A') {
-                if(targetElement.hasAttribute("target")) return;
-                if(targetElement.href.endsWith("#")) return event.preventDefault();
-
-                const link = targetElement.href;
-                let href = targetElement.getAttribute('href');
-
-                if(link.startsWith(origin) && !link.endsWith("?") && !link.startsWith(origin + ":")){
-                    if(href.startsWith(origin)) href = href.substring(origin.length);
-                    const viewportElement = targetElement.closest(".viewport") || kernel.viewport.target;
-                    if (viewportElement) {
-                        const viewport = viewportElement.viewportInstance || [...kernel.viewports.values()].find(v => v.target === viewportElement);
-                        if (viewport) {
-                            event.preventDefault();
-                            viewport.navigate(href, { targetElement });
-                            return;
-                        } else {
-                            kernel.error("No viewport found for element", viewportElement);
-                        }
-                    } else {
-                        kernel.error("No viewport element found", viewportElement);
-                    }
-                }
-            }
-        });
-
         document.addEventListener('DOMContentLoaded', () => {
             website.container = this.container = document.getElementById('app');
             website.viewportElement = this.viewportElement = this.viewport.target;
@@ -2581,11 +2562,46 @@ const kernel = new class Kernel extends LoggerContext {
             website.emit("dom-ready");
         });
 
+        // Event listener for back/forward buttons (for single-page app behavior)
+        const originalState = location.pathname;
+        window.addEventListener('popstate', function (event) {
+            const href = event.state? event.state.path: originalState;
+            kernel.viewport.navigate(href, { pushState: false });
+        });
+
+        window.addEventListener('click', function (event) {
+            const targetElement = event.target.closest("a");
+
+            if (targetElement && targetElement.tagName === 'A') {
+                if(targetElement.hasAttribute("target")) return;
+                if(targetElement.href.endsWith("#")) return event.preventDefault();
+
+                const link = targetElement.href;
+                let href = targetElement.getAttribute('href');
+
+                if(link.startsWith(origin) && !link.endsWith("?") && !link.startsWith(origin + ":")){
+                    if(href.startsWith(origin)) href = href.substring(origin.length);
+                    const viewportElement = targetElement.closest(".viewport") || kernel.viewport.target;
+                    if (viewportElement) {
+                        const viewport = viewportElement.viewportInstance || [...kernel.viewports.values()].find(v => v.target === viewportElement);
+                        if (viewport) {
+                            event.preventDefault();
+                            viewport.navigate(href, { targetElement });
+                            return;
+                        } else {
+                            kernel.error("No viewport found for element", viewportElement);
+                        }
+                    } else {
+                        kernel.error("No viewport element found", viewportElement);
+                    }
+                }
+            }
+        });
+
         // --- Debug ONLY ---
         if (website.isLocalhost) {
             window.kernel = this;
             window.auth = this.auth;
-            window.website = website;
             window.AssetManager = AssetManager;
         }
 
@@ -2756,8 +2772,11 @@ const kernel = new class Kernel extends LoggerContext {
             }
 
             item.onclick = () => {
+                item.setAttribute("state", "loading");
                 this.auth.switchAccount(account.id).then(() => {
-                    this.loadUser();
+                    this.loadUser().then(() => {
+                        item.removeAttribute("state");
+                    });
                 }).catch(error => {
                     LS.Toast.show("Failed to switch account: " + error.message, { accent: "red" });
                 });

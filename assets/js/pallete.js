@@ -120,7 +120,7 @@ class CommandPalette {
         this.#commands = {};
         this.#abortController = new AbortController();
 
-        // Defer hidden inputs creation
+        this.StackRef = { close: () => this.close() };
 
         this.#bindEvents();
     }
@@ -370,6 +370,8 @@ class CommandPalette {
         this.#options.onOpen?.();
         this.focus();
 
+        LS.Stack.push(this.StackRef);
+
         // Show root suggestions
         this.#scheduleAutoCompletion(this.value);
     }
@@ -382,6 +384,8 @@ class CommandPalette {
         
         this.isOpen = false;
         this.#stopCaretBlink();
+
+        LS.Stack.remove(this.StackRef);
 
         this.blur();
         this.#options.onClose?.();
