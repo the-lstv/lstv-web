@@ -66,7 +66,6 @@
     left: 20px;
     bottom: 20px;
     font-size: x-large;
-    display: none;
 }
 
 .menu-category-title {
@@ -279,10 +278,6 @@ textarea#profile-about {
         height: 200px;
     }
 
-    .menu-button {
-        display: block;
-    }
-
     .profile-editor-confirm-buttons button {
         width: 100%;
     }
@@ -298,6 +293,12 @@ textarea#profile-about {
         width: 100%;
         display: flex;
         gap: 8px;
+    }
+}
+
+@media screen and (min-width: 760px) {
+    .menu-button {
+        display: none !important;
     }
 }
 

@@ -295,12 +295,6 @@ input[aria-invalid] {
     color: gray;
 }
 
-.accentButton {
-    width: 30px;
-    height: 30px;
-    padding: 0 !important;
-}
-
 #accentButtons {
     display: flex;
     width: 80%;
@@ -310,6 +304,10 @@ input[aria-invalid] {
     gap: 8px;
 }
 
+#accentButtons > button {
+    width: 30px;
+    height: 30px;
+}
 
 /* Responsive */
 @media only screen and (max-width: 600px) {
@@ -1427,7 +1425,7 @@ ls-tab:not(.tab-active) {
 }
 
 .account-item.active {
-    background: var(--elevate-1) !important;
+    background: var(--accent-mix-60) !important;
     pointer-events: none;
 }
 

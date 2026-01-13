@@ -18,17 +18,18 @@ body[ls-theme="dark"] {
     position: relative;
     max-width: 1000px;
     margin: auto;
+
+    &::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 500px;
+        background: linear-gradient(0deg, var(--surface-n3), transparent);
+    }
 }
 
-.logo-board::after {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 500px;
-    background: linear-gradient(0deg, var(--surface-n3), transparent);
-}
 
 [ls-theme="light"] .logo-board::after {
     background: linear-gradient(0deg, var(--surface-0), transparent);
@@ -74,24 +75,24 @@ body[ls-theme="dark"] {
     gap: 20px;
     position: absolute;
     z-index: -1;
-}
 
-.stripe-container div {
-    width: 100%;
-    height: 40px;
-    background: linear-gradient(90deg, transparent, rgba(var(--c), 34%), transparent);
-    position: relative;
-    overflow: hidden;
-}
+    div {
+        width: 100%;
+        height: 40px;
+        background: linear-gradient(90deg, transparent, rgba(var(--c), 34%), transparent);
+        position: relative;
+        overflow: hidden;
+    }
 
-.stripe-container div::after {
-    content: "";
-    position: absolute;
-    left: 50%;
-    height: 100%;
-    width: 350px;
-    background: rgb(var(--c));
-    transform: translateX(-50%);
+    div::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        height: 100%;
+        width: 350px;
+        background: rgb(var(--c));
+        transform: translateX(-50%);
+    }
 }
 
 #chevron {

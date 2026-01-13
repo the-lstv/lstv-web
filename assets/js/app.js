@@ -716,6 +716,11 @@ class ContentContext extends LS.Context {
         });
     }
 
+    registerModule(runtimeContext) {
+        if(this.destroyed) return;
+        return kernel.registerModule(this, runtimeContext, this);
+    }
+
     /**
      * Destroys the context, unloads assets and removes content.
      * After destroying, the context is no longer usable.
@@ -924,6 +929,17 @@ class Viewport {
         } finally {
             this.target.classList.remove("loading");
         }
+    }
+
+    renderFrom(context) {
+        return context.render(this.target).then(() => {
+            this.current = context;
+            return true;
+        }).catch((e) => {
+            kernel.error("Rendering from context failed:", e);
+            this.errorPage(500);
+            return false;
+        });
     }
 
     errorPage(status) {
@@ -1495,9 +1511,7 @@ const website = {
 
     set theme(value){
         if(!value) return;
-
         LS.Color.setTheme(value);
-        localStorage.setItem("ls-theme", value);
     },
 
     get theme(){
@@ -1780,9 +1794,8 @@ const website = {
                 this.coverElement.style.display = "block";
                 this.coverArtElement.style.display = "block";
                 this.toolbarElement.classList.add("has-cover");
-                
-                const color = LS.Color.fromImage(this.coverElement);
-                LS.Color.update("music-cover", color);
+
+                LS.Color.fromImage(this.coverElement).toAccent("music-cover");
 
                 this.toolbarElement.setAttribute("ls-accent", "music-cover");
                 this.musicStatusElement.setAttribute("ls-accent", "music-cover");
@@ -2434,20 +2447,6 @@ const kernel = new class Kernel extends LoggerContext {
         super('kernel');
         this.events = new LS.EventHandler(this);
 
-        // Watch for device theme changes
-        LS.Color.autoScheme();
-
-        if(localStorage.hasOwnProperty("ls-accent")){
-            const accent = localStorage.getItem("ls-accent");
-
-            if(accent.startsWith("#")) {
-                LS.Color.update('custom', accent);
-                LS.Color.setAccent('custom');
-            } else {
-                LS.Color.setAccent(accent);
-            }
-        }
-
         website.viewport = this.viewport = new Viewport('main', document.getElementById('viewport'), {
             kernel: this
         });
@@ -2669,7 +2668,7 @@ const kernel = new class Kernel extends LoggerContext {
 
     /**
      * Register a module/script scope with the application. This scope can request permissions and access APIs.
-     * @param {*} script Script tag or unique identifier
+     * @param {*|ContentContext} script Script tag, unique identifier or the ContentContext registering the module.
      * @param {LS.Context} runtimeContext Class extending or instance of LS.Context holding the module logic. This class must either: implement a .destroy() method that calls super.destroy(), or subscribe to context.on("destroy") and guarantee proper cleanup. The context will be passed as the first argument.
      */
     registerModule(script, runtimeContext, context = null) {
@@ -2762,7 +2761,7 @@ const kernel = new class Kernel extends LoggerContext {
         list.innerHTML = "";
 
         for (const account of website.accounts) {
-            const item = LS.Create("button", { class: 'account-item elevated', tabindex: 0, inner: [
+            const item = LS.Create("button", { class: 'account-item elevated loading-right', tabindex: 0, inner: [
                 website.views.getProfilePictureView(account.pfp, [ 32 ]),
                 N('span', { class: 'account-username', textContent: account.username })
             ]});
@@ -3045,14 +3044,7 @@ const kernel = new class Kernel extends LoggerContext {
                 description: "Set an accent color",
 
                 onCalled(color) {
-                    if(color.startsWith("#")) {
-                        LS.Color.update('custom', color);
-                        LS.Color.setAccent('custom');
-                    } else {
-                        LS.Color.setAccent(color);
-                    }
-
-                    "white" === color ? localStorage.removeItem("ls-accent") : localStorage.setItem("ls-accent", color)
+                    LS.Color.setAccent(color);
                 },
 
                 inputs: [
@@ -3408,25 +3400,17 @@ const kernel = new class Kernel extends LoggerContext {
 
         for(let accent of website.ACCENT_COLORS) {
             O("#accentButtons").add(N("button", {
-                class: "accentButton",
+                class: "square",
                 inner: accent === "white" ? N("i", { class: "bi-x-circle-fill" }) : null,
                 accent,
                 tooltip: accent === "white" ? "Reset": (accent.charAt(0).toUpperCase() + accent.slice(1)),
                 onclick(){
                     LS.Color.setAccent(accent);
-
-                    if(accent === "white") {
-                        localStorage.removeItem("ls-accent");
-                    } else {
-                        localStorage.setItem("ls-accent", accent);
-                    }
                 }
             }));
 
             O("#accentButtons").get("input[type=color]").on("input", function (){
-                LS.Color.update('custom', this.value);
-                LS.Color.setAccent('custom');
-                localStorage.setItem("ls-accent", this.value);
+                LS.Color.setAccent(this.value);
             });
         }
 

@@ -74,7 +74,12 @@
             container.querySelector('.loader').remove();
             if (message) errorBox.querySelector('.message').innerHTML = message;
             errorBox.style.display = 'flex';
-        }
+        };
+
+        window.LS_INIT_OPTIONS = {
+            autoScheme: true,
+            autoAccent: true
+        };
 
         window.LOW_PERFORMANCE_MODE = localStorage.getItem("LOW_PERFORMANCE_MODE") === "true";
 
@@ -197,7 +202,7 @@
                 <br>
 
                 <ls-box .elevated .inline #accentButtons>
-                    <button .accentButton ls-tooltip aria-label="Custom color" onclick="this.querySelector('input[type=color]').click()">
+                    <button .square ls-tooltip aria-label="Custom color" onclick="this.querySelector('input[type=color]').click()">
                         <input type="color" style="visibility: hidden; position: absolute" value="#ffffff">
                         <i .bi-eyedropper />
                     </button>
