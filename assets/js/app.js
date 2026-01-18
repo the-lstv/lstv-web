@@ -117,7 +117,7 @@ const AssetManager = new class {
 
             // Yeah, hardcoding is not the best idea
             // But this needs to filter all persistent assets
-            if(asset.classList.contains("whitelist") || key.includes("/ls/") || key.includes("bootstrap-icons") || key.includes("fonts.googleapis.com") || key.includes("/assets/js/app.js") || key.includes("/assets/css/main.css") || key.includes("/assets/js/pallete.js")) {
+            if(asset.classList.contains("whitelist") || key.includes("/ls/") || key.includes("bootstrap-icons") || key.includes("fonts.googleapis.com") || key.includes("/assets/js/app.js") || key.includes("/assets/css/main.") || key.includes("/assets/js/pallete.js")) {
                 this.whitelist.add(key);
             } else {
                 if(asset instanceof HTMLLinkElement) {
@@ -284,6 +284,8 @@ class ContentContext extends LS.Context {
         this.logContext = new LoggerContext(`Context:${this.#path || this.src || this.id}`);
         this.log = this.logContext.log.bind(this.logContext);
 
+        this.scopeKey = null;
+
         // this.on("resume", async () => {});
     }
 
@@ -409,6 +411,11 @@ class ContentContext extends LS.Context {
 
         if(options.contextName) {
             this.logContext.tag = `Context:${options.contextName}`;
+        }
+
+        if(options.scopeKey) {
+            this.scopeKey = options.scopeKey;
+            if(this.content) this.content.setAttribute('file-scope', options.scopeKey);
         }
 
         if(options.hasOwnProperty("destroyOnUnload")) this.destroyOnUnload = options.destroyOnUnload || false;
@@ -556,6 +563,8 @@ class ContentContext extends LS.Context {
                     return;
                 }
 
+                this.scopeKey = doc.querySelector("#scope-key")?.textContent || null;
+
                 doc.querySelectorAll('img, link[rel="stylesheet"], script[src], [href]').forEach(el => {
                     ['src', 'href'].forEach(attr => {
                         if (el.hasAttribute(attr)) {
@@ -657,6 +666,10 @@ class ContentContext extends LS.Context {
             } else {
                 this.content.remove();
             }
+        }
+
+        if(this.scopeKey) {
+            newContent.setAttribute('file-scope', this.scopeKey);
         }
 
         newContent.classList.add("page");
@@ -970,7 +983,7 @@ class Viewport {
  * Used to summon separate threads (web-workers). You can think of it as "processes", managed by the kernel.
  * They offer isolated execution environments for apps & execution control.
  */
-class Thread extends LS.EventHandler {
+class Thread extends LS.EventEmitter {
     constructor(scriptURL, options = {}) {
         super();
 
@@ -1135,9 +1148,10 @@ const website = {
 
     // Constants
     loaded: true,
-    isLocalhost: location.hostname.endsWith("localhost"),
+    isLocalhost: location.hostname.endsWith(".localhost"),
     isEmbedded: window.self !== window.top,
     cdn: "https://cdn.extragon.cloud",
+    api: "https://api.extragon." + (location.hostname.endsWith(".localhost") ? "localhost" : "cloud"),
 
     BADGES: [
         { icon: "owner.png", label: "Owner", id: 0 },
@@ -1558,7 +1572,7 @@ const website = {
 
         website.isToolbarOpen = true;
         website.currentToolbar = name;
-        website.invoke("toolbar-open", name);
+        website.quickEmit("toolbar-open", name);
         LS.Stack.push(ToolbarStackRef);
 
         const button = toolbar.panelItem instanceof HTMLElement? toolbar.panelItem : website.panelItems.get(toolbar.panelItem)?.element;
@@ -1585,7 +1599,7 @@ const website = {
         }
 
         website.isToolbarOpen = false;
-        website.invoke("toolbar-close");
+        website.quickEmit("toolbar-close");
         LS.Stack.remove(ToolbarStackRef);
     },
 
@@ -1707,7 +1721,11 @@ const website = {
             element: O("#musicPlayer"),
             name: "Music Player",
             description: "Control music playback",
-            get panelItem() { return website.musicPlayer.musicStatusElement; }
+            get panelItem() { return website.musicPlayer.musicStatusElement; },
+
+            onOpen() {
+                if(!website.musicPlayer.initialized) website.musicPlayer.init();
+            }
         }],
 
         ["more", {
@@ -1721,11 +1739,16 @@ const website = {
     musicPlayer: new class MusicPlayer {
         constructor() {
             this.toolbarElement = O("#musicPlayer");
+            this.initialized = false;
             if(!this.toolbarElement) {
                 console.warn("Music Player toolbar element not found.");
                 return;
             }
+        }
 
+        init(){
+            if(this.initialized) return;
+            this.initialized = true;
             this.audio = new Audio();
             this.titleElement = this.toolbarElement.querySelector(".music-player-title");
             this.artistElement = this.toolbarElement.querySelector(".music-player-artist");
@@ -1910,7 +1933,7 @@ const website = {
     },
 }
 
-website.events = new LS.EventHandler(website);
+website.events = new LS.EventEmitter(website);
 window.website = website;
 
 
@@ -2239,7 +2262,7 @@ const kernel = new class Kernel extends LoggerContext {
     /**
      * Auth manager
      */
-    auth = new class Auth extends LS.EventHandler {
+    auth = new class Auth extends LS.EventEmitter {
         #iframeURL = null;
         #iframeOrigin = null;
 
@@ -2272,7 +2295,7 @@ const kernel = new class Kernel extends LoggerContext {
                 }
 
                 if (e.data.event && !e.data.id) {
-                    this.emit(e.data.event, [e.data.data]);
+                    this.quickEmit(e.data.event, e.data.data);
                     return;
                 }
 
@@ -2445,7 +2468,7 @@ const kernel = new class Kernel extends LoggerContext {
      */
     constructor() {
         super('kernel');
-        this.events = new LS.EventHandler(this);
+        this.events = new LS.EventEmitter(this);
 
         website.viewport = this.viewport = new Viewport('main', document.getElementById('viewport'), {
             kernel: this
@@ -2528,12 +2551,14 @@ const kernel = new class Kernel extends LoggerContext {
             website.container = this.container = document.getElementById('app');
             website.viewportElement = this.viewportElement = this.viewport.target;
 
+            const scopeKey = document.querySelector("#scope-key")?.textContent || null;
             const context = this.registerPage(location.pathname, {
                 element: this.viewportElement.firstElementChild,
                 title: document.title,
                 scripts: AssetManager._initialExternalAssets.scripts,
                 styles: AssetManager._initialExternalAssets.styles,
-                executeScripts: false // Initial page scripts are already executed
+                executeScripts: false, // Initial page scripts are already executed
+                scopeKey,
             });
 
             AssetManager._initialExternalAssets = null;
@@ -2563,15 +2588,15 @@ const kernel = new class Kernel extends LoggerContext {
 
         // Event listener for back/forward buttons (for single-page app behavior)
         const originalState = location.pathname;
-        window.addEventListener('popstate', function (event) {
+        window.addEventListener('popstate', (event) => {
             const href = event.state? event.state.path: originalState;
             kernel.viewport.navigate(href, { pushState: false });
         });
 
-        window.addEventListener('click', function (event) {
+        window.addEventListener('click', (event) => {
             const targetElement = event.target.closest("a");
 
-            if (targetElement && targetElement.tagName === 'A') {
+            if (targetElement) {
                 if(targetElement.hasAttribute("target")) return;
                 if(targetElement.href.endsWith("#")) return event.preventDefault();
 
@@ -2593,6 +2618,95 @@ const kernel = new class Kernel extends LoggerContext {
                     } else {
                         kernel.error("No viewport element found", viewportElement);
                     }
+                }
+            }
+        });
+
+        const previewPopout = LS.Create("ls-box", {
+            class: "link-preview-popout elevated",
+            style: "display: none",
+        }).addTo(LS._topLayer);
+
+        const externalSitePreview = LS.Create([
+            { tag: "ls-box", class: "link-preview-site contained", inner: [
+                { class: "link-preview-favicon", tag: "img" },
+                [
+                    { class: "link-preview-domain text-overflow-nowrap" },
+                    { class: "link-preview-title text-overflow-nowrap" },
+                ]
+            ] },
+            { class: "link-preview-description" }
+        ]);
+
+        let popoutTimeout = null, lastLink = null;
+        window.addEventListener("pointerover", (event) => {
+            const targetElement = event.target.closest("a");
+            if(targetElement) {
+                if(targetElement.href.endsWith("#")) return;
+
+                const link = targetElement.href;
+                let href = targetElement.getAttribute('href');
+
+                const isLocal = link.startsWith(origin);
+
+                if(!link.endsWith("?") && !link.startsWith(origin + ":")){
+                    if(href.startsWith(origin)) href = href.substring(origin.length);
+
+                    clearTimeout(popoutTimeout);
+                    let ct = popoutTimeout = setTimeout(() => {
+                        const rect = targetElement.getBoundingClientRect();
+                        const ww = window.innerWidth;
+                        const wh = window.innerHeight;
+                        
+                        if(rect.top <= 300) {
+                            previewPopout.style.top = (rect.bottom + 8) + "px";
+                            previewPopout.style.bottom = "auto";
+                        } else {
+                            previewPopout.style.top = "auto";
+                            previewPopout.style.bottom = (wh - rect.top + 8) + "px";
+                        }
+                        
+                        previewPopout.style.left = (ww < 300 ? 0 : Math.max(8, Math.min(ww - 308, rect.left + rect.width / 2 - 150))) + "px";
+
+                        if(lastLink !== link) {
+                            previewPopout.innerHTML = "";
+                            previewPopout.setAttribute("state", "loading");
+
+                            if(!isLocal) {
+                                fetch(website.api + "/metascraper?url=" + encodeURIComponent(link)).then(response => response.json()).then(data => {
+                                    if(lastLink !== link) return;
+
+                                    previewPopout.innerHTML = "";
+                                    previewPopout.removeAttribute("state");
+                                    externalSitePreview.querySelector(".link-preview-favicon").src = data && (data.favicon.startsWith("https://favicone.com/") ? data.favicon + "?s=48" : data.favicon) || "";
+                                    externalSitePreview.querySelector(".link-preview-title").textContent = data && data.title || link;
+                                    externalSitePreview.querySelector(".link-preview-description").textContent = data && data.description || "";
+
+                                    let domain = "";
+                                    try {
+                                        const urlObj = new URL(link);
+                                        domain = urlObj.hostname.replace("www.", "");
+                                    } catch(e) {
+                                        domain = link;
+                                    }
+
+                                    externalSitePreview.querySelector(".link-preview-domain").textContent = domain;
+                                    previewPopout.appendChild(externalSitePreview);
+                                });
+                            }
+                        } else {
+
+                        }
+
+                        lastLink = link;
+                        LS.Animation.fadeIn(previewPopout, 200, "up");
+                    }, 200);
+
+                    targetElement.addEventListener("pointerout", () => {
+                        if(!popoutTimeout || popoutTimeout !== ct) return;
+                        clearTimeout(popoutTimeout);
+                        LS.Animation.fadeOut(previewPopout, 200, "up");
+                    }, { once: true });
                 }
             }
         });

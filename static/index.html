@@ -1,5 +1,7 @@
 #template /templates/main.html
 
+<span hidden #scope-key>@file-scope-key();</span>
+
 <head>
     @use (~/assets/js/shader.js[defer], ./index.css);
 
@@ -13,7 +15,7 @@
 <div .content>
     <div .logo-board>
         <div #logo>
-            <img src="/assets/image/prism_light.png" fetchpriority="high" srcset="/assets/image/prism_light.png 1x, /assets/image/prism_light_2x.png 2x" alt="LSTV Triangle Logo" draggable="false">
+            <img src="/assets/image/prism_light.png" fetchpriority="high" srcset="/assets/image/prism_light.png 1x, /assets/image/prism_light_2x.png 2x" style="z-index: 2" alt="LSTV Triangle Logo" draggable="false">
         
             <div .stripe-container>
                 <div style="--c: 237, 108, 48; --d: 0.4s" />
@@ -24,7 +26,7 @@
 
         <span .logo_text>LSTV</span>
 
-        <canvas #raysBga style="object-position: bottom center; z-index: -1" .bga />
+        <canvas #raysBga style="object-position: bottom center" .bga />
         <div #chevron .visible .mono .level-top><i class="bi-chevron-down"></i> Scroll down <i class="bi-chevron-down"></i></div>
     </div>
 
@@ -146,43 +148,17 @@
 /**
  * @temporary
  */
-const data = {
-    projects: [
-        { title: "Akeno", icon: "f2eeab33bc9b7873.svg", description: "Akeno is a very fast, modular, and extensive webserver/backend framework handling various protocols. Akeno makes it easy to manage projects of any scale and includes everything a modern web application needs, with world-class performance.", link: "https://github.com/the-lstv/akeno" },
-        { title: "LS", icon: "884695036cdc8c27.webp", description: "A lightweight and modern framework for web applications with tons of high-quality features and a clean API, fast and light reactivity, color system, and more. Used in all of our web projects.", link: "https://github.com/the-lstv/LS" },
-        { title: "Atrium", icon: "78320d16cbc51b33.svg", description: "A pure JS, fast and very flexible parser used to parse configs etc.", link: "https://github.com/the-lstv/Atrium" },
-        { title: "ExtraGon", icon: "83ab407476b84f97.webp", description: "ExtraGon is our cloud services and hosting platform, offering features from managed storage, accelerated webhosting, VPS, DNS management, APIs, and more.", link: "https://extragon.cloud" },
-        { title: "FOSSHome", icon: "8a61a157e6c85819.webp", description: "FOSSHome is a cloud-synced \"WebOS\" launchpad environment with a Linux-like shell and a sleek interface and an extensive window/widget framework, to make you feel right at home. Currently abandoned (for over a year now...) until I work on it again.", link: "https://github.com/the-lstv/fosshome" },
-        { title: "Getrox", icon: "d11562ce585e205b.svg", description: "Our crypto-like currency and community platform, used as a token across our services and cloud platform.", link: "" },
-        { title: "Unifya", icon: "ff153edceb4394d1.webp", description: "Unifya is an universal data flow framework used across our software to ensure seamless integration.", link: "https://unifya.com" },
-    ],
-
-    music: [
-        { type: 2, title: "ID - ?", media: "", cover: "", album: "ID", genre: "Speedcore, Metal" },
-        { type: 2, title: "ID - 85", media: "", cover: "", album: "ID", genre: "Speed Eurobeat" },
-        { type: 2, title: "teascramble hardcore", media: "", cover: "", album: "", genre: "Speedcore, Schranz" },
-        { type: 2, title: "ID - 81", media: "", cover: "", album: "ID", genre: "" },
-        { type: 2, title: "hate song", media: "", cover: "", album: "9a17397a31f588c7.webp", genre: "Speedcore" },
-        { type: 2, title: "Subtile Confinement", media: "", cover: "", album: "", genre: "" },
-        { type: 2, title: "Perplexed Projectile", media: "", cover: "fa67922220db2a31.webp", album: "", genre: "Chiptune, Speedcore" },
-        { type: 2, title: "triage colony", media: "", cover: "", album: "", genre: "Rock" },
-        { type: 2, title: "All shapes! feat. Nogako", media: "", cover: "", album: "", genre: "Chiptune, Speedcore, Jazz" },
-        { type: 2, title: "Calm", media: "", cover: "", album: "", genre: "" },
-        { type: 2, title: "Traceback", media: "", cover: "", album: "", genre: "" },
-        { type: 2, title: "argumented cloud feat. xnizrun", media: "", cover: "", album: "", genre: "" },
-        { type: 2, title: "dfglkjdfgklserlhj24", media: "", cover: "", album: "", genre: "" },
-        { type: 2, title: "Axel L", media: "", cover: "", album: "", genre: "Speedcore" },
-        { type: 2, title: "Blocky", media: "", cover: "", album: "", genre: "Chiptune" },
-        { type: 2, title: "Random orchestra", media: "", cover: "", album: "", genre: "Orchestral" },
-        { type: 2, title: "Skibidi aah", media: "", cover: "", album: "", genre: "Piano" },
-        { type: 2, title: "td-1", media: "", cover: "", album: "", genre: "Speedcore" },
-        { type: 2, title: "violin-1 (edit)", media: "", cover: "", album: "", genre: "Speedcore" },
-        { type: 2, title: "Departure", media: "", cover: "", album: "", genre: "Abstract" },
-        { type: 2, title: "San Andreas", media: "", cover: "", album: "", genre: "Abstract" },
-        { type: 2, title: "Uneasy Calm", media: "", cover: "", album: "", genre: "Abstract" },
-        { type: 2, title: "dj toenail ambulance beat - thelstv remix", media: "", cover: "", album: "", genre: "Random" },
-    ]
-}
+// const data = {
+//     projects: [
+//         { title: "Akeno", icon: "f2eeab33bc9b7873.svg", description: "Akeno is a very fast, modular, and extensive webserver/backend framework handling various protocols. Akeno makes it easy to manage projects of any scale and includes everything a modern web application needs, with world-class performance.", link: "https://github.com/the-lstv/akeno" },
+//         { title: "LS", icon: "884695036cdc8c27.webp", description: "A lightweight and modern framework for web applications with tons of high-quality features and a clean API, fast and light reactivity, color system, and more. Used in all of our web projects.", link: "https://github.com/the-lstv/LS" },
+//         { title: "Atrium", icon: "78320d16cbc51b33.svg", description: "A pure JS, fast and very flexible parser used to parse configs etc.", link: "https://github.com/the-lstv/Atrium" },
+//         { title: "ExtraGon", icon: "83ab407476b84f97.webp", description: "ExtraGon is our cloud services and hosting platform, offering features from managed storage, accelerated webhosting, VPS, DNS management, APIs, and more.", link: "https://extragon.cloud" },
+//         { title: "FOSSHome", icon: "8a61a157e6c85819.webp", description: "FOSSHome is a cloud-synced \"WebOS\" launchpad environment with a Linux-like shell and a sleek interface and an extensive window/widget framework, to make you feel right at home. Currently abandoned (for over a year now...) until I work on it again.", link: "https://github.com/the-lstv/fosshome" },
+//         { title: "Getrox", icon: "d11562ce585e205b.svg", description: "Our crypto-like currency and community platform, used as a token across our services and cloud platform.", link: "" },
+//         { title: "Unifya", icon: "ff153edceb4394d1.webp", description: "Unifya is an universal data flow framework used across our software to ensure seamless integration.", link: "https://unifya.com" },
+//     ]
+// }
 
 website.register(document.currentScript, class extends LS.Context {
     constructor(context, container) {
@@ -193,8 +169,9 @@ website.register(document.currentScript, class extends LS.Context {
             destroyOnUnload: true
         });
 
+        // Reference to this document's container
+        this.container = container;
         this.context = context;
-        this.container = container; // Reference to this document's container
 
         const year = new Date().getFullYear();
 
@@ -202,7 +179,7 @@ website.register(document.currentScript, class extends LS.Context {
         const aboutProxy = LS.Reactive.wrap("aboutDev", {
             coding_years: year - 2016,
             design_years: year - 2021,
-            music_years: year - 2024.5, // Technically 2023, but I won't count that
+            music_years: year - 2024.5,
             age: Math.floor((Date.now() - 1178064000000) / 31556952000),
             name: "Lukáš",
             name_alt: "Lukas",
@@ -439,6 +416,11 @@ website.register(document.currentScript, class extends LS.Context {
         this.logoContainer = container.querySelector(".logo-board");
         this.loreSection = container.get(".lore-section");
         this.chevron = container.get("#chevron");
+        this.cloudsInView = false;
+        this.introInView = false;
+        this.logoOpacity = 1;
+        this.renderObserver = null;
+        this.setupRenderObservers();
 
         // const showcaseTabs = new LS.Tabs(container.querySelector("#showcase-tabs"), {
         //     list: false,
@@ -606,29 +588,20 @@ website.register(document.currentScript, class extends LS.Context {
     handleScroll() {
         const scroll = this.container.scrollTop;
 
-        const frameWidth = 1000 + scroll;
-        if(frameWidth <= 1920) this.logoContainer.style.maxWidth = Math.min(frameWidth, 1920) + "px";
+        // const frameWidth = 1000 + scroll;
+        // if(frameWidth <= 1920) this.logoContainer.style.maxWidth = Math.min(frameWidth, 1920) + "px";
 
-        if (Math.abs(scroll - this.lastScroll) > 10) {
+        if (Math.abs(scroll - this.lastScroll) > 2) {
             this.chevronSwitch.set(scroll < 60);
 
             if(!window.LOW_PERFORMANCE_MODE) {
                 const logoOpacity = Math.max(0, 1 - (scroll / 800));
+                this.logoOpacity = logoOpacity;
                 this.loreSection.style.opacity = Math.min(1, scroll / 500);
                 this.loreSection.style.transform = `translateY(${Math.max(-300, -scroll / 2)}px)`;
                 this.logoContainer.style.opacity = logoOpacity;
 
-                if(this.cloudsCanvas.isInView()){
-                    this.cloudsRenderer?.resume();
-                } else if(this.cloudsRenderer) {
-                    this.cloudsRenderer.paused = true;
-                }
-
-                if(this.introCanvas.isInView() && logoOpacity > 0.2){
-                    this.blurRenderer?.resume();
-                } else if(this.blurRenderer) {
-                    this.blurRenderer.paused = true;
-                }
+                this.syncIntroRendering();
             }
 
             if(scroll > innerHeight) {
@@ -644,6 +617,48 @@ website.register(document.currentScript, class extends LS.Context {
         }
     }
 
+    setupRenderObservers() {
+        if(!("IntersectionObserver" in window) || !this.container) return;
+        this.renderObserver = new IntersectionObserver(entries => {
+            for (const entry of entries) {
+                if(entry.target === this.cloudsCanvas) {
+                    this.cloudsInView = entry.isIntersecting;
+                    this.syncCloudsRendering();
+                } else if(entry.target === this.introCanvas) {
+                    this.introInView = entry.isIntersecting;
+                    this.syncIntroRendering();
+                }
+            }
+        }, { root: this.container, threshold: 0.1 });
+
+        [this.cloudsCanvas, this.introCanvas].forEach(canvas => {
+            if(canvas) this.renderObserver.observe(canvas);
+        });
+
+        this.addDestroyable(() => {
+            this.renderObserver?.disconnect();
+            this.renderObserver = null;
+        });
+    }
+
+    syncCloudsRendering() {
+        if(!this.cloudsRenderer) return;
+        if(window.LOW_PERFORMANCE_MODE || !this.cloudsInView) {
+            this.cloudsRenderer.stop();
+        } else {
+            this.cloudsRenderer.start();
+        }
+    }
+
+    syncIntroRendering() {
+        if(!this.blurRenderer) return;
+        if(window.LOW_PERFORMANCE_MODE || !this.introInView || this.logoOpacity <= 0.2) {
+            this.blurRenderer.stop();
+        } else {
+            this.blurRenderer.start();
+        }
+    }
+
     setupGL() {
         this.context.log("Setting up rendering");
         if(!window.LOW_PERFORMANCE_MODE) {
@@ -651,6 +666,11 @@ website.register(document.currentScript, class extends LS.Context {
 
             this.cloudsRenderer = this.addDestroyable(new CombinedShaderRenderer(this.cloudsCanvas));
             this.blurRenderer = this.addDestroyable(new CombinedShaderRenderer(this.introCanvas));
+
+            const FRAMERATE = 30;
+
+            this.cloudsRenderer.limitFPS(FRAMERATE);
+            this.blurRenderer.limitFPS(FRAMERATE);
 
             this.blurRenderer.addShaderContext(ShaderSource.blurredColors(this.blurRenderer.gl), {
                 u_time: { type: "uniform1f", value: time => [(time * this.bgaSpeedFactor) + 1000] },
@@ -663,7 +683,7 @@ website.register(document.currentScript, class extends LS.Context {
                 u_animate_speed: { type: "uniform1f", value: [1] },
                 u_frequency: { type: "uniform1f", value: [0] },
                 alpha: { type: "uniform1f", value: [0.25] },
-            })
+            });
 
             this.blurRenderer.addShaderContext(ShaderSource.sparkles(this.blurRenderer.gl), {
                 time: { type: "uniform1f", value: time => [time * this.bgaSpeedFactor] },
@@ -671,13 +691,13 @@ website.register(document.currentScript, class extends LS.Context {
                 areaBounds: { type: "uniform4f", value: [0.5, 0.5, 0.6, 0.1] },
                 areaFeather: { type: "uniform1f", value: [1.0] },
                 areaInvert: { type: "uniform1f", value: [0.0] },
-            })
+            });
 
-            this.blurRenderer.resume();
+            this.blurRenderer.start();
 
             this.cloud_q = 1;
             this.cloudsRenderer.addShaderContext(ShaderSource.clouds(this.cloudsRenderer.gl), {
-                u_time: { type: "uniform1f", value: time => [(time * this.bgaSpeedFactor) % 15000] }, // SHADER BUG: Precision breaks after a longer time
+                u_time: { type: "uniform1f", value: time => [(time * this.bgaSpeedFactor) % 15000] }, // Precision breaks after a longer time
                 u_resolution: { type: "uniform2f", value: () => [this.cloudsCanvas.width, this.cloudsCanvas.height] },
                 u_speed: { type: "uniform1f", value: [0.196] },
                 u_scale: { type: "uniform1f", value: [0] },
@@ -688,26 +708,33 @@ website.register(document.currentScript, class extends LS.Context {
                 tint: { type: "uniform1f", value: [0.5] },
                 coverage: { type: "uniform1f", value: [0.3] },
                 alpha: { type: "uniform1f", value: [1.0] },
-            })
+            });
 
             // Track FPS samples for better quality decisions
             this.fpsSamples = [];
-            this.FPS_SAMPLE_SIZE = 30; // Track last 30 samples
-            this.FPS_THRESHOLD_LOW = 35; // Average FPS below this triggers quality reduction
-            this.FPS_THRESHOLD_HIGH = 55; // Average FPS above this allows quality increase
+            this.FPS_SAMPLE_SIZE = 5;
+            this.FPS_THRESHOLD_LOW = FRAMERATE / 3; // Average FPS below this triggers quality reduction
+            this.FPS_THRESHOLD_HIGH = FRAMERATE - 10; // Average FPS above this allows quality increase
 
             this.cloudsRenderer.watchFPS(fps => {
-                if(!this.cloudsRenderer.paused && document.visibilityState === "visible") {
+                if(this.cloudsRenderer.running && document.visibilityState === "visible") {
                     // Add current FPS to samples
                     this.fpsSamples.push(fps);
                     if(this.fpsSamples.length > this.FPS_SAMPLE_SIZE) {
                         this.fpsSamples.shift(); // Remove oldest sample
                     }
-                    
+
+                    if(this.fpsSamples.length >= 4 && fps < 15 && fps !== 0) {
+                        logger.warn(`Low FPS detected: ${fps.toFixed(1)} FPS`);
+                        this.cloud_q = 0;
+                        this.fpsSamples.length = 0;
+                        return;
+                    }
+
                     // Only make quality decisions once we have enough samples
                     if(this.fpsSamples.length >= this.FPS_SAMPLE_SIZE) {
                         const avgFps = this.fpsSamples.reduce((a, b) => a + b, 0) / this.fpsSamples.length;
-                        
+
                         if(avgFps < this.FPS_THRESHOLD_LOW && this.cloud_q > 0) {
                             logger.warn(`Average FPS too low: ${avgFps.toFixed(1)}, lowering cloud quality from ${this.cloud_q} to ${Math.max(0, this.cloud_q - 0.5)}`);
                             this.cloud_q = Math.max(0, this.cloud_q - 0.5);
@@ -720,15 +747,18 @@ website.register(document.currentScript, class extends LS.Context {
                     }
                 }
             });
+
+            this.syncCloudsRendering();
+            this.syncIntroRendering();
         }
     }
 
     handleResume() {
         if(!window.LOW_PERFORMANCE_MODE) {
-            if(this.cloudsRenderer && this.cloudsCanvas.isInView()) this.cloudsRenderer.resume();
-            if(this.blurRenderer && this.introCanvas.isInView()) this.blurRenderer.resume();
+            if(this.cloudsRenderer && this.cloudsCanvas.isInView()) this.cloudsRenderer.start();
+            if(this.blurRenderer && this.introCanvas.isInView()) this.blurRenderer.start();
         }
-        
+
         // Restart word animation if scrolled past intro
         // if(this.container.scrollTop > innerHeight && wordStopped) {
         //     wordInterval();
@@ -748,6 +778,10 @@ website.register(document.currentScript, class extends LS.Context {
         this.chevron = null;
         this.cloudsCanvas = null;
         this.introCanvas = null;
+        if(this.renderObserver) {
+            this.renderObserver.disconnect();
+            this.renderObserver = null;
+        }
         super.destroy();
     }
 });

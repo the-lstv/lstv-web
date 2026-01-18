@@ -1,4 +1,4 @@
-.page {
+:root {
     --background: var(--surface-n2);
     background: var(--background);
     display: flex;

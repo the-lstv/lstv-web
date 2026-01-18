@@ -1,7 +1,3 @@
-.page {
-    background: black !important;
-}
-
 .content {
     margin: auto;
     height: 100%;
@@ -29,7 +25,6 @@
         background: linear-gradient(0deg, var(--surface-n3), transparent);
     }
 }
-
 
 [ls-theme="light"] .logo-board::after {
     background: linear-gradient(0deg, var(--surface-0), transparent);
@@ -74,7 +69,6 @@
     flex-direction: column;
     gap: 20px;
     position: absolute;
-    z-index: -1;
 
     div {
         width: 100%;
@@ -162,11 +156,11 @@
     transition: opacity 2s ease-in-out;
 }
 
-.vfx-loaded .bga {
+:root.vfx-loaded .bga {
     opacity: 1;
 }
 
-.vfx-loaded .bga.clouds {
+:root.vfx-loaded .bga.clouds {
     opacity: 0.25;
 }
 

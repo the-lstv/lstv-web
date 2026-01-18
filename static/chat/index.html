@@ -1,7 +1,9 @@
 #template /templates/main.html
 
+<span hidden #scope-key>@file-scope-key();</span>
+
 <head>
-    @use (ls.js.Network:5.2.7) { defer }
+    @use (ls.js.Network:5.2.8) { defer }
     @use (/chat/index.css, /chat/index.js[defer]);
     @page {
         title: "LSTV | Chat";

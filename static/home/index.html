@@ -1,8 +1,10 @@
 #template /templates/main.html
 
+<span hidden #scope-key>@file-scope-key();</span>
+
 <head>
     @use (/home/index.css, /home/index.js[defer], ~/assets/js/shader.js[defer]);
-    @use (ls.js.ImageCropper:5.2.7) { async }
+    @use (ls.js.ImageCropper:5.2.8) { async }
 
     @page {
         title: "LSTV | User settings";

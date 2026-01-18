@@ -36,8 +36,12 @@ class ShaderContext {
     }
 }
 
-class CombinedShaderRenderer {
-    constructor(canvas, dimensions = { width: 1024, height: 1024 }) {
+class CombinedShaderRenderer extends LS.Util.FrameScheduler {
+    constructor(canvas, dimensions = { width: 1024, height: 1024 }, options = {}) {
+        super(null, options);
+
+        this.callback = this.render.bind(this);
+
         this.width = dimensions.width;
         this.height = dimensions.height;
         canvas.width = this.width;
@@ -58,7 +62,6 @@ class CombinedShaderRenderer {
         this.shaders = [];
         this.uniforms = [];
         this.qualityReduction = 1;
-        this.animating = false;
         this.paused = true;
 
         // FPS tracking
@@ -98,11 +101,6 @@ class CombinedShaderRenderer {
     }
 
     render(time) {
-        if (this.paused) {
-            this.animating = false;
-            return;
-        }
-
         // FPS tracking
         if (this.fpsEnabled) {
             this.fpsFrameTimes.push(time);
@@ -157,8 +155,6 @@ class CombinedShaderRenderer {
 
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         });
-
-        requestAnimationFrame(this.frame);
     }
 
     calculateFPS() {
@@ -193,21 +189,9 @@ class CombinedShaderRenderer {
         this.canvas.height = this.height;
     }
 
-    resume() {
-        if (!this.paused || this.animating) return;
-        this.paused = false;
-        this.animating = true;
-        requestAnimationFrame(this.frame);
-    }
-
-    pause() {
-        this.paused = true;
-    }
-
     destroy() {
         // Stop animation
-        this.pause();
-        this.animating = false;
+        this.stop();
 
         const gl = this.gl;
         if (!gl) return;
@@ -240,6 +224,8 @@ class CombinedShaderRenderer {
 
         // Clear FPS tracking
         this.unwatchFPS();
+
+        super.destroy();
     }
 }
 

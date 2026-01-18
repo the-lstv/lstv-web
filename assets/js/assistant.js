@@ -519,7 +519,7 @@ window._assistantCallback = async (website, auth) => {
             });
 
             container.appendChild(background_canvas);
-            main_shader_renderer.resume();
+            main_shader_renderer.start();
         }
 
         container.get(".loading").remove();
