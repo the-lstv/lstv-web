@@ -3199,36 +3199,22 @@ const kernel = new class Kernel extends LoggerContext {
                 name: "toolbar",
                 icon: "bi-tools",
                 description: "Toolbars",
-                children: [
+                onCalled(toolbar) {
+                    website.openToolbar(toolbar);
+                    website.palette.close();
+                },
+
+                inputs: [
                     {
-                        name: "open",
-                        description: "Open a toolbar",
-
-                        onCalled(toolbar) {
-                            website.openToolbar(toolbar);
-                            website.palette.close();
-                        },
-
-                        inputs: [
-                            {
-                                name: "toolbar",
-                                type: "list",
-                                list: [
-                                    { name: "Accounts", value: "login", icon: "bi-person-circle" },
-                                    { name: "Apps", value: "apps", icon: "bi-app" },
-                                    { name: "Music Player", value: "musicPlayer", icon: "bi-music-note" },
-                                    { name: "Customize website", value: "theme", icon: "bi-brush" },
-                                    { name: "Assistant", value: "assistant", icon: "bi-robot" }
-                                ]
-                            }
+                        name: "toolbar",
+                        type: "list",
+                        list: [
+                            { name: "Accounts", value: "login", icon: "bi-person-circle" },
+                            { name: "Apps", value: "apps", icon: "bi-app" },
+                            { name: "Music Player", value: "musicPlayer", icon: "bi-music-note" },
+                            { name: "Customize website", value: "theme", icon: "bi-brush" },
+                            { name: "Assistant", value: "assistant", icon: "bi-robot" }
                         ]
-                    },
-                    {
-                        name: "close",
-                        description: "Close the toolbar",
-                        onCalled() {
-                            website.closeToolbar();
-                        }
                     }
                 ]
             },
