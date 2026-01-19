@@ -342,6 +342,52 @@ ls-box.inline.color {
     --padding-control-h-pill: 30px;
     margin-top: 20px;
     margin-bottom: 60px;
+    position: relative;
+    display: flex;
+    padding: 8px;
+}
+
+@media screen and (max-width: 760px) {
+    .showcase-buttons {
+        --padding-control-v: 8px;
+        --padding-control-h-pill: 14px;
+        font-size: 1rem;
+        padding: 4px;
+
+        .chip-bg {
+            top: 4px;
+            left: 0;
+            height: calc(100% - 8px);
+        }
+    }
+}
+
+@media screen and (max-width: 440px) {
+    .showcase-buttons {
+        --padding-control-h-pill: 8px;
+        font-size: 0.9rem;
+    }
+}
+
+.chip-bg {
+    background: var(--elevate);
+    border-radius: var(--border-radius-full);
+    position: absolute;
+    transition: transform 0.3s ease;
+    height: calc(100% - 16px);
+    top: 8px;
+    left: 0;
+    z-index: 0;
+    transform: translateX(0);
+}
+
+.chip:is(:active, :hover, :focus):not(:focus-visible) {
+    background: none !important;
+    outline: none !important;
+}
+
+.chip {
+    z-index: 1;
 }
 
 #animated-word > span {

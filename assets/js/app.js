@@ -536,13 +536,20 @@ class ContentContext extends LS.Context {
                 return;
             }
 
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
             try {
+
                 const response = await fetch(this.src, {
+                    signal: controller.signal,
                     headers: {
                         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
                         // "Akeno-Content-Only": "true" // FIXME: Currently not implemented on backend
                     }
                 });
+
+                clearTimeout(timeout);
 
                 if (!response.ok) {
                     this.error = response.status;
@@ -580,7 +587,14 @@ class ContentContext extends LS.Context {
                 this.title = doc.title;
                 resolve(this);
             } catch (e) {
-                reject(e);
+                // Distinguish between network errors and other errors
+                if (e.name === 'AbortError' || e instanceof TypeError) {
+                    reject(new Error("Network error: Failed to load page. Please check your connection."));
+                } else {
+                    reject(e);
+                }
+            } finally {
+                clearTimeout(timeout);
             }
         });
         return this.loadPromise;
@@ -694,11 +708,12 @@ class ContentContext extends LS.Context {
      */
     suspend(){
         this.state = "suspended";
+
+        this.content?.remove();
         for(const style of this.styles) {
             style.disabled = true;
         }
 
-        this.content?.remove();
         this.emit("suspend");
 
         if(this.destroyOnUnload) {
@@ -899,16 +914,14 @@ class Viewport {
             return true;
         }
 
-        // Full page reload
-        // if ((page.requiresReload || options.reload) && path !== this.current?.path) {
-        //     // TODO: Display a warning if the website is doing something
-        //     return location.href = path;
-        // }
-
         // Suspend old page
         if (old) old.suspend();
 
         this.target.classList.add("loading");
+        this.target.setAttribute("state", "loading");
+
+        // Ensure to render the loading indicator; we don't know how long loading will take or if something explodes
+        await (new Promise(resolve => requestAnimationFrame(resolve)));
 
         // Load and Render new page
         try {
@@ -935,12 +948,29 @@ class Viewport {
             return true;
         } catch (e) {
             kernel.error("Navigation failed:", e);
-            // Restore old page or show error
-            if (old) old.render(this.target);
-            else this.errorPage(500);
+
+            // Handle network errors specifically
+            if (e.message && (e.message.includes("fetch") || e.message.includes("Network") || e instanceof TypeError)) {
+                offlineModal.open();
+                return false;
+            }
+
+            // Restore old page
+            if (old && !old.destroyed) {
+                try {
+                    old.render(this.target);
+                } catch (restoreError) {
+                    // Could be dead or something
+                    kernel.error("Failed to restore previous page:", restoreError);
+                    this.errorPage(500);
+                }
+            } else {
+                this.errorPage(500);
+            }
             return false;
         } finally {
             this.target.classList.remove("loading");
+            this.target.setAttribute("state", "idle");
         }
     }
 
@@ -1131,6 +1161,15 @@ class Window extends Viewport {
 
 // Enables closing the toolbar via esc
 const ToolbarStackRef = { close() { website.closeToolbar() } };
+
+const offlineModal = LS.Modal.build({
+    title: [{ tag: "i", class: "bi-wifi-off" }, " Could not load page"],
+    content: "We're sorry, but something seems to have gone wrong while trying to navigate to the site you were trying to get to. Make sure you are connected to the internet!",
+    buttons: [
+        { label: "Try again" },
+        { label: "Go back" }
+    ]
+}, { closeable: false });
 
 
 /**
@@ -2618,6 +2657,10 @@ const kernel = new class Kernel extends LoggerContext {
                     } else {
                         kernel.error("No viewport element found", viewportElement);
                     }
+                } else {
+                    // TODO: Display confirm dialog
+                    event.preventDefault();
+                    window.open(link, '_blank', 'noopener');
                 }
             }
         });
@@ -2680,7 +2723,16 @@ const kernel = new class Kernel extends LoggerContext {
                                     previewPopout.removeAttribute("state");
                                     externalSitePreview.querySelector(".link-preview-favicon").src = data && (data.favicon.startsWith("https://favicone.com/") ? data.favicon + "?s=48" : data.favicon) || "";
                                     externalSitePreview.querySelector(".link-preview-title").textContent = data && data.title || link;
-                                    externalSitePreview.querySelector(".link-preview-description").textContent = data && data.description || "";
+                                    
+                                    const description = data && data.description || "", descriptionContainer = externalSitePreview.querySelector(".link-preview-description"), siteBox = externalSitePreview.querySelector(".link-preview-site");
+                                    if(description) {
+                                        descriptionContainer.textContent = description;
+                                        descriptionContainer.style.display = "block";
+                                        siteBox.classList.remove("compact");
+                                    } else {
+                                        descriptionContainer.style.display = "none";
+                                        siteBox.classList.add("compact");
+                                    }
 
                                     let domain = "";
                                     try {
@@ -3090,13 +3142,11 @@ const kernel = new class Kernel extends LoggerContext {
                                 name: "enable",
                                 icon: "bi-bell-fill",
                                 description: "Enable notifications",
-                                onCalled() { console.log("Notifications enabled"); }
                             },
                             {
                                 name: "disable",
                                 icon: "bi-bell-slash",
                                 description: "Disable notifications",
-                                onCalled() { console.log("Notifications disabled"); }
                             }
                         ]
                     },

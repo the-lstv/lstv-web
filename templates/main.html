@@ -103,7 +103,18 @@
         });
     </script>
 
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/gsap.min.js" async></script>
+    <!--
+        I plan to make a custom animation library for LS;
+        until then, I am deciding between GSAP and Framer Motion.
+        So far I really don't like Motion and I don't like the company (for endorsing AI coding).
+        But they do have hardware accelerated animations...
+
+        I guess until then, i'll just do animations however, then migrate to a proper, high quality custom solution that directly embeds with LS.
+        But one thing that keeps me awake at night is the fact that I have no control over 3rd party libraries and their memory management, and Motion's mysterious cleanup API does not make that any easier.
+    -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/gsap.min.js" async></script> -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/motion@12.26.0/dist/motion.js"></script> -->
+
 
     @use (ls:5.2.8[flat, tooltips, toast, menu, reactive, tabs, animation, resize, modal], bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800", "IBM Plex Mono:wght@400;600;800"]);
     @use (~/assets/css/main.scss, ~/assets/js/pallete.js[defer], ~/assets/js/app.js[defer]);

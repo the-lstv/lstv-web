@@ -39,7 +39,7 @@ body {
     position: fixed;
     width: min(300px, 100vw);
     max-height: 250px;
-    min-height: 100px;
+    min-height: 50px;
     overflow: hidden;
     word-break: break-word;
     display: flex;
@@ -52,6 +52,10 @@ body {
         width: 100%;
         flex: 1;
     }
+
+    &[state="loading"] {
+        min-height: 100px;
+    }
 }
 
 .link-preview-domain {
@@ -59,8 +63,9 @@ body {
 }
 
 .link-preview-favicon {
-    width: 38px;
-    height: 38px;
+    width: 34px;
+    height: 34px;
+    padding: 4px;
 }
 
 .link-preview-site {
@@ -70,6 +75,11 @@ body {
     padding: 10px !important;
     padding-right: 20px !important;
     border-radius: var(--border-radius-full) !important;
+
+    &.compact {
+        background: none !important;
+        padding: 2px 8px !important;
+    }
 
     > div {
         display: flex;
@@ -1192,6 +1202,7 @@ main > div {
 .grouped-buttons :is(button, .ls-button) {
     --padding-control-v: 12px;
     --padding-control-h: 20px;
+    justify-content: flex-start;
     text-align: left;
 }
 
