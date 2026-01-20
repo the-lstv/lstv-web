@@ -828,8 +828,9 @@ class ContentContext extends LS.Context {
  * Viewport class
  * Represents a viewport in the application where content contexts can be rendered.
  */
-class Viewport {
+class Viewport extends LS.EventEmitter {
     constructor(name, element, options = {}) {
+        super();
         this.name = name || "default";
         this.target = element;
         this.current = null;
@@ -1064,6 +1065,41 @@ class Thread extends LS.EventEmitter {
  */
 
 class Window extends Viewport {
+    // static TEMPLATE = LS.CompileTemplate((data, logic) => ({
+    //     class: 'window-container',
+    //     inner: [
+    //         { class: 'window-header', inner: [
+    //             { class: 'window-title', textContent: data.name, tag: 'span' },
+    //             { class: 'window-header-buttons', inner: [
+    //                 {
+    //                     tag: 'button',
+    //                     class: 'window-minimize-button square elevated',
+    //                     inner: { tag: 'i', class: 'bi-dash-lg' },
+    //                     onclick: data.minimize
+    //                 },
+    //                 {
+    //                     tag: 'button',
+    //                     class: 'window-maximize-button square elevated',
+    //                     inner: { tag: 'i', class: 'bi-fullscreen' },
+    //                     onclick: data.maximize
+    //                 },
+    //                 {
+    //                     tag: 'button',
+    //                     class: 'window-close-button square elevated',
+    //                     accent: "red",
+    //                     inner: { tag: 'i', class: 'bi-x-lg' },
+    //                     onclick: data.close
+    //                 },
+    //             ]}
+    //         ]},
+
+    //         data.target
+    //     ],
+    // }));
+
+    // Precompiled
+    static TEMPLATE = function(d){'use strict';var e0=document.createElement("div");e0.className="window-container";var e1=document.createElement("div");e1.className="window-header";var e2=document.createElement("span");e2.textContent=d.name;e2.className="window-title";var e3=document.createElement("div");e3.className="window-header-buttons";var e4=document.createElement("button");e4.onclick=d.minimize;e4.className="window-minimize-button square elevated";var e5=document.createElement("i");e5.className="bi-dash-lg";e4.appendChild(e5);var e6=document.createElement("button");e6.onclick=d.maximize;e6.className="window-maximize-button square elevated";var e7=document.createElement("i");e7.className="bi-fullscreen";e6.appendChild(e7);var e8=document.createElement("button");e8.onclick=d.close;e8.setAttribute("ls-accent","red");e8.className="window-close-button square elevated";var e9=document.createElement("i");e9.className="bi-x-lg";e8.appendChild(e9);e3.append(e4,e6,e8);e1.append(e2,e3);var dyn10=LS.__dynamicInnerToNode(d.target);e0.append(e1,dyn10);var __rootValue=e0;return{root:__rootValue};}
+
     constructor(name, options = {}) {
         super(name, N({
             class: 'window-content-container viewport-content',
@@ -1071,67 +1107,27 @@ class Window extends Viewport {
 
         this.isWindow = true;
 
-        this.windowElement = LS.Create({
-            class: 'window-container',
-            inner: [
-                ({
-                    class: 'window-header',
-                    inner: [
-                        { class: 'window-title', textContent: this.name, tag: 'span' },
-                        {
-                            class: 'window-header-buttons',
-                            inner: [
-                                {
-                                    tag: 'button',
-                                    class: 'window-minimize-button square elevated',
-                                    inner: { tag: 'i', class: 'bi-dash-lg' },
-                                    onclick: () => this.minimize()
-                                },
-                                {
-                                    tag: 'button',
-                                    class: 'window-maximize-button square elevated',
-                                    inner: { tag: 'i', class: 'bi-fullscreen' },
-                                    onclick: () => this.maximize()
-                                },
-                                {
-                                    tag: 'button',
-                                    class: 'window-close-button square elevated',
-                                    accent: "red",
-                                    inner: { tag: 'i', class: 'bi-x-lg' },
-                                    onclick: () => this.close()
-                                },
-                            ]
-                        }
-                    ]
-                }),
-
-                this.target
-            ]
-        });
+        this.windowElement = Window.TEMPLATE({
+            name: options.title || name || "Untitled Window",
+            target: this.target,
+            minimize: () => this.minimize(),
+            maximize: () => this.maximize(),
+            close: () => this.close()
+        }).root;
 
         let startX, startY;
         this.windowHandle = new LS.Util.TouchHandle(this.windowElement.querySelector('.window-header'), {
+            buttons: [0],
+            exclude: true,
+            frameTimed: true,
+
             onStart: (event) => {
-                const rect = this.windowElement.getBoundingClientRect();
-                startX = event.x - rect.left;
-                startY = event.y - rect.top;
+                startX = event.x - this.x;
+                startY = event.y - this.y;
             },
 
             onMove: (event) => {
-                const screenW = window.innerWidth;
-                const screenH = window.innerHeight;
-                const winW = this.windowElement.offsetWidth;
-                const winH = this.windowElement.offsetHeight;
-
-                let left = event.x - startX;
-                let top = event.y - startY;
-
-                // Restrict to min 10,10 and max vw-10-winW, vh-10-winH
-                left = Math.max(10, Math.min(left, screenW - 10 - winW));
-                top = Math.max(10, Math.min(top, screenH - 10 - winH));
-
-                this.windowElement.style.left = left + 'px';
-                this.windowElement.style.top = top + 'px';
+                this.setPosition(event.x - startX, event.y - startY);
             }
         });
 
@@ -1141,21 +1137,65 @@ class Window extends Viewport {
             styled: false,
             minWidth: 300,
             minHeight: 100,
-            ...options.resizeOptions || {}
+            ...options.resizeOptions || {},
+            translate: true,
+        });
+
+        LS.Resize.on(this.windowElement, (nW, nH, state, nX, nY) => {
+            this.width = nW;
+            this.height = nH;
+            this.x = nX;
+            this.y = nY;
+            this.emit("resize", arguments);
         });
 
         kernel.windows.add(this);
+
+        this.setSize(options.width || 600, options.height || 400);
+        this.setPosition(options.x || 100, options.y || 100);
 
         // To be worked on
         document.body.appendChild(this.windowElement);
     }
 
-    close(destroyContent = true) {
+    setPosition(x, y) {
+        const screenW = window.innerWidth;
+        const screenH = window.innerHeight;
+
+        let left = Math.max(10, Math.min(x, screenW - 10 - this.width));
+        let top = Math.max(10, Math.min(y, screenH - 10 - this.height));
+
+        this.x = left;
+        this.y = top;
+
+        this.windowElement.style.transform = `translate3d(${left}px, ${top}px, 0)`;
+        this.emit("move", [left, top]);
+    }
+
+    setSize(width, height) {
+        this.width = width;
+        this.height = height;
+        this.windowElement.style.width = width + "px";
+        this.windowElement.style.height = height + "px";
+        this.emit("resize", [width, height, null, this.x, this.y]);
+    }
+
+    minimize() {}
+
+    maximize() {}
+
+    close() {
+        this.destroy();
+    }
+
+    destroy(destroyContent = true) {
         LS.Resize.remove(this.windowElement);
         this.windowHandle.destroy();
         this.windowElement.remove();
         kernel.windows.delete(this);
-        this.destroy(destroyContent); // Propagates all the way down to destroying the content context
+
+        // Propagates all the way down to destroying the content context
+        super.destroy(destroyContent);
     }
 }
 
@@ -1783,6 +1823,10 @@ const website = {
                 console.warn("Music Player toolbar element not found.");
                 return;
             }
+
+            shortcutManager.register('ctrl+m', () => {
+                website.openToolbar("musicPlayer", true);
+            });
         }
 
         init(){
@@ -1834,15 +1878,16 @@ const website = {
                 this.toggleRepeatMode();
             };
 
-            shortcutManager.register('ctrl+m', this.musicStatusElement.onclick = () => {
+            this.musicStatusElement.onclick = () => {
                 website.openToolbar("musicPlayer", true);
-            });
+            };
 
             this.musicStatusElement.style.display = "none";
             O(".headerLeftContainer").appendChild(this.musicStatusElement);
         }
 
         setCover(imageURL = null, coverArtURL = null) {
+            if(!this.initialized) this.init();
             this.toolbarElement.removeAttribute("ls-accent");
             this.musicStatusElement.removeAttribute("ls-accent");
             this.coverElement.style.display = "none";
@@ -1873,6 +1918,7 @@ const website = {
         }
 
         setDetails(details, playImmediately = false) {
+            if(!this.initialized) this.init();
             this.currentDetails = {
                 title: details.title || "Unknown Title",
                 artist: details.artist || "Unknown Artist",
@@ -1923,6 +1969,7 @@ const website = {
         }
 
         stopped() {
+            if(!this.initialized) this.init();
             this.musicStatusText.textContent = "Stopped";
             this.titleElement.textContent = "No music playing";
             this.artistElement.textContent = "";
@@ -1932,6 +1979,7 @@ const website = {
         }
 
         playToggle() {
+            if(!this.initialized) this.init();
             if(this.audio.paused) {
                 this.play();
             } else {
@@ -1940,16 +1988,19 @@ const website = {
         }
 
         play() {
+            if(!this.initialized) this.init();
             this.audio.play();
             this.playButtonElement.querySelector("i").className = "bi-pause-fill";
         }
 
         pause() {
+            if(!this.initialized) this.init();
             this.audio.pause();
             this.playButtonElement.querySelector("i").className = "bi-play-fill";
         }
 
         toggleRepeatMode() {
+            if(!this.initialized) this.init();
             if(this.repeatMode === "off") {
                 this.repeatMode = "one";
                 this.repeatButtonElement.classList.add("active");

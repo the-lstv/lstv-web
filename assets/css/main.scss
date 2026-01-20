@@ -23,7 +23,7 @@ body {
 }
 
 // Special background for the homepage
-[ls-theme=dark] [file-scope="5d139fafaa75b7af"] {
+[ls-theme=dark] [file-scope="5d139fafaa75b7af"], [ls-theme=dark] [file-scope="f4f369e8b4757d98"] {
     background: black !important;
 }
 
@@ -1202,7 +1202,7 @@ main > div {
 .grouped-buttons :is(button, .ls-button) {
     --padding-control-v: 12px;
     --padding-control-h: 20px;
-    justify-content: flex-start;
+    justify-content: flex-start !important;
     text-align: left;
 }
 

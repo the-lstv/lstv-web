@@ -209,7 +209,7 @@ textarea#profile-about {
         text-align: center;
     }
 
-    .page {
+    :root {
         padding-bottom: 0;
     }
 }

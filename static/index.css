@@ -286,53 +286,29 @@ ls-box.inline.color {
 }
 
 #showcase-projects {
+    max-width: 650px;
+    margin: auto;
+    padding: 0 10px;
     display: flex;
-    flex-wrap: wrap;
-    gap: 30px;
-    justify-content: center;
-    padding: 0 20px;
+    gap: 50px;
+    flex-direction: column;
 }
 
 .showcase-item {
-    width: 500px;
     display: flex;
-    flex-direction: column;
-    padding: 12px 20px;
-    border-radius: var(--border-radius-xlarge);
-    position: relative;
-    outline: 4px solid var(--accent-60);
-    background-color: color-mix(in oklab, #000 40%, var(--accent-20) 70%);
-    box-shadow: 0 10px 20px 0 #0002;
-    gap: 10px;
-}
-
-[ls-theme=light] .showcase-item {
-    background-color: color-mix(in oklab,#fff 100%,var(--accent-20) 20%);
-}
-
-.showcase-item-header {
-    display: flex;
-    justify-content: space-between;
-}
-
-.showcase-item-content {
-    display: flex;
-    gap: 18px;
-}
-
-.showcase-item-description {
-    height: 128px;
-    overflow: auto;
-}
-
-.showcase-item .showcase-item-title {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--accent-60);
+    align-items: flex-start;
+    gap: 28px;
+    font-family: 'JetBrains Mono';
+    color: var(--surface-8);
 }
 
 .showcase-item-icon {
     border-radius: var(--border-radius-large);
+}
+
+.showcase-item-title {
+    font-size: xx-large;
+    color: var(--accent-mix-80);
 }
 
 .showcase-buttons {
@@ -347,6 +323,14 @@ ls-box.inline.color {
     padding: 8px;
 }
 
+.showcase-intro-text {
+    height: 90px;
+    margin: 30px;
+    margin-bottom: -80px;
+    margin-top: 60px;
+    width: calc(100% - 60px);
+}
+
 @media screen and (max-width: 760px) {
     .showcase-buttons {
         --padding-control-v: 8px;
@@ -359,6 +343,14 @@ ls-box.inline.color {
             left: 0;
             height: calc(100% - 8px);
         }
+    }
+
+    .showcase-intro-text {
+        height: auto;
+        margin: 20px;
+        margin-bottom: -40px;
+        margin-top: 40px;
+        width: calc(100% - 40px);
     }
 }
 
@@ -392,14 +384,6 @@ ls-box.inline.color {
 
 #animated-word > span {
     display: inline-block;
-}
-
-.showcase-intro-text {
-    height: 90px;
-    margin: 30px;
-    margin-bottom: -80px;
-    margin-top: 60px;
-    width: calc(100% - 60px);
 }
 
 /* Temporary: */

@@ -131,12 +131,8 @@
         <ls-tabs #showcase-tabs>
             <ls-tab style="position: relative" tab-id="showcase-projects" #showcase-projects></ls-tab>
             <ls-tab style="position: relative" tab-id="showcase-libraries" #showcase-libraries></ls-tab>
-            <ls-tab style="position: relative" tab-id="showcase-gallery" #showcase-gallery>
-                <div .ui-loader style="margin: auto" />
-            </ls-tab>
-            <ls-tab style="position: relative" tab-id="showcase-music" #showcase-music>
-                <div .ui-loader style="margin: auto" />
-            </ls-tab>
+            <ls-tab style="position: relative" tab-id="showcase-gallery" #showcase-gallery></ls-tab>
+            <ls-tab style="position: relative" tab-id="showcase-music" #showcase-music></ls-tab>
         </ls-tabs>
     </div>
 
@@ -242,38 +238,38 @@ website.register(document.currentScript, class extends LS.Context {
         }
 
         class ShowcaseProject extends ItemPreview {
+            static TEMPLATE = LS.CompileTemplate((data, logic) => ({
+                class: "showcase-item",
+                inner: [
+                    {
+                        class: "showcase-item-left-panel",
+                        inner: [
+                            { tag: "img", class: "showcase-item-icon", src: data.icon, width: "128", height: "128", crossOrigin: "anonymous", alt: data.title, onload: data.onload }
+                        ]
+                    },
+
+                    {
+                        class: "showcase-item-content",
+                        inner: [
+                            { class: "showcase-item-title", inner: data.title },
+                            { class: "showcase-item-description", inner: data.description },
+                        ]
+                    }
+                ]
+            }));
+
             constructor(project) {
                 super();
                 const icon = website.cdn + "/file/" + project.icon + (!project.icon.endsWith(".svg") ? "?size=128" : "");
                 const _this = this;
-                this.container = N({
-                    class: "showcase-item",
-                    inner: [
-                        N({
-                            class: "showcase-item-header",
-                            inner: [
-                                N({ class: "showcase-item-title", inner: project.title }),
-                            ]
-                        }),
-
-                        N({
-                            class: "showcase-item-content",
-                            inner: [
-                                N("img", { class: "showcase-item-icon", src: icon, width: "128", height: "128", crossOrigin: "anonymous", alt: project.title, onload() {
-                                    LS.Color.apply(_this.container, LS.Color.fromImage(this));
-                                } }),
-            
-                                N([
-                                    N({ class: "showcase-item-description", inner: project.description }),
-                                ])
-                            ]
-                        }),
-
-                        N({
-                            class: "showcase-item-tags"
-                        })
-                    ]
-                });
+                this.container = ShowcaseProject.TEMPLATE({
+                    title: project.title,
+                    icon: icon,
+                    description: project.description,
+                    onload: (event) => {
+                        LS.Color.apply(this.container, LS.Color.fromImage(event.target));
+                    }
+                }, this).root;
             }
         }
 
