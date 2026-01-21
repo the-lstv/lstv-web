@@ -29,6 +29,36 @@ console.log(
     'font-size:1em;font-weight:400'
 );
 
+const BUILTIN_APPS = [
+    {
+        name: "Resource Monitor",
+        id: "resource-monitor",
+        icon: "79fb1a87322b7fa0.svg",
+        description: "Monitor loaded resources and contexts in the application kernel.",
+        version: "1.0.0",
+        main: "/apps/resourcemanager.mjs",
+    },
+    {
+        name: "Calendar",
+        id: "calendar",
+        icon: "calendar-icon.svg",
+        description: "View dates and manage events.",
+        version: "1.0.0",
+        main: "/apps/calendar.mjs",
+    }
+]
+
+
+/**
+ * Application model:
+ * - Kernel                     - Manages everything
+ *   - Page / Application       - Represents a single page or application instance
+ *     - ContentContext         - Manages content, assets, state
+ *       - Modules              - Extend functionality of ContentContexts
+ *   - ContentContext           - Can be as an application itself
+ *   - Viewport                 - Renders ContentContexts
+ */
+
 
 // --- START ---
 
@@ -194,21 +224,25 @@ const AssetManager = new class {
         });
     }
 
-    requireScript(source) {
+    requireScript(source, module = false) {
+        if(module && typeof source === "string") {
+            return import(source);
+        }
+
         return new Promise((resolve, reject) => {
             if (this.has(source)) {
                 resolve(this.get(source));
                 return;
             }
 
-            let script = this.cloneScript(source);
+            let script = this.cloneScript(source, module);
             script.onload = () => resolve(script);
             script.onerror = (e) => reject(e);
             this.registerScript(script.src, script);
         });
     }
 
-    cloneScript(source) {
+    cloneScript(source, module = false) {
         if (source instanceof HTMLScriptElement) {
             const old = source;
             const script = document.createElement('script');
@@ -221,6 +255,9 @@ const AssetManager = new class {
             return script;
         } else if (typeof source === "string") {
             const script = document.createElement('script');
+            if (module) {
+                script.type = "module";
+            }
             script.src = source;
             return script;
         }
@@ -253,8 +290,12 @@ const AssetManager = new class {
 class ContentContext extends LS.Context {
     #path = null;
 
+    // Only used for applications
+    static manifest = {};
+
     constructor(options = {}) {
         super();
+
         this.id = options?.id || "context-" + Math.random().toString(36).substring(2, 10) + "-" + Date.now().toString(36);
 
         // Can be awaited to make sure content is loaded
@@ -284,9 +325,19 @@ class ContentContext extends LS.Context {
         this.logContext = new LoggerContext(`Context:${this.#path || this.src || this.id}`);
         this.log = this.logContext.log.bind(this.logContext);
 
+        kernel.contexts.set(this.id, this);
+
         this.scopeKey = null;
 
         // this.on("resume", async () => {});
+    }
+
+    get visibleName() {
+        return this.title || this.id || this.constructor.manifest.name || this.constructor.manifest.id || "Unnamed Context";
+    }
+
+    get icon() {
+        return this.constructor.manifest.icon || null;
     }
 
     async #loadCSS(){
@@ -331,6 +382,13 @@ class ContentContext extends LS.Context {
                 }
             }
         }
+    }
+
+    createWindow(options) {
+        const win = new website.Window(options);
+        win.renderFrom(this);
+        this.addDestroyable(win);
+        return win;
     }
 
     get path() {
@@ -838,6 +896,7 @@ class Viewport extends LS.EventEmitter {
         this.options = options;
         this.target.classList.add("viewport");
         this.target.viewportInstance = this;
+        this.destroyed = false;
 
         (options.kernel || kernel).viewports.set(this.name, this);
 
@@ -932,6 +991,8 @@ class Viewport extends LS.EventEmitter {
 
             if(page.error) {
                 this.errorPage(page.error);
+            } else {
+                this.emit("rendered", page);
             }
 
             this.current = page;
@@ -978,6 +1039,7 @@ class Viewport extends LS.EventEmitter {
     renderFrom(context) {
         return context.render(this.target).then(() => {
             this.current = context;
+            this.emit("rendered", context);
             return true;
         }).catch((e) => {
             kernel.error("Rendering from context failed:", e);
@@ -998,6 +1060,8 @@ class Viewport extends LS.EventEmitter {
     }
 
     destroy(destroyContent = false) {
+        if (this.destroyed) return;
+        this.destroyed = true;
         if (destroyContent && this.current) {
             this.current.destroy();
         }
@@ -1068,8 +1132,9 @@ class Window extends Viewport {
     // static TEMPLATE = LS.CompileTemplate((data, logic) => ({
     //     class: 'window-container',
     //     inner: [
-    //         { class: 'window-header', inner: [
-    //             { class: 'window-title', textContent: data.name, tag: 'span' },
+    //         logic.export("header", { class: 'window-header', inner: [
+    //             logic.export("icon", { class: 'window-icon', src: data.icon, tag: 'img' }),
+    //             logic.export("title", { class: 'window-title', textContent: data.name, tag: 'span' }),
     //             { class: 'window-header-buttons', inner: [
     //                 {
     //                     tag: 'button',
@@ -1091,32 +1156,36 @@ class Window extends Viewport {
     //                     onclick: data.close
     //                 },
     //             ]}
-    //         ]},
+    //         ]}),
 
     //         data.target
     //     ],
     // }));
 
     // Precompiled
-    static TEMPLATE = function(d){'use strict';var e0=document.createElement("div");e0.className="window-container";var e1=document.createElement("div");e1.className="window-header";var e2=document.createElement("span");e2.textContent=d.name;e2.className="window-title";var e3=document.createElement("div");e3.className="window-header-buttons";var e4=document.createElement("button");e4.onclick=d.minimize;e4.className="window-minimize-button square elevated";var e5=document.createElement("i");e5.className="bi-dash-lg";e4.appendChild(e5);var e6=document.createElement("button");e6.onclick=d.maximize;e6.className="window-maximize-button square elevated";var e7=document.createElement("i");e7.className="bi-fullscreen";e6.appendChild(e7);var e8=document.createElement("button");e8.onclick=d.close;e8.setAttribute("ls-accent","red");e8.className="window-close-button square elevated";var e9=document.createElement("i");e9.className="bi-x-lg";e8.appendChild(e9);e3.append(e4,e6,e8);e1.append(e2,e3);var dyn10=LS.__dynamicInnerToNode(d.target);e0.append(e1,dyn10);var __rootValue=e0;return{root:__rootValue};}
+    static TEMPLATE = function(d){'use strict';var e0=document.createElement("div");e0.className="window-container";var e1=document.createElement("div");e1.className="window-header";var e2=document.createElement("img");e2.src=d.icon;e2.className="window-icon";var e3=document.createElement("span");e3.textContent=d.name;e3.className="window-title";var e4=document.createElement("div");e4.className="window-header-buttons";var e5=document.createElement("button");e5.onclick=d.minimize;e5.className="window-minimize-button square elevated";var e6=document.createElement("i");e6.className="bi-dash-lg";e5.appendChild(e6);var e7=document.createElement("button");e7.onclick=d.maximize;e7.className="window-maximize-button square elevated";var e8=document.createElement("i");e8.className="bi-fullscreen";e7.appendChild(e8);var e9=document.createElement("button");e9.onclick=d.close;e9.setAttribute("ls-accent","red");e9.className="window-close-button square elevated";var e10=document.createElement("i");e10.className="bi-x-lg";e9.appendChild(e10);e4.append(e5,e7,e9);e1.append(e2,e3,e4);var dyn11=LS.__dynamicInnerToNode(d.target);e0.append(e1,dyn11);var __rootValue=e0;return{"header":e1,"icon":e2,"title":e3,root:__rootValue};}
 
-    constructor(name, options = {}) {
-        super(name, N({
+    constructor(options = {}) {
+        super(`window-${options.id || "untitled"}-${LS.Tiny.M.uid()}`, N({
             class: 'window-content-container viewport-content',
         }), options);
 
         this.isWindow = true;
 
-        this.windowElement = Window.TEMPLATE({
-            name: options.title || name || "Untitled Window",
+        const window = Window.TEMPLATE({
+            name: this.getTitle(),
             target: this.target,
             minimize: () => this.minimize(),
             maximize: () => this.maximize(),
             close: () => this.close()
-        }).root;
+        });
+
+        this.windowElement = window.root;
+        this.titleElement = window.title;
+        this.iconElement = window.icon;
 
         let startX, startY;
-        this.windowHandle = new LS.Util.TouchHandle(this.windowElement.querySelector('.window-header'), {
+        this.windowHandle = new LS.Util.TouchHandle(window.header, {
             buttons: [0],
             exclude: true,
             frameTimed: true,
@@ -1156,6 +1225,12 @@ class Window extends Viewport {
 
         // To be worked on
         document.body.appendChild(this.windowElement);
+
+        this.on("rendered", () => {
+            // Update title and icon based on content
+            this.setTitle(this.getTitle());
+            this.setIcon(this.getIcon());
+        });
     }
 
     setPosition(x, y) {
@@ -1178,6 +1253,26 @@ class Window extends Viewport {
         this.windowElement.style.width = width + "px";
         this.windowElement.style.height = height + "px";
         this.emit("resize", [width, height, null, this.x, this.y]);
+    }
+
+    getTitle(context) {
+        context ??= this.current;
+        return this.title || this.id || (context && (context.title || context.constructor.manifest.title || context.constructor.manifest.name || context.id || context.constructor.manifest.id || context.constructor.name) || "Untitled Window");
+    }
+
+    getIcon(context) {
+        context ??= this.current;
+        return this.icon || (context && (context.icon || context.constructor.manifest.icon || null)) || null;
+    }
+
+    setTitle(title) {
+        this.title = title;
+        this.titleElement.textContent = title;
+    }
+
+    setIcon(icon) {
+        this.icon = icon;
+        this.iconElement.src = icon;
     }
 
     minimize() {}
@@ -2332,6 +2427,7 @@ const kernel = new class Kernel extends LoggerContext {
 
     contexts = new Map();
     viewports = new Map();
+    applications = new Map();
     pageCache = new Map();
 
     aliasMap = new Map();
@@ -3719,6 +3815,41 @@ const kernel = new class Kernel extends LoggerContext {
         });
 
         sendPing();
+    }
+
+    /**
+     * Load the application with the given manifest.
+     * @param {*} manifest 
+     */
+    async loadApplication(manifest) {
+        this.log("Loading application:", manifest.id || manifest.name || "unknown");
+        
+        // TODO: Special case for sandboxed apps
+        if(typeof manifest.main !== "string" || !manifest.main.startsWith("/apps/") || !manifest.main.endsWith(".mjs")) {
+            throw new Error("Application manifest main path is missing or invalid");
+        }
+
+        const module = await AssetManager.requireScript(manifest.main, true);
+        const AppClass = module.default ?? module;
+
+        if (typeof AppClass !== "function" || !LS.Util.isClass(AppClass) || !(AppClass.prototype instanceof ContentContext)) throw new Error("Application module does not export a default class or does not extend ContentContext");
+        kernel.applications.set(manifest.id || manifest.name, AppClass);
+        AppClass.manifest = manifest;
+
+        delete window.module;
+    }
+
+    /**
+     * Instantiate an application by its ID.
+     * @param {string} appId 
+     * @param {object} options 
+     * @returns {LS.Context}
+     */
+    instantiateApplication(appId, options = {}) {
+        const AppClass = kernel.applications.get(appId);
+        if (!AppClass) throw new Error("Application not found: " + appId);
+        this.log("Instantiating application:", appId);
+        return new AppClass();
     }
 }
 

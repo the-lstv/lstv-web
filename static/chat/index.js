@@ -1,25 +1,27 @@
 website.register(document.currentScript, class Chat extends LS.Context {
-    static MESSAGE_TEMPLATE = LS.CompileTemplate((data, logic) => ({
-        class: "chat-message",
-        inner: [
-            {
-                class: "chat-message-avatar"
-            },
-            {
-                class: "chat-message-content",
-                inner: [
-                    {
-                        class: "chat-message-username",
-                        textContent: data.username || "Unknown User"
-                    },
-                    {
-                        class: "chat-message-text",
-                        textContent: data.message || ""
-                    }
-                ]
-            }
-        ]
-    }));
+    // static MESSAGE_TEMPLATE = LS.CompileTemplate((data, logic) => ({
+    //     class: "chat-message",
+    //     inner: [
+    //         {
+    //             class: "chat-message-avatar"
+    //         },
+    //         {
+    //             class: "chat-message-content",
+    //             inner: [
+    //                 {
+    //                     class: "chat-message-username",
+    //                     textContent: data.username || "Unknown User"
+    //                 },
+    //                 {
+    //                     class: "chat-message-text",
+    //                     textContent: data.message || ""
+    //                 }
+    //             ]
+    //         }
+    //     ]
+    // }));
+
+    static MESSAGE_TEMPLATE = function(d){'use strict';var e0=document.createElement("div");e0.className="chat-message";var e1=document.createElement("div");e1.className="chat-message-avatar";var e2=document.createElement("div");e2.className="chat-message-content";var e3=document.createElement("div");e3.textContent=d.username;e3.className="chat-message-username";var e4=document.createElement("div");e4.textContent=d.message;e4.className="chat-message-text";e2.append(e3,e4);e0.append(e1,e2);var __rootValue=e0;return{root:__rootValue};}
 
     static COMMUNITY_ICON_TEMPLATE = LS.CompileTemplate((data, logic) => ({
         class: "server-item-icon",

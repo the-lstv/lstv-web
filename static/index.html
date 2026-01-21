@@ -129,7 +129,9 @@
         </ls-box>
 
         <ls-tabs #showcase-tabs>
-            <ls-tab style="position: relative" tab-id="showcase-projects" #showcase-projects></ls-tab>
+            <ls-tab style="position: relative" tab-id="showcase-projects" #showcase-projects>
+                <img src="/assets/image/home/planets.svg" alt="Planets Illustration" style="position: absolute; z-index: -1; width: 100%">
+            </ls-tab>
             <ls-tab style="position: relative" tab-id="showcase-libraries" #showcase-libraries></ls-tab>
             <ls-tab style="position: relative" tab-id="showcase-gallery" #showcase-gallery></ls-tab>
             <ls-tab style="position: relative" tab-id="showcase-music" #showcase-music></ls-tab>
@@ -153,11 +155,12 @@
 const data = {
     projects: [
         { title: "Akeno", icon: "f2eeab33bc9b7873.svg", description: "Akeno is a very fast, modular, and extensive webserver/backend framework handling various protocols. Akeno makes it easy to manage projects of any scale and includes everything a modern web application needs, with world-class performance.", link: "https://github.com/the-lstv/akeno" },
-        { title: "LS", icon: "884695036cdc8c27.webp", description: "A lightweight and modern framework for web applications with tons of high-quality features and a clean API, fast and light reactivity, color system, and more. Used in all of our web projects.", link: "https://github.com/the-lstv/LS" },
-        { title: "Atrium", icon: "78320d16cbc51b33.svg", description: "A pure JS, fast and very flexible parser used to parse configs etc.", link: "https://github.com/the-lstv/Atrium" },
+        { title: "LS", icon: "884695036cdc8c27.webp", description: "A lightweight and modern framework for web applications. Used by all of our projects.", link: "https://github.com/the-lstv/LS" },
+        { title: "Video Editor", icon: "29d18bcf2593fa3e.svg", description: "A modern, simple but powerful programmable video editor. Has an intuitive patcher interface, advanced rendering effects, audio mixing, automation clips, animations, and more.", link: "https://github.com/the-lstv/video-editor" },
+        { title: "Atrium", icon: "78320d16cbc51b33.svg", description: "A fast and very flexible parser used to parse configs, scripts, etc.", link: "https://github.com/the-lstv/Atrium" },
         { title: "ExtraGon", icon: "83ab407476b84f97.webp", description: "ExtraGon is our cloud services and hosting platform, offering features from managed storage, accelerated webhosting, VPS, DNS management, APIs, and more.", link: "https://extragon.cloud" },
-        { title: "FOSSHome", icon: "8a61a157e6c85819.webp", description: "FOSSHome is a cloud-synced \"WebOS\" launchpad environment with a Linux-like shell and a sleek interface and an extensive window/widget framework, to make you feel right at home. Currently abandoned (for over a year now...) until I work on it again.", link: "https://github.com/the-lstv/fosshome" },
-        { title: "Getrox", icon: "d11562ce585e205b.svg", description: "Our crypto-like currency and community platform, used as a token across our services and cloud platform.", link: "" },
+        { title: "FOSSHome", icon: "8a61a157e6c85819.webp", description: "FOSSHome was a cloud-synced \"WebOS\" launchpad environment with a Linux-like shell and a sleek interface and an extensive window/widget framework, to make you feel right at home. Currently abandoned (for over a year now...), but a lot of it's ideas are a part of lstv.space now.", link: "https://github.com/the-lstv/fosshome" },
+        { title: "Getrox", icon: "d11562ce585e205b.svg", description: "Currency and community platform, used as a token across our services.", link: "" },
         { title: "Unifya", icon: "ff153edceb4394d1.webp", description: "Unifya is an universal data flow framework used across our software to ensure seamless integration.", link: "https://unifya.com" },
     ]
 }
@@ -262,14 +265,21 @@ website.register(document.currentScript, class extends LS.Context {
                 super();
                 const icon = website.cdn + "/file/" + project.icon + (!project.icon.endsWith(".svg") ? "?size=128" : "");
                 const _this = this;
+                const hasCustomColor = !!project.color;
+
                 this.container = ShowcaseProject.TEMPLATE({
                     title: project.title,
                     icon: icon,
                     description: project.description,
                     onload: (event) => {
+                        if (hasCustomColor) return;
                         LS.Color.apply(this.container, LS.Color.fromImage(event.target));
                     }
                 }, this).root;
+
+                if(project.color) {
+                    LS.Color.apply(this.container, project.color);
+                }
             }
         }
 

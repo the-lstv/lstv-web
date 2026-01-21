@@ -304,11 +304,12 @@ ls-box.inline.color {
 
 .showcase-item-icon {
     border-radius: var(--border-radius-large);
+    object-fit: contain;
 }
 
 .showcase-item-title {
     font-size: xx-large;
-    color: var(--accent-mix-80);
+    color: var(--accent-60);
 }
 
 .showcase-buttons {
@@ -329,6 +330,14 @@ ls-box.inline.color {
     margin-bottom: -80px;
     margin-top: 60px;
     width: calc(100% - 60px);
+}
+
+.showcase-background-illustration {
+    position: absolute;
+    z-index: -1;
+    pointer-events: none;
+    user-select: none;
+    width: 100%;
 }
 
 @media screen and (max-width: 760px) {
