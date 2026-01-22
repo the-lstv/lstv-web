@@ -10,6 +10,12 @@
 
 // --- SOME PRE-INITIALIZATION STUFF ---
 
+if(window.__kernelInitialized) {
+    throw new Error("Kernel was already initialized - this is a bug!");
+}
+
+window.__kernelInitialized = true;
+
 const KERNEL_VERSION = (typeof __buildVersion !== "undefined")? __buildVersion: "1.2.3-beta";
 window.cacheKey = "?mtime=" + document.currentScript.src.split("?mtime=")[1];
 if(!window.LS || typeof LS !== "object" || LS.v < 5) {
@@ -21,8 +27,10 @@ if(!window.LS || typeof LS !== "object" || LS.v < 5) {
 const scriptingLoadTime = Date.now();
 const shortcutManager = new LS.ShortcutManager();
 
+const isDebug = window.location.hostname === "lstv.localhost";
+
 // Console welcome message
-console.log(
+if(!isDebug) console.log(
     '%c LSTV %c\nPlease beware:\n%cIF SOMEONE TOLD YOU TO PASTE SOMETHING HERE,\nTHEY MIGHT BE TRYING TO STEAL PERSONAL INFORMATION OR SCAM YOU.\nDO NOT USE THE CONSOLE IF YOU DON\'T KNOW\nWHAT YOU ARE DOING.\n\n',
     'font-size:4em;padding:10px;background:linear-gradient(to bottom,#e74c3c, #e74c3c 33%, #f39c12 33%,#f39c12 66%,#3498db 66%,#3498db);border-radius:1em;color:white;font-weight:900;margin:1em 0',
     'font-size:1.5em;color:#ed6c30;font-weight:bold',
@@ -48,15 +56,28 @@ const BUILTIN_APPS = [
     }
 ]
 
+// --- MEMORY SAFETY ---
+Document.prototype.write = Document.prototype.writeln = function() {
+    throw new Error("Document.write is disabled for security and performance reasons. You should not use it.");
+};
+
+// We can use globals in the kernel, but anywhere else should throw an error
+const setTimeout = LS.Context.setTimeout;
+const setInterval = LS.Context.setInterval;
+const requestAnimationFrame = LS.Context.requestAnimationFrame;
+const fetch = LS.Context.fetch;
 
 /**
  * Application model:
  * - Kernel                     - Manages everything
+ *   - Viewport                 - Renders ContentContexts
  *   - Page / Application       - Represents a single page or application instance
  *     - ContentContext         - Manages content, assets, state
+ *       - Assets               - Styles and Scripts
  *       - Modules              - Extend functionality of ContentContexts
+ *       - SPA Extensions       - Handle SPA navigation for specific paths
  *   - ContentContext           - Can be as an application itself
- *   - Viewport                 - Renders ContentContexts
+ *       - Window (Viewport)    - Contexts can create viewports in the form of windows.
  */
 
 
@@ -93,7 +114,7 @@ class LoggerContext {
     }
 
     writeLog(func = console.log, tagStyle, message, ...data) {
-        if(this.__destroyed) return;
+        if(this.destroyed) return;
         const isString = typeof message === 'string';
         if(!isString) data.unshift(message);
         func.call(this.writer, this._tag + (isString ? " " + message : ''), tagStyle + this._tagStyle, 'color: inherit; font-weight: normal;', ...data);
@@ -121,7 +142,7 @@ class LoggerContext {
         this._writer = null;
         this._tag = null;
         this._tagStyle = null;
-        this.__destroyed = true;
+        this.destroyed = true;
     }
 }
 
@@ -147,7 +168,7 @@ const AssetManager = new class {
 
             // Yeah, hardcoding is not the best idea
             // But this needs to filter all persistent assets
-            if(asset.classList.contains("whitelist") || key.includes("/ls/") || key.includes("bootstrap-icons") || key.includes("fonts.googleapis.com") || key.includes("/assets/js/app.js") || key.includes("/assets/css/main.") || key.includes("/assets/js/pallete.js")) {
+            if(asset.classList.contains("whitelist") || key.includes("/ls/") || key.includes("bootstrap-icons") || key.includes("fonts.googleapis.com") || key.includes("/assets/js/kernel.js") || key.includes("/assets/css/main.") || key.includes("/assets/js/pallete.js")) {
                 this.whitelist.add(key);
             } else {
                 if(asset instanceof HTMLLinkElement) {
@@ -194,12 +215,22 @@ const AssetManager = new class {
     registerStyle(source, element, execute = true){
         const key = this.fuzzKey(source);
         this.styles.set(key, element);
+
+        if(isDebug) {
+            console.log(`Registered style: ${source} (execute=${execute})`);
+        }
+
         if (execute) document.head.appendChild(element);
     }
 
     registerScript(source, element, execute = true){
         const key = this.fuzzKey(source);
         this.scripts.set(key, element);
+
+        if(isDebug) {
+            console.log(`Registered script: ${source} (execute=${execute})`);
+        }
+
         if (execute) {
             document.head.appendChild(element);
             element.remove();
@@ -296,7 +327,7 @@ class ContentContext extends LS.Context {
     constructor(options = {}) {
         super();
 
-        this.id = options?.id || "context-" + Math.random().toString(36).substring(2, 10) + "-" + Date.now().toString(36);
+        this.id = "context-" + Math.random().toString(36).substring(2, 10) + "-" + Date.now().toString(36);
 
         // Can be awaited to make sure content is loaded
         this.loadPromise = null;
@@ -326,6 +357,7 @@ class ContentContext extends LS.Context {
         this.log = this.logContext.log.bind(this.logContext);
 
         kernel.contexts.set(this.id, this);
+        kernel.quickEmit("context-created");
 
         this.scopeKey = null;
 
@@ -369,11 +401,19 @@ class ContentContext extends LS.Context {
                     if(this.destroyed) return;
 
                     const promise = new Promise((resolve, reject) => {
-                        script.addEventListener("load", () => {
+                        const loadHandler = () => {
                             script.setAttribute("data-loaded", "true");
+                            script.removeEventListener("load", loadHandler);
+                            script.removeEventListener("error", errorHandler);
                             resolve();
-                        }, { once: true });
-                        script.addEventListener("error", resolve, { once: true });
+                        };
+                        const errorHandler = () => {
+                            script.removeEventListener("load", loadHandler);
+                            script.removeEventListener("error", errorHandler);
+                            resolve();
+                        };
+                        script.addEventListener("load", loadHandler, { once: true });
+                        script.addEventListener("error", errorHandler, { once: true });
                     });
 
                     if(script.async) {
@@ -382,6 +422,7 @@ class ContentContext extends LS.Context {
                 }
             }
         }
+        await Promise.all(promises);
     }
 
     createWindow(options) {
@@ -421,10 +462,6 @@ class ContentContext extends LS.Context {
 
         if(options.sandboxMode) {
             this.sandboxMode = options.sandboxMode;
-        }
-
-        if(options.id) {
-            this.id = options.id;
         }
 
         if(options.scripts && Array.isArray(options.scripts)) {
@@ -477,6 +514,8 @@ class ContentContext extends LS.Context {
         }
 
         if(options.hasOwnProperty("destroyOnUnload")) this.destroyOnUnload = options.destroyOnUnload || false;
+
+        kernel.quickEmit("context-updated");
     }
 
     async render(targetElement = null){
@@ -776,6 +815,8 @@ class ContentContext extends LS.Context {
 
         if(this.destroyOnUnload) {
             this.destroy();
+        } else {
+            kernel.quickEmit("context-updated");
         }
         return this;
     }
@@ -786,6 +827,7 @@ class ContentContext extends LS.Context {
      */
     resume(){
         this.emit("resume");
+        kernel.quickEmit("context-updated");
         return this;
     }
 
@@ -809,9 +851,9 @@ class ContentContext extends LS.Context {
 
     /**
      * Destroys the context, unloads assets and removes content.
-     * After destroying, the context is no longer usable.
-     * WARNING: This will not magically stop any running scripts unless sandboxed as an iframe.
-     * You MUST make sure you properly clean up in the "suspend" handler.
+     * After destroying, the context is no longer usable and must not be referenced.
+     * WARNING: This will not magically stop any running scripts (unless sandboxed).
+     * You MUST make sure you properly clean up in the "suspend" and "destroy" handlers.
      */
     destroy(){
         if(this.destroyed || this.state === "destroyed") return;
@@ -822,13 +864,28 @@ class ContentContext extends LS.Context {
 
         for(const module of this.modules) {
             if(typeof module.destroy === "function") {
-                module.destroy();
+                // Destroy must not crash
+                try {
+                    module.destroy();
+                } catch (e) {
+                    console.error("Error destroying module:", e);
+                }
             }
         }
+
+        this.modules.clear();
+        this.modules = null;
+
+        // FIXME: Sandboxing needs to be better implemented
+
+        this.state = "destroyed";
+        this.logContext.destroy();
+        this.logContext = null;
 
         this.content?.remove();
         this.content = null;
         kernel.contexts.delete(this.id);
+        kernel.quickEmit("context-destroyed");
         kernel.pageCache.delete(this.#path);
 
         if(kernel.viewport.current === this) {
@@ -844,11 +901,12 @@ class ContentContext extends LS.Context {
         }
 
         this.loadPromise = null;
+        this.SPAPatterns = null;
 
         // Unload assets that are not used elsewhere
-        for (const style of this.styles) {
+        for (const style of this.styles || []) {
             let stillUsed = false;
-            for (const ctx of kernel.pageCache.values()) {
+            for (const ctx of kernel.contexts.values()) {
                 if (ctx !== this && ctx.styles && ctx.styles.includes(style)) {
                     stillUsed = true;
                     break;
@@ -857,9 +915,9 @@ class ContentContext extends LS.Context {
             if (!stillUsed) AssetManager.remove(style);
         }
 
-        for (const script of this.scripts) {
+        for (const script of this.scripts || []) {
             let stillUsed = false;
-            for (const ctx of kernel.pageCache.values()) {
+            for (const ctx of kernel.contexts.values()) {
                 if (ctx !== this && ctx.scripts && ctx.scripts.includes(script)) {
                     stillUsed = true;
                     break;
@@ -870,10 +928,13 @@ class ContentContext extends LS.Context {
 
         this.scripts = null;
         this.styles = null;
+        this.content = null;
+        this.error = null;
 
         if(this.logContext) {
             this.log("Context destroyed");
             this.logContext.destroy();
+            this.logContext = null;
         }
 
         // Clears the rest of the context including events
@@ -898,9 +959,12 @@ class Viewport extends LS.EventEmitter {
         this.target.viewportInstance = this;
         this.destroyed = false;
 
+        // Kernel may not be initilaized yet, that's why we allow a fallback
         (options.kernel || kernel).viewports.set(this.name, this);
+    }
 
-        this.__errorPage = LS.Create({
+    get __errorPage() {
+        return this.___errorPage || (this.___errorPage = LS.Create({
             class: 'error_page',
             inner: [
                 (this.__errorPageStatus = LS.Create({ tag: "h1" })),
@@ -912,7 +976,7 @@ class Viewport extends LS.EventEmitter {
                 { tag: 'br' },
                 { tag: 'a', href: '/', textContent: 'Go back home?' }
             ]
-        });
+        }));
     }
 
     /**
@@ -1013,7 +1077,14 @@ class Viewport extends LS.EventEmitter {
 
             // Handle network errors specifically
             if (e.message && (e.message.includes("fetch") || e.message.includes("Network") || e instanceof TypeError)) {
-                offlineModal.open();
+                LS.Modal.buildEphemeral({
+                    title: [{ tag: "i", class: "bi-wifi-off" }, " Could not load page"],
+                    content: "We're sorry, but something seems to have gone wrong while trying to navigate to the site you were trying to get to. Make sure you are connected to the internet!",
+                    buttons: [
+                        { label: "Try again" },
+                        { label: "Go back" }
+                    ]
+                }, { closeable: false }).open();
                 return false;
             }
 
@@ -1065,9 +1136,17 @@ class Viewport extends LS.EventEmitter {
         if (destroyContent && this.current) {
             this.current.destroy();
         }
-        this.target.remove();
+        this.__errorPage.remove();
+        this.__errorPage = null;
+        this.__errorPageStatus = null;
+        this.__errorPageMessage1 = null;
+        this.__errorPageMessage2 = null;
         this.current = null;
+        this.history = [];
         this.history = null;
+        this.target.remove();
+        this.target = null;
+        kernel.viewports.delete(this.name);
         this.options = null;
     }
 }
@@ -1085,7 +1164,7 @@ class Thread extends LS.EventEmitter {
         this.scriptURL = scriptURL;
         this.options = options;
 
-        this.__destroyed = false;
+        this.destroyed = false;
         this.worker = new Worker(scriptURL, options);
 
         // API to be worked on
@@ -1106,52 +1185,64 @@ class Thread extends LS.EventEmitter {
     }
 
     postMessage(data) {
-        if(!this.__destroyed) this.worker.postMessage(data);
+        if(!this.destroyed) this.worker.postMessage(data);
     }
 
     terminate() {
-        if(this.__destroyed) return;
+        if(this.destroyed) return;
         this.emit("terminate");
+        this.worker.onmessage = null;
+        this.worker.onerror = null;
         this.worker.terminate();
         kernel.threads.delete(this);
         this.events.clear();
         this.worker = null;
-        this.__destroyed = true;
+        this.destroyed = true;
         this.options = null;
         this.scriptURL = null;
     }
 }
 
 
+let globalWindowZIndex = 1000;
+
 /**
  * Window class
  * Spawns a draggable & resizable memory-safe manageable floating window.
  */
-
 class Window extends Viewport {
     // static TEMPLATE = LS.CompileTemplate((data, logic) => ({
     //     class: 'window-container',
     //     inner: [
-    //         logic.export("header", { class: 'window-header', inner: [
-    //             logic.export("icon", { class: 'window-icon', src: data.icon, tag: 'img' }),
-    //             logic.export("title", { class: 'window-title', textContent: data.name, tag: 'span' }),
+    //         logic.export("header", { class: 'level-1 window-header', inner: [
+    //             [
+    //                 logic.export("icon", { class: 'window-icon', src: data.icon, tag: 'img' }),
+    //                 logic.export("title", { class: 'window-title text-overflow-nowrap', textContent: data.name, tag: 'span' }),
+    //             ],
+
     //             { class: 'window-header-buttons', inner: [
     //                 {
     //                     tag: 'button',
-    //                     class: 'window-minimize-button square elevated',
+    //                     class: 'window-maximize-button circle elevated',
+    //                     inner: { tag: 'i', class: 'bi-window' },
+    //                     tooltip: 'Toggle Window View',
+    //                     onclick: data.toggleView
+    //                 },
+    //                 {
+    //                     tag: 'button',
+    //                     class: 'window-minimize-button circle elevated',
     //                     inner: { tag: 'i', class: 'bi-dash-lg' },
     //                     onclick: data.minimize
     //                 },
     //                 {
     //                     tag: 'button',
-    //                     class: 'window-maximize-button square elevated',
-    //                     inner: { tag: 'i', class: 'bi-fullscreen' },
+    //                     class: 'window-maximize-button circle elevated',
+    //                     inner: { tag: 'i', class: 'bi-square' },
     //                     onclick: data.maximize
     //                 },
     //                 {
     //                     tag: 'button',
-    //                     class: 'window-close-button square elevated',
-    //                     accent: "red",
+    //                     class: 'window-close-button circle elevated',
     //                     inner: { tag: 'i', class: 'bi-x-lg' },
     //                     onclick: data.close
     //                 },
@@ -1163,7 +1254,7 @@ class Window extends Viewport {
     // }));
 
     // Precompiled
-    static TEMPLATE = function(d){'use strict';var e0=document.createElement("div");e0.className="window-container";var e1=document.createElement("div");e1.className="window-header";var e2=document.createElement("img");e2.src=d.icon;e2.className="window-icon";var e3=document.createElement("span");e3.textContent=d.name;e3.className="window-title";var e4=document.createElement("div");e4.className="window-header-buttons";var e5=document.createElement("button");e5.onclick=d.minimize;e5.className="window-minimize-button square elevated";var e6=document.createElement("i");e6.className="bi-dash-lg";e5.appendChild(e6);var e7=document.createElement("button");e7.onclick=d.maximize;e7.className="window-maximize-button square elevated";var e8=document.createElement("i");e8.className="bi-fullscreen";e7.appendChild(e8);var e9=document.createElement("button");e9.onclick=d.close;e9.setAttribute("ls-accent","red");e9.className="window-close-button square elevated";var e10=document.createElement("i");e10.className="bi-x-lg";e9.appendChild(e10);e4.append(e5,e7,e9);e1.append(e2,e3,e4);var dyn11=LS.__dynamicInnerToNode(d.target);e0.append(e1,dyn11);var __rootValue=e0;return{"header":e1,"icon":e2,"title":e3,root:__rootValue};}
+    static TEMPLATE = function(d){'use strict';var e0=document.createElement("div");e0.className="window-container";var e1=document.createElement("div");e1.className="level-1 window-header";var e2=document.createElement("div");var e3=document.createElement("img");e3.src=d.icon;e3.className="window-icon";e2.appendChild(e3);var e4=document.createElement("span");e4.textContent=d.name;e4.className="window-title text-overflow-nowrap";e2.appendChild(e4);var e5=document.createElement("div");e5.className="window-header-buttons";var e6=document.createElement("button");e6.onclick=d.toggleView;e6.setAttribute("ls-tooltip","Toggle Window View");LS.Tooltips.updateElement(e6);e6.className="window-maximize-button circle elevated";var e7=document.createElement("i");e7.className="bi-window";e6.appendChild(e7);var e8=document.createElement("button");e8.onclick=d.minimize;e8.className="window-minimize-button circle elevated";var e9=document.createElement("i");e9.className="bi-dash-lg";e8.appendChild(e9);var e10=document.createElement("button");e10.onclick=d.maximize;e10.className="window-maximize-button circle elevated";var e11=document.createElement("i");e11.className="bi-square";e10.appendChild(e11);var e12=document.createElement("button");e12.onclick=d.close;e12.className="window-close-button circle elevated";var e13=document.createElement("i");e13.className="bi-x-lg";e12.appendChild(e13);e5.append(e6,e8,e10,e12);e1.append(e2,e5);var dyn14=LS.__dynamicInnerToNode(d.target);e0.append(e1,dyn14);var __rootValue=e0;return{"header":e1,"icon":e3,"title":e4,root:__rootValue};}
 
     constructor(options = {}) {
         super(`window-${options.id || "untitled"}-${LS.Tiny.M.uid()}`, N({
@@ -1174,10 +1265,12 @@ class Window extends Viewport {
 
         const window = Window.TEMPLATE({
             name: this.getTitle(),
+            icon: this.getIcon(),
             target: this.target,
             minimize: () => this.minimize(),
             maximize: () => this.maximize(),
-            close: () => this.close()
+            close: () => this.close(),
+            toggleView: () => this.toggleView(),
         });
 
         this.windowElement = window.root;
@@ -1189,16 +1282,22 @@ class Window extends Viewport {
             buttons: [0],
             exclude: true,
             frameTimed: true,
+            cursor: 'move',
 
             onStart: (event) => {
                 startX = event.x - this.x;
                 startY = event.y - this.y;
+                this.focus();
             },
 
             onMove: (event) => {
                 this.setPosition(event.x - startX, event.y - startY);
             }
         });
+
+        this.windowElement.addEventListener("mousedown", () => {
+            this.focus();
+        }, { passive: true });
 
         LS.Resize.set(this.windowElement, {
             sides: true,
@@ -1230,6 +1329,8 @@ class Window extends Viewport {
             // Update title and icon based on content
             this.setTitle(this.getTitle());
             this.setIcon(this.getIcon());
+
+            this.focus();
         });
     }
 
@@ -1272,12 +1373,28 @@ class Window extends Viewport {
 
     setIcon(icon) {
         this.icon = icon;
-        this.iconElement.src = icon;
+        if(icon) {
+            this.iconElement.src = website.cdn + "/file/" + icon;
+            this.iconElement.style.display = "";
+        } else {
+            this.iconElement.src = "";
+            this.iconElement.style.display = "none";
+        }
     }
 
     minimize() {}
 
     maximize() {}
+
+    focus() {
+        globalWindowZIndex += 1;
+        this.windowElement.style.zIndex = globalWindowZIndex;
+        this.quickEmit("focus");
+    }
+
+    toggleView() {
+        // To be worked on
+    }
 
     close() {
         this.destroy();
@@ -1285,8 +1402,12 @@ class Window extends Viewport {
 
     destroy(destroyContent = true) {
         LS.Resize.remove(this.windowElement);
-        this.windowHandle.destroy();
+        if(this.windowHandle) this.windowHandle.destroy();
+        this.windowHandle = null;
         this.windowElement.remove();
+        this.windowElement = null;
+        this.titleElement = null;
+        this.iconElement = null;
         kernel.windows.delete(this);
 
         // Propagates all the way down to destroying the content context
@@ -1296,15 +1417,6 @@ class Window extends Viewport {
 
 // Enables closing the toolbar via esc
 const ToolbarStackRef = { close() { website.closeToolbar() } };
-
-const offlineModal = LS.Modal.build({
-    title: [{ tag: "i", class: "bi-wifi-off" }, " Could not load page"],
-    content: "We're sorry, but something seems to have gone wrong while trying to navigate to the site you were trying to get to. Make sure you are connected to the internet!",
-    buttons: [
-        { label: "Try again" },
-        { label: "Go back" }
-    ]
-}, { closeable: false });
 
 
 /**
@@ -1322,10 +1434,9 @@ const website = {
 
     // Constants
     loaded: true,
-    isLocalhost: location.hostname.endsWith(".localhost"),
     isEmbedded: window.self !== window.top,
     cdn: "https://cdn.extragon.cloud",
-    api: "https://api.extragon." + (location.hostname.endsWith(".localhost") ? "localhost" : "cloud"),
+    api: "https://api.extragon." + (isDebug ? "localhost" : "cloud"),
 
     BADGES: [
         { icon: "owner.png", label: "Owner", id: 0 },
@@ -2455,7 +2566,7 @@ const kernel = new class Kernel extends LoggerContext {
         constructor() {
             super();
 
-            this.#iframeOrigin = `https://auth.extragon.${website.isLocalhost? "localhost": "cloud"}`;
+            this.#iframeOrigin = `https://auth.extragon.${isDebug? "localhost": "cloud"}`;
             this.#iframeURL = `${this.#iframeOrigin}/bridge.html`;
 
             this.ready = false;
@@ -2463,6 +2574,7 @@ const kernel = new class Kernel extends LoggerContext {
             this.startupQueue = [];
             this.iframe = null;
             this.callbacks = new Map();
+            this.helloTimeout = null;
 
             this.logger = new LoggerContext("auth");
 
@@ -2475,6 +2587,8 @@ const kernel = new class Kernel extends LoggerContext {
                 if (!this.hello) {
                     if (e.data.data.initialized) {
                         this.hello = true;
+                        this.helloTimeout && clearTimeout(this.helloTimeout);
+                        this.helloTimeout = null;
                         this.logger.info('Auth bridge initialized.');
                         return;
                     } else return;
@@ -2545,9 +2659,10 @@ const kernel = new class Kernel extends LoggerContext {
                     this.startupQueue.forEach(cb => cb());
                     this.startupQueue = [];
                 }
+
                 this.loading = false;
 
-                setTimeout(() => {
+                this.helloTimeout = setTimeout(() => {
                     if (!this.hello) {
                         this.ready = false;
                         this.logger.error('Auth iframe failed to respond.');
@@ -2911,7 +3026,7 @@ const kernel = new class Kernel extends LoggerContext {
         });
 
         // --- Debug ONLY ---
-        if (website.isLocalhost) {
+        if (isDebug) {
             window.kernel = this;
             window.auth = this.auth;
             window.AssetManager = AssetManager;
@@ -3711,9 +3826,9 @@ const kernel = new class Kernel extends LoggerContext {
             });
         }
 
-        website.viewportElement.on("click", () => {
-            website.closeToolbar();
-        })
+        document.addEventListener("mousedown", (event) => {
+            if (website.isToolbarOpen && !event.target.closest("#toolbars")) website.closeToolbar();
+        }, { passive: true });
     }
 
     /**
@@ -3745,6 +3860,7 @@ const kernel = new class Kernel extends LoggerContext {
                 kernel: KERNEL_VERSION,
                 pagesLoaded: kernel.pageCache.size,
                 viewports: kernel.viewports.size,
+                contexts: kernel.contexts.size,
                 threads: kernel.threads.size,
                 currentPage: kernel.viewport.current?.path, // Does not include query or fragments, neither things like the content being viewed (eg. /post/123 will likely show up as just /post))
                 userLoggedIn: website.isLoggedIn, // No identifiable info, just yes/no

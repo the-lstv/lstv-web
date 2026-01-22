@@ -78,7 +78,8 @@
 
         window.LS_INIT_OPTIONS = {
             autoScheme: true,
-            autoAccent: true
+            autoAccent: true,
+            enforceContextSafety: true
         };
 
         window.LOW_PERFORMANCE_MODE = localStorage.getItem("LOW_PERFORMANCE_MODE") === "true";
@@ -116,7 +117,7 @@
     <!-- <script src="https://cdn.jsdelivr.net/npm/motion@12.26.0/dist/motion.js"></script> -->
 
 
-    @use (ls:5.2.8[flat, tooltips, toast, menu, reactive, tabs, animation, resize, modal], bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800", "IBM Plex Mono:wght@400;600;800"]);
+    @use (ls:5.2.9[flat, color, tooltips, toast, menu, reactive, tabs, animation, resize, modal, ShortcutManager, CompileTemplate], bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800", "IBM Plex Mono:wght@400;600;800"]);
     @use (~/assets/css/main.scss, ~/assets/js/pallete.js[defer], ~/assets/js/kernel.js[defer]);
 
     @page {

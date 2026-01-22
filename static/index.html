@@ -196,6 +196,10 @@ website.register(document.currentScript, class extends LS.Context {
         this.addDestroyable(aboutProxy.__bind);
 
         class ItemPreview {
+            constructor() {
+                this.container = null;
+            }
+
             updateLikedStatus(liked) {
                 const likeIcon = this.container.querySelector("i");
                 if (liked) {
@@ -520,7 +524,7 @@ website.register(document.currentScript, class extends LS.Context {
                         this.projects_loaded = true;
 
                         data.projects.forEach((project, index) => {
-                            container.querySelector("#showcase-projects").add((new ShowcaseProject(project)).container);
+                            container.querySelector("#showcase-projects").appendChild((new ShowcaseProject(project)).container);
                         });
                     }
                     break;
@@ -530,18 +534,16 @@ website.register(document.currentScript, class extends LS.Context {
                         this.gallery_loaded = true;
 
                         website.fetch("/showcase/list?type=1&limit=100", { auth: website.isLoggedIn }).then(data => {
-                            container.querySelector("#showcase-gallery .ui-loader").remove();
-                            container.querySelector("#showcase-gallery").add(N("h3", "This is a rough collection of some of my designs and illustrations that I may update over time."));
+                            container.querySelector("#showcase-gallery").appendChild(LS.Create("h3", { text: "This is a rough collection of some of my designs and illustrations that I may update over time." }));
 
                             data.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
                             data.forEach((art, index) => {
-                                container.querySelector("#showcase-gallery").add((new ShowcaseGalleryItem(art)).container);
+                                container.querySelector("#showcase-gallery").appendChild((new ShowcaseGalleryItem(art)).container);
                             });
                         }).catch(err => {
                             context.logContext.error(err);
-                            container.querySelector("#showcase-gallery .ui-loader").remove();
-                            container.querySelector("#showcase-gallery").add(N("h3", { innerText: "An error occurred while loading artworks." }));
+                            container.querySelector("#showcase-gallery").appendChild(LS.Create("h3", { text: "An error occurred while loading artworks." }));
                         });
                     }
                     break;
@@ -551,17 +553,15 @@ website.register(document.currentScript, class extends LS.Context {
                         this.music_loaded = true;
 
                         website.fetch("/showcase/list?type=2&limit=100", { auth: website.isLoggedIn }).then(data => {
-                            container.querySelector("#showcase-music .ui-loader").remove();
 
                             data.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
                             data.forEach((art, index) => {
-                                container.querySelector("#showcase-music").add((new ShowcaseGalleryItem(art)).container);
+                                container.querySelector("#showcase-music").appendChild((new ShowcaseGalleryItem(art)).container);
                             });
                         }).catch(err => {
                             context.logContext.error(err);
-                            container.querySelector("#showcase-music .ui-loader").remove();
-                            container.querySelector("#showcase-music").add(N("h3", { innerText: "An error occurred while loading artworks." }));
+                            container.querySelector("#showcase-music").appendChild(LS.Create("h3", { text: "An error occurred while loading artworks." }));
                         });
                     }
                     break;
