@@ -17,7 +17,9 @@ if(window.__kernelInitialized) {
 window.__kernelInitialized = true;
 
 const KERNEL_VERSION = (typeof __buildVersion !== "undefined")? __buildVersion: "1.2.3-beta";
-window.cacheKey = "?mtime=" + document.currentScript.src.split("?mtime=")[1];
+
+window.cacheKey = "?mtime=" + (LS.Util.parseURLParams(document.currentScript?.src, "mtime") || Date.now()); // Mtime mapped to kernel.js (This should never fallback)
+
 if(!window.LS || typeof LS !== "object" || LS.v < 5) {
     window.__loadError('<h3 style="margin:40px 20px">The application framework failed to load. Please try again later.</h3>')
     throw new Error("Fatal error: Missing LS, or it's too old! Make sure it was loaded properly! Aborting.");
@@ -44,7 +46,7 @@ const BUILTIN_APPS = [
         icon: "79fb1a87322b7fa0.svg",
         description: "Monitor loaded resources and contexts in the application kernel.",
         version: "1.0.0",
-        main: "/apps/resourcemanager.mjs",
+        main: "resourcemanager.mjs",
     },
     {
         name: "Calendar",
@@ -52,7 +54,7 @@ const BUILTIN_APPS = [
         icon: "calendar-icon.svg",
         description: "View dates and manage events.",
         version: "1.0.0",
-        main: "/apps/calendar.mjs",
+        main: "calendar.mjs",
     }
 ]
 
@@ -61,10 +63,13 @@ Document.prototype.write = Document.prototype.writeln = function() {
     throw new Error("Document.write is disabled for security and performance reasons. You should not use it.");
 };
 
-// We can use globals in the kernel, but anywhere else should throw an error
+// We can use globals in the kernel, anywhere else should throw an error
 const setTimeout = LS.Context.setTimeout;
 const setInterval = LS.Context.setInterval;
+const clearTimeout = LS.Context.clearTimeout;
+const clearInterval = LS.Context.clearInterval;
 const requestAnimationFrame = LS.Context.requestAnimationFrame;
+const queueMicrotask = LS.Context.queueMicrotask;
 const fetch = LS.Context.fetch;
 
 /**
@@ -117,8 +122,10 @@ class LoggerContext {
         if(this.destroyed) return;
         const isString = typeof message === 'string';
         if(!isString) data.unshift(message);
+
         func.call(this.writer, this._tag + (isString ? " " + message : ''), tagStyle + this._tagStyle, 'color: inherit; font-weight: normal;', ...data);
-        if (window.website?.emit) website.emit('global-log-stream', [this.logContext, message, ...data]);
+
+        // if (website.emit) website.emit('global-log-stream', [this.logContext, message, ...data]);
     }
 
     log(...data) {
@@ -163,7 +170,7 @@ const AssetManager = new class {
         }
 
         // Pre-register existing global assets
-        Array.from(document.querySelectorAll('link[rel="stylesheet"], script[src]')).forEach(asset => {
+        Array.from(document.head.querySelectorAll('link[rel="stylesheet"], script[src]')).forEach(asset => {
             const key = this.#toKey(asset);
 
             // Yeah, hardcoding is not the best idea
@@ -189,7 +196,7 @@ const AssetManager = new class {
     fuzzKey(source) {
         let absSource = source;
         try {
-            absSource = new URL(source, window.location.origin).href;
+            absSource = new URL(source, location.origin).href;
         } catch (e) {}
         return absSource.replace(/(\?|#).*$/,'').replace(/\/+$/,'').toLowerCase();
     }
@@ -233,7 +240,18 @@ const AssetManager = new class {
 
         if (execute) {
             document.head.appendChild(element);
-            element.remove();
+
+            if (element.src) {
+                const cleanup = () => {
+                    try { element.remove(); } catch {}
+                };
+                element.addEventListener("load", cleanup, { once: true });
+                element.addEventListener("error", cleanup, { once: true });
+            } else {
+                queueMicrotask(() => {
+                    try { element.remove(); } catch {}
+                });
+            }
         }
     }
 
@@ -296,6 +314,18 @@ const AssetManager = new class {
     }
 
     remove(source) {
+        if (source instanceof Node) {
+            try { source.remove(); } catch {}
+
+            for (const [k, v] of this.styles) {
+                if (v === source) { this.styles.delete(k); break; }
+            }
+            for (const [k, v] of this.scripts) {
+                if (v === source) { this.scripts.delete(k); break; }
+            }
+            return;
+        }
+
         const key = this.#toKey(source);
         const style = this.styles.get(key);
         if(style) {
@@ -395,33 +425,46 @@ class ContentContext extends LS.Context {
         for (const script of this.scripts) {
             if (!script.isConnected) {
                 document.head.appendChild(script);
-                script.remove();
+
+                const removeAfter = () => {
+                    try { script.remove(); } catch {}
+                };
+
+                if (!script.src) {
+                    queueMicrotask(removeAfter);
+                    continue;
+                }
 
                 if (script.src && !script.hasAttribute("data-loaded")) {
                     if(this.destroyed) return;
 
-                    const promise = new Promise((resolve, reject) => {
+                    const promise = new Promise((resolve) => {
                         const loadHandler = () => {
                             script.setAttribute("data-loaded", "true");
-                            script.removeEventListener("load", loadHandler);
-                            script.removeEventListener("error", errorHandler);
+                            removeAfter();
                             resolve();
                         };
+
                         const errorHandler = () => {
-                            script.removeEventListener("load", loadHandler);
-                            script.removeEventListener("error", errorHandler);
+                            removeAfter();
                             resolve();
                         };
+
                         script.addEventListener("load", loadHandler, { once: true });
                         script.addEventListener("error", errorHandler, { once: true });
                     });
 
                     if(script.async) {
                         promises.push(promise);
-                    } else await promise;
+                    } else {
+                        await promise;
+                    }
+                } else {
+                    queueMicrotask(removeAfter);
                 }
             }
         }
+
         await Promise.all(promises);
     }
 
@@ -547,9 +590,9 @@ class ContentContext extends LS.Context {
             this.#loadJS()
         ]);
 
-        this.completed("loaded"); // Assets have finished loading
+        if(this.destroyed) return this; // :(
 
-        if(this.destroyed) return this;
+        this.completed("loaded"); // Assets have finished loading
 
         if(targetElement) {
             for(const child of Array.from(targetElement.children)) {
@@ -692,6 +735,7 @@ class ContentContext extends LS.Context {
                 }
             } finally {
                 clearTimeout(timeout);
+                this.loadPromise = null;
             }
         });
         return this.loadPromise;
@@ -856,10 +900,9 @@ class ContentContext extends LS.Context {
      * You MUST make sure you properly clean up in the "suspend" and "destroy" handlers.
      */
     destroy(){
-        if(this.destroyed || this.state === "destroyed") return;
-        this.state = "destroyed";
-
+        if(this.destroyed || this.state === "destroyed") return;        
         if(this.state !== "suspended") this.emit("suspend");
+        this.state = "destroyed";
         this.emit("destroy");
 
         for(const module of this.modules) {
@@ -963,14 +1006,14 @@ class Viewport extends LS.EventEmitter {
         (options.kernel || kernel).viewports.set(this.name, this);
     }
 
-    get __errorPage() {
-        return this.___errorPage || (this.___errorPage = LS.Create({
+    get errorPageElement() {
+        return this.__errorPage || (this.__errorPage = LS.Create({
             class: 'error_page',
             inner: [
-                (this.__errorPageStatus = LS.Create({ tag: "h1" })),
+                (this.errorPageStatus = LS.Create({ tag: "h1" })),
                 { class: 'marqueeBar', inner: [[
-                    (this.__errorPageMessage1 = { tag: 'span', textContent: 'Unexpected error.' }),
-                    (this.__errorPageMessage2 = { tag: 'span', textContent: 'Unexpected error.' }),
+                    (this.errorPageMessage1 = { tag: 'span', textContent: 'Unexpected error.' }),
+                    (this.errorPageMessage2 = { tag: 'span', textContent: 'Unexpected error.' }),
                 ]]},
                 { tag: 'br' },
                 { tag: 'br' },
@@ -1003,7 +1046,7 @@ class Viewport extends LS.EventEmitter {
         if (SPAExtension) {
             if (SPAExtension[2] !== this.current) {
                 // We need to navigate to the base page first
-                this.navigate(SPAExtension[2], { browserTriggered: true });
+                await this.navigate(SPAExtension[2], { browserTriggered: true });
             }
 
             if(location.pathname !== path && !options.browserTriggered && options.pushState !== false && this.name === 'main') {
@@ -1091,7 +1134,7 @@ class Viewport extends LS.EventEmitter {
             // Restore old page
             if (old && !old.destroyed) {
                 try {
-                    old.render(this.target);
+                    await old.render(this.target);
                 } catch (restoreError) {
                     // Could be dead or something
                     kernel.error("Failed to restore previous page:", restoreError);
@@ -1124,28 +1167,39 @@ class Viewport extends LS.EventEmitter {
             child.remove();
         }
 
-        this.__errorPageStatus.textContent = String(status);
-        this.__errorPageMessage1.textContent = website.errorMessages[status] || 'Unexpected error.';
-        this.__errorPageMessage2.textContent = this.__errorPageMessage1.textContent;
-        this.target.appendChild(this.__errorPage);
+        this.errorPageStatus.textContent = String(status);
+        this.errorPageMessage1.textContent = website.errorMessages[status] || 'Unexpected error.';
+        this.errorPageMessage2.textContent = this.errorPageMessage1.textContent;
+        this.target.appendChild(this.errorPageElement);
     }
 
     destroy(destroyContent = false) {
         if (this.destroyed) return;
         this.destroyed = true;
+
         if (destroyContent && this.current) {
             this.current.destroy();
         }
-        this.__errorPage.remove();
-        this.__errorPage = null;
-        this.__errorPageStatus = null;
-        this.__errorPageMessage1 = null;
-        this.__errorPageMessage2 = null;
         this.current = null;
+
+        if(this.__errorPage) {
+            this.__errorPage.remove();
+            this.__errorPage = null;
+            this.errorPageStatus = null;
+            this.errorPageMessage1 = null;
+            this.errorPageMessage2 = null;
+        }
+
         this.history = [];
         this.history = null;
+
+        if(this.target.viewportInstance === this) {
+            delete this.target.viewportInstance;
+        }
+
         this.target.remove();
         this.target = null;
+
         kernel.viewports.delete(this.name);
         this.options = null;
     }
@@ -1299,7 +1353,7 @@ class Window extends Viewport {
             this.focus();
         }, { passive: true });
 
-        LS.Resize.set(this.windowElement, {
+        this.resize = LS.Resize.set(this.windowElement, {
             sides: true,
             corners: true,
             styled: false,
@@ -1309,12 +1363,12 @@ class Window extends Viewport {
             translate: true,
         });
 
-        LS.Resize.on(this.windowElement, (nW, nH, state, nX, nY) => {
+        this.resize.handler.on("resize", (side, nW, nH, nX, nY) => {
             this.width = nW;
             this.height = nH;
             this.x = nX;
             this.y = nY;
-            this.emit("resize", arguments);
+            this.emit("resize", [nW, nH, side, nX, nY]);
         });
 
         kernel.windows.add(this);
@@ -1401,10 +1455,20 @@ class Window extends Viewport {
     }
 
     destroy(destroyContent = true) {
-        LS.Resize.remove(this.windowElement);
+        if(this.destroyed) return;
+        // Don't set destroyed to true yet; we will propagate to Viewport destroy
+
         if(this.windowHandle) this.windowHandle.destroy();
         this.windowHandle = null;
-        this.windowElement.remove();
+
+        this.resize.handler.destroy();
+        this.resize = null;
+
+        if(this.windowElement) {
+            LS.Resize.remove(this.windowElement);
+            this.windowElement.remove();
+        }
+
         this.windowElement = null;
         this.titleElement = null;
         this.iconElement = null;
@@ -1499,6 +1563,7 @@ const website = {
 
             if(isAnimated) {
                 img.setAttribute("data-src", src);
+                // Memory leak: if image is removed, it the observer may still exist, but there's not a way to really fix that
                 const observer = new IntersectionObserver((entries) => {
                     if (entries[0].isIntersecting) {
                         if (img.dataset.src) {
@@ -1839,7 +1904,7 @@ const website = {
         const toolbar = website.toolbars.get(name);
         if(!toolbar) return;
 
-        const previousToolbar = website.toolbars.get(website.currentToolbar);
+        const previousToolbar = website.currentToolbar && website.toolbars.get(website.currentToolbar);
         if(previousToolbar) {
             if(typeof previousToolbar.onClose === "function") previousToolbar.onClose();
 
@@ -1851,9 +1916,14 @@ const website = {
 
         if(typeof toolbar.onOpen === "function") toolbar.onOpen();
 
-        toolbar.element.style.transition = (!website.isToolbarOpen || !previousToolbar?.element)? "none" : "";
-        LS.Animation.slideInToggle(toolbar.element, previousToolbar?.element || null);
-        if (!website.isToolbarOpen) LS.Animation.fadeIn(website.toolbarsContainer, null, "up");
+        // TODO: this is incredibly ass
+        toolbar.element.classList.add("open");
+        for(const tb of website.toolbars.values()) {
+            if(tb !== toolbar) tb.element.classList.remove("open");
+        }
+
+        if (website.isToolbarOpen) LS.Animation.slideInToggle(toolbar.element, previousToolbar?.element || null);
+        if (!website.isToolbarOpen) LS.Animation.fadeIn(toolbar.element, null, "up");
 
         website.isToolbarOpen = true;
         website.currentToolbar = name;
@@ -1869,16 +1939,16 @@ const website = {
     closeToolbar() {
         if(!website.isToolbarOpen) return;
 
-        LS.Animation.fadeOut(website.toolbarsContainer, null, "down");
-        
         const toolbar = website.toolbars.get(website.currentToolbar);
-        
+        LS.Animation.fadeOut(toolbar.element, null, "down");
+
         if(toolbar) {
             if(typeof toolbar.onClose === "function") toolbar.onClose();
             const button = toolbar.panelItem instanceof HTMLElement? toolbar.panelItem : website.panelItems.get(toolbar.panelItem)?.element;
             if(button) button.classList.remove("open");
+            website.currentToolbar = null;
         }
-        
+
         for(const item of website.panelItems.values()) {
             item.element.classList.remove("open");
         }
@@ -1888,12 +1958,28 @@ const website = {
         LS.Stack.remove(ToolbarStackRef);
     },
 
+    async openPalette() {
+        if (website.isEmbedded) return;
+
+        if (!website.palette) {
+            if(kernel._initializingPalette) {
+                await kernel._initializingPalette;
+            } else {
+                kernel._initializingPalette = kernel._initializeCommandPalette();
+                await kernel._initializingPalette;
+                kernel._initializingPalette = null;
+            }
+        }
+
+        website.palette.open();
+    },
+
     showLoginToolbar(toggle = false) {
         const accountsButton = website.panelItems.get("accountsButton").element;
 
         accountsButton.focus();
         setTimeout(() => {
-            if(!toggle && website.isToolbarOpen && website.currentToolbar === "toolbarLogin") return;
+            if(!toggle && website.isToolbarOpen && website.currentToolbar === "login") return;
 
             website.openToolbar("login", toggle);
 
@@ -1945,7 +2031,7 @@ const website = {
 
         ["commandPaletteButton", { showLabel: false, label: "Command Palette", tooltip: "Command Palette", description: "Open Command Palette", icon: "bi-terminal", onclick() {
             website.closeToolbar();
-            website.palette.open();
+            website.openPalette();
         }}],
 
         ["themeButton", { buttonLabel: N('i', { class: "bi-palette-fill" }), label: "Customize", description: "Customize the site appearance", icon: "bi-palette-fill", onclick() {
@@ -2583,6 +2669,7 @@ const kernel = new class Kernel extends LoggerContext {
             this.hello = false;
             window.addEventListener('message', e => {
                 if (e.origin !== this.#iframeOrigin) return;
+                if (e.data?.nonce && e.data.nonce !== this.nonce) return;
 
                 if (!this.hello) {
                     if (e.data.data.initialized) {
@@ -2611,6 +2698,7 @@ const kernel = new class Kernel extends LoggerContext {
                         if (cb.resolve) cb.resolve(data);
                     }
 
+                    clearTimeout(cb.timeout);
                     this.callbacks.delete(id);
                 }
             });
@@ -2644,44 +2732,66 @@ const kernel = new class Kernel extends LoggerContext {
                 return;
             }
 
-            this.loading = true;
-            this.iframe = document.createElement('iframe');
-            this.iframe.sandbox = "allow-scripts allow-same-origin";
-            this.iframe.src = this.#iframeURL;
-            this.iframe.style.display = 'none';
-            this.iframe.loading = 'eager';
+            requestAnimationFrame(() => {
+                this.loading = true;
+                this.iframe = document.createElement('iframe');
+                this.iframe.sandbox = "allow-scripts allow-same-origin";
+                this.iframe.src = this.#iframeURL;
 
-            this.iframe.onload = () => {
-                this.iframe.contentWindow.postMessage({ type: 'init', nonce: this.nonce }, this.#iframeOrigin);
-                this.ready = true;
-                if (callback) callback();
-                if (this.startupQueue.length > 0) {
-                    this.startupQueue.forEach(cb => cb());
-                    this.startupQueue = [];
-                }
+                this.iframe.style.position = "fixed";
+                this.iframe.style.width = "0";
+                this.iframe.style.height = "0";
+                this.iframe.style.border = "0";
+                this.iframe.style.opacity = "0";
+                this.iframe.style.pointerEvents = "none";
 
-                this.loading = false;
+                this.iframe.loading = 'eager';
+                this.iframe.fetchPriority = "high";
 
-                this.helloTimeout = setTimeout(() => {
-                    if (!this.hello) {
-                        this.ready = false;
-                        this.logger.error('Auth iframe failed to respond.');
-                        LS.Toast.show("Authentication bridge failed to respond - account features will not work.", { accent: "red" });
+                this.iframe.onload = () => {
+                    this.iframe.contentWindow.postMessage({ type: 'init', nonce: this.nonce }, this.#iframeOrigin);
+                    this.ready = true;
+                    if (callback) callback();
+                    if (this.startupQueue.length > 0) {
+                        this.startupQueue.forEach(cb => cb());
+                        this.startupQueue = [];
                     }
-                }, 1000);
-            };
 
-            document.body.appendChild(this.iframe);
-            this.iframe.onerror = error;
+                    this.loading = false;
+
+                    this.helloTimeout = setTimeout(() => {
+                        if (!this.hello) {
+                            this.ready = false;
+                            this.logger.error('Auth iframe failed to respond.');
+                            LS.Toast.show("Authentication bridge failed to respond - account features will not work.", { accent: "red" });
+                        }
+                    }, 1000);
+                };
+
+                document.body.appendChild(this.iframe);
+                this.iframe.onerror = error;
+                this.iframe.style.display = 'none';
+            });
         }
 
         postMessage(action, data = {}, callback) {
             return new Promise((resolve, reject) => {
                 const id = Math.random().toString(36).substring(2);
-                this.callbacks.set(id, { callback, resolve, reject });
+
+                const timeout = setTimeout(() => {
+                    if (this.callbacks.has(id)) {
+                        this.callbacks.delete(id);
+                        reject(new Error(`Auth bridge timeout (${action})`));
+                    }
+                }, 30000);
+
+                this.callbacks.set(id, { callback, resolve, reject, timeout });
+
                 this.#getFrame((error) => {
                     if (error) {
                         reject(error);
+                        clearTimeout(timeout);
+                        this.callbacks.delete(id);
                         return;
                     }
 
@@ -2885,6 +2995,10 @@ const kernel = new class Kernel extends LoggerContext {
             document.querySelector(".loaderContainer").style.display = "none";
             website.container.style.display = "flex";
             website.emit("dom-ready");
+
+            this.shortcutManager.register(['ctrl+shift+p', 'ctrl+k'], () => {
+                website.openPalette();
+            });
         });
 
         // Event listener for back/forward buttons (for single-page app behavior)
@@ -2904,8 +3018,8 @@ const kernel = new class Kernel extends LoggerContext {
                 const link = targetElement.href;
                 let href = targetElement.getAttribute('href');
 
-                if(link.startsWith(origin) && !link.endsWith("?") && !link.startsWith(origin + ":")){
-                    if(href.startsWith(origin)) href = href.substring(origin.length);
+                if(link.startsWith(location.origin) && !link.endsWith("?") && !link.startsWith(location.origin + ":")){
+                    if(href.startsWith(location.origin)) href = href.substring(location.origin.length);
                     const viewportElement = targetElement.closest(".viewport") || kernel.viewport.target;
                     if (viewportElement) {
                         const viewport = viewportElement.viewportInstance || [...kernel.viewports.values()].find(v => v.target === viewportElement);
@@ -2953,6 +3067,9 @@ const kernel = new class Kernel extends LoggerContext {
                 let href = targetElement.getAttribute('href');
 
                 const isLocal = link.startsWith(origin);
+
+                // For now
+                if(isLocal) return;
 
                 if(!link.endsWith("?") && !link.startsWith(origin + ":")){
                     if(href.startsWith(origin)) href = href.substring(origin.length);
@@ -3025,6 +3142,10 @@ const kernel = new class Kernel extends LoggerContext {
             }
         });
 
+        this.on("context-updated", () => {
+            LS.Animation.fadeOut(previewPopout, 200, "up");
+        })
+
         // --- Debug ONLY ---
         if (isDebug) {
             window.kernel = this;
@@ -3034,8 +3155,6 @@ const kernel = new class Kernel extends LoggerContext {
 
         // TODO:FIXME: This should only allow non-authenticated access
         website.fetch = this.auth.fetch.bind(this.auth);
-
-        if (!website.isEmbedded) this.#initializeCommandPalette();
         website.emit("ready");
 
         this.ttl_scripting = Date.now() - scriptingLoadTime;
@@ -3061,6 +3180,7 @@ const kernel = new class Kernel extends LoggerContext {
 
         if (this.pageCache.has(path)) {
             this.warn(`Page for path %c${path}%c is being registered twice. Overwriting existing page.`, 'font-weight: bold', '');
+            this.pageCache.get(path).destroy();
         }
 
         const page = new ContentContext(options);
@@ -3130,8 +3250,8 @@ const kernel = new class Kernel extends LoggerContext {
             if (!context) {
                 for (const viewport of this.viewports.values()) {
                     if (viewport.target.contains(script)) {
-                        if (viewport.currentPage && viewport.currentPage.content.contains(script)) {
-                            context = viewport.currentPage;
+                        if (viewport.current && viewport.current.content.contains(script)) {
+                            context = viewport.current;
                         }
                         break;
                     }
@@ -3260,7 +3380,9 @@ const kernel = new class Kernel extends LoggerContext {
         return new this.#PermissionScope(permissions);
     }
 
-    #initializeCommandPalette() {
+    async _initializeCommandPalette() {
+        if (this._initializingPalette || website.palette) return;
+        const CommandPalette = (await import("/~/assets/js/pallete.mjs")).default;
         const topBar = O("#topOverlay");
         const paletteBar = O("#commandPaletteBar");
         const paletteContainer = O("#commandPalette");
@@ -3268,7 +3390,7 @@ const kernel = new class Kernel extends LoggerContext {
         const terminalOutput = terminalContainer.querySelector(".terminal-output");
 
         const paletteLogger = new LoggerContext("Command Palette");
-        const palette = new CommandPalette({
+        website.palette = new CommandPalette({
             wrapperElement: paletteContainer,
             menuElement: paletteContainer.querySelector(".completion-menu"),
             iconElement: paletteContainer.querySelector(".command-icon"),
@@ -3290,12 +3412,6 @@ const kernel = new class Kernel extends LoggerContext {
             logger: paletteLogger
         });
 
-        this.shortcutManager.register(['ctrl+shift+p', 'ctrl+k'], () => {
-            palette.open();
-        });
-
-        website.palette = palette;
-
         let terminalHidden = true;
         const terminalObserver = new MutationObserver(() => {
             const hasContent = terminalOutput.children.length > 0;
@@ -3315,17 +3431,17 @@ const kernel = new class Kernel extends LoggerContext {
         terminalObserver.observe(terminalOutput, { childList: true });
 
         const terminalWriter = {
-            log: palette.log.bind(palette)
+            log: website.palette.log.bind(website.palette)
         }
 
         this.terminalWriter = terminalWriter;
         paletteLogger.writer = terminalWriter;
 
         paletteBar.querySelector("button").onclick = () => {
-            palette.close();
+            website.palette.close();
         };
 
-        palette.register([
+        website.palette.register([
             {
                 name: "kernel-info",
                 alias: ["kernel-version", "version"],
@@ -3635,7 +3751,7 @@ const kernel = new class Kernel extends LoggerContext {
             }
 
             // Close the toolbar if no items are collapsed and it's currently open
-            if (!hasCollapsedItems && website.isToolbarOpen && website.currentToolbar === "toolbarMore") {
+            if (!hasCollapsedItems && website.isToolbarOpen && website.currentToolbar === "more") {
                 website.closeToolbar();
             }
 
@@ -3826,8 +3942,8 @@ const kernel = new class Kernel extends LoggerContext {
             });
         }
 
-        document.addEventListener("mousedown", (event) => {
-            if (website.isToolbarOpen && !event.target.closest("#toolbars")) website.closeToolbar();
+        document.addEventListener("pointerdown", (event) => {
+            if (website.isToolbarOpen && !event.target.closest("#toolbars,.toolbar-button")) website.closeToolbar();
         }, { passive: true });
     }
 
@@ -3938,18 +4054,28 @@ const kernel = new class Kernel extends LoggerContext {
      * @param {*} manifest 
      */
     async loadApplication(manifest) {
-        this.log("Loading application:", manifest.id || manifest.name || "unknown");
+        const key = manifest.id || manifest.name;
+        if(!key) {
+            throw new Error("Application manifest is missing an id or name");
+        }
+
+        if (kernel.applications.has(key)) {
+            this.log("Application already loaded:", key);
+            return;
+        }
+
+        this.log("Loading application:", key);
         
         // TODO: Special case for sandboxed apps
-        if(typeof manifest.main !== "string" || !manifest.main.startsWith("/apps/") || !manifest.main.endsWith(".mjs")) {
+        if(typeof manifest.main !== "string") {
             throw new Error("Application manifest main path is missing or invalid");
         }
 
-        const module = await AssetManager.requireScript(manifest.main, true);
+        const module = await AssetManager.requireScript("/~/apps/" + manifest.main, true);
         const AppClass = module.default ?? module;
 
         if (typeof AppClass !== "function" || !LS.Util.isClass(AppClass) || !(AppClass.prototype instanceof ContentContext)) throw new Error("Application module does not export a default class or does not extend ContentContext");
-        kernel.applications.set(manifest.id || manifest.name, AppClass);
+        kernel.applications.set(key, AppClass);
         AppClass.manifest = manifest;
 
         delete window.module;

@@ -37,7 +37,7 @@ class ResourceMonitor extends website.ContentContext {
                     tag: "div", inner: [
                         [
                             { tag: "button", text: "Refresh", onclick: () => this.frameScheduler.schedule() },
-                            { tag: "button", inner: [{ tag: "i", class: "bi-trash-fill" }, "Clear all suspended"], tooltip: "Stops all pages/apps loaded or running in the background. They will reload when you open them again.", class: "elevated", onclick: () => kernel.clearAllOtherPages() },
+                            { tag: "button", inner: [{ tag: "i", class: "bi-trash-fill" }, "Clear all suspended"], class: "elevated", onclick: () => this.#kernel.clearAllOtherPages() },
                         ],
 
                         [
@@ -59,18 +59,12 @@ class ResourceMonitor extends website.ContentContext {
 
         this.window = this.createWindow({
             title: "Resource Monitor",
-            width: 800,
-            height: 600,
+            width: 650,
+            height: 340,
             minWidth: 450,
         });
 
         this.updateList();
-    }
-
-    destroy() {
-        this.#rowCache.clear();
-        this.window.destroy();
-        super.destroy();
     }
 
     action(type) {
@@ -100,6 +94,7 @@ class ResourceMonitor extends website.ContentContext {
     }
 
     updateList() {
+        // Ensure we don't keep any references to the context itself, just collect and display its information
         const resources = this.listResources();
         const activeIds = new Set();
 
@@ -109,6 +104,7 @@ class ResourceMonitor extends website.ContentContext {
             const isSelected = resource.id === this.#selectedContextId;
             const iconParam = resource.icon;
             const nameParam = resource.visibleName || resource.id;
+            const type = resource.constructor.name === "ContentContext" && resource.path ? "Page" : resource.constructor.name;
 
             if (!row) {
                 row = LS.Create({
@@ -141,8 +137,8 @@ class ResourceMonitor extends website.ContentContext {
                 row._lastName = nameParam;
             }
 
-            if (row.cells[1].textContent !== resource.constructor.name)
-                row.cells[1].textContent = resource.constructor.name;
+            if (row.cells[1].textContent !== type)
+                row.cells[1].textContent = type;
 
             if (row.cells[2].textContent !== resource.state)
                 row.cells[2].textContent = resource.state;
@@ -158,6 +154,13 @@ class ResourceMonitor extends website.ContentContext {
 
     listResources() {
         return this.#kernel.contexts.values();
+    }
+
+    destroy() {
+        this.#rowCache.clear();
+        this.window.destroy();
+        this.#kernel = null;
+        super.destroy();
     }
 }
 

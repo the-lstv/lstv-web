@@ -232,8 +232,7 @@ body {
 }
 
 #toolbars {
-    /* -webkit-user-select: none;
-    user-select: none; */
+    user-select: none;
     --font: Poppins, Rubik, sans-serif;
     font-family: Poppins, Rubik, sans-serif;
     z-index: 2000;
@@ -241,10 +240,11 @@ body {
     position: absolute;
     /* top: calc(100% + 10px); */
     top: var(--topOffset);
+    left: 10px;
     right: 10px;
     background: none;
 
-    pointer-events: none !important;
+    pointer-events: none;
 }
 
 .toolbar {
@@ -252,6 +252,10 @@ body {
     max-height: calc(100vh - 90px);
     width: 300px;
     overflow: auto;
+    right: 0;
+
+    position: absolute;
+    pointer-events: all;
 
     right: 0;
 
@@ -275,7 +279,15 @@ body {
         text-align: left;
         margin-bottom: 15px;
     }
+
+    &:not(.open):not(.animating) {
+        display: none !important;
+    }
 }
+
+// #toolbars.animating .toolbar.last-open {
+//     display: block !important;
+// }
 
 .toolbar-styled {
     background: var(--background);
@@ -296,7 +308,6 @@ body {
 }
 
 #toolbarLogin {
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
     width: 340px;
 }
@@ -391,7 +402,6 @@ input[aria-invalid] {
     }
 
     .toolbar {
-        right: 0;
         width: 100% !important;
     }
 }
@@ -1352,8 +1362,8 @@ ls-text-input.has-textarea {
     pointer-events: none;
 }
 
-ls-tab:not(.tab-active) {
-    display: none;
+.ls-tab-content:not(.tab-active) {
+    display: none !important;
 }
 
 
@@ -1370,7 +1380,6 @@ ls-tab:not(.tab-active) {
 #musicPlayer {
     user-select: none;
     overflow: visible;
-    position: relative;
     width: 350px;
 }
 
@@ -1449,14 +1458,14 @@ ls-tab:not(.tab-active) {
 }
 
 @media only screen and (min-width: 600px) {
-    .toolbar.center {
-        margin-right: 50vw;
-        transform: translateX(50%);
-    }
+    // .toolbar.center {
+    //     margin-right: 50vw;
+    //     transform: translateX(50%);
+    // }
 
     .toolbar.left {
-        margin-right: 100vw;
-        transform: translateX(calc(100% + 20px));
+        left: 0;
+        right: unset;
     }
 }
 

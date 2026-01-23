@@ -188,6 +188,7 @@
     outline: 1px solid var(--surface-1);
     margin: 60px 180px;
     margin-bottom: -300px;
+    will-change: transform;
 }
 
 ls-box.inline.color {
@@ -219,12 +220,27 @@ ls-box.inline.color {
     transform: translateX(0);
 }
 
+.poppable-link.has-icon:is(:hover, :focus) .pops {
+    opacity: 1;
+    transform: translateY(30px) translateX(5%);
+}
+
 .poppable-link i {
     position: absolute;
     transition: .5s opacity ease, .5s transform ease;
     transform: translateX(2px);
     left: 10px;
     opacity: 0;
+}
+
+.poppable-link .pops {
+    position: absolute;
+    transition: 0.5s opacity ease, 0.5s transform ease;
+    left: 0;
+    opacity: 0;
+    white-space: nowrap;
+    pointer-events: none;
+    color: var(--accent);
 }
 
 .underline-link {
@@ -312,6 +328,10 @@ ls-box.inline.color {
     color: var(--accent-60);
 }
 
+.gallery-item-title {
+    color: var(--accent-60);
+}
+
 .showcase-buttons {
     border-radius: var(--border-radius-full) !important;
     font-size: 1.4rem;
@@ -393,11 +413,6 @@ ls-box.inline.color {
 
 #animated-word > span {
     display: inline-block;
-}
-
-/* Temporary: */
-.ls-slide-animation>:not(.visible):not(.leaving):not(.entering) {
-    display: none !important;
 }
 
 #showcase-gallery {

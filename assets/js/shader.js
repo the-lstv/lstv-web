@@ -37,7 +37,7 @@ class ShaderContext {
 }
 
 class CombinedShaderRenderer extends LS.Util.FrameScheduler {
-    constructor(canvas, dimensions = { width: 1024, height: 1024 }, options = {}) {
+    constructor(canvas, dimensions = { width: 512, height: 512 }, options = {}) {
         super(null, options);
 
         this.callback = this.render.bind(this);

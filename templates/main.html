@@ -79,6 +79,9 @@
         window.LS_INIT_OPTIONS = {
             autoScheme: true,
             autoAccent: true,
+
+            // This is to catch bad code usage before it leaks.
+            // Not needed in production
             enforceContextSafety: true
         };
 
@@ -116,9 +119,13 @@
     <!-- <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/gsap.min.js" async></script> -->
     <!-- <script src="https://cdn.jsdelivr.net/npm/motion@12.26.0/dist/motion.js"></script> -->
 
+    <link rel="preconnect" href="https://auth.extragon.cloud" crossorigin>
+    <link rel="dns-prefetch" href="//auth.extragon.cloud">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdn.extragon.cloud https://cdn.extragon.localhost https://fonts.googleapis.com https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.extragon.cloud https://cdn.extragon.localhost https://fonts.googleapis.com; font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net; connect-src 'self' wss://*.lstv.space wss://*.extragon.cloud wss://*.extragon.localhost https://api.extragon.cloud https://api.extragon.localhost;">
 
-    @use (ls:5.2.9[flat, color, tooltips, toast, menu, reactive, tabs, animation, resize, modal, ShortcutManager, CompileTemplate], bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800", "IBM Plex Mono:wght@400;600;800"]);
-    @use (~/assets/css/main.scss, ~/assets/js/pallete.js[defer], ~/assets/js/kernel.js[defer]);
+    @use (ls:5.2.9[flat, color, tooltips, toast, menu, reactive, tabs, animation, resize, modal, ShortcutManager, CompileTemplate], bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800"]);
+
+    @use (~/assets/css/main.scss, ~/assets/js/kernel.js[defer]);
 
     @page {
         style: flat;
@@ -199,13 +206,13 @@
             </div>
         </div>
 
-        <div #toolbars .level-1 .ls-slide-animation style="display: none">
-            <div .toolbar .toolbar-styled #toolbarApps>
+        <div #toolbars .level-1 .ls-slide-animation>
+            <div .toolbar .toolbar-styled #toolbarApps style="display: none">
                 <h3>Applications</h3>
                 <div></div>
             </div>
 
-            <div .toolbar .toolbar-styled #toolbarTheme>
+            <div .toolbar .toolbar-styled #toolbarTheme style="display: none">
                 <h3>Customize</h3>
                 <ls-box .elevated .inline>
                     <button .elevated ls-tooltip aria-label="Dark theme" onclick="website.theme = 'dark'"> <i class="bi-moon-stars-fill" /> </button>
@@ -229,7 +236,7 @@
                 </ls-div>
             </div>
 
-            <div .toolbar .toolbar-styled .level-n1 #toolbarAssistant>
+            <div .toolbar .toolbar-styled .level-n1 #toolbarAssistant style="display: none">
                 <div .loading>
                     <div .loader></div>
                 </div>
@@ -258,7 +265,7 @@
                 </div>
             </div>
 
-            <div .toolbar .toolbar-styled #toolbarLogin .level-1 .ls-slide-animation>
+            <div .toolbar .toolbar-styled #toolbarLogin .level-1 .ls-slide-animation style="display: none">
                 <div .login-toolbar-page tab-id="default" #loginPopup>
                     <svg width="45" height="37" fill="none"><rect y="17" width="30" height="10" rx="5" fill="#fcc21b"/><rect x="15" width="30" height="10" rx="5" fill="#ed6c30"/><g fill="#40c0e7"><rect width="10" height="10" rx="5"/><rect x="35" y="17" width="10" height="10" rx="5"/></g></svg>
 
@@ -376,7 +383,7 @@
                 </div>
             </div>
 
-            <div .toolbar .left #musicPlayer>
+            <div .toolbar .left #musicPlayer style="display: none">
                 <div .music-player .toolbar-styled>
                     <img .music-player-cover alt="Music cover background" crossorigin="anonymous">
                     <img .music-player-art alt="Music cover art" crossorigin="anonymous">
@@ -407,7 +414,7 @@
                 <button .music-menu-toggle style="padding: 0px 12px" aria-label="Expand music player"><i .bi-caret-down-fill /></i></button> -->
             </div>
 
-            <div .toolbar .toolbar-styled #toolbarMore></div>
+            <div .toolbar .toolbar-styled #toolbarMore style="display: none"></div>
 
         </div>
         <main #viewport>

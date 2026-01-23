@@ -42,6 +42,6 @@ class MyHelloWorldApp extends LS.Context {
     }
 }
 
-// Instantiate the app
-new MyHelloWorldApp();
-// A window saying "Hello world!" should now appear
+// Export the application class as default
+// The kernel will now be able to instantiate it when requested
+export default MyHelloWorldApp;

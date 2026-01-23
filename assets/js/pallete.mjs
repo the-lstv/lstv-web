@@ -1,3 +1,10 @@
+// We can use globals in the kernel, but anywhere else should throw an error
+const setTimeout = LS.Context.setTimeout;
+const setInterval = LS.Context.setInterval;
+const clearTimeout = LS.Context.clearTimeout;
+const clearInterval = LS.Context.clearInterval;
+const requestAnimationFrame = LS.Context.requestAnimationFrame;
+
 class CommandPalette {
     /**
      * @typedef {Object} InputDefinition
@@ -1909,4 +1916,4 @@ class CommandPalette {
     }
 }
 
-window.CommandPalette = CommandPalette;
+export default CommandPalette;

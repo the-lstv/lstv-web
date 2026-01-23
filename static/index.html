@@ -45,33 +45,31 @@
 
             <div .guy-lore .mono .padding .flex-center>
                 <div style="z-index: 5">
+                    <ls-div>
+                        <ls-div>
+                            <h1>What's LSTV.space?</h1>
+                            LSTV is a universe of things aiming to provide you with the best possible experience. We hope you will find lstv.space like a home where you enjoy staying - there is a lot to explore! It is also a community of developers, artists, producers and people who enjoy our work, aiming to provide an open environment to create and share awesome high-quality projects.<br>
+                        </ls-div>
+                    </ls-div>
 
                     <h1>Who is Lukas?</h1>
 
                     <ls-div .margin-bottom-xxlarge>
                         <ls-div>
-                            My name is <b>{{ aboutDev.name }} / {{ aboutDev.name_alt }}</b>.<br>
-                            I am an {{ aboutDev.age }} years old student in IT, with about {{ aboutDev.coding_years }} years of coding experience, {{ aboutDev.design_years }} years of design experience, and ~{{ aboutDev.music_years }} year of sound design experience, all self-taught. (More information on my <a target="_blank" .poppable-link .underline-link .has-icon style="--accent: #000; --hover-color: #fff" href="https://github.com/the-lstv"><i .bi-github /> Github profile</a>).
+                            My name is <b>{{ aboutDev.name }} / {{ aboutDev.name_alt }}</b>, and I'm the one behind this website.<br>
+                            I am an {{ aboutDev.age }} years old student, with about {{ aboutDev.coding_years }} years of self-taught programming experience, {{ aboutDev.design_years }} years of design experience, and ~{{ aboutDev.music_years }} year of sound design experience. (You can find more in my <a target="_blank" .poppable-link .underline-link .has-icon style="--accent: #000; --hover-color: #fff" href="https://github.com/the-lstv"><i .bi-github /> Github profile</a>).
                         </ls-div>
 
                         <ls-div>
-                            I design and develop software, attempt creating music, and make games (when I have the time). I do all kinds of things from networking, hardware, libraries and utility to creative/productivity software. I also enjoy video editing/VFX work, music composition and sound design, writing, drawing and animating, you name it.<br>
-                            My current main area of expertise is software optimization, UI/UX design, graphics/rendering software, data processing and networking software.<br><br>
-                            I'm a bit of a perfectionist that obsesses over minor details.
+                            I design and develop software, attempt creating music, and make games (when I have the time). I like to do all kinds of things from networking, hardware, and utilities to creative/productivity software. I also enjoy VFX work, music composition and sound design, writing, drawing and animating, you name it.<br>
+                            My current main area is software optimization, UI/UX design, graphics/rendering software, data processing and networking.<br><br>
+                            I'm a bit of a perfectionist and obsess over details.
                         </ls-div>
 
                         <ls-div>
                             <b>Note:</b> LSTV is not my nickname. To refer to me, please use my name or an alias.<br><br>
-                            On this website I showcase my works and write posts, but it is also the center of LSTV's services and products, not only my personal website (and it may become more general in the coming future). There is a lot more to explore!<br>
-                            My favorite artists: <a target="_blank" .poppable-link .underline-link .koba-button style="--accent: #6817eb" href="https://www.youtube.com/@Kobaryo">Kobaryo</a>, <a target="_blank" .poppable-link .underline-link style="--accent: #a81446" href="https://www.youtube.com/channel/UCV4ggxLd_Vz-I-ePGSKfFog">Camellia</a>.<br>
-                        </ls-div>
-                    </ls-div>
-
-                    <ls-div>
-                        <ls-div>
-                            <h1>What's LSTV?</h1>
-                            LSTV is a broad term describing a community of developers, artists, and producers (or people who enjoy what we make), aiming to provide an open, universal environment to create and share awesome high-quality projects.<br>
-                            It is also the label under which we release our software, etc., but there are also other brands under the LSTV label that branch out into different areas.<br>
+                            On this website I showcase my works and write posts, but it is also the center of LSTV's services and products, not only my personal website (and it may become more general in the coming future). There is a lot more to explore!<br><br>
+                            My favorite artists: <a target="_blank" .poppable-link .underline-link .koba-button style="--accent: #6817eb" href="https://www.youtube.com/@Kobaryo">Kobaryo</a>, <a target="_blank" .poppable-link .underline-link style="--accent: #a81446" href="https://www.youtube.com/@Cametek.CamelliaOfficial">Camellia</a>, <a target="_blank" .poppable-link .has-icon .underline-link style="--accent: #04CEFC" href="https://www.youtube.com/channel/UCdxf3SY8xgI6x7TRTc8jxrg"><i .bi-heart-fill /> Akira Complex<span .pops>Rest In Peace.</span></a>, <a href="https://www.youtube.com/@tpazolite_jp" target="_blank" .poppable-link .underline-link style="--accent: #A8DB7C">tpz</a>, <a target="_blank" .poppable-link .underline-link style="--accent: #FF6F61" href="https://www.youtube.com/channel/UCiMeKrcMsRPLu8E55W2sr7g">Dustvoxx</a>.
                         </ls-div>
 
                         <ls-div .margin-top-xxxlarge>
@@ -130,7 +128,7 @@
 
         <ls-tabs #showcase-tabs>
             <ls-tab style="position: relative" tab-id="showcase-projects" #showcase-projects>
-                <img src="/assets/image/home/planets.svg" alt="Planets Illustration" style="position: absolute; z-index: -1; width: 100%">
+                <img src="/assets/image/home/planets.svg" loading="lazy" alt="Planets Illustration" style="position: absolute; z-index: -1; width: 100%">
             </ls-tab>
             <ls-tab style="position: relative" tab-id="showcase-libraries" #showcase-libraries></ls-tab>
             <ls-tab style="position: relative" tab-id="showcase-gallery" #showcase-gallery></ls-tab>
@@ -225,7 +223,7 @@ website.register(document.currentScript, class extends LS.Context {
                     easing: "ease-in-out"
                 }).effect.target;
 
-                setTimeout(() => heart.remove(), 1100);
+                context.setTimeout(() => heart.remove(), 1100);
             }
 
             playDislikeAnimation(button){
@@ -240,7 +238,7 @@ website.register(document.currentScript, class extends LS.Context {
                     easing: "ease-out"
                 }).effect.target;
 
-                setTimeout(() => heart.remove(), 1100);
+                context.setTimeout(() => heart.remove(), 1100);
             }
         }
 
@@ -296,7 +294,7 @@ website.register(document.currentScript, class extends LS.Context {
 
             //         [
             //             [
-            //                 { tag: "span", class: "showcase-item-title", inner: data.title }
+            //                 { tag: "span", class: "gallery-item-title", inner: data.title }
             //             ],
 
             //             [
@@ -307,7 +305,7 @@ website.register(document.currentScript, class extends LS.Context {
             // }));
 
             // Pre-compiled
-            static TEMPLATE = function(d){'use strict';var e0=document.createElement("div");e0.onclick=d.onclick;e0.className="showcase-gallery-item";var e1=document.createElement("img");e1.src=(website.cdn+"/file/"+String(d.media));e1.crossOrigin="anonymous";e1.alt=d.title;e1.loading="lazy";var e2=document.createElement("div");var e3=document.createElement("div");var e4=document.createElement("span");e4.className="showcase-item-title";e4.append(LS.__dynamicInnerToNode(d.title));e3.appendChild(e4);e2.appendChild(e3);var e5=document.createElement("div");var e6=document.createElement("button");e6.onclick=d.likePost;e6.setAttribute("ls-tooltip","Like");LS.Tooltips.updateElement(e6);e6.className="pill clear";var e7=document.createElement("i");e7.className="bi-heart";var dyn8=LS.__dynamicInnerToNode(d.likes);e6.append(e7,dyn8);e5.appendChild(e6);e2.appendChild(e5);e0.append(e1,e2);var __rootValue=e0;return{root:__rootValue};}
+            static TEMPLATE = function(d){'use strict';var e0=document.createElement("div");e0.onclick=d.onclick;e0.className="showcase-gallery-item";var e1=document.createElement("img");e1.src=(website.cdn+"/file/"+String(d.media));e1.crossOrigin="anonymous";e1.alt=d.title;e1.loading="lazy";var e2=document.createElement("div");var e3=document.createElement("div");var e4=document.createElement("span");e4.className="gallery-item-title";e4.append(LS.__dynamicInnerToNode(d.title));e3.appendChild(e4);e2.appendChild(e3);var e5=document.createElement("div");var e6=document.createElement("button");e6.onclick=d.likePost;e6.setAttribute("ls-tooltip","Like");LS.Tooltips.updateElement(e6);e6.className="pill clear";var e7=document.createElement("i");e7.className="bi-heart";var dyn8=LS.__dynamicInnerToNode(d.likes);e6.append(e7,dyn8);e5.appendChild(e6);e2.appendChild(e5);e0.append(e1,e2);var __rootValue=e0;return{root:__rootValue};}
 
             constructor(art) {
                 super();
@@ -348,11 +346,11 @@ website.register(document.currentScript, class extends LS.Context {
                                 art.likes = (art.likes || 0) + 1;
 
                                 this.playHeartAnimation(button);
-                                setTimeout(() => this.playHeartAnimation(button), 300);
-                                setTimeout(() => this.playHeartAnimation(button), 600);
+                                context.setTimeout(() => this.playHeartAnimation(button), 300);
+                                context.setTimeout(() => this.playHeartAnimation(button), 600);
                             }
 
-                            button.lastChild.textContent = String(art.likes);
+                            button.children[1].textContent = String(art.likes);
                             this.updateLikedStatus(data.liked);
                         } else {
                             LS.Toast.show(data.message || "An error occurred.", { timeout: 2000 });
@@ -366,7 +364,7 @@ website.register(document.currentScript, class extends LS.Context {
                 } else {
                     LS.Toast.show("You need to be logged in to like artworks.", { timeout: 2000 });
 
-                    setTimeout(() => {
+                    context.setTimeout(() => {
                         const loginButton = container.querySelector("#accountsButton");
                         loginButton.focus();
                         loginButton.click();
@@ -457,9 +455,10 @@ website.register(document.currentScript, class extends LS.Context {
             });
         });
 
-        let wordStopped = true;
-        let wordInterval = (() => {
-            const words = [
+        // Animated word setup
+        ;{
+            this.wordStopped = true;
+            this.words = this.addDestroyable([
                 { text: "software", color: "#40c0e7" },
                 { text: "art", color: "#fcc21b" },
                 { text: "music", color: "#ed6c30" },
@@ -469,42 +468,20 @@ website.register(document.currentScript, class extends LS.Context {
                 { text: "solutions", color: "#a81446" },
                 { text: "dreams", color: "#b400ff" },
                 { text: "tools", color: "#14a800" },
-            ];
-
-            for(const word of words) {
-                word.map = word.text.split("").map(w => N("span", { innerText: w }));
+            ]);
+    
+            for(const word of this.words) {
+                word.map = word.text.split("").map(character => {
+                    const el = this.addDestroyable(document.createElement("span"));
+                    el.textContent = character;
+                    return el;
+                });
             }
-
-            let currentWord = 0;
-            const wordContainer = container.querySelector("#animated-word");
-            const cursor = container.querySelector("#animated-word-cursor");
-
-            return async () => {
-                currentWord = (currentWord + 1) % words.length;
-                const { text, color } = words[currentWord];
-                wordContainer.style.color = color;
-
-                wordContainer.textContent = '';
-
-                for(const span of words[currentWord].map) {
-                    wordContainer.appendChild(span);
-                    await LS.Animation.fadeIn(span, 80, "up");
-                    await new Promise(r => setTimeout(r, 30));
-                }
-
-                cursor.style.opacity = 0;
-                await new Promise(r => setTimeout(r, 1000));
-                cursor.style.opacity = 1;
-
-                for(let i = words[currentWord].map.length - 1; i >= 0; i--) {
-                    await LS.Animation.fadeOut(words[currentWord].map[i], 50, "down");
-                }
-
-                if(container.scrollTop > innerHeight) {
-                    wordInterval();
-                } else wordStopped = true;
-            }
-        })();
+    
+            this.currentWord = 0;
+            this.wordContainer = this.addDestroyable(container.querySelector("#animated-word"));
+            this.wordCursor = this.addDestroyable(container.querySelector("#animated-word-cursor"));
+        }
 
         const chipBg = container.querySelector(".showcase-buttons .chip-bg");
 
@@ -568,7 +545,6 @@ website.register(document.currentScript, class extends LS.Context {
             }
         });
 
-
         // Initialize chevron switch
         this.chevronSwitch = new LS.Util.Switch(visible => {
             if(visible) {
@@ -604,9 +580,9 @@ website.register(document.currentScript, class extends LS.Context {
                 }
 
                 // Restart word animation if scrolled past intro
-                if(this.container.scrollTop > innerHeight && wordStopped) {
-                    wordInterval();
-                    wordStopped = false;
+                if(this.container.scrollTop > innerHeight && this.wordStopped) {
+                    this.animateWord();
+                    this.wordStopped = false;
                 }
 
                 if(this.onScroll) this.onScroll.schedule();
@@ -620,8 +596,38 @@ website.register(document.currentScript, class extends LS.Context {
         }, 25);
     }
 
+    // Word animation logic
+    async animateWord(word) {
+        if(this.context.destroyed) return;
+        this.currentWord = (this.currentWord + 1) % this.words.length;
+        const { text, color } = this.words[this.currentWord];
+        this.wordContainer.style.color = color;
+
+        this.wordContainer.textContent = '';
+        for(const span of this.words[this.currentWord].map) {
+            this.wordContainer.appendChild(span);
+            await LS.Animation.fadeIn(span, 80, "up");
+            if(this.context.destroyed) return;
+            await new Promise(r => this.context.setTimeout(r, 30));
+        }
+
+        this.wordCursor.style.opacity = 0;
+        await new Promise(r => this.context.setTimeout(r, 1000));
+        if(this.context.destroyed) return;
+        this.wordCursor.style.opacity = 1;
+
+        for(let i = this.words[this.currentWord].map.length - 1; i >= 0; i--) {
+            await LS.Animation.fadeOut(this.words[this.currentWord].map[i], 50, "down");
+        }
+
+        if(this.container.scrollTop > innerHeight) {
+            this.animateWord();
+        } else this.wordStopped = true;
+    }
+
     // Frame-synced
     handleScroll() {
+        if(this.context.destroyed) return;
         const scroll = this.container.scrollTop;
         this.chevronSwitch.set(scroll < 60);
 
@@ -641,7 +647,7 @@ website.register(document.currentScript, class extends LS.Context {
                 // showcaseTabs.set(0);
             }
 
-            // if(wordStopped) { wordInterval(); wordStopped = false }
+            if(this.wordStopped) { this.animateWord(); this.wordStopped = false }
         }
     }
 
@@ -693,7 +699,7 @@ website.register(document.currentScript, class extends LS.Context {
             const logger = new website.LoggerContext("rendering");
 
             this.cloudsRenderer = this.addDestroyable(new CombinedShaderRenderer(this.cloudsCanvas));
-            this.blurRenderer = this.addDestroyable(new CombinedShaderRenderer(this.introCanvas));
+            this.blurRenderer = this.addDestroyable(new CombinedShaderRenderer(this.introCanvas, { width: 1024, height: 1024 }));
 
             const FRAMERATE = 30;
 
@@ -791,10 +797,18 @@ website.register(document.currentScript, class extends LS.Context {
         this.chevron = null;
         this.cloudsCanvas = null;
         this.introCanvas = null;
+
+        this.words = null;
+        this.wordContainer = null;
+        this.wordCursor = null;
+        this.currentWord = null;
+        this.wordStopped = null;
+
         if(this.renderObserver) {
             this.renderObserver.disconnect();
             this.renderObserver = null;
         }
+
         super.destroy();
     }
 });
