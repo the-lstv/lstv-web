@@ -152,14 +152,77 @@
  */
 const data = {
     projects: [
-        { title: "Akeno", icon: "f2eeab33bc9b7873.svg", description: "Akeno is a very fast, modular, and extensive webserver/backend framework handling various protocols. Akeno makes it easy to manage projects of any scale and includes everything a modern web application needs, with world-class performance.", link: "https://github.com/the-lstv/akeno" },
+        { title: "Akeno", icon: "f2eeab33bc9b7873.svg", description: "Akeno is a very fast, modular, and full-featured webserver / backend framework. It handles everything a server should and supports various protocols. It's what I use as a webserver and backend.", link: "https://github.com/the-lstv/akeno" },
         { title: "LS", icon: "884695036cdc8c27.webp", description: "A lightweight and modern framework for web applications. Used by all of our projects.", link: "https://github.com/the-lstv/LS" },
-        { title: "Video Editor", icon: "29d18bcf2593fa3e.svg", description: "A modern, simple but powerful programmable video editor. Has an intuitive patcher interface, advanced rendering effects, audio mixing, automation clips, animations, and more.", link: "https://github.com/the-lstv/video-editor" },
-        { title: "Atrium", icon: "78320d16cbc51b33.svg", description: "A fast and very flexible parser used to parse configs, scripts, etc.", link: "https://github.com/the-lstv/Atrium" },
+        { title: "Video Editor", icon: "32c0975799f31fc3.svg", description: "A modern, simple but powerful programmable video editor. Has an intuitive patcher interface, advanced rendering effects, audio mixing, automation clips, animations, and more.", link: "https://github.com/the-lstv/video-editor" },
+        // { title: "Video Editor", icon: "29d18bcf2593fa3e.svg", description: "A modern, simple but powerful programmable video editor. Has an intuitive patcher interface, advanced rendering effects, audio mixing, automation clips, animations, and more.", link: "https://github.com/the-lstv/video-editor" },
+        { title: "Townhall", icon: "cd18c88051bcdc92.svg", description: "A social community platform with servers, text & voice channels, threads, and more. It has lots of customization and new features are added frequently. It is also faster and easier on your CPU than *some* competing platforms. Come check it out!", link: "https://lstv.space/chat" },
+        { title: "Glitter", icon: "69966033065300e7.webp", description: "A powerful & fast programming language with an extensive syntax made for the modern age. Upcomming project." },
         { title: "ExtraGon", icon: "83ab407476b84f97.webp", description: "ExtraGon is our cloud services and hosting platform, offering features from managed storage, accelerated webhosting, VPS, DNS management, APIs, and more.", link: "https://extragon.cloud" },
-        { title: "FOSSHome", icon: "8a61a157e6c85819.webp", description: "FOSSHome was a cloud-synced \"WebOS\" launchpad environment with a Linux-like shell and a sleek interface and an extensive window/widget framework, to make you feel right at home. Currently abandoned (for over a year now...), but a lot of it's ideas are a part of lstv.space now.", link: "https://github.com/the-lstv/fosshome" },
-        { title: "Getrox", icon: "d11562ce585e205b.svg", description: "Currency and community platform, used as a token across our services.", link: "" },
-        { title: "Unifya", icon: "ff153edceb4394d1.webp", description: "Unifya is an universal data flow framework used across our software to ensure seamless integration.", link: "https://unifya.com" },
+        { title: "PowerDesk", icon: "fa1eef9e0cec2e2.svg", description: "A set of small Linux desktop utilities.", link: "https://github.com/the-lstv/powerdesk" },
+        { title: "LSXDash", icon: "ebac7eda26e02baf.webp", description: "A dashboard for the original Xbox using modern tech!", link: "https://github.com/the-lstv/xbox-dash" },
+        { title: "Atrium", icon: "78320d16cbc51b33.svg", description: "A fast and very flexible parser written in JavaScript used to parse configs, scripts, etc.", link: "https://github.com/the-lstv/Atrium" },
+        { title: "Enantiomorphs", icon: "111e50e4a19cd161.webp", description: "A RPG / MMORPG centred around the heat death of the universe.", whiteIcon: true },
+        { title: "Fantale", icon: "8f3389ce442eef1d.webp", description: "A fangame of the game Undertale, taking place after the world reset." },
+        { title: "Froggie", icon: "4eab18a5b0d45d99.webp", description: "A very simple game where you merge bubbles to get different animals." },
+        
+        { title: "Quicksand", icon: "7eb4acc292c766b5.svg", tags: ["paused"], description: "A fast and friendly powerful game engine, for various types of games, made for anyone from beginners to proffesionals. Incomplete :(" },
+        { title: "PStudio", icon: "b14d9c9894917876.svg", tags: ["discontinued"], description: "An old attempt at making a DAW, but it didn't get too far, only the synth plugin was reused. Sadly the complexity of a DAW is quite large and don't have that much time :(" },
+        { title: "MotionCast", icon: "2dbab853ce2cc04c.svg", tags: ["discontinued"], description: "A light remote desktop application with an easy web-based client with multi-stream support." },
+        { title: "PurblePlace (port)", icon: "fac005c8888b4de0.webp", tags: ["paused"], description: "A faithful, frame-perfect port of the classic \"PurblePlace\" game to the web, with enhanced performance and mobile support. So far the main menu and Purble Pairs is complete. Sadly not actively developed :(" },
+        { title: "Getrox", icon: "d11562ce585e205b.svg", tags: ["paused"], description: "Currency/finance platform, used as a token across our services.", link: "" },
+        { title: "LS Icons v2", icon: "b909f2638b3b085b.svg", tags: ["paused"], description: "A symbolic icon library, with each icon being in at least 8 styles.", link: "" },
+
+        { title: "Unifya", icon: "ff153edceb4394d1.webp", description: "An universal data flow library used across my creative software (video editors, game engines, audio tools etc.) to ensure seamless integration by streamlining data flow.", link: "" },
+
+        { title: "Arc", icon: "22c5f89454f62ffc.svg", tags: ["discontinued"], description: "An application and game runtime/launcher. All of my early apps were made in this, but no stable build has been completed." },
+        { title: "Gear Calc", icon: "38ace2148cd1e376.webp", tags: ["discontinued"], description: "A calculator app for Tizen (Galaxy Watch 3 and older) with advanced features, units conversion, and a currency converter." },
+        { title: "LiOS", icon: "8ed93db6d2be144d.svg", tags: ["discontinued"], description: "" },
+        { title: "LocalStream", icon: "a41b7512d4d3a874.svg", tags: ["discontinued"], description: "App that allows you to instantly stream or sync your music playlists, gallery, or text data via a local connection with minimal latency." },
+        { title: "FOSSHome", icon: "8a61a157e6c85819.webp", tags: ["discontinued"], description: "FOSSHome was a cloud-synced \"WebOS\" launchpad environment with a Linux-like shell and a sleek interface and a window/widget framework, to make you feel right at home. It's code is in an unusable state, but a lot of it's ideas are a part of lstv.space now!", link: "https://github.com/the-lstv/fosshome" },
+        { title: "LSVM", icon: "3c1871e0ee6780c4.svg", tags: ["discontinued"], description: "A virtual machine manager for 'lsvm' format VMs. It primarily ran the LiOS 11 build. Only archived builds survived (not the original source)" },
+        { title: "MazeChat", icon: "753bf30abc37cacd.svg", tags: ["discontinued"], description: "Older open chat platform, replaced by Townhall.", link: "https://github.com/the-lstv/maze-chat" },
+        { title: "osu!bot", icon: "2e9f590799ed2127.webp", tags: ["discontinued"], description: "Made for fun, a bot to play or live-preview osu! maps." },
+        { title: "ATF New", icon: "b9f7600fca3ac0a0.svg", tags: ["discontinued"], description: "A modernized remake of the ancient school program 'ATF' from 1992 we... still somehow use in schools today. Features a dark theme, modern features, and a clean, unobtrusive UI, free from the early Windows UI clunk." },
+
+    ],
+
+    oldProjects: [
+        { title: "" }
+    ],
+
+    libraries: [
+        { title: "LS.EventEmitter", description: "Really fast and full featured event emitter library.", link: "https://github.com/the-lstv/LS" },
+        { title: "LS.Color", description: "Extensive color manipulation library.", link: "https://github.com/the-lstv/LS/blob/main/js/color.js" },
+        { title: "LS.Knob", description: "A responsive, customizable beautiful knob/dial UI component.", link: "https://github.com/the-lstv/LS/blob/main/js/knob.js" },
+        { title: "LS.Modal", description: "Library for creating modals.", link: "https://github.com/the-lstv/LS/blob/main/js/modal.js" },
+        { title: "LS.Menu", description: "A flexible context menu library with support for nested submenus, icons, shortcuts, and more.", link: "https://github.com/the-lstv/LS/blob/main/js/menu.js" },
+        { title: "LS.Timeline", description: "Full featured timeline UI component.", link: "https://github.com/the-lstv/LS/blob/main/js/timeline.js" },
+        { title: "LS.Resize", description: "Component that allows you to make anything resizeable in any way.", link: "https://github.com/the-lstv/LS/blob/main/js/resize.js" },
+        { title: "LS.Tabs", description: "Library for creating tabs.", link: "https://github.com/the-lstv/LS/blob/main/js/tabs.js" },
+        { title: "LS.Toast", description: "Library for creating simple toast notifications.", link: "https://github.com/the-lstv/LS/blob/main/js/toast.js" },
+        { title: "LS.Tooltips", description: "Adds efficient tooltips.", link: "https://github.com/the-lstv/LS/blob/main/js/tooltips.js" },
+        { title: "LS.ShortcutManager", description: "Simple library for managing global shortcuts or keybinds.", link: "https://github.com/the-lstv/LS/blob/main/js/shortcutmanager.js" },
+        { title: "LS.Patcher", description: "An awesome patcher UI library.", link: "https://github.com/the-lstv/LS/blob/main/js/patcher.js" },
+        { title: "LS.ImageCropper", description: "Library for cropping images.", link: "https://github.com/the-lstv/LS/blob/main/js/imagecropper.js" },
+        { title: "LS.Tree", description: "Treeview library." },
+        { title: "LS.DragDrop", description: "Drag and drop library.", link: "https://github.com/the-lstv/LS/blob/main/js/dragdrop.js" },
+        { title: "LS.Reactive", description: "Reactive binding library.", link: "https://github.com/the-lstv/LS/blob/main/js/reactive.js" },
+        { title: "LS.Animation", description: "A very early work in progress animation library.", link: "https://github.com/the-lstv/LS/blob/main/js/animation2.js" },
+        { title: "Undertale Engine", description: "A PIXI.js powered, pixel-perfect Undertale engine - sadly unfinished and currently outdated.", link: "https://github.com/the-lstv/undertale" },
+        { title: "Quickly", description: "A faster and enhanced alternative to Google Blockly, capable of rendering huge projects even on old hardware. Sadly unfinished due to lack of time and me no longer being a part of TurboWarp community.", link: "https://github.com/the-lstv/quickly" },
+        { title: "LSXb", description: "An (experimental) interface rendering and utility library for the original Xbox using NXDK & OpenGL." },
+        { title: "Linux.js", description: "UNIX-like shell emulator in JavaScript.", link: "https://github.com/the-lstv/LinuxJS" },
+        { title: "lsdb", description: "A high-performance memory-mapped database (unfinished).", link: "https://github.com/the-lstv/lsdb" },
+        { title: "Atrium", description: "Flexible config parser.", link: "https://github.com/the-lstv/Atrium" },
+        { title: "Advanced Node IPC", description: "IPC Server/Client library supporting request/response and sub-sockets with some unique features..", link: "https://github.com/the-lstv/advanced-node-ipc" },
+        { title: "Akeno SCSS Processor", description: "Simple addon that processes SCSS files transparently.", link: "https://github.com/the-lstv/akeno-scss-processor" },
+        { title: "Akeno FileBucket", description: "Utility for efficiently storing UGC, such as avatars, with really fast reads thanks to lmdb on small files.", link: "https://github.com/the-lstv/Akeno/blob/main/core/bucket/index.js" },
+        { title: "Tabeyaki", description: "T a b e y a k i" },
+        { title: "DiscordAI", description: "A discontinued library for making chatbots on Discord, please don't do that :)", link: "https://github.com/the-lstv/discord-ai" },
+        { title: "LWMD", description: "A fast streaming Markdown parser (unfinished).", link: "https://github.com/the-lstv/lwmd" },
+        { title: "OF3DE", description: "A buggy 3D engine I made to make a Baldi's basics clone themed around my school." },
+        { title: "Vyvaid", description: "My first \"programming language\" compiler that I made back in elementary" },
     ]
 }
 
@@ -246,18 +309,18 @@ website.register(document.currentScript, class extends LS.Context {
             static TEMPLATE = LS.CompileTemplate((data, logic) => ({
                 class: "showcase-item",
                 inner: [
-                    {
+                    logic.export("leftPanel", {
                         class: "showcase-item-left-panel",
                         inner: [
                             { tag: "img", class: "showcase-item-icon", src: data.icon, width: "128", height: "128", crossOrigin: "anonymous", alt: data.title, onload: data.onload }
                         ]
-                    },
+                    }),
 
                     {
                         class: "showcase-item-content",
                         inner: [
-                            { class: "showcase-item-title", inner: data.title },
-                            { class: "showcase-item-description", inner: data.description },
+                            logic.export("title", { class: "showcase-item-title", inner: data.title }),
+                            logic.export("description", { class: "showcase-item-description", inner: data.description }),
                         ]
                     }
                 ]
@@ -269,7 +332,7 @@ website.register(document.currentScript, class extends LS.Context {
                 const _this = this;
                 const hasCustomColor = !!project.color;
 
-                this.container = ShowcaseProject.TEMPLATE({
+                this.content = ShowcaseProject.TEMPLATE({
                     title: project.title,
                     icon: icon,
                     description: project.description,
@@ -277,7 +340,42 @@ website.register(document.currentScript, class extends LS.Context {
                         if (hasCustomColor) return;
                         LS.Color.apply(this.container, LS.Color.fromImage(event.target));
                     }
-                }, this).root;
+                }, this);
+
+                this.container = this.content.root;
+
+                if(project.whiteIcon) {
+                    this.container.querySelector("img").classList.add("white-icon");
+                }
+
+                if(project.blackIcon) {
+                    this.container.querySelector("img").classList.add("black-icon");
+                }
+
+                if(project.link) {
+                    this.content.description.append(LS.Create("br"), LS.Create("button", {
+                        class: "pill elevated margin-top-medium",
+                        inner: [{ tag: "i", class: "bi-box-arrow-up-right" }, "Open"],
+                        onclick: () => {
+                            window.open(project.link, "_blank");
+                        }
+                    }));
+                }
+
+                if(project.tags) {
+                    project.tags.forEach(tag => {
+                        if(tag === "discontinued" || tag === "archived") {
+                            this.container.style.opacity = "0.6";
+                        }
+
+                        this.content.leftPanel.appendChild(LS.Create("ls-box", {
+                            class: "inline pill color",
+                            inner: tag.charAt(0).toUpperCase() + tag.slice(1)
+                        }));
+
+                        this.container.classList.add("tag-" + tag);
+                    });
+                }
 
                 if(project.color) {
                     LS.Color.apply(this.container, project.color);
@@ -298,14 +396,14 @@ website.register(document.currentScript, class extends LS.Context {
             //             ],
 
             //             [
-            //                 { tag: "button", tooltip: "Like", class: "pill clear", inner: [{ tag: "i", class: "bi-heart" }, data.likes], onclick: data.likePost },
+            //                 { tag: "button", tooltip: "Like", class: "pill clear", inner: [{ tag: "i", class: "bi-heart" }, { tag: "span", inner: data.likes }], onclick: data.likePost },
             //             ]
             //         ]
             //     ]
             // }));
 
             // Pre-compiled
-            static TEMPLATE = function(d){'use strict';var e0=document.createElement("div");e0.onclick=d.onclick;e0.className="showcase-gallery-item";var e1=document.createElement("img");e1.src=(website.cdn+"/file/"+String(d.media));e1.crossOrigin="anonymous";e1.alt=d.title;e1.loading="lazy";var e2=document.createElement("div");var e3=document.createElement("div");var e4=document.createElement("span");e4.className="gallery-item-title";e4.append(LS.__dynamicInnerToNode(d.title));e3.appendChild(e4);e2.appendChild(e3);var e5=document.createElement("div");var e6=document.createElement("button");e6.onclick=d.likePost;e6.setAttribute("ls-tooltip","Like");LS.Tooltips.updateElement(e6);e6.className="pill clear";var e7=document.createElement("i");e7.className="bi-heart";var dyn8=LS.__dynamicInnerToNode(d.likes);e6.append(e7,dyn8);e5.appendChild(e6);e2.appendChild(e5);e0.append(e1,e2);var __rootValue=e0;return{root:__rootValue};}
+            static TEMPLATE = function(d){'use strict';var e0=document.createElement("div");e0.onclick=d.onclick;e0.className="showcase-gallery-item";var e1=document.createElement("img");e1.src=(String("https://cdn.extragon.cloud/file/") + String(d.media));e1.crossOrigin="anonymous";e1.alt=d.title;e1.loading="lazy";var e2=document.createElement("div");var e3=document.createElement("div");var e4=document.createElement("span");e4.className="gallery-item-title";e4.append(LS.__dynamicInnerToNode(d.title));e3.appendChild(e4);e2.appendChild(e3);var e5=document.createElement("div");var e6=document.createElement("button");e6.onclick=d.likePost;e6.setAttribute("ls-tooltip","Like");LS.Tooltips.updateElement(e6);e6.className="pill clear";var e7=document.createElement("i");e7.className="bi-heart";var e8=document.createElement("span");e8.append(LS.__dynamicInnerToNode(d.likes));e6.append(e7,e8);e5.appendChild(e6);e2.appendChild(e5);e0.append(e1,e2);var __rootValue=e0;return{root:__rootValue};}
 
             constructor(art) {
                 super();
@@ -331,6 +429,9 @@ website.register(document.currentScript, class extends LS.Context {
                     const art = this.art;
 
                     const button = this.container.querySelector("button");
+                    const buttonIcon = button.querySelector("i");
+                    const buttonText = button.querySelector("span");
+
                     button.disabled = true;
                     button.setAttribute("state", "loading");
 
@@ -341,16 +442,16 @@ website.register(document.currentScript, class extends LS.Context {
                         if (data.success) {
                             if (data.unliked) {
                                 art.likes = Math.max((art.likes || 1) - 1, 0);
-                                this.playDislikeAnimation(button);
+                                this.playDislikeAnimation(buttonIcon);
                             } else {
                                 art.likes = (art.likes || 0) + 1;
 
-                                this.playHeartAnimation(button);
-                                context.setTimeout(() => this.playHeartAnimation(button), 300);
-                                context.setTimeout(() => this.playHeartAnimation(button), 600);
+                                this.playHeartAnimation(buttonIcon);
+                                context.setTimeout(() => this.playHeartAnimation(buttonIcon), 300);
+                                context.setTimeout(() => this.playHeartAnimation(buttonIcon), 600);
                             }
 
-                            button.children[1].textContent = String(art.likes);
+                            buttonText.textContent = String(art.likes);
                             this.updateLikedStatus(data.liked);
                         } else {
                             LS.Toast.show(data.message || "An error occurred.", { timeout: 2000 });
@@ -362,7 +463,7 @@ website.register(document.currentScript, class extends LS.Context {
                         LS.Toast.show("An error occurred while trying to like post.", { timeout: 2000 });
                     });
                 } else {
-                    LS.Toast.show("You need to be logged in to like artworks.", { timeout: 2000 });
+                    LS.Toast.show("Please log-in to like artworks.", { timeout: 2000 });
 
                     context.setTimeout(() => {
                         const loginButton = container.querySelector("#accountsButton");
@@ -443,7 +544,14 @@ website.register(document.currentScript, class extends LS.Context {
         this.renderObserver = null;
         this.setupRenderObservers();
 
-        const showcaseTabs = new LS.Tabs(container.querySelector("#showcase-tabs"), {
+        this.supportsAcceleratedScrollAnim = CSS.supports('animation-timeline: scroll()') && CSS.supports('animation-range: 0% 100%');
+        if(!this.supportsAcceleratedScrollAnim) {
+            context.logContext.warn("Your browser does not support accelerated scroll animations. Falling back to CPU animations.");
+        } else {
+            container.classList.add("supports-accelerated-scroll");
+        }
+
+        this.showcaseTabs = new LS.Tabs(container.querySelector("#showcase-tabs"), {
             list: false,
             slideAnimation: true
         });
@@ -451,7 +559,7 @@ website.register(document.currentScript, class extends LS.Context {
         container.querySelectorAll("[data-tab-id]").forEach(button => {
             button.addEventListener("click", () => {
                 const tabId = button.getAttribute("data-tab-id");
-                showcaseTabs.set(tabId);
+                this.showcaseTabs.set(tabId);
             });
         });
 
@@ -485,12 +593,26 @@ website.register(document.currentScript, class extends LS.Context {
 
         const chipBg = container.querySelector(".showcase-buttons .chip-bg");
 
-        showcaseTabs.on("changed", function(tab, old) {
+        const updateChipBg = () => {
+            const activeButton = container.querySelector("[data-tab-id][data-active]");
+            if(activeButton) {
+                chipBg.style.width = activeButton.offsetWidth + "px";
+                chipBg.style.transform = `translateX(${activeButton.offsetLeft}px)`;
+            }
+        };
+
+        // Update chip background on resize
+        this.resizeObserver = this.addDestroyable(new ResizeObserver(updateChipBg));
+        this.resizeObserver.observe(container.querySelector(".showcase-buttons"));
+
+        this.showcaseTabs.on("changed", function(tab, old) {
             const activeButton = container.querySelector("[data-tab-id='" + old + "']");
             const button = container.querySelector("[data-tab-id='" + tab + "']");
             
             // Buttons animation
             if(button) {
+                button.setAttribute("data-active", "");
+                if(activeButton) activeButton.removeAttribute("data-active");
                 chipBg.style.width = button.offsetWidth + "px";
                 chipBg.style.transform = `translateX(${button.offsetLeft}px)`;
             }
@@ -502,6 +624,34 @@ website.register(document.currentScript, class extends LS.Context {
 
                         data.projects.forEach((project, index) => {
                             container.querySelector("#showcase-projects").appendChild((new ShowcaseProject(project)).container);
+                        });
+                    }
+                    break;
+
+                case "showcase-libraries":
+                    if(!this.libraries_loaded) {
+                        this.libraries_loaded = true;
+
+                        data.libraries.forEach((library, index) => {
+                            container.querySelector("#showcase-libraries").appendChild(LS.Create({
+                                class: "showcase-item",
+                                inner: [
+                                    {
+                                        class: "showcase-item-left-panel",
+                                        inner: [
+                                            { tag: "i", class: "bi-app-indicator" }
+                                        ]
+                                    },
+                                    {
+                                        class: "showcase-item-content",
+                                        inner: [
+                                            { class: "showcase-item-title", inner: library.title },
+                                            { class: "showcase-item-description", inner: library.description },
+                                            library.link ? LS.Create("a", { href: library.link, target: "_blank", rel: "noopener", inner: "View on GitHub" }) : null
+                                        ]
+                                    }
+                                ]
+                            }));
                         });
                     }
                     break;
@@ -556,7 +706,7 @@ website.register(document.currentScript, class extends LS.Context {
 
         // The timeout avoids blocking on the page load
         this.setTimeout(() => {
-            if(context.destroyed) return;
+            if(this.destroyed) return;
 
             this.onScroll = this.addDestroyable(new LS.Util.FrameScheduler(() => {
                 this.handleScroll();
@@ -598,7 +748,7 @@ website.register(document.currentScript, class extends LS.Context {
 
     // Word animation logic
     async animateWord(word) {
-        if(this.context.destroyed) return;
+        if(this.destroyed) return;
         this.currentWord = (this.currentWord + 1) % this.words.length;
         const { text, color } = this.words[this.currentWord];
         this.wordContainer.style.color = color;
@@ -606,18 +756,27 @@ website.register(document.currentScript, class extends LS.Context {
         this.wordContainer.textContent = '';
         for(const span of this.words[this.currentWord].map) {
             this.wordContainer.appendChild(span);
-            await LS.Animation.fadeIn(span, 80, "up");
-            if(this.context.destroyed) return;
-            await new Promise(r => this.context.setTimeout(r, 30));
+            await LS.Animation.fadeIn(span, {
+                duration: 100,
+                easing: "ease-out",
+                direction: "up"
+            });
+            if(this.destroyed) return;
+            await new Promise(r => this.context.setTimeout(r, 20));
         }
 
         this.wordCursor.style.opacity = 0;
         await new Promise(r => this.context.setTimeout(r, 1000));
-        if(this.context.destroyed) return;
+        if(this.destroyed) return;
         this.wordCursor.style.opacity = 1;
 
         for(let i = this.words[this.currentWord].map.length - 1; i >= 0; i--) {
-            await LS.Animation.fadeOut(this.words[this.currentWord].map[i], 50, "down");
+            await LS.Animation.fadeOut(this.words[this.currentWord].map[i], {
+                duration: 50,
+                easing: "ease-in",
+                direction: "down"
+            });
+            if(this.destroyed) return;
         }
 
         if(this.container.scrollTop > innerHeight) {
@@ -627,24 +786,27 @@ website.register(document.currentScript, class extends LS.Context {
 
     // Frame-synced
     handleScroll() {
-        if(this.context.destroyed) return;
+        if(this.destroyed) return;
         const scroll = this.container.scrollTop;
         this.chevronSwitch.set(scroll < 60);
 
         if(!window.LOW_PERFORMANCE_MODE) {
-            const logoOpacity = Math.max(0, 1 - (scroll / 800));
-            this.logoOpacity = logoOpacity;
-            this.loreSection.style.opacity = Math.min(1, scroll / 500);
-            this.loreSection.style.transform = `translateY(${Math.max(-300, -scroll / 2)}px)`;
-            this.logoContainer.style.opacity = logoOpacity;
+            if(!this.supportsAcceleratedScrollAnim) {
+                // Fallback to CPU animation (otherwise a hardware accelerated one is applied via CSS)
+                const logoOpacity = Math.max(0, 1 - (scroll / 800));
+                this.logoOpacity = logoOpacity;
+                this.loreSection.style.opacity = Math.min(1, scroll / 500);
+                this.loreSection.style.transform = `translateY(${Math.max(-300, -scroll / 2)}px)`;
+                this.logoContainer.style.opacity = logoOpacity;
+            }
 
             this.syncIntroRendering();
         }
 
-        if(scroll > innerHeight) {
+        if(scroll > innerHeight - 300) {
             if(!this.showcaseLoaded) {
                 this.showcaseLoaded = true;
-                // showcaseTabs.set(0);
+                this.showcaseTabs.set(0);
             }
 
             if(this.wordStopped) { this.animateWord(); this.wordStopped = false }
@@ -653,7 +815,7 @@ website.register(document.currentScript, class extends LS.Context {
 
     setupRenderObservers() {
         if(!("IntersectionObserver" in window) || !this.container) return;
-        this.renderObserver = new IntersectionObserver(entries => {
+        this.renderObserver = this.addDestroyable(new IntersectionObserver(entries => {
             for (const entry of entries) {
                 if(entry.target === this.cloudsCanvas) {
                     this.cloudsInView = entry.isIntersecting;
@@ -663,15 +825,10 @@ website.register(document.currentScript, class extends LS.Context {
                     this.syncIntroRendering();
                 }
             }
-        }, { root: this.container, threshold: 0.1 });
+        }, { root: this.container, threshold: 0.1 }));
 
         [this.cloudsCanvas, this.introCanvas].forEach(canvas => {
             if(canvas) this.renderObserver.observe(canvas);
-        });
-
-        this.addDestroyable(() => {
-            this.renderObserver?.disconnect();
-            this.renderObserver = null;
         });
     }
 
@@ -804,10 +961,13 @@ website.register(document.currentScript, class extends LS.Context {
         this.currentWord = null;
         this.wordStopped = null;
 
-        if(this.renderObserver) {
-            this.renderObserver.disconnect();
-            this.renderObserver = null;
-        }
+        this.cloudsRenderer = null;
+        this.blurRenderer = null;
+
+        this.onScroll = null;
+
+        if(this.showcaseTabs) this.showcaseTabs.destroy();
+        this.showcaseTabs = null;
 
         super.destroy();
     }

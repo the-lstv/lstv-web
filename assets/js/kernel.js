@@ -41,28 +41,61 @@ if(!isDebug) console.log(
 
 const BUILTIN_APPS = [
     {
-        name: "Resource Monitor",
+        name: "Townhall",
+        id: "townhall",
+        icon: "cd18c88051bcdc92.svg",
+        description: "A social community platform with servers, text & voice channels, threads, and more.",
+        version: "1.0.0",
+        link: "/chat",
+    },
+    {
+        name: "Video Editor",
+        id: "video-editor",
+        icon: "32c0975799f31fc3.svg",
+        description: "A full-featured, simple but professional video editor",
+        version: "1.0.0",
+        external: true,
+        link: "/editor",
+    },
+    {
+        name: "Resources",
         id: "resource-monitor",
-        icon: "79fb1a87322b7fa0.svg",
-        description: "Monitor loaded resources and contexts in the application kernel.",
+        icon: "4cf4213e702a21fe.svg",
+        description: "Monitor loaded pages and applications.",
         version: "1.0.0",
         main: "resourcemanager.mjs",
     },
     {
-        name: "Calendar",
-        id: "calendar",
-        icon: "calendar-icon.svg",
-        description: "View dates and manage events.",
+        name: "Clock",
+        id: "clock",
+        icon: "d2973ce4286307f8.svg",
+        description: "What is the current time?",
         version: "1.0.0",
-        main: "calendar.mjs",
-    }
+        main: "clock.mjs",
+    },
+    {
+        name: "Text Editor",
+        id: "text-editor",
+        icon: "ecf15bde6c275d83.svg",
+        description: "A simple Markdown text editor for your notes.",
+        version: "1.0.0",
+        main: "texteditor.mjs",
+    },
+    {
+        name: "Email",
+        id: "mail-client",
+        icon: "901fb7f3abda204f.svg",
+        description: "Manage your emails.",
+        version: "1.0.0",
+        main: "mail.mjs",
+    },
 ]
 
-// --- MEMORY SAFETY ---
 Document.prototype.write = Document.prototype.writeln = function() {
     throw new Error("Document.write is disabled for security and performance reasons. You should not use it.");
 };
 
+// --- MEMORY SAFETY ---
 // We can use globals in the kernel, anywhere else should throw an error
 const setTimeout = LS.Context.setTimeout;
 const setInterval = LS.Context.setInterval;
@@ -185,6 +218,7 @@ const AssetManager = new class {
                 }
             }
 
+            asset.setAttribute("data-loaded", "true");
             this.register(asset, false);
         });
     }
@@ -219,19 +253,38 @@ const AssetManager = new class {
         }
     }
 
-    registerStyle(source, element, execute = true){
+    async registerStyle(source, element, execute = true){
         const key = this.fuzzKey(source);
+        if(this.styles.has(key)) return;
         this.styles.set(key, element);
 
         if(isDebug) {
             console.log(`Registered style: ${source} (execute=${execute})`);
         }
 
-        if (execute) document.head.appendChild(element);
+        if (execute) {
+            if(!element.href) {
+                document.head.appendChild(element);
+                element.remove();
+                return;
+            }
+
+            await new Promise((resolve, reject) => {
+                element.onload = () => resolve();
+                element.onerror = (e) => reject(e);
+                document.head.appendChild(element);
+            }).catch((e) => {
+                console.error(`Failed to load style: ${source}`, e);
+            });
+
+            element.setAttribute("data-loaded", "true");
+            element.remove();
+        }
     }
 
-    registerScript(source, element, execute = true){
+    async registerScript(source, element, execute = true){
         const key = this.fuzzKey(source);
+        if(this.scripts.has(key)) return;
         this.scripts.set(key, element);
 
         if(isDebug) {
@@ -239,19 +292,23 @@ const AssetManager = new class {
         }
 
         if (execute) {
-            document.head.appendChild(element);
-
-            if (element.src) {
-                const cleanup = () => {
-                    try { element.remove(); } catch {}
-                };
-                element.addEventListener("load", cleanup, { once: true });
-                element.addEventListener("error", cleanup, { once: true });
-            } else {
-                queueMicrotask(() => {
-                    try { element.remove(); } catch {}
-                });
+            if(!element.src) {
+                document.head.appendChild(element);
+                element.remove();
+                return;
             }
+        
+            await new Promise((resolve, reject) => {
+                element.onload = () => resolve();
+                element.onerror = (e) => reject(e);
+                document.head.appendChild(element);
+            }).catch((e) => {
+                console.error(`Failed to load script: ${source}`, e);
+            });
+
+            element.setAttribute("data-loaded", "true");
+        
+            element.remove();
         }
     }
 
@@ -273,22 +330,38 @@ const AssetManager = new class {
         });
     }
 
-    requireScript(source, module = false) {
+    disableStyle(source) {
+        const key = this.#toKey(source);
+        const style = this.styles.get(key);
+        if(style instanceof HTMLStyleElement) {
+            style.disabled = true;
+        } else if(style instanceof HTMLLinkElement) {
+            // Apparently this STILL does not prevent re-fetching the style...
+            style.media = 'not all';
+        }
+    }
+
+    enableStyle(source) {
+        const key = this.#toKey(source);
+        const style = this.styles.get(key);
+        if(style instanceof HTMLStyleElement) {
+            style.disabled = false;
+        } else if(style instanceof HTMLLinkElement) {
+            style.media = 'all';
+        }
+    }
+
+    async requireScript(source, module = false) {
         if(module && typeof source === "string") {
             return import(source);
         }
 
-        return new Promise((resolve, reject) => {
-            if (this.has(source)) {
-                resolve(this.get(source));
-                return;
-            }
+        if (this.has(source)) {
+            return this.get(source);
+        }
 
-            let script = this.cloneScript(source, module);
-            script.onload = () => resolve(script);
-            script.onerror = (e) => reject(e);
-            this.registerScript(script.src, script);
-        });
+        let script = this.cloneScript(source, module);
+        return await this.registerScript(script.src, script, true);
     }
 
     cloneScript(source, module = false) {
@@ -309,6 +382,28 @@ const AssetManager = new class {
             }
             script.src = source;
             return script;
+        }
+        return null;
+    }
+
+    cloneStyle(source) {
+        if (source instanceof HTMLLinkElement) {
+            const old = source;
+            const style = document.createElement('link');
+            for (const attr of old.attributes) {
+                style.setAttribute(attr.name, attr.value);
+            }
+            return style;
+        } else if (source instanceof HTMLStyleElement) {
+            const old = source;
+            const style = document.createElement('style');
+            style.textContent = old.textContent;
+            return style;
+        } else if (typeof source === "string") {
+            const style = document.createElement('link');
+            style.rel = 'stylesheet';
+            style.href = source;
+            return style;
         }
         return null;
     }
@@ -405,16 +500,21 @@ class ContentContext extends LS.Context {
     async #loadCSS(){
         const promises = [];
         for (const style of this.styles) {
-            style.disabled = false;
-            if (!style.isConnected) {
+            if (style.isConnected || style.hasAttribute("data-loaded")) continue;
+            if (style.tagName !== "LINK") {
                 document.head.appendChild(style);
-                if (style.tagName === "LINK" && style.rel === "stylesheet" && !style.sheet) {
-                    promises.push(new Promise((resolve, reject) => {
-                        style.addEventListener("load", resolve, { once: true });
-                        style.addEventListener("error", resolve, { once: true });
-                    }));
-                }
+                continue;
             }
+
+            promises.push(new Promise((resolve, reject) => {
+                style.onload = () => resolve();
+                style.onerror = (e => reject(e));
+                document.head.appendChild(style);
+            }).then(() => {
+                style.setAttribute("data-loaded", "true");
+            }).catch((e) => {
+                console.error(`Failed to load style: ${style.href}`, e);
+            }));
         }
 
         await Promise.all(promises);
@@ -423,49 +523,33 @@ class ContentContext extends LS.Context {
     async #loadJS(){
         const promises = [];
         for (const script of this.scripts) {
-            if (!script.isConnected) {
+            if (script.isConnected || script.hasAttribute("data-loaded")) continue;
+            if(this.destroyed) return;
+
+            if (!script.src) {
                 document.head.appendChild(script);
+                script.remove();
+                continue;
+            }
 
-                const removeAfter = () => {
-                    try { script.remove(); } catch {}
-                };
+            const promise = new Promise((resolve, reject) => {
+                script.onload = () => resolve();
+                script.onerror = (e) => reject(e);
+                document.head.appendChild(script);
+            }).then(() => {
+                script.setAttribute("data-loaded", "true");
+            }).finally(() => {
+                script.remove();
+            });
 
-                if (!script.src) {
-                    queueMicrotask(removeAfter);
-                    continue;
-                }
-
-                if (script.src && !script.hasAttribute("data-loaded")) {
-                    if(this.destroyed) return;
-
-                    const promise = new Promise((resolve) => {
-                        const loadHandler = () => {
-                            script.setAttribute("data-loaded", "true");
-                            removeAfter();
-                            resolve();
-                        };
-
-                        const errorHandler = () => {
-                            removeAfter();
-                            resolve();
-                        };
-
-                        script.addEventListener("load", loadHandler, { once: true });
-                        script.addEventListener("error", errorHandler, { once: true });
-                    });
-
-                    if(script.async) {
-                        promises.push(promise);
-                    } else {
-                        await promise;
-                    }
-                } else {
-                    queueMicrotask(removeAfter);
-                }
+            if(script.async) {
+                promises.push(promise);
+            } else {
+                await promise;
             }
         }
 
-        await Promise.all(promises);
+        if(promises.length > 0) await Promise.all(promises);
     }
 
     createWindow(options) {
@@ -571,48 +655,68 @@ class ContentContext extends LS.Context {
             completed: false // Uncomplete the event
         });
 
-        if(this.src && this.sandboxMode !== "iframe" && !this.loaded) {
-            await (this.loadPromise || this.fromURL());
-            if(this.destroyed) return this;
-        }
+        let renderCompleted = false;
 
-        if(this.sandboxMode === "iframe" && !(this.content instanceof HTMLIFrameElement)) {
-            this.replaceContent(); // Create iframe
-        } else if (!this.content) {
-            this.error = 500;
-            return;
-        }
-
-        // Unsure whether to load JS and CSS in parallel (before render) or load JS separately after render, since some scripts may expect DOM to exist.
-        // Loading early allows for quicker execution though (eg. if JS is responsible for rendering something, it will be available before actually displaying).
-        await Promise.all([
-            this.#loadCSS(),
-            this.#loadJS()
-        ]);
-
-        if(this.destroyed) return this; // :(
-
-        this.completed("loaded"); // Assets have finished loading
-
-        if(targetElement) {
-            for(const child of Array.from(targetElement.children)) {
-                child.remove();
+        try {
+            if(this.src && this.sandboxMode !== "iframe" && !this.loaded) {
+                await (this.loadPromise || this.fromURL());
+                if(this.destroyed) return this;
             }
 
-            if (this.sandboxMode === "shadow") {
-                if (!targetElement.shadowRoot) targetElement.attachShadow({ mode: 'open' });
-                targetElement.shadowRoot.replaceChildren(this.content);
-            } else {
-                targetElement.appendChild(this.content);
+
+            if(this.sandboxMode === "iframe" && !(this.content instanceof HTMLIFrameElement)) {
+                this.replaceContent(); // Create iframe
+            } else if (!this.content) {
+                this.error = 500;
+                this.state = "empty";
+                return;
+            }
+
+            console.log("Waiting for assets", this.styles, this.scripts);
+            // Unsure whether to load JS and CSS in parallel (before render) or load JS separately after render, since some scripts may expect DOM to exist.
+            // Loading early allows for quicker execution though (eg. if JS is responsible for rendering something, it will be available before actually displaying).
+            await Promise.all([
+                this.#loadCSS(),
+                this.#loadJS()
+            ]);
+
+            for (const style of this.styles) {
+                AssetManager.enableStyle(style);
+            }
+
+            await new Promise((resolve) => setTimeout(resolve, 0));
+
+            if(this.destroyed) return this; // :(
+
+            this.completed("loaded"); // Assets have finished loading
+
+            if(targetElement) {
+                if (this.sandboxMode === "shadow") {
+                    if (!targetElement.shadowRoot) targetElement.attachShadow({ mode: 'open' });
+                    targetElement.shadowRoot.replaceChildren(this.content);
+                } else {
+                    targetElement.replaceChildren(this.content);
+                }
+            }
+
+            this.state = "ready";
+
+            // await this.#loadJS();
+            this.emit("resume", targetElement);
+            this.loaded = true;
+            renderCompleted = true;
+
+            return this;
+        } catch (e) {
+            this.state = "empty";
+            this.loaded = false;
+            this.error ??= 500;
+            throw e;
+        } finally {
+            if(!renderCompleted && this.state === "loading") {
+                this.state = this.loaded ? "ready" : "empty";
             }
         }
-
-        this.state = "ready";
-
-        // await this.#loadJS();
-        this.emit("resume", targetElement);
-        this.loaded = true;
-        return this;
     }
 
     // TODO: This needs to be worked on
@@ -627,8 +731,6 @@ class ContentContext extends LS.Context {
         pattern = website.utils.normalizePath(pattern || this.#path);
         kernel.SPAExtensions.add(pattern, [kernel.SPAExtensions.getBasePath(pattern), handler, this]);
         this.SPAPatterns.push(pattern);
-        // kernel.SPAExtensions.push([path, handler, this]);
-        // kernel.SPAExtensions.sort((a, b) => b[0].length - a[0].length);
     }
 
     requestPermission(permissions = []) {
@@ -694,11 +796,16 @@ class ContentContext extends LS.Context {
                 if (!response.ok) {
                     this.error = response.status;
                     reject(new Error(`${response.status} ${response.statusText}`));
+                    this.loadPromise = null;
                     return;
                 }
 
                 const text = await response.text();
-                if (this.destroyed) return;
+                if (this.destroyed) {
+                    reject(new Error("Context was destroyed during load"));
+                    this.loadPromise = null;
+                    return;
+                }
 
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(text, 'text/html');
@@ -707,6 +814,7 @@ class ContentContext extends LS.Context {
                 if (!newContent) {
                     this.error = 404;
                     reject(new Error("404 Not Found"));
+                    this.loadPromise = null;
                     return;
                 }
 
@@ -738,27 +846,28 @@ class ContentContext extends LS.Context {
                 this.loadPromise = null;
             }
         });
+
         return this.loadPromise;
     }
 
     processAssetsOnNode(element) {
         for (const style of element.querySelectorAll('link[rel="stylesheet"], style')) {
             if(style.hasAttribute('data-asset-ignore') || style.classList.contains('whitelist')) continue;
-            if(style.href) {
+            if(style.tagName === "LINK") {
                 if(AssetManager.whitelist.has(AssetManager.fuzzKey(style.href || ''))) continue;
 
-                const styleElement = AssetManager.get(style);
+                let styleElement = AssetManager.get(style);
                 if(styleElement) {
                     this.styles.push(styleElement);
-                    style.remove();
                     continue;
                 }
 
-                this.styles.push(style);
-                AssetManager.registerStyle(style.href, style);
-            } else {
-                this.styles.push(style);
-                style.remove();
+                styleElement = AssetManager.cloneStyle(style);
+                this.styles.push(styleElement);
+                AssetManager.registerStyle(style.href, styleElement, false);
+            } else if (style.ownerDocument !== document) {
+                let styleElement = AssetManager.cloneStyle(style);
+                this.styles.push(styleElement);
             }
         }
 
@@ -776,13 +885,16 @@ class ContentContext extends LS.Context {
                 scriptElement = AssetManager.cloneScript(script);
                 scriptElement.registeringContext = this;
                 this.scripts.push(scriptElement);
-                AssetManager.registerScript(script.src, scriptElement);
+                AssetManager.registerScript(script.src, scriptElement, false);
+                script.remove();
             } else if (script.ownerDocument !== document) {
                 let scriptElement = AssetManager.cloneScript(script);
                 scriptElement.registeringContext = this;
                 this.scripts.push(scriptElement);
             }
         }
+
+        element = null;
     }
 
     /**
@@ -850,12 +962,12 @@ class ContentContext extends LS.Context {
     suspend(){
         this.state = "suspended";
 
+        this.emit("suspend");
+
         this.content?.remove();
         for(const style of this.styles) {
-            style.disabled = true;
+            AssetManager.disableStyle(style);
         }
-
-        this.emit("suspend");
 
         if(this.destroyOnUnload) {
             this.destroy();
@@ -990,6 +1102,7 @@ class ContentContext extends LS.Context {
  * Viewport class
  * Represents a viewport in the application where content contexts can be rendered.
  */
+let firstPage = true;
 class Viewport extends LS.EventEmitter {
     constructor(name, element, options = {}) {
         super();
@@ -1100,6 +1213,13 @@ class Viewport extends LS.EventEmitter {
                 this.errorPage(page.error);
             } else {
                 this.emit("rendered", page);
+
+                if(this.name === "main" && !firstPage) LS.Animation.fadeIn(page.content, {
+                    duration: 300,
+                    direction: 'forward',
+                    easing: 'ease-out'
+                });
+                firstPage = false;
             }
 
             this.current = page;
@@ -1331,6 +1451,8 @@ class Window extends Viewport {
         this.titleElement = window.title;
         this.iconElement = window.icon;
 
+        this.windowElement.style.opacity = 0;
+
         let startX, startY;
         this.windowHandle = new LS.Util.TouchHandle(window.header, {
             buttons: [0],
@@ -1373,8 +1495,17 @@ class Window extends Viewport {
 
         kernel.windows.add(this);
 
-        this.setSize(options.width || 600, options.height || 400);
-        this.setPosition(options.x || 100, options.y || 100);
+        this.setSize(options.width || 600, options.height || 400, false);
+        this.setPosition(options.x || ((innerWidth / 2) - (this.width / 2)), options.y || ((innerHeight / 2) - (this.height / 2)), false);
+
+        requestAnimationFrame(() => {
+            if(this.destroyed) return;
+            LS.Animation.fadeIn(this.windowElement, {
+                duration: 300,
+                direction: "backward",
+                preserveTransform: true
+            });
+        });
 
         // To be worked on
         document.body.appendChild(this.windowElement);
@@ -1385,29 +1516,31 @@ class Window extends Viewport {
             this.setIcon(this.getIcon());
 
             this.focus();
+            this.emit("ready");
         });
     }
 
-    setPosition(x, y) {
+    setPosition(x, y, evt = true) {
         const screenW = window.innerWidth;
         const screenH = window.innerHeight;
 
-        let left = Math.max(10, Math.min(x, screenW - 10 - this.width));
-        let top = Math.max(10, Math.min(y, screenH - 10 - this.height));
+        const NET = 60;
+        let left = Math.max(NET + 90 - this.width, Math.min(x, screenW - NET));
+        let top = Math.max(NET, Math.min(y, screenH - NET));
 
         this.x = left;
         this.y = top;
 
         this.windowElement.style.transform = `translate3d(${left}px, ${top}px, 0)`;
-        this.emit("move", [left, top]);
+        if(evt) this.emit("move", [left, top]);
     }
 
-    setSize(width, height) {
-        this.width = width;
-        this.height = height;
-        this.windowElement.style.width = width + "px";
-        this.windowElement.style.height = height + "px";
-        this.emit("resize", [width, height, null, this.x, this.y]);
+    setSize(width, height, evt = true) {
+        this.width = Number(width);
+        this.height = Number(height);
+        this.windowElement.style.width = this.width + "px";
+        this.windowElement.style.height = this.height + "px";
+        if(evt) this.emit("resize", [this.width, this.height, null, this.x, this.y]);
     }
 
     getTitle(context) {
@@ -1436,22 +1569,45 @@ class Window extends Viewport {
         }
     }
 
-    minimize() {}
+    minimize() {
+        if(this.current) this.current.suspend();
+    }
 
     maximize() {}
 
     focus() {
         globalWindowZIndex += 1;
         this.windowElement.style.zIndex = globalWindowZIndex;
+
+        for (const win of kernel.windows) {
+            if (win !== this && win.windowElement) {
+                win.windowElement.classList.remove("top");
+            }
+        }
+
+        this.windowElement.classList.add("top");
         this.quickEmit("focus");
+    }
+
+    blur() {
+        this.windowElement.classList.remove("top");
+        this.quickEmit("blur");
     }
 
     toggleView() {
         // To be worked on
     }
 
+    // Closes the window with animation
     close() {
-        this.destroy();
+        LS.Animation.fadeOut(this.windowElement, {
+            duration: 300,
+            direction: "backward",
+            preserveTransform: true
+        }).then(() => {
+            if(this.destroyed) return;
+            this.destroy();
+        });
     }
 
     destroy(destroyContent = true) {
@@ -1704,6 +1860,29 @@ const website = {
                 class: "profile-bio",
                 innerHTML: website.utils.basicMarkDown(bio)
             })
+        },
+
+        getAppIconView(resource, args) {
+            const iconParam = resource && resource.icon;
+            const iconSrc = iconParam ? website.cdn + "/file/" + iconParam : null;
+
+            const size = args && args[0] ? (typeof args[0] === "number" ? args[0] : parseInt(args[0], 10)) : 32;
+            const padding = (size < 24) ? 0 : Math.max(4, (size - 24) / 6);
+            const paddedSize = size - (padding * 2);
+
+            const icon = LS.Create(iconSrc ? { tag: "img", attributes: { state: "loading" }, src: iconSrc, onerror() { this.parentElement.replaceChild(website.views.getAppIconView(null, args), this) }, onload() { this.removeAttribute('state'); } } : { tag: "i", class: "bi bi-app-indicator", style: "font-size: " + paddedSize + "px; line-height: 0" })
+            icon.style.boxSizing = "border-box";
+            icon.style.display = "inline-block";
+            icon.style.objectFit = "contain";
+            icon.style.verticalAlign = "middle";
+            icon.style.position = "relative";
+            icon.style.borderRadius = "var(--border-radius)";
+            icon.style.padding = padding + "px";
+            icon.style.width = size + "px";
+            icon.style.height = size + "px";
+            icon.draggable = false;
+
+            return icon;
         }
     },
 
@@ -1842,7 +2021,7 @@ const website = {
         }
     },
 
-    ACCENT_COLORS: ["white", "blue", "pastel-indigo", "lapis", "pastel-teal", "aquamarine", "green", "lime", "neon", "yellow", "orange", "deep-orange", "red", "rusty-red", "pink", "hotpink", "purple", "soap", "burple"],
+    ACCENT_COLORS: ["white", "blue", "pastel-indigo", "lapis", "pastel-teal", "aquamarine", "green", "lime", "neon", "yellow", "orange", "deep-orange", "red", "rusty-red", "pink", "hotpink", "purple"], //, "soap", "burple"],
 
     LINKS: {
         URL: { id: "url", icon: "globe-americas", color: null },
@@ -1889,7 +2068,7 @@ const website = {
 
     collapseItems: { schedule() {} },
 
-    // NOTE: This is a cached result, and so may not be up to date. Wherever you can, use await kernel.auth.isLoggedIn(); instead.
+    // NOTE: This is a cached result, and so may not be up to date. Wherever you can (async context), use await kernel.auth.isLoggedIn(); instead - it's more expensive but more accurate.
     isLoggedIn: false,
     isToolbarOpen: false,
 
@@ -1928,6 +2107,7 @@ const website = {
         website.isToolbarOpen = true;
         website.currentToolbar = name;
         website.quickEmit("toolbar-open", name);
+        kernel.viewport.target.classList.add("shade");
         LS.Stack.push(ToolbarStackRef);
 
         const button = toolbar.panelItem instanceof HTMLElement? toolbar.panelItem : website.panelItems.get(toolbar.panelItem)?.element;
@@ -1955,6 +2135,7 @@ const website = {
 
         website.isToolbarOpen = false;
         website.quickEmit("toolbar-close");
+        kernel.viewport.target.classList.remove("shade");
         LS.Stack.remove(ToolbarStackRef);
     },
 
@@ -2029,14 +2210,14 @@ const website = {
         //     website.openToolbar("assistant", true);
         // } }],
 
+        ["themeButton", { buttonLabel: N('i', { class: "bi-palette-fill" }), label: "Customize", description: "Customize the site appearance", icon: "bi-palette-fill", onclick() {
+            website.openToolbar("theme", true);
+        }}],
+
         ["commandPaletteButton", { showLabel: false, label: "Command Palette", tooltip: "Command Palette", description: "Open Command Palette", icon: "bi-terminal", onclick() {
             website.closeToolbar();
             website.openPalette();
         }}],
-
-        ["themeButton", { buttonLabel: N('i', { class: "bi-palette-fill" }), label: "Customize", description: "Customize the site appearance", icon: "bi-palette-fill", onclick() {
-            website.openToolbar("theme", true);
-        }}]
     ]),
 
     toolbars: new Map([
@@ -2054,7 +2235,13 @@ const website = {
             element: O("#toolbarApps"),
             name: "Apps",
             description: "View applications",
-            panelItem: "appsButton"
+            panelItem: "appsButton",
+
+            onOpen() {
+                if(!kernel.applicationMenu.initialized) {
+                    kernel.applicationMenu.init();
+                }
+            }
         }],
 
         ["assistant", {
@@ -3008,6 +3195,18 @@ const kernel = new class Kernel extends LoggerContext {
             kernel.viewport.navigate(href, { pushState: false });
         });
 
+        // Keep floating windows in view on resize
+        this.windowBoundsScheduler = new LS.Util.FrameScheduler(() => {
+            for (const win of this.windows) {
+                if (win.destroyed || !win.windowElement) continue;
+                win.setPosition(win.x ?? 0, win.y ?? 0);
+            }
+        });
+
+        const scheduleWindowClamp = () => this.windowBoundsScheduler.schedule();
+        window.addEventListener('resize', scheduleWindowClamp);
+        if (window.visualViewport) window.visualViewport.addEventListener('resize', scheduleWindowClamp);
+
         window.addEventListener('click', (event) => {
             const targetElement = event.target.closest("a");
 
@@ -3041,6 +3240,8 @@ const kernel = new class Kernel extends LoggerContext {
             }
         });
 
+        const previewPopoutAnimationDuration = 350;
+
         const previewPopout = LS.Create("ls-box", {
             class: "link-preview-popout elevated",
             style: "display: none",
@@ -3057,10 +3258,10 @@ const kernel = new class Kernel extends LoggerContext {
             { class: "link-preview-description" }
         ]);
 
-        let popoutTimeout = null, lastLink = null;
+        let popoutTimeout = null, lastLink = null, lastTarget = null;
         window.addEventListener("pointerover", (event) => {
             const targetElement = event.target.closest("a");
-            if(targetElement) {
+            if(targetElement && lastTarget !== targetElement) {
                 if(targetElement.href.endsWith("#")) return;
 
                 const link = targetElement.href;
@@ -3073,6 +3274,7 @@ const kernel = new class Kernel extends LoggerContext {
 
                 if(!link.endsWith("?") && !link.startsWith(origin + ":")){
                     if(href.startsWith(origin)) href = href.substring(origin.length);
+                    lastTarget = targetElement;
 
                     clearTimeout(popoutTimeout);
                     let ct = popoutTimeout = setTimeout(() => {
@@ -3130,20 +3332,22 @@ const kernel = new class Kernel extends LoggerContext {
                         }
 
                         lastLink = link;
-                        LS.Animation.fadeIn(previewPopout, 200, "up");
-                    }, 200);
+                        LS.Animation.fadeIn(previewPopout, previewPopoutAnimationDuration, "up");
+                    }, previewPopoutAnimationDuration);
 
                     targetElement.addEventListener("pointerout", () => {
                         if(!popoutTimeout || popoutTimeout !== ct) return;
                         clearTimeout(popoutTimeout);
-                        LS.Animation.fadeOut(previewPopout, 200, "up");
+                        lastTarget = null;
+                        LS.Animation.fadeOut(previewPopout, previewPopoutAnimationDuration, "up");
                     }, { once: true });
                 }
             }
         });
 
         this.on("context-updated", () => {
-            LS.Animation.fadeOut(previewPopout, 200, "up");
+            LS.Animation.fadeOut(previewPopout, previewPopoutAnimationDuration, "up");
+            lastTarget = null;
         })
 
         // --- Debug ONLY ---
@@ -3325,7 +3529,17 @@ const kernel = new class Kernel extends LoggerContext {
                         item.removeAttribute("state");
                     });
                 }).catch(error => {
-                    LS.Toast.show("Failed to switch account: " + error.message, { accent: "red" });
+                    if(error.code === 401) {
+                        website.loginTabs.set("login");
+                        website.loginTabs.element.querySelector("#username").value = account.username;
+                        website.loginTabs.element.querySelector(".error-message").textContent = "Session expired for this account, please log in again.";
+                        const p = website.loginTabs.element.querySelector("#password");
+                        p.value = "";
+                        p.focus();
+                        return;
+                    }
+
+                    LS.Toast.show("Failed to switch account: " + (error.message || error.error || "Unknown error"), { accent: "red" });
                 });
             };
 
@@ -3514,7 +3728,7 @@ const kernel = new class Kernel extends LoggerContext {
                     {
                         name: "notifications",
                         icon: "bi-bell",
-                        description: "Notification settings",
+                        description: "Enable or disable notifications",
                         children: [
                             {
                                 name: "enable",
@@ -3756,7 +3970,7 @@ const kernel = new class Kernel extends LoggerContext {
             }
 
             moreButton.style.display = (availableSpace + moreButton.clientWidth) < takenSpace ? "inline-flex" : "none";
-            resizeMessageSwitch.set(window.innerHeight < 100 || window.innerWidth < 100);
+            resizeMessageSwitch.set(window.innerHeight < 100 || window.innerWidth < 200);
         });
 
         const resizeMessageContainer = document.getElementById("resizeMessage");
@@ -3944,6 +4158,11 @@ const kernel = new class Kernel extends LoggerContext {
 
         document.addEventListener("pointerdown", (event) => {
             if (website.isToolbarOpen && !event.target.closest("#toolbars,.toolbar-button")) website.closeToolbar();
+            if (kernel.windows.size > 0 && !event.target.closest(".window-container") ) {
+                for (const windowInstance of kernel.windows.values()) {
+                    windowInstance.blur();
+                }
+            }
         }, { passive: true });
     }
 
@@ -4049,22 +4268,98 @@ const kernel = new class Kernel extends LoggerContext {
         sendPing();
     }
 
+
+    applicationMenu = new class ApplicationMenu extends LS.Context {
+        constructor() {
+            super("Application Menu");
+            this.initialized = false;
+        }
+
+        init() {
+            if(this.initialized) return;
+            this.initialized = true;
+
+            const container = website.toolbars.get("apps").element;
+            this.appListElement = container.get(".app-list");
+
+            kernel.events.on("application-installed", (manifest) => {
+                this.addApplicationEntry(manifest);
+            });
+
+            // Load existing apps
+            for(const manifest of BUILTIN_APPS) {
+                this.addApplicationEntry(manifest);
+            }
+        }
+
+        /**
+         * Add an application entry to the application menu.
+         * @param {*} manifest 
+         */
+        addApplicationEntry(manifest) {
+            const appId = manifest.id;
+            if(!appId) return;
+
+            const appButton = LS.Create({
+                class: "app-list-item",
+
+                inner: [
+                    website.views.getAppIconView(manifest, [64]),
+                    N('span', { class: 'app-name text-overflow-nowrap', textContent: manifest.name || appId })
+                ],
+
+                onclick: () => {
+                    if(manifest.external) {
+                        if(typeof manifest.link !== "string" || !manifest.link) {
+                            LS.Toast.show("This application does not have a valid link.", { accent: "red" });
+                            return;
+                        }
+
+                        window.open(manifest.link, "_blank", "noopener");
+                        website.closeToolbar();
+                        return;
+                    }
+
+                    if (!kernel.applications.has(appId)) {
+                        appButton.setAttribute("state", "loading");
+                        kernel.loadApplication(manifest).then(() => {
+                            appButton.removeAttribute("state");
+                            const appInstance = kernel.instantiateApplication(appId);
+                            appInstance.open?.();
+                            website.closeToolbar();
+                        }).catch(error => {
+                            appButton.removeAttribute("state");
+                            LS.Toast.show("Failed to load application: " + error.message, { accent: "red" });
+                        });
+                        return;
+                    }
+
+                    const appInstance = kernel.instantiateApplication(appId);
+                    appInstance.open?.();
+                    website.closeToolbar();
+                }
+            });
+
+            this.appListElement.appendChild(appButton);
+        }
+    }
+
     /**
      * Load the application with the given manifest.
      * @param {*} manifest 
      */
     async loadApplication(manifest) {
-        const key = manifest.id || manifest.name;
-        if(!key) {
+        const appId = manifest.id;
+        if(!appId) {
             throw new Error("Application manifest is missing an id or name");
         }
 
-        if (kernel.applications.has(key)) {
-            this.log("Application already loaded:", key);
+        if (kernel.applications.has(appId)) {
+            this.log("Application already loaded:", appId);
             return;
         }
 
-        this.log("Loading application:", key);
+        this.log("Loading application:", appId);
         
         // TODO: Special case for sandboxed apps
         if(typeof manifest.main !== "string") {
@@ -4075,7 +4370,7 @@ const kernel = new class Kernel extends LoggerContext {
         const AppClass = module.default ?? module;
 
         if (typeof AppClass !== "function" || !LS.Util.isClass(AppClass) || !(AppClass.prototype instanceof ContentContext)) throw new Error("Application module does not export a default class or does not extend ContentContext");
-        kernel.applications.set(key, AppClass);
+        kernel.applications.set(appId, AppClass);
         AppClass.manifest = manifest;
 
         delete window.module;

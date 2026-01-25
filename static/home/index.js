@@ -585,9 +585,11 @@ website.register(document.currentScript, class extends LS.Context {
     constructor(context, container) {
         super();
         this.context = context;
+
         this.context.setOptions({
             dynamicAccount: true,
-            path: "/home"
+            persistable: true, // Future use
+            path: "/home" // Canonical path
         });
 
         this.container = container;
@@ -753,7 +755,7 @@ website.register(document.currentScript, class extends LS.Context {
     destroy() {
         if(this.destroyed) return;
         for (const handlerKey in this.tabHandlers) {
-            this.tabHandlers[handlerKey].destroy();
+            this.tabHandlers[handlerKey]?.destroy?.();
         }
 
         this.tabHandlers = {};

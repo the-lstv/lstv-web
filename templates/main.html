@@ -107,21 +107,9 @@
         });
     </script>
 
-    <!--
-        I plan to make a custom animation library for LS;
-        until then, I am deciding between GSAP and Framer Motion.
-        So far I really don't like Motion and I don't like the company (for endorsing AI coding).
-        But they do have hardware accelerated animations...
-
-        I guess until then, i'll just do animations however, then migrate to a proper, high quality custom solution that directly embeds with LS.
-        But one thing that keeps me awake at night is the fact that I have no control over 3rd party libraries and their memory management, and Motion's mysterious cleanup API does not make that any easier.
-    -->
-    <!-- <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/gsap.min.js" async></script> -->
-    <!-- <script src="https://cdn.jsdelivr.net/npm/motion@12.26.0/dist/motion.js"></script> -->
-
     <link rel="preconnect" href="https://auth.extragon.cloud" crossorigin>
     <link rel="dns-prefetch" href="//auth.extragon.cloud">
-    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdn.extragon.cloud https://cdn.extragon.localhost https://fonts.googleapis.com https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.extragon.cloud https://cdn.extragon.localhost https://fonts.googleapis.com; font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net; connect-src 'self' wss://*.lstv.space wss://*.extragon.cloud wss://*.extragon.localhost https://api.extragon.cloud https://api.extragon.localhost;">
+    <!-- <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdn.extragon.cloud https://cdn.extragon.localhost https://fonts.googleapis.com https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.extragon.cloud https://cdn.extragon.localhost https://fonts.googleapis.com; font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net; connect-src 'self' wss://*.lstv.space wss://*.extragon.cloud wss://*.extragon.localhost https://api.extragon.cloud https://api.extragon.localhost;"> -->
 
     @use (ls:5.2.9[flat, color, tooltips, toast, menu, reactive, tabs, animation, resize, modal, ShortcutManager, CompileTemplate], bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800"]);
 
@@ -159,7 +147,7 @@
     </div>
 
     <div #resizeMessage hidden>
-        Minimum size for this application is 100x100 pixels.
+        Minimum size for this application is 200x100 pixels.
     </div>
 
     <div #app hidden>
@@ -206,10 +194,11 @@
             </div>
         </div>
 
-        <div #toolbars .level-1 .ls-slide-animation>
+        <div #toolbars .level-1>
             <div .toolbar .toolbar-styled #toolbarApps style="display: none">
                 <h3>Applications</h3>
-                <div></div>
+                <input type="text" .app-search placeholder="Search apps..." aria-label="Search applications">
+                <div .app-list></div>
             </div>
 
             <div .toolbar .toolbar-styled #toolbarTheme style="display: none">
@@ -265,7 +254,7 @@
                 </div>
             </div>
 
-            <div .toolbar .toolbar-styled #toolbarLogin .level-1 .ls-slide-animation style="display: none">
+            <div .toolbar .toolbar-styled #toolbarLogin .level-1 style="display: none">
                 <div .login-toolbar-page tab-id="default" #loginPopup>
                     <svg width="45" height="37" fill="none"><rect y="17" width="30" height="10" rx="5" fill="#fcc21b"/><rect x="15" width="30" height="10" rx="5" fill="#ed6c30"/><g fill="#40c0e7"><rect width="10" height="10" rx="5"/><rect x="35" y="17" width="10" height="10" rx="5"/></g></svg>
 

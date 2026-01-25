@@ -301,12 +301,12 @@ ls-box.inline.color {
     }
 }
 
-#showcase-projects {
+#showcase-projects, #showcase-libraries {
     max-width: 650px;
     margin: auto;
     padding: 0 10px;
     display: flex;
-    gap: 50px;
+    gap: 60px;
     flex-direction: column;
 }
 
@@ -318,9 +318,43 @@ ls-box.inline.color {
     color: var(--surface-8);
 }
 
+.showcase-item-left-panel > i {
+    font-size: 64px;
+    color: var(--accent-60);
+}
+
 .showcase-item-icon {
+    transform: perspective(800px) rotateY(25deg) scale(0.9) rotateX(10deg);
+    animation: yoyo3d 20s ease-in-out infinite alternate;
+    transform-style: preserve-3d;
     border-radius: var(--border-radius-large);
     object-fit: contain;
+}
+
+.showcase-item:nth-child(odd) .showcase-item-icon {
+    animation-range-start: 10s;
+}
+
+@keyframes yoyo3d {
+    0% {
+        transform: perspective(800px) rotateY(25deg) scale(0.9) rotateX(10deg);
+    }
+    
+    25% {
+        transform: perspective(800px) rotateY(-15deg) rotateX(5deg) scale(1);
+    }
+    
+    50% {
+        transform: perspective(800px) rotateY(20deg) rotateX(15deg) scale(0.95);
+    }
+    
+    75% {
+        transform: perspective(800px) rotateY(-10deg) rotateX(8deg) scale(1.05);
+    }
+
+    100% {
+        transform: perspective(800px) rotateY(-15deg) rotateX(10deg) scale(1);
+    }
 }
 
 .showcase-item-title {
@@ -374,6 +408,20 @@ ls-box.inline.color {
         }
     }
 
+    #showcase-projects .showcase-item {
+        align-items: center;
+        flex-direction: column;
+        margin: 0 20px;
+    }
+
+    #showcase-libraries .showcase-item-left-panel {
+        display: none;
+    }
+
+    #showcase-projects {
+        gap: 70px;
+    }
+
     .showcase-intro-text {
         height: auto;
         margin: 20px;
@@ -390,16 +438,61 @@ ls-box.inline.color {
     }
 }
 
+:root.supports-accelerated-scroll {
+    scroll-timeline-axis: block;
+
+    .logo-board {
+        opacity: 1;
+        will-change: opacity;
+        animation: fadeOut linear forwards;
+        animation-timeline: scroll(nearest block);
+        animation-range: 0px 750px;
+    }
+
+    .lore-section {
+        opacity: 0;
+        will-change: transform opacity;
+        animation: parallax ease-in-out forwards;
+        animation-timeline: scroll(nearest block);
+        animation-range: 0px 750px;
+    }
+}
+
+[ls-theme=dark] :root {
+    background: black !important;
+}
+
+[ls-theme="light"] :root #showcase-projects > img {
+    filter: invert(1);
+}
+
+[ls-theme="light"] :root .white-icon, [ls-theme="dark"] :root .black-icon {
+    filter: invert(1);
+}
+
+@keyframes parallax {
+    to {
+        transform: translateY(-300px);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    to {
+        opacity: 0;
+    }
+}
+
 .chip-bg {
     background: var(--elevate);
     border-radius: var(--border-radius-full);
     position: absolute;
-    transition: transform 0.3s ease;
+    transition: transform 0.3s linear(0, 0.0018, 0.0069 1.15%, 0.026 2.3%, 0.0637, 0.1135 5.18%, 0.2229 7.78%, 0.5977 15.84%, 0.7014, 0.7904, 0.8641, 0.9228, 0.9676 28.8%, 1.0032 31.68%, 1.0225, 1.0352 36.29%, 1.0431 38.88%, 1.046 42.05%, 1.0448 44.35%, 1.0407 47.23%, 1.0118 61.63%, 1.0025 69.41%, 0.9981 80.35%, 0.9992 99.94%);
+    transform: translateX(0);
     height: calc(100% - 16px);
     top: 8px;
     left: 0;
     z-index: 0;
-    transform: translateX(0);
 }
 
 .chip:is(:active, :hover, :focus):not(:focus-visible) {
@@ -453,6 +546,7 @@ ls-box.inline.color {
 
 #showcase-tabs {
     margin-bottom: 40px;
+    min-height: 100vh;
 }
 
 .showcase-gallery-item img {

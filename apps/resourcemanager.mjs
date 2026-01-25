@@ -62,6 +62,7 @@ class ResourceMonitor extends website.ContentContext {
             width: 650,
             height: 340,
             minWidth: 450,
+            minHeight: 200
         });
 
         this.updateList();
@@ -126,13 +127,7 @@ class ResourceMonitor extends website.ContentContext {
 
             if (row._lastIcon !== iconParam || row._lastName !== nameParam) {
                 row.cells[0].innerHTML = "";
-                const iconSrc = iconParam ? website.cdn + "/file/" + iconParam : null;
-                const elems = [
-                    iconSrc ? { tag: "img", src: iconSrc, style: "width: 16px; height: 16px; margin-right: 5px; vertical-align: middle;", onerror: "this.style.display='none';" }
-                        : { tag: "i", class: "bi bi-app-indicator", style: "margin-right: 5px;" },
-                    { tag: "span", text: nameParam }
-                ];
-                elems.forEach(c => row.cells[0].appendChild(LS.Create(c)));
+                row.cells[0].append(website.views.getAppIconView(resource), LS.Create({ tag: "span", text: nameParam }));
                 row._lastIcon = iconParam;
                 row._lastName = nameParam;
             }
@@ -154,6 +149,14 @@ class ResourceMonitor extends website.ContentContext {
 
     listResources() {
         return this.#kernel.contexts.values();
+    }
+
+    #formatBytes(bytes) {
+        if (bytes === 0) return "0 B";
+        const k = 1024;
+        const sizes = ["B", "KB", "MB", "GB"];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
     }
 
     destroy() {

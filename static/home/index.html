@@ -3,7 +3,7 @@
 <span hidden #scope-key>@file-scope-key();</span>
 
 <head>
-    @use (/home/index.css, /home/index.js[defer], ~/assets/js/shader.js[defer]);
+    @use (/home/index.css, /home/index.js[defer]);
     @use (ls.js.ImageCropper:5.2.9) { async }
 
     @page {
@@ -24,10 +24,7 @@
 
 <div .container .width-container .level-0>
     <div .loadingIndicator state="loading">
-        <br>
-        <br>
-        <br>
-        <br>
+        <br><br><br><br>
         <h3>Loading...</h3>
     </div>
 
