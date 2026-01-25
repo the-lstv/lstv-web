@@ -30,6 +30,7 @@ const scriptingLoadTime = Date.now();
 const shortcutManager = new LS.ShortcutManager();
 
 const isDebug = window.location.hostname === "lstv.localhost";
+const isBeta = window.location.hostname.startsWith("beta.lstv.");
 
 // Console welcome message
 if(!isDebug) console.log(
@@ -3186,6 +3187,11 @@ const kernel = new class Kernel extends LoggerContext {
             this.shortcutManager.register(['ctrl+shift+p', 'ctrl+k'], () => {
                 website.openPalette();
             });
+
+            if(isBeta) {
+                document.querySelector(".homeButton").append(document.createTextNode(" Beta"));
+                LS.Toast.show("You are using a beta version of LSTV. Some features may be unstable or incomplete.", { accent: "orange", timeout: 10000 });
+            }
         });
 
         // Event listener for back/forward buttons (for single-page app behavior)
