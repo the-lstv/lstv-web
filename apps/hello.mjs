@@ -1,27 +1,28 @@
-class MyHelloWorldApp extends LS.Context {
+class MyHelloWorldApp extends website.ContentContext {
+
+    // This constructor will be called when your application is opened
     constructor() {
-        super();
-
-
-        // Create application content context
-        const app = new website.ContentContext({ id: "myhelloworldapp" });
-
-
-        // Setup HTML - this can be any HTML element
-        // To make it from a string (though usually not recommended) you can do LS.Create({ html: "HTML here" })
-        this.content = LS.Create("h1", {
-            inner: "Hello world!"
+        super({
+            title: "Hello World Application",
+            id: "hello-world-app"
         });
 
 
-        // Load it into our content context
-        app.fromElement(this.content);
+        // Setup content - this can be any HTML element
+        // To make it from a string (usually not recommended - be careful with user input), you can use LS.Create({ html: "HTML here" })
+        this.content = LS.Create("h1", {
+            text: "Hello world!"
+        });
 
 
-        // Create a window
-        // The window will already render our content context because we created it from there.
-        // But since a window is an instance of viewport, we can use it like any other viewport
-        const win = app.createWindow({
+        // Load it into our context
+        this.fromElement(this.content);
+
+
+        // Now let's create a window
+        // The window will automatically show our content because we created it from here.
+        // But since a window is an instance of viewport, we can also use it like any other viewport.
+        const win = this.createWindow({
             title: "Hello World App",
             width: 400,
             height: 300
@@ -31,15 +32,16 @@ class MyHelloWorldApp extends LS.Context {
         // Remember to add anything you create (including timeouts, events, animations...) under this app to destroyables, which makes cleanup predictable.
         // Always better to overdo it than to forget something.
         // If we call destroy on this context (eg. window closed), it will cleanup everything with it.
-        this.addDestroyable(app);
-        this.addDestroyable(win);
-
-
-        // We can also sync destruction events if we want to; now the window closing or kernel can also destroy this context.
-        // This is not necessary if you want the app or window to live independently, but recommended for simple apps.
-        app.on("destroy", () => this.destroy());
-        win.on("destroy", () => this.destroy());
+        this.addDestroyable(win, this.content);
     }
+
+    destroy() {
+        // Cleanup anything here
+
+        // Don't forget to call super.destroy()
+        super.destroy();
+    }
+
 }
 
 // Export the application class as default

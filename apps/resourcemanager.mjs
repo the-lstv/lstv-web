@@ -10,7 +10,10 @@ class ResourceMonitor extends website.ContentContext {
             icon: "79fb1a87322b7fa0.svg",
         });
 
-        this.#kernel = kernel;
+        // This will throw and self destruct if not available
+        this.#kernel = this.requestKernelAccess();
+
+        // Setup content
         this.fromElement(LS.Create({
             tag: "div",
             class: "resource-monitor",

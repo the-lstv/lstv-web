@@ -1006,6 +1006,15 @@ class ContentContext extends LS.Context {
         return kernel.registerModule(this, runtimeContext, this);
     }
 
+    requestKernelAccess() {
+        // TODO: Verify access
+        return kernel;
+
+        LS.Toast.show("Kernel access request denied.", { accent: "red" });
+        this.destroy();
+        throw new Error("Kernel access request denied.");
+    }
+
     /**
      * Destroys the context, unloads assets and removes content.
      * After destroying, the context is no longer usable and must not be referenced.
@@ -3190,7 +3199,7 @@ const kernel = new class Kernel extends LoggerContext {
 
             if(isBeta) {
                 document.querySelector(".homeButton").append(document.createTextNode(" Beta"));
-                LS.Toast.show("You are using a beta version of LSTV. Some features may be unstable or incomplete.", { accent: "orange", timeout: 10000 });
+                LS.Toast.show("You are using a beta version of lstv.space. Some features may be unstable or incomplete.", { accent: "orange", timeout: 60000 });
             }
         });
 
