@@ -15,7 +15,7 @@
 <div .content>
     <div .logo-board>
         <div #logo>
-            <img src="/assets/image/prism_light.png" fetchpriority="high" srcset="/assets/image/prism_light.png 1x, /assets/image/prism_light_2x.png 2x" style="z-index: 2" alt="LSTV Triangle Logo" draggable="false">
+            <img src="https://cdn.extragon.cloud/file/720985af8a9950f9.webp" fetchpriority="high" srcset="https://cdn.extragon.cloud/file/720985af8a9950f9.webp 1x, /assets/image/prism_light_2x.png 2x" style="z-index: 2" alt="LSTV Triangle Logo" draggable="false">
         
             <div .stripe-container>
                 <div style="--c: 237, 108, 48; --d: 0.4s" />
@@ -69,7 +69,7 @@
                         <ls-div>
                             <b>Note:</b> LSTV is not my nickname. To refer to me, please use my name or an alias.<br><br>
                             On this website I showcase my works and write posts, but it is also the center of LSTV's services and products, not only my personal website (and it may become more general in the coming future). There is a lot more to explore!<br><br>
-                            My favorite artists: <a target="_blank" .poppable-link .underline-link .koba-button style="--accent: #6817eb" href="https://www.youtube.com/@Kobaryo">Kobaryo</a>, <a target="_blank" .poppable-link .underline-link style="--accent: #a81446" href="https://www.youtube.com/@Cametek.CamelliaOfficial">Camellia</a>, <a target="_blank" .poppable-link .has-icon .underline-link style="--accent: #04CEFC" href="https://www.youtube.com/channel/UCdxf3SY8xgI6x7TRTc8jxrg"><i .bi-heart-fill /> Akira Complex<span .pops>Rest In Peace.</span></a>, <a href="https://www.youtube.com/@tpazolite_jp" target="_blank" .poppable-link .underline-link style="--accent: #A8DB7C">tpz</a>, <a target="_blank" .poppable-link .underline-link style="--accent: #FF6F61" href="https://www.youtube.com/channel/UCiMeKrcMsRPLu8E55W2sr7g">Dustvoxx</a>.
+                            My favorite artists: <a target="_blank" .poppable-link .underline-link .koba-button style="--accent: #6817eb" href="https://www.youtube.com/@Kobaryo">Kobaryo</a>, <a target="_blank" .poppable-link .underline-link style="--accent: #a81446" href="https://www.youtube.com/@Cametek.CamelliaOfficial">Camellia</a>, <a target="_blank" .poppable-link .has-icon .underline-link style="--accent: #04CEFC" href="https://www.youtube.com/channel/UCdxf3SY8xgI6x7TRTc8jxrg"><i .bi-heart-fill /> Akira Complex<span .pops>Rest In Peace.</span></a>, <a href="https://www.youtube.com/@tpazolite_jp" target="_blank" .poppable-link .underline-link style="--accent: #A8DB7C">tpz</a>, <a target="_blank" .poppable-link .underline-link style="--accent: #FF6F61" href="https://www.youtube.com/channel/UCiMeKrcMsRPLu8E55W2sr7g">Dustvoxx</a>, <a target="_blank" .poppable-link .underline-link style="--accent: #5b9220" href="https://www.youtube.com/@ARPWIRE">ArpWire</a>, and many more!
                         </ls-div>
 
                         <ls-div .margin-top-xxxlarge>
@@ -152,16 +152,17 @@
  */
 const data = {
     projects: [
-        { title: "Akeno", icon: "f2eeab33bc9b7873.svg", description: "Akeno is a very fast, modular, and full-featured webserver / backend framework. It handles everything a server should and supports various protocols. It's what I use as a webserver and backend.", link: "https://github.com/the-lstv/akeno" },
-        { title: "LS", icon: "884695036cdc8c27.webp", description: "A lightweight and modern framework for web applications. Used by all of our projects.", link: "https://github.com/the-lstv/LS" },
-        { title: "Video Editor", icon: "32c0975799f31fc3.svg", description: "A modern, simple but powerful programmable video editor. Has an intuitive patcher interface, advanced rendering effects, audio mixing, automation clips, animations, and more.", link: "https://github.com/the-lstv/video-editor" },
+        { title: "Akeno", icon: "f2eeab33bc9b7873.svg", description: "Akeno is a very fast, modular, and full-featured webserver / backend framework. It handles everything a server should and supports various protocols. It's what I use as a webserver and backend.", link: "/tech/akeno", source: "https://github.com/the-lstv/akeno" },
+        { title: "LS", icon: "884695036cdc8c27.webp", description: "A lightweight and modern framework for web applications. Used by all of our projects.", link: "/tech/ls", source: "https://github.com/the-lstv/LS" },
+        { title: "lstv.space", icon: "a71878679a110d4a.webp", description: "My website and hub for everything. It runs on a custom full-featured kernel, and is pretty much an operating system.", link: "https://lstv.space", source: "https://github.com/the-lstv/lstv-web" },
+        { title: "Video Editor", icon: "32c0975799f31fc3.svg", description: "A modern, simple but powerful programmable video editor. Has an intuitive patcher interface, advanced rendering effects, audio mixing, automation clips, animations, and more.", link: "https://lstv.localhost/editor", source: "https://github.com/the-lstv/videoeditor" },
         // { title: "Video Editor", icon: "29d18bcf2593fa3e.svg", description: "A modern, simple but powerful programmable video editor. Has an intuitive patcher interface, advanced rendering effects, audio mixing, automation clips, animations, and more.", link: "https://github.com/the-lstv/video-editor" },
-        { title: "Townhall", icon: "cd18c88051bcdc92.svg", description: "A social community platform with servers, text & voice channels, threads, and more. It has lots of customization and new features are added frequently. It is also faster and easier on your CPU than *some* competing platforms. Come check it out!", link: "https://lstv.space/chat" },
-        { title: "Glitter", icon: "69966033065300e7.webp", description: "A powerful & fast programming language with an extensive syntax made for the modern age. Upcomming project." },
+        { title: "Townhall", icon: "cd18c88051bcdc92.svg", description: "A social community platform with servers, text & voice channels, threads, and more. It has lots of customization and new features are added frequently. It is also faster and easier on your CPU than *some* competing platforms. Come check it out!", link: "/chat", source: "https://github.com/the-lstv/townhall" },
+        { title: "Glitter", icon: "724244a87db227c8.svg", description: "A powerful & fast programming language with an extensive syntax made for the modern age. Upcomming project.", link: "/tech/glitter", source: "https://github.com/the-lstv/glitterlang" },
         { title: "ExtraGon", icon: "83ab407476b84f97.webp", description: "ExtraGon is our cloud services and hosting platform, offering features from managed storage, accelerated webhosting, VPS, DNS management, APIs, and more.", link: "https://extragon.cloud" },
-        { title: "PowerDesk", icon: "fa1eef9e0cec2e2.svg", description: "A set of small Linux desktop utilities.", link: "https://github.com/the-lstv/powerdesk" },
-        { title: "LSXDash", icon: "ebac7eda26e02baf.webp", description: "A dashboard for the original Xbox using modern tech!", link: "https://github.com/the-lstv/xbox-dash" },
-        { title: "Atrium", icon: "78320d16cbc51b33.svg", description: "A fast and very flexible parser written in JavaScript used to parse configs, scripts, etc.", link: "https://github.com/the-lstv/Atrium" },
+        { title: "PowerDesk", icon: "fa1eef9e0cec2e2.svg", description: "A set of small Linux desktop utilities.", source: "https://github.com/the-lstv/powerdesk" },
+        { title: "LSXDash", icon: "ebac7eda26e02baf.webp", description: "A dashboard for the original Xbox using modern tech!", source: "https://github.com/the-lstv/xbox-dash" },
+        { title: "Atrium", icon: "78320d16cbc51b33.svg", description: "A fast and very flexible parser written in JavaScript used to parse configs, scripts, etc.", source: "https://github.com/the-lstv/Atrium" },
         { title: "Enantiomorphs", icon: "111e50e4a19cd161.webp", description: "A RPG / MMORPG centred around the heat death of the universe.", whiteIcon: true },
         { title: "Fantale", icon: "8f3389ce442eef1d.webp", description: "A fangame of the game Undertale, taking place after the world reset." },
         { title: "Froggie", icon: "4eab18a5b0d45d99.webp", description: "A very simple game where you merge bubbles to get different animals." },
@@ -170,7 +171,7 @@ const data = {
         { title: "PStudio", icon: "b14d9c9894917876.svg", tags: ["discontinued"], description: "An old attempt at making a DAW, but it didn't get too far, only the synth plugin was reused. Sadly the complexity of a DAW is quite large and don't have that much time :(" },
         { title: "MotionCast", icon: "2dbab853ce2cc04c.svg", tags: ["discontinued"], description: "A light remote desktop application with an easy web-based client with multi-stream support." },
         { title: "Edookit2", icon: "796af24c7a0f23c0.svg", tags: ["paused"], description: "A modern school frontend with a sleek interface as an alternative to the awful official one." , link: "" },
-        { title: "PurblePlace (port)", icon: "fac005c8888b4de0.webp", tags: ["paused"], description: "A faithful, frame-perfect port of the classic \"PurblePlace\" game to the web, with enhanced performance and mobile support. So far the main menu and Purble Pairs is complete. Sadly not actively developed :(" },
+        { title: "PurblePlace (port)", icon: "fac005c8888b4de0.webp", tags: ["paused"], description: "A frame-perfect port of the classic \"PurblePlace\" game, with web and mobile support. So far the main menu and Purble Pairs is complete. Sadly not actively developed :(" },
         { title: "Getrox", icon: "d11562ce585e205b.svg", tags: ["paused"], description: "Currency/finance platform, used as a token across our services.", link: "" },
         
         { title: "LS Icons v2", icon: "b909f2638b3b085b.svg", tags: ["paused"], description: "A symbolic icon library, with each icon being in at least 8 styles.", link: "" },
@@ -182,7 +183,7 @@ const data = {
         { title: "LocalStream", icon: "a41b7512d4d3a874.svg", tags: ["discontinued"], description: "App that allows you to instantly stream or sync your music playlists, gallery, or text data via a local connection with minimal latency." },
         { title: "FOSSHome", icon: "8a61a157e6c85819.webp", tags: ["discontinued"], description: "FOSSHome was a cloud-synced \"WebOS\" launchpad environment with a Linux-like shell and a sleek interface and a window/widget framework, to make you feel right at home. It's code is in an unusable state, but a lot of it's ideas are a part of lstv.space now!", link: "https://github.com/the-lstv/fosshome" },
         { title: "LSVM", icon: "3c1871e0ee6780c4.svg", tags: ["discontinued"], description: "A virtual machine manager for 'lsvm' format VMs. It primarily ran the LiOS 11 build. Only archived builds survived (not the original source)" },
-        { title: "MazeChat", icon: "753bf30abc37cacd.svg", tags: ["discontinued"], description: "Older open chat platform, replaced by Townhall.", link: "https://github.com/the-lstv/maze-chat" },
+        { title: "MazeChat", icon: "753bf30abc37cacd.svg", tags: ["discontinued"], description: "Older open chat platform, replaced by Townhall.", source: "https://github.com/the-lstv/maze-chat" },
         { title: "osu!bot", icon: "2e9f590799ed2127.webp", tags: ["discontinued"], description: "Made for fun, a bot to play or live-preview osu! maps." },
         { title: "ATF New", icon: "b9f7600fca3ac0a0.svg", tags: ["discontinued"], description: "A modernized remake of the ancient school program 'ATF' from 1992 we... still somehow use in schools today. Features a dark theme, modern features, and a clean, unobtrusive UI, free from the early Windows UI clunk." },
 
@@ -216,14 +217,14 @@ const data = {
         { title: "Linux.js", description: "UNIX-like shell emulator in JavaScript.", link: "https://github.com/the-lstv/LinuxJS" },
         { title: "lsdb", description: "A high-performance memory-mapped database (unfinished).", link: "https://github.com/the-lstv/lsdb" },
         { title: "Atrium", description: "Flexible config parser.", link: "https://github.com/the-lstv/Atrium" },
+        { title: "x-parser", description: "An experimental HTML & Markdown parser.", link: "https://github.com/the-lstv/Akeno/blob/main/core/native/x-parser.cpp" },
         { title: "Advanced Node IPC", description: "IPC Server/Client library supporting request/response and sub-sockets with some unique features..", link: "https://github.com/the-lstv/advanced-node-ipc" },
         { title: "Akeno SCSS Processor", description: "Simple addon that processes SCSS files transparently.", link: "https://github.com/the-lstv/akeno-scss-processor" },
         { title: "Akeno FileBucket", description: "Utility for efficiently storing UGC, such as avatars, with really fast reads thanks to lmdb on small files.", link: "https://github.com/the-lstv/Akeno/blob/main/core/bucket/index.js" },
-        { title: "Tabeyaki", description: "T a b e y a k i" },
         { title: "DiscordAI", description: "A discontinued library for making chatbots on Discord, please don't do that :)", link: "https://github.com/the-lstv/discord-ai" },
         { title: "LWMD", description: "A fast streaming Markdown parser (unfinished).", link: "https://github.com/the-lstv/lwmd" },
         { title: "OF3DE", description: "A buggy 3D engine I made to make a Baldi's basics clone themed around my school." },
-        { title: "Vyvaid", description: "My first \"programming language\" compiler that I made back in elementary" },
+        { title: "Vyvaid / Jahon", description: "My first \"programming language\" compiler that I made back in elementary" },
     ]
 }
 
@@ -353,15 +354,27 @@ website.register(document.currentScript, class extends LS.Context {
                     this.container.querySelector("img").classList.add("black-icon");
                 }
 
+                const buttonContainer = LS.Create("div", { style: "margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;" });
+
                 if(project.link) {
-                    this.content.description.append(LS.Create("br"), LS.Create("button", {
-                        class: "pill elevated margin-top-medium",
+                    buttonContainer.append(LS.Create("a", {
+                        class: "ls-button pill elevated",
                         inner: [{ tag: "i", class: "bi-box-arrow-up-right" }, "Open"],
-                        onclick: () => {
-                            window.open(project.link, "_blank");
-                        }
+                        href: project.link,
+                        // target: "_blank"
                     }));
                 }
+
+                if(project.source) {
+                    buttonContainer.append(LS.Create("a", {
+                        class: "ls-button pill elevated",
+                        inner: [{ tag: "i", class: "bi-github" }, "Source"],
+                        href: project.source,
+                        // target: "_blank"
+                    }));
+                }
+
+                this.content.description.appendChild(buttonContainer);
 
                 if(project.tags) {
                     project.tags.forEach(tag => {

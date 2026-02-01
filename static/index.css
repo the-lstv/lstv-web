@@ -1,3 +1,7 @@
+[ls-theme=dark] :root {
+    background: black !important;
+}
+
 .content {
     margin: auto;
     height: 100%;
@@ -456,10 +460,6 @@ ls-box.inline.color {
         animation-timeline: scroll(nearest block);
         animation-range: 0px 750px;
     }
-}
-
-[ls-theme=dark] :root {
-    background: black !important;
 }
 
 [ls-theme="light"] :root #showcase-projects > img {

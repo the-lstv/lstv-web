@@ -1,0 +1,27 @@
+#template /templates/main.html
+
+<span hidden #scope-key>@file-scope-key();</span>
+
+<head>
+    @use (~/assets/js/shader.js[defer], ./index.css);
+
+    @page {
+        title: "Tech";
+        description: "Explore the technology behind LSTV.";
+        keywords: "LSTV, technology, tech, projects, services";
+    }
+</head>
+
+<main class="tech-page">
+    <h1>Technology at LSTV</h1>
+    <p>At LSTV, we create and use our own cutting-edge technology that ensures performance and scalability.</p>
+
+    <section class="tech-overview">
+        <h2>Our Tech Stack</h2>
+        <ul>
+            <li><strong>Frontend:</strong> <a href="https://github.com/the-lstv/LS">LS</a>, our custom frontend framework</li>
+            <li><strong>Backend:</strong> <a href="https://github.com/the-lstv/akeno">Akeno</a>, our super fast backend framework</li>
+            <li><strong>Cloud Services:</strong> <a href="https://extragon.cloud">Extragon Cloud</a>, our cloud platform</li>
+        </ul>
+    </section>
+</main>

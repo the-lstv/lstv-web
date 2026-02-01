@@ -1262,17 +1262,17 @@ class Viewport extends LS.EventEmitter {
             }
 
             // Restore old page
-            if (old && !old.destroyed) {
-                try {
-                    await old.render(this.target);
-                } catch (restoreError) {
-                    // Could be dead or something
-                    kernel.error("Failed to restore previous page:", restoreError);
-                    this.errorPage(500);
-                }
-            } else {
-                this.errorPage(500);
-            }
+            // if (old && !old.destroyed) {
+            //     try {
+            //         await old.render(this.target);
+            //     } catch (restoreError) {
+            //         // Could be dead or something
+            //         kernel.error("Failed to restore previous page:", restoreError);
+            //         this.errorPage(500);
+            //     }
+            // } else {
+            // }
+            this.errorPage(page.error || 500);
             return false;
         } finally {
             this.target.classList.remove("loading");
@@ -1293,14 +1293,12 @@ class Viewport extends LS.EventEmitter {
     }
 
     errorPage(status) {
-        for(const child of Array.from(this.target.children)) {
-            child.remove();
-        }
+        this.errorPageElement; // Ensure it's created
 
         this.errorPageStatus.textContent = String(status);
         this.errorPageMessage1.textContent = website.errorMessages[status] || 'Unexpected error.';
         this.errorPageMessage2.textContent = this.errorPageMessage1.textContent;
-        this.target.appendChild(this.errorPageElement);
+        this.target.replaceChildren(this.errorPageElement);
     }
 
     destroy(destroyContent = false) {
@@ -3206,7 +3204,8 @@ const kernel = new class Kernel extends LoggerContext {
         // Event listener for back/forward buttons (for single-page app behavior)
         const originalState = location.pathname;
         window.addEventListener('popstate', (event) => {
-            const href = event.state? event.state.path: originalState;
+            if(isDebug) this.log("Popstate event:", event);
+            const href = event.state?.path ?? location.pathname;
             kernel.viewport.navigate(href, { pushState: false });
         });
 
@@ -3317,7 +3316,7 @@ const kernel = new class Kernel extends LoggerContext {
 
                                     previewPopout.innerHTML = "";
                                     previewPopout.removeAttribute("state");
-                                    externalSitePreview.querySelector(".link-preview-favicon").src = data && (data.favicon.startsWith("https://favicone.com/") ? data.favicon + "?s=48" : data.favicon) || "";
+                                    externalSitePreview.querySelector(".link-preview-favicon").src = data && data.favicon && (data.favicon.startsWith("https://favicone.com/") ? data.favicon + "?s=48" : data.favicon) || "";
                                     externalSitePreview.querySelector(".link-preview-title").textContent = data && data.title || link;
                                     
                                     const description = data && data.description || "", descriptionContainer = externalSitePreview.querySelector(".link-preview-description"), siteBox = externalSitePreview.querySelector(".link-preview-site");
