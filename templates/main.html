@@ -1,79 +1,23 @@
+<!--
+    This is the main global template, everything here will be available on all pages.
+    Page content will be rendered where <template::content /> is.
+    It should be kept small
+-->
+
 <head>
 
-    <style .whitelist>
-        body {
-            /* Eye-saver! */
-            background: #222;
-            color: #ddd;
-        }
+    <!-- Optional prefetch (we are going to load the bridge) -->
+    <link rel="preconnect" href="https://auth.extragon.cloud" crossorigin>
+    <link rel="dns-prefetch" href="//auth.extragon.cloud">
+    <link rel="dns-prefetch" href="//cdn.extragon.cloud">
+    <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
 
-        @media (prefers-color-scheme: light) {
-            body {
-                background: #ddd;
-                color: #222;
-            }
-
-            .ui-loader {
-                border-color: #111 #0000;
-            }
-        }
-
-        .loaderContainer, .loaderContainer > .error {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
-
-        .loaderContainer .message {
-            text-align: center;
-            margin: 40px 20px;
-        }
-
-        @keyframes l1 { to { transform: rotate(.5turn) } }
-
-        .loader {
-            --b: 25%;
-            height: 80px;
-            aspect-ratio: 1/cos(30deg);
-            position: relative;
-            clip-path: polygon(50% 0,100% 100%,0 100%,50% 0,50% var(--b),calc(var(--b)*cos(30deg)) calc(100% - var(--b)/2),calc(100% - var(--b)*cos(30deg)) calc(100% - var(--b)/2),50% var(--b));
-            filter: blur(12px);
-        }
-
-        .loader:before {
-            content: "";
-            position: absolute;
-            inset: -8% 0;
-            background: conic-gradient(#0000 35%,var(--accent, #0B486B),#0000 65%);
-            animation: l5 2s linear infinite;
-        }
-
-        .ui-loader {
-            width: 50px;
-            aspect-ratio: 1;
-            border-radius: 50%;
-            border: 8px solid;
-            border-color: var(--surface-top, #fff) #0000;
-            animation: l1 1s infinite;
-        }
-
-        @keyframes l5 { to {rotate: 1turn} }
-    </style>
+    <!-- Styles that we need immediately without waiting -->
+    @import("/~/templates/head.css") { as: inline-style; class: "whitelist" }
 
     <script .whitelist>
         window.__loadTime = Date.now();
         window.__init = [];
-        window.__loadError = (message) => {
-            const container = document.querySelector('.loaderContainer');
-            const errorBox = container.querySelector('.error');
-            container.querySelector('.loader').remove();
-            if (message) errorBox.querySelector('.message').innerHTML = message;
-            errorBox.style.display = 'flex';
-        };
-
         window.LS_INIT_OPTIONS = {
             autoScheme: true,
             autoAccent: true,
@@ -82,8 +26,6 @@
             // Not needed in production
             enforceContextSafety: true
         };
-
-        window.LOW_PERFORMANCE_MODE = localStorage.getItem("LOW_PERFORMANCE_MODE") === "true";
 
         window.website = {
             /**
@@ -98,6 +40,16 @@
             loaded: false
         }
 
+        window.__loadError = (message) => {
+            const container = document.querySelector('.loaderContainer');
+            const errorBox = container.querySelector('.error');
+            container.querySelector('.loader').remove();
+            if (message) errorBox.querySelector('.message').innerHTML = message;
+            errorBox.style.display = 'flex';
+        };
+
+        window.LOW_PERFORMANCE_MODE = localStorage.getItem("LOW_PERFORMANCE_MODE") === "true";
+
         window.addEventListener("DOMContentLoaded", () => {
             if(!window.LS || !window.website?.loaded) {
                 window.__loadError();
@@ -105,14 +57,14 @@
         });
     </script>
 
-    <link rel="preconnect" href="https://auth.extragon.cloud" crossorigin>
-    <link rel="dns-prefetch" href="//auth.extragon.cloud">
-    <link rel="dns-prefetch" href="//cdn.extragon.cloud">
-
     <!-- <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdn.extragon.cloud https://cdn.extragon.localhost https://fonts.googleapis.com https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.extragon.cloud https://cdn.extragon.localhost https://fonts.googleapis.com; font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net; connect-src 'self' wss://*.lstv.space wss://*.extragon.cloud wss://*.extragon.localhost https://api.extragon.cloud https://api.extragon.localhost;"> -->
 
+    <!-- LS, icons, fonts -->
     @use (ls[flat, color, tooltips, toast, menu, reactive, tabs, animation, resize, modal, ShortcutManager, CompileTemplate], bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800"]);
 
+    <!-- @use (bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800"]); -->
+
+    <!-- Kernel and global CSS -->
     @use (~/assets/css/main.scss, ~/assets/js/kernel.js[defer]);
 
     @page {
@@ -225,7 +177,7 @@
                 </ls-div>
             </div>
 
-            <div .toolbar .toolbar-styled .level-n1 #toolbarAssistant style="display: none">
+            <!-- <div .toolbar .toolbar-styled .level-n1 #toolbarAssistant style="display: none">
                 <div .loading>
                     <div .loader></div>
                 </div>
@@ -252,7 +204,7 @@
                         <button type="submit" ls-tooltip aria-label="Send message" .send .circle><i .bi-arrow-up-short></i></button>
                     </form>
                 </div>
-            </div>
+            </div> -->
 
             <div .toolbar .toolbar-styled #toolbarLogin .level-1 style="display: none">
                 <div .login-toolbar-page tab-id="default" #loginPopup>

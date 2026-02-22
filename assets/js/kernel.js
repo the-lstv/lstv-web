@@ -7,11 +7,69 @@
     See: https://github.com/the-lstv/lstv-web
 */
 
+"use walker";
+
+const BUILTIN_APPS = [
+    {
+        "name": "Townhall",
+        "id": "townhall",
+        "icon": "cd18c88051bcdc92.svg",
+        "description": "A social community platform with servers, text & voice channels, threads, and more.",
+        "version": "1.0.0",
+        "link": "/chat"
+    },
+    {
+        "name": "Video Editor",
+        "id": "video-editor",
+        "icon": "32c0975799f31fc3.svg",
+        "description": "A full-featured, simple but professional video editor",
+        "version": "1.0.0",
+        "external": true,
+        "link": "/editor"
+    },
+    {
+        "name": "Resources",
+        "id": "resource-monitor",
+        "icon": "4cf4213e702a21fe.svg",
+        "description": "Monitor loaded pages and applications.",
+        "version": "1.0.0",
+        "main": "resourcemanager.mjs"
+    },
+    {
+        "name": "Clock",
+        "id": "clock",
+        "icon": "d2973ce4286307f8.svg",
+        "description": "What is the current time?",
+        "version": "1.0.0",
+        "main": "clock.mjs"
+    },
+    {
+        "name": "Text Editor",
+        "id": "text-editor",
+        "icon": "ecf15bde6c275d83.svg",
+        "description": "A simple Markdown text editor for your notes.",
+        "version": "1.0.0",
+        "main": "texteditor.mjs"
+    },
+    {
+        "name": "Email",
+        "id": "mail-client",
+        "icon": "901fb7f3abda204f.svg",
+        "description": "Manage your emails.",
+        "version": "1.0.0",
+        "main": "mail.mjs"
+    }
+];
 
 // --- SOME PRE-INITIALIZATION STUFF ---
+// Note that if the environment is correct, this module should be wrapped in an IIFE by the build system & not leak
 
 if(window.__kernelInitialized) {
     throw new Error("Kernel was already initialized - this is a bug!");
+}
+
+if(globalThis === this) {
+    throw new Error("Kernel was loaded at the top level, this is a bug");
 }
 
 window.__kernelInitialized = true;
@@ -39,58 +97,6 @@ if(!isDebug) console.log(
     'font-size:1.5em;color:#ed6c30;font-weight:bold',
     'font-size:1em;font-weight:400'
 );
-
-const BUILTIN_APPS = [
-    {
-        name: "Townhall",
-        id: "townhall",
-        icon: "cd18c88051bcdc92.svg",
-        description: "A social community platform with servers, text & voice channels, threads, and more.",
-        version: "1.0.0",
-        link: "/chat",
-    },
-    {
-        name: "Video Editor",
-        id: "video-editor",
-        icon: "32c0975799f31fc3.svg",
-        description: "A full-featured, simple but professional video editor",
-        version: "1.0.0",
-        external: true,
-        link: "/editor",
-    },
-    {
-        name: "Resources",
-        id: "resource-monitor",
-        icon: "4cf4213e702a21fe.svg",
-        description: "Monitor loaded pages and applications.",
-        version: "1.0.0",
-        main: "resourcemanager.mjs",
-    },
-    {
-        name: "Clock",
-        id: "clock",
-        icon: "d2973ce4286307f8.svg",
-        description: "What is the current time?",
-        version: "1.0.0",
-        main: "clock.mjs",
-    },
-    {
-        name: "Text Editor",
-        id: "text-editor",
-        icon: "ecf15bde6c275d83.svg",
-        description: "A simple Markdown text editor for your notes.",
-        version: "1.0.0",
-        main: "texteditor.mjs",
-    },
-    {
-        name: "Email",
-        id: "mail-client",
-        icon: "901fb7f3abda204f.svg",
-        description: "Manage your emails.",
-        version: "1.0.0",
-        main: "mail.mjs",
-    },
-]
 
 Document.prototype.write = Document.prototype.writeln = function() {
     throw new Error("Document.write is disabled for security and performance reasons. You should not use it.");
@@ -1690,7 +1696,7 @@ const website = {
             }
 
             const isAnimated = filename && (user && user.__animated_pfp) || filename && filename.endsWith(".webm");
-            const src = filename? filename.startsWith("blob:")? filename : website.cdn + '/file/' + filename + (!isAnimated? "?size=" + IMAGE_RESOLUTION: ""): "/assets/image/default.svg";
+            const src = filename? filename.startsWith("blob:")? filename : website.cdn + '/file/' + filename + (!isAnimated? "?size=" + IMAGE_RESOLUTION: ""): "/~/assets/image/default.svg";
 
             const img = N(isAnimated ? "video" : "img", {
                 alt: "Profile Picture",
@@ -1699,7 +1705,7 @@ const website = {
                 onerror() {
                     if (this.tagName.toLowerCase() === "video") {
                         const image = N("img", {
-                            src: "/assets/image/default.svg",
+                            src: "/~/assets/image/default.svg",
                             alt: "Profile Picture",
                             class: "profile-picture",
                             draggable: false,
@@ -1711,7 +1717,8 @@ const website = {
                         if (args && args[0]) image.style.width = image.style.height = typeof args[0] === "number" ? args[0] + "px" : args[0];
                         return;
                     }
-                    this.src = "/assets/image/default.svg"
+
+                    if(this.src !== "/~/assets/image/default.svg") this.src = "/~/assets/image/default.svg"; // in case the default also fails, don't set again, otherwise the browser will go crazy
                 },
 
                 ...isAnimated && {
@@ -2252,29 +2259,29 @@ const website = {
             }
         }],
 
-        ["assistant", {
-            element: O("#toolbarAssistant"),
-            name: "Assistant",
-            description: "Open Assistant",
-            panelItem: "assistantButton",
-            onOpen() {
-                if(!window.__assistantLoading) {
-                    window._assistantCallback = null;
-                    window.__assistantLoading = true;
+        // ["assistant", {
+        //     element: O("#toolbarAssistant"),
+        //     name: "Assistant",
+        //     description: "Open Assistant",
+        //     panelItem: "assistantButton",
+        //     onOpen() {
+        //         if(!window.__assistantLoading) {
+        //             window._assistantCallback = null;
+        //             window.__assistantLoading = true;
 
-                    setTimeout(async () => {
-                        M.LoadScript("/~/assets/js/assistant.js" + window.cacheKey, (error) => {
-                            if(error || typeof window._assistantCallback !== "function") {
-                                LS.Toast.show("Sorry, assistant failed to load. Please try again later.");
-                                return;
-                            }
+        //             setTimeout(async () => {
+        //                 M.LoadScript("/~/assets/js/assistant.js" + window.cacheKey, (error) => {
+        //                     if(error || typeof window._assistantCallback !== "function") {
+        //                         LS.Toast.show("Sorry, assistant failed to load. Please try again later.");
+        //                         return;
+        //                     }
 
-                            window._assistantCallback(website, kernel.auth);
-                        })
-                    }, 0);
-                }
-            }
-        }],
+        //                     window._assistantCallback(website, kernel.auth);
+        //                 })
+        //             }, 0);
+        //         }
+        //     }
+        // }],
 
         ["theme", {
             element: O("#toolbarTheme"),
@@ -2836,6 +2843,13 @@ const kernel = new class Kernel extends LoggerContext {
     SPAExtensions = new Matcher();
 
     MAX_THREADS = (navigator.hardwareConcurrency || 4) * 2;
+
+    scheduler = new class Scheduler {
+        constructor() {
+        }
+
+        
+    }
 
     /**
      * Auth manager
@@ -4196,7 +4210,7 @@ const kernel = new class Kernel extends LoggerContext {
         let current_interval = 15000, first = true;
 
         const sendPing = (beacon = false) => {
-            if (document.hidden) {
+            if (!beacon && (document.hidden || !document.hasFocus())) {
                 setTimeout(() => sendPing(beacon), current_interval);
                 return;
             }
@@ -4261,7 +4275,7 @@ const kernel = new class Kernel extends LoggerContext {
                         }
 
                         first = false;
-                        current_interval = Math.min(current_interval + 5000, 60000);
+                        current_interval = Math.min(current_interval + 10000, 120000);
                         setTimeout(sendPing, current_interval);
                     }).catch(() => {
                         setTimeout(sendPing, current_interval);
@@ -4386,8 +4400,6 @@ const kernel = new class Kernel extends LoggerContext {
         if (typeof AppClass !== "function" || !LS.Util.isClass(AppClass) || !(AppClass.prototype instanceof ContentContext)) throw new Error("Application module does not export a default class or does not extend ContentContext");
         kernel.applications.set(appId, AppClass);
         AppClass.manifest = manifest;
-
-        delete window.module;
     }
 
     /**

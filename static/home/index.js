@@ -630,7 +630,7 @@ website.register(document.currentScript, class extends LS.Context {
         }));
 
         const menuButton = this.container.querySelector('.menu-button');
-        menuButton.addEventListener("click", () => this.panel.toggleClass('sidebar-menu-visible'));
+        menuButton.addEventListener("click", () => this.panel.classList.toggle('sidebar-menu-visible'));
 
         // -- Tabs
         this.tabs = this.addDestroyable(new LS.Tabs(this.panelContent.querySelector('.sidebar-content'), {

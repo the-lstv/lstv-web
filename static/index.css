@@ -290,10 +290,6 @@ ls-box.inline.color {
         width: 250px;
     }
 
-    .marqueeBar span:nth-child(odd) {
-        display: none;
-    }
-
     .lore-section {
         margin: 60px 20px;
     }

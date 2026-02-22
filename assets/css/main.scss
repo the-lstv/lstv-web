@@ -479,6 +479,12 @@ main > div {
     }
 }
 
+@media only screen and (max-width: 600px) {
+    .marqueeBar span:nth-child(odd) {
+        display: none;
+    }
+}
+
 /*
  * Part: Error Page
 */
