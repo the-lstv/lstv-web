@@ -53,8 +53,8 @@
                     <ls-div>
                         <ls-div>
                             # What's LSTV.space?
-                            LSTV is a universe of things aiming to provide you with the best possible user experience. We hope you will find lstv.space like a home where you enjoy staying - there is a lot to explore! We build tools and platforms for the enjoyment of users, not for profit. It is also a community of developers, artists, producers and people who enjoy our work, aiming to provide an open environment to create and share awesome high-quality projects.<br><br>
-                            *If you like what we make, please consider supporting and joining our community. As of now, it is a single-person effort - if we have more people, we can do much more.*
+                            LSTV is a universe of things aiming to provide you with the best possible user experience. We hope you will find lstv.space like a home where you enjoy staying - there is a lot to explore! We build tools and platforms for the enjoyment of users, not for profit. It is also a community of developers, artists, producers and people who enjoy our work, aiming to provide an open environment to create and share awesome high-quality projects. LSTV prioritizes human creativity and pro-consumer design over aggresive monetization or soulless AI products.<br><br>
+                            *If you like what we make, please consider supporting and joining our community. As of now, it's a single-person effort - if there is more of us, we can do much more!*
                         </ls-div>
                     </ls-div>
 
@@ -160,7 +160,7 @@ const data = {
     projects: [
         { title: "Akeno", icon: "f2eeab33bc9b7873.svg", description: "Akeno is a very fast, modular, and full-featured webserver / backend framework. It handles everything a server should and supports various protocols. It's what I use as a webserver and backend.", link: "/tech/akeno", source: "https://github.com/the-lstv/akeno" },
         { title: "LS", icon: "884695036cdc8c27.webp", description: "A lightweight and modern framework for web applications. Used by all of our projects.", link: "/tech/ls", source: "https://github.com/the-lstv/LS" },
-        { title: "lstv.space", icon: "a71878679a110d4a.webp", description: "My website and hub for everything. It runs on a custom full-featured kernel, and is pretty much an operating system.", link: "https://lstv.space", source: "https://github.com/the-lstv/lstv-web" },
+        { title: "lstv.space", icon: "a71878679a110d4a.webp", description: "My website and hub for everything. It runs on a custom full-featured kernel.", link: "https://lstv.space", source: "https://github.com/the-lstv/lstv-web" },
         { title: "Video Editor", icon: "32c0975799f31fc3.svg", description: "A modern, simple but powerful programmable video editor. Has an intuitive patcher interface, advanced rendering effects, audio mixing, automation clips, animations, and more.", link: "https://lstv.localhost/editor", source: "https://github.com/the-lstv/videoeditor" },
         // { title: "Video Editor", icon: "29d18bcf2593fa3e.svg", description: "A modern, simple but powerful programmable video editor. Has an intuitive patcher interface, advanced rendering effects, audio mixing, automation clips, animations, and more.", link: "https://github.com/the-lstv/video-editor" },
         { title: "Townhall", icon: "cd18c88051bcdc92.svg", description: "A social community platform with servers, text & voice channels, threads, and more. It has lots of customization and new features are added frequently. It is also faster and easier on your CPU than *some* competing platforms. Come check it out!", link: "/chat", source: "https://github.com/the-lstv/townhall" },
@@ -178,10 +178,13 @@ const data = {
         { title: "MotionCast", icon: "2dbab853ce2cc04c.svg", tags: ["discontinued"], description: "A light remote desktop application with an easy web-based client with multi-stream support." },
         { title: "Edookit2", icon: "796af24c7a0f23c0.svg", tags: ["paused"], description: "A modern school frontend with a sleek interface as an alternative to the awful official one." , link: "" },
         { title: "PurblePlace (port)", icon: "fac005c8888b4de0.webp", tags: ["paused"], description: "A frame-perfect port of the classic \"PurblePlace\" game, with web and mobile support. So far the main menu and Purble Pairs is complete. Sadly not actively developed :(" },
+
+        { type: "separator" },
+
         { title: "Getrox", icon: "d11562ce585e205b.svg", tags: ["paused"], description: "Currency/finance platform, used as a token across our services.", link: "" },
-        
         { title: "LS Icons v2", icon: "b909f2638b3b085b.svg", tags: ["paused"], description: "A symbolic icon library, with each icon being in at least 8 styles.", link: "" },
         { title: "Unifya", icon: "ff153edceb4394d1.webp", description: "An universal data flow library used across my creative software (video editors, game engines, audio tools etc.) to ensure seamless integration by streamlining data flow.", link: "" },
+        { title: "Arisen", icon: "65887818849cc412.webp", description: "Former machine learning \"division\". Featured an interface (both for users and developers) for interacting with our (or any) LLM/ML models such as Arisen-NLP/GPM 1.6/GPM 1.5/GPM-8Bv2/GPM-11B/GPM-6B/GPM Nano/GPM Pico, with a smart router system & privacy in mind, and many cool features. Last project was an interactive assistant for lstv.space - but that was while the tech was still cool... After controversies around AI started popping up, I decided to close this branch as I value ethics and the environment, and I think it is safe to say we are all tired of AI anyway.<br><br>Our models still exist and we can use them at some point for some purposeful tasks. By the way, no water was harmed during training. They are tiny models I made for fun.", link: "" },
 
         { title: "Arc", icon: "22c5f89454f62ffc.svg", tags: ["discontinued"], description: "An application and game runtime/launcher. All of my early apps were made in this, but no stable build has been completed." },
         { title: "Gear Calc", icon: "38ace2148cd1e376.webp", tags: ["discontinued"], description: "A calculator app for Tizen (Galaxy Watch 3 and older) with advanced features, units conversion, and a currency converter." },
@@ -193,10 +196,6 @@ const data = {
         { title: "osu!bot", icon: "2e9f590799ed2127.webp", tags: ["discontinued"], description: "Made for fun, a bot to play or live-preview osu! maps." },
         { title: "ATF New", icon: "b9f7600fca3ac0a0.svg", tags: ["discontinued"], description: "A modernized remake of the ancient school program 'ATF' from 1992 we... still somehow use in schools today. Features a dark theme, modern features, and a clean, unobtrusive UI, free from the early Windows UI clunk." },
 
-    ],
-
-    oldProjects: [
-        { title: "" }
     ],
 
     libraries: [
@@ -229,6 +228,7 @@ const data = {
         { title: "Akeno FileBucket", description: "Utility for efficiently storing UGC, such as avatars, with really fast reads thanks to lmdb on small files.", link: "https://github.com/the-lstv/Akeno/blob/main/core/bucket/index.js" },
         { title: "DiscordAI", description: "A discontinued library for making chatbots on Discord, please don't do that :)", link: "https://github.com/the-lstv/discord-ai" },
         { title: "LWMD", description: "A fast streaming Markdown parser (unfinished).", link: "https://github.com/the-lstv/lwmd" },
+        { title: "LS Editor", description: "A code editor in early development." },
         { title: "OF3DE", description: "A buggy 3D engine I made to make a Baldi's basics clone themed around my school." },
         { title: "Vyvaid / Jahon", description: "My first \"programming language\" compiler that I made back in elementary" },
     ]
@@ -314,25 +314,26 @@ website.register(document.currentScript, class extends LS.Context {
         }
 
         class ShowcaseProject extends ItemPreview {
-            static TEMPLATE = LS.CompileTemplate((data, logic) => ({
-                class: "showcase-item",
-                inner: [
-                    logic.export("leftPanel", {
-                        class: "showcase-item-left-panel",
-                        inner: [
-                            { tag: "img", class: "showcase-item-icon", src: data.icon, width: "128", height: "128", crossOrigin: "anonymous", alt: data.title, onload: data.onload }
-                        ]
-                    }),
+            // static TEMPLATE = LS.CompileTemplate((data, logic) => ({
+            //     class: "showcase-item",
+            //     inner: [
+            //         logic.export("leftPanel", {
+            //             class: "showcase-item-left-panel",
+            //             inner: [
+            //                 { tag: "img", class: "showcase-item-icon", src: data.icon, width: "128", height: "128", crossOrigin: "anonymous", alt: data.title, onload: data.onload }
+            //             ]
+            //         }),
 
-                    {
-                        class: "showcase-item-content",
-                        inner: [
-                            logic.export("title", { class: "showcase-item-title", inner: data.title }),
-                            logic.export("description", { class: "showcase-item-description", inner: data.description }),
-                        ]
-                    }
-                ]
-            }));
+            //         {
+            //             class: "showcase-item-content",
+            //             inner: [
+            //                 logic.export("title", { class: "showcase-item-title", inner: data.title }),
+            //                 logic.export("description", { class: "showcase-item-description", innerHTML: data.description }),
+            //             ]
+            //         }
+            //     ]
+            // }));
+            static TEMPLATE = function(d){'use strict';var e0=document.createElement("div");e0.className="showcase-item";var e1=document.createElement("div");e1.className="showcase-item-left-panel";var e2=document.createElement("img");e2.src=d.icon;e2.width="128";e2.height="128";e2.crossOrigin="anonymous";e2.alt=d.title;e2.onload=d.onload;e2.className="showcase-item-icon";e1.appendChild(e2);var e3=document.createElement("div");e3.className="showcase-item-content";var e4=document.createElement("div");e4.className="showcase-item-title";e4.append(LS.__dynamicInnerToNode(d.title));var e5=document.createElement("div");e5.innerHTML=d.description;e5.className="showcase-item-description";e3.append(e4,e5);e0.append(e1,e3);var __rootValue=e0;return{"leftPanel":e1,"title":e4,"description":e5,root:__rootValue};}
 
             constructor(project) {
                 super();
@@ -642,8 +643,20 @@ website.register(document.currentScript, class extends LS.Context {
                     if(!this.projects_loaded) {
                         this.projects_loaded = true;
 
+                        let projectContainer = container.querySelector("#showcase-projects");
+
                         data.projects.forEach((project, index) => {
-                            container.querySelector("#showcase-projects").appendChild((new ShowcaseProject(project)).container);
+                            if(project.type === "separator") {
+                                const separator = LS.Create("details", { class: "showcase-separator", inner: [
+                                    { tag: "summary", inner: project.title || "Show Older/Misc/Abandoned Projects" }, [] // <= That is the div slot
+                                ]});
+
+                                projectContainer.appendChild(separator);
+                                projectContainer = separator.querySelector("div");
+                                return;
+                            }
+
+                            projectContainer.appendChild((new ShowcaseProject(project)).container);
                         });
                     }
                     break;
