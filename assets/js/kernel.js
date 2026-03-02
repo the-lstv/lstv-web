@@ -58,6 +58,14 @@ const BUILTIN_APPS = [
         "description": "Manage your emails.",
         "version": "1.0.0",
         "main": "mail.mjs"
+    },
+    {
+        "name": "Mind Reader",
+        "id": "mind-reader",
+        "icon": "901fb7f3abda204f.svg",
+        "description": "Reads your mind.",
+        "version": "1.0.0",
+        "main": "mind-reader.mjs"
     }
 ];
 
