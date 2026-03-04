@@ -1,5 +1,6 @@
 [ls-theme=dark] :root {
     background: black !important;
+    overflow-x: hidden;
 }
 
 .content {
