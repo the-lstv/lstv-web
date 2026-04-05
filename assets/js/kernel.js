@@ -82,7 +82,7 @@ if(globalThis === this) {
 
 window.__kernelInitialized = true;
 
-const KERNEL_VERSION = (typeof __buildVersion !== "undefined")? __buildVersion: "1.2.3-beta";
+const KERNEL_VERSION = (typeof __buildVersion !== "undefined")? __buildVersion: "1.2.4-beta";
 
 window.cacheKey = "?mtime=" + (LS.Util.parseURLParams(document.currentScript?.src, "mtime") || Date.now()); // Mtime mapped to kernel.js (This should never fallback)
 
@@ -2845,6 +2845,8 @@ const kernel = new class Kernel extends LoggerContext {
 
     shortcutManager = shortcutManager;
 
+    appManifests = new Map();
+
     queryParams = LS.Util.params();
     userFragment = LS.Reactive.wrap("user", {});
 
@@ -3101,6 +3103,10 @@ const kernel = new class Kernel extends LoggerContext {
         website.viewport = this.viewport = new Viewport('main', document.getElementById('viewport'), {
             kernel: this
         });
+
+        for(const manifest of BUILTIN_APPS) {
+            this.appManifests.set(manifest.id, manifest);
+        }
 
         this.ttl = Date.now() - window.__loadTime;
         this.log('Kernel initialized, version %c' + this.version + '%c, time since first load: ' + this.ttl + 'ms', 'font-weight:bold', 'font-weight:normal');
@@ -3691,6 +3697,28 @@ const kernel = new class Kernel extends LoggerContext {
             website.palette.close();
         };
 
+        /**
+         * This should later be inline, so we don't waste client memory & work. 
+         * That's when we use Glitter
+         */
+
+        /*comptime*/ const kVersionMeta = {
+            1: {
+                codename: "Zen",
+                color: "#B5FFEE"
+            },
+            2: {
+                codename: "Aether",
+                color: "#FFA680"
+            },
+            3: {
+                codename: "Forge",
+                color: "#8C80FF"
+            }
+        }
+
+        /*comptime*/ const ckMeta = kVersionMeta[kernel.version.split(".")[0]] || { codename: "Unknown", color: "var(--accent)" };
+
         website.palette.register([
             {
                 name: "kernel-info",
@@ -3698,9 +3726,14 @@ const kernel = new class Kernel extends LoggerContext {
                 icon: 'bi-cpu-fill',
                 description: "Show kernel information",
                 async onCalled() {
-                    terminalOutput.appendChild(N('img', {
-                        src: '/~/assets/image/kernel-icons/kernel-' + KERNEL_VERSION.slice(0, 3) + '.png?v=' + KERNEL_VERSION[4],
-                        style: 'margin:auto;display:block'
+                    terminalOutput.appendChild(LS.Create({
+                        innerHTML: `<img src="/~/assets/image/kernel-icons/${kernel.version.split(".")[0]}x.png" width="180" style="position:absolute;top:20px"><svg xmlns="http://www.w3.org/2000/svg" width="200" height="180" viewBox="0 0 200 180" fill="none">
+<rect x="59" y="63" width="82" height="28.9828" fill="black"/>
+<rect x="59" y="91.9828" width="82" height="24.7414" fill="${ckMeta.color}"/>
+<text fill="black" style="white-space: pre" xml:space="preserve" font-family="JetBrains Mono" font-size="16.9655" font-weight="300" letter-spacing="0em"><tspan x="70.0855" y="110.504">v${kernel.version.split("-")[0]}</tspan></text>
+<text fill="${ckMeta.color}" style="white-space: pre" xml:space="preserve" font-family="JetBrains Mono" font-size="22.6207" font-weight="500" letter-spacing="0em"><tspan x="66.0693" y="86.1434">[${ckMeta.codename}]</tspan></text>
+</svg>`,
+                        style: 'margin:auto;display:flex;justify-content:center;position:relative'
                     }));
 
                     terminalWriter.log(
@@ -3709,7 +3742,7 @@ const kernel = new class Kernel extends LoggerContext {
                         "color:inherit;font-weight:bold;font-size:1.2em"
                     );
                     terminalWriter.log(
-                        `%cVersion:%c ${kernel.version} (Zen)`,
+                        `%cVersion:%c ${kernel.version} (${ckMeta.codename})`,
                         "color:var(--accent);font-weight:bold", "color:inherit"
                     );
                     terminalWriter.log(
@@ -3761,23 +3794,23 @@ const kernel = new class Kernel extends LoggerContext {
                 icon: "bi-gear",
                 description: "More settings",
                 children: [
-                    {
-                        name: "notifications",
-                        icon: "bi-bell",
-                        description: "Enable or disable notifications",
-                        children: [
-                            {
-                                name: "enable",
-                                icon: "bi-bell-fill",
-                                description: "Enable notifications",
-                            },
-                            {
-                                name: "disable",
-                                icon: "bi-bell-slash",
-                                description: "Disable notifications",
-                            }
-                        ]
-                    },
+                    // {
+                    //     name: "notifications",
+                    //     icon: "bi-bell",
+                    //     description: "Enable or disable notifications",
+                    //     children: [
+                    //         {
+                    //             name: "enable",
+                    //             icon: "bi-bell-fill",
+                    //             description: "Enable notifications",
+                    //         },
+                    //         {
+                    //             name: "disable",
+                    //             icon: "bi-bell-slash",
+                    //             description: "Disable notifications",
+                    //         }
+                    //     ]
+                    // },
 
                     {
                         name: "privacy",
@@ -3893,6 +3926,69 @@ const kernel = new class Kernel extends LoggerContext {
                             { name: "Customize website", value: "theme", icon: "bi-brush" },
                             { name: "Assistant", value: "assistant", icon: "bi-robot" }
                         ]
+                    }
+                ]
+            },
+
+            {
+                name: "apps",
+                icon: "bi-window",
+                description: "Applications",
+
+                children: [
+                    {
+                        name: "open",
+                        icon: "bi-box-arrow-up-right",
+                        description: "Open an app",
+                        children() {
+                            return [...kernel.appManifests.values()].map(app => ({ name: app.name.replace(/\s+/g, '_'), value: app.id, icon: app.icon, onCalled() {
+                                kernel.openApplication(app, { source: "palette" })
+                                    // .loading(() => {}) // TODO: loading mark for the palette
+                                    .done((instance) => {
+                                        instance.open?.();
+                                        website.palette.close();
+                                    })
+                                    .catch(error => {
+                                        terminalWriter.log("Failed to open app: " + (error.message || error.error || "Unknown error"));
+                                    });
+                            }}));
+                        }
+                    },
+
+                    {
+                        name: "uninstall",
+                        icon: "bi-trash",
+                        description: "Uninstall an app",
+                    },
+
+                    {
+                        name: "install",
+                        icon: "bi-download",
+                        description: "Install an app",
+                    },
+
+                    {
+                        name: "sync",
+                        icon: "bi-arrow-repeat",
+                        description: "Enable sync for an app",
+                    },
+
+                    {
+                        name: "unsync",
+                        icon: "bi-x-lg",
+                        description: "Disable sync for an app",
+                    },
+
+                    {
+                        name: "auth",
+                        icon: "bi-shield-lock",
+                        description: "Authenticate"
+                    },
+
+                    {
+                        name: "manage-permissions",
+                        icon: "bi-shield-lock",
+                        description: "Manage app permissions",
                     }
                 ]
             },
@@ -4323,7 +4419,7 @@ const kernel = new class Kernel extends LoggerContext {
             });
 
             // Load existing apps
-            for(const manifest of BUILTIN_APPS) {
+            for(const manifest of kernel.appManifests.values()) {
                 this.addApplicationEntry(manifest);
             }
         }
@@ -4356,23 +4452,20 @@ const kernel = new class Kernel extends LoggerContext {
                         return;
                     }
 
-                    if (!kernel.applications.has(appId)) {
-                        appButton.setAttribute("state", "loading");
-                        kernel.loadApplication(manifest).then(() => {
-                            appButton.removeAttribute("state");
-                            const appInstance = kernel.instantiateApplication(appId);
-                            appInstance.open?.();
+                    kernel.openApplication(manifest, { source: "appMenu" })
+                        .loading(() => {
+                            appButton.setAttribute("state", "loading");
+                        })
+                        .done((instance) => {
+                            instance.open?.();
                             website.closeToolbar();
-                        }).catch(error => {
+                        })
+                        .catch(error => {
+                            LS.Toast.show("Failed to open application: " + error.message, { accent: "red" });
+                        })
+                        .finally(() => {
                             appButton.removeAttribute("state");
-                            LS.Toast.show("Failed to load application: " + error.message, { accent: "red" });
                         });
-                        return;
-                    }
-
-                    const appInstance = kernel.instantiateApplication(appId);
-                    appInstance.open?.();
-                    website.closeToolbar();
                 }
             });
 
@@ -4420,7 +4513,74 @@ const kernel = new class Kernel extends LoggerContext {
         const AppClass = kernel.applications.get(appId);
         if (!AppClass) throw new Error("Application not found: " + appId);
         this.log("Instantiating application:", appId);
-        return new AppClass();
+        return new AppClass(options);
+    }
+
+    /**
+     * Open an application by its ID, and handle loading state and errors.
+     * @param {string} appId 
+     * @param {object} options
+     */
+    openApplication(manifest, options = {}) {
+        const p = new ApplicationOpenerPromise();
+
+        queueMicrotask(() => {
+            if(typeof manifest === "string") {
+                manifest = kernel.appManifests.get(manifest);
+                if(!manifest) {
+                    return p.throw(new Error("Application manifest not found: " + manifest));
+                }
+            }
+
+            const appId = manifest.id;
+
+            if (!this.applications.has(appId)) {
+                p.loadingState();
+
+                this.loadApplication(manifest).then(() => {
+                    try {
+                        const instance = this.instantiateApplication(appId, options);
+                        p.resolve(instance);
+                    } catch (error) {
+                        p.throw(error);
+                    }
+                }).catch(error => p.throw(error));
+                return p;
+            }
+
+            try {
+                const instance = this.instantiateApplication(appId, options);
+                p.resolve(instance);
+            } catch (error) {
+                p.throw(error);
+            }
+        });
+
+        return p;
+    }
+}
+
+class ApplicationOpenerPromise {
+    loading(callback) { if (callback) this._l = callback; return this; }
+    done(callback) { if (callback) this._d = callback; return this; }
+    catch(callback) { if (callback) this._c = callback; return this; }
+    finally(callback) { if (callback) this._f = callback; return this; }
+
+    loadingState(state) {
+        if (this._l) this._l(state);
+        return this;
+    }
+
+    throw(error) {
+        if (this._c) this._c(error);
+        if (this._f) this._f();
+        return this;
+    }
+
+    resolve(instance) {
+        if (this._d) this._d(instance);
+        if (this._f) this._f();
+        return this;
     }
 }
 

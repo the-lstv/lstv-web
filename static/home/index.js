@@ -3,7 +3,7 @@
  */
 
 // Constants
-const APP_CATEGORY_ICONS = {
+/*inline enum*/ const APP_CATEGORY_ICONS = {
     web: "bi-globe",
     widget: "bi-app-indicator",
     software: "bi-laptop",
@@ -17,10 +17,10 @@ const APP_CATEGORY_ICONS = {
 /**
  * Manages developer applications
  */
-class DeveloperAppEditor extends LS.Context {
+class ApplicationsHandler extends LS.Context {
     constructor(context) {
         super();
-        this.context = context;
+        this.parent = context;
         this.currentAppId = null;
         this.list = [];
 
@@ -53,7 +53,7 @@ class DeveloperAppEditor extends LS.Context {
                                     alt: app.name + " icon"
                                 }) : LS.Create('ls-box', {
                                     class: "elevated placeholder-icon app-icon",
-                                    inner: [N("i", { class: APP_CATEGORY_ICONS[app.category] || "bi-app-indicator" })]
+                                    inner: [LS.Create("i", { class: APP_CATEGORY_ICONS[app.category] || "bi-app-indicator" })]
                                 })
                             ]
                         },
@@ -95,8 +95,83 @@ class DeveloperAppEditor extends LS.Context {
                 return;
             }
 
-            for (const element of this.context.panelContent.querySelectorAll('.menu [tab-id="application"] [base-href]')) {
+            for (const element of this.parent.panelContent.querySelectorAll('.menu [tab-id="application"] [base-href]')) {
                 element.setAttribute("href", element.getAttribute("base-href").replace("$id", appId));
+            }
+        });
+    }
+
+    initCreateForm() {
+        this.parent.panelContent.querySelector(".create-app-button").addEventListener("click", () => {
+            this.parent.tabs.set("applications/create");
+        });
+
+        this.developerAppEditor.update();
+
+        this.parent.panelContent.querySelector('#app-setup-tab').appendChild(LS.Create("form", {
+            id: "app-setup-form",
+            onsubmit: () => false,
+            inner: [
+                { style: "display: flex; overflow: auto; flex-direction: column; gap: 32px; padding-bottom: 80px", inner: [
+                    { tag: "h1", inner: "Create an application!", style: "margin: 0" },
+                    { tag: "input", class: "clear", type: "text", id: "app-name", placeholder: "Project name", "aria-label": "Project name" },
+                    { inner: [
+                        { tag: "label", for: "app-description", inner: [ "Description ", LS.Create("ls-box", { class: "inline text-tag", inner: "Optional" }), LS.Create("i", { class: "bi-markdown-fill", "ls-tooltip": "Supports markdown" }) ] },
+                        { tag: "br" },
+                        { tag: "textarea", style: "height: 150px; resize: none; margin-top: 10px", id: "app-description", placeholder: "Enter a brief description of your application" },
+                        { tag: "br" }
+                    ] },
+                    { inner: [
+                        { tag: "label", for: "app-type", inner: [ "Primary purpose ", LS.Create("ls-box", { class: "inline text-tag", inner: "Optional" }) ] },
+                        { tag: "br" },
+                        LS.Create('ls-select', {
+                            id: "app-type",
+                            style: { marginTop: '10px' },
+                            class: "elevated pill",
+                            value: "other",
+                            options: [
+                                { icon: APP_CATEGORY_ICONS.web, value: "web", text: "Web Application" },
+                                { icon: APP_CATEGORY_ICONS.widget, value: "widget", text: "lstv.space Widget" },
+                                { icon: APP_CATEGORY_ICONS.software, value: "software", text: "Mobile/Desktop Application" },
+                                { icon: APP_CATEGORY_ICONS.mobile, value: "mobile", text: "Mobile Application" },
+                                { icon: APP_CATEGORY_ICONS.game, value: "game", text: "Game" },
+                                { icon: APP_CATEGORY_ICONS.bot, value: "bot", text: "Bot" },
+                                { icon: APP_CATEGORY_ICONS.api, value: "api", text: "API Service" },
+                                { icon: APP_CATEGORY_ICONS.other, value: "other", text: "Other" }
+                            ]
+                        })
+                    ] },
+                    { tag: "button", type: "submit", class: "elevated", textContent: "Create Application" }
+                ] }
+            ]
+        }));
+
+        this.container.querySelector("#app-setup-form").addEventListener("submit", (e) => {
+            e.preventDefault();
+            this.handleFormSubmit();
+        });
+    }
+
+    handleFormSubmit() {
+        const form = document.forms['app-setup-form'];
+        const payload = {
+            name: String(form['app-name'].value).trim(),
+            category: String(this.container.get('#app-type').value).trim(),
+            description: String(form['app-description'].value).trim(),
+            slug: ""
+        };
+
+        website.fetch("v1/apps/create", {
+            method: "POST",
+            body: JSON.stringify(payload),
+            headers: { "Content-Type": "application/json" }
+        }, (error) => {
+            if (error) {
+                LS.Modal.buildEphemeral({
+                    title: "App creation failed",
+                    content: error.error || error.message || "Sorry, an error occurred while creating your app. Please try again later.",
+                    buttons: [{ label: "Ok" }]
+                });
             }
         });
     }
@@ -111,18 +186,17 @@ class DeveloperAppEditor extends LS.Context {
  * Handles user profile editing
  */
 class ProfileHandler extends LS.Context {
-    constructor(context, auth) {
+    constructor(parent) {
         super();
-        this.context = context;
-        this.container = context.container;
-        this.auth = auth;
+        this.parent = parent;
+        this.container = parent.container;
+        this.auth = parent.auth;
         this.blobs = {};
         this.editingUser = LS.Reactive.fork("editingUser", website.userFragment);
         this.confirmButtons = this.container.get('.profile-editor-confirm-buttons');
         window.editingUser = this.editingUser;
-    }
 
-    init() {
+        // Init
         this.setupUserWatcher();
         this.setupEventListeners();
         this.setupExternalLinks();
@@ -265,13 +339,13 @@ class ProfileHandler extends LS.Context {
     contentModerationError(profanity) {
         console.log(profanity);
         
-        return N({
+        return LS.Create({
             inner: [
                 "Couldn't update due to the following restricted content that is not allowed in this context:",
-                N("ul", {
-                    inner: profanity.map(item => N("li", `Word "${item.censored}", reason: "${item.notes}${item.illegal? " - refers to illegal content or practices" : ""}" (language: "${item.lang}", score ${item.severity}/5)`))
+                LS.Create("ul", {
+                    inner: profanity.map(item => LS.Create("li", `Word "${item.censored}", reason: "${item.notes}${item.illegal? " - refers to illegal content or practices" : ""}" (language: "${item.lang}", score ${item.severity}/5)`))
                 }),
-                N("p", "Please contact us if this is a mistake.")
+                LS.Create("p", "Please contact us if this is a mistake.")
             ]
         });
     }
@@ -377,32 +451,32 @@ class ProfileHandler extends LS.Context {
  * Handles account settings
  */
 class AccountHandler extends LS.Context {
-    constructor(context, auth) {
+    constructor(parent) {
         super();
-        this.context = context;
-        this.container = context.container;
-        this.auth = auth;
-    }
+        this.parent = parent;
+        this.container = parent.container;
+        this.auth = parent.auth;
 
-    init() {
-        this.setupModal();
+        // Init
         this.setupEventListeners();
     }
 
     setupModal() {
-        const newPasswordField = N([
-            N("label", { textContent: "New password:", attr: { for: "new-password" } }),
-            N("input", { type: "password", id: "new-password", attr: { autocomplete: "new-password" } }),
-            N("label", { textContent: "Confirm new password:", attr: { for: "confirm-new-password" } }),
-            N("input", { type: "password", id: "confirm-new-password", attr: { autocomplete: "new-password" } })
+        if (this.confirmationModal) return;
+
+        const newPasswordField = LS.Create([
+            { tag: "label", text: "New password:", attr: { for: "new-password" } }, { tag: "br" },
+            { tag: "input", type: "password", id: "new-password", attr: { autocomplete: "new-password" } }, { tag: "br" },
+            { tag: "label", text: "Confirm new password:", attr: { for: "confirm-new-password" } }, { tag: "br" },
+            { tag: "input", type: "password", id: "confirm-new-password", attr: { autocomplete: "new-password" } }
         ]);
 
         this.newPasswordField = newPasswordField;
         this.confirmationModal = LS.Modal.build({
             title: "Confirm Changes",
             content: [
-                N("label", { textContent: "Current password:", attr: { for: "current-password" } }),
-                N("input", { type: "password", id: "current-password", attr: { autocomplete: "current-password" } }),
+                { tag: "label", text: "Current password:", attr: { for: "current-password" } }, { tag: "br" },
+                { tag: "input", type: "password", id: "current-password", attr: { autocomplete: "current-password" } }, { tag: "br" },
                 newPasswordField
             ],
             buttons: [
@@ -421,12 +495,16 @@ class AccountHandler extends LS.Context {
     }
 
     handleSaveChanges() {
+        this.setupModal();
+
         this.newPasswordField.style.display = "none";
         this.clearInputs();
         this.confirmationModal.open();
     }
 
     handleChangePassword() {
+        this.setupModal();
+
         this.newPasswordField.style.display = "block";
         this.clearInputs();
         this.newPasswordField.querySelector("input").focus();
@@ -482,101 +560,7 @@ class AccountHandler extends LS.Context {
     }
 }
 
-
-/**
- * Handles developer applications management
- */
-class ApplicationsHandler extends LS.Context {
-    constructor(parent, developerAppEditor, tabs) {
-        super();
-        this.parent = parent;
-        this.container = parent.container;
-        this.developerAppEditor = developerAppEditor;
-        this.tabs = tabs;
-    }
-
-    init() {
-        this.parent.panelContent.querySelector(".create-app-button").addEventListener("click", () => {
-            this.tabs.set("applications/create");
-        });
-
-        this.developerAppEditor.update();
-        this.setupForm();
-    }
-
-    setupForm() {
-        this.parent.panelContent.querySelector('#app-setup-form').appendChild(LS.Create("form", {
-            id: "app-setup-form",
-            onsubmit: () => false,
-            inner: [
-                { style: "display: flex; overflow: auto; flex-direction: column; gap: 32px; padding-bottom: 80px", inner: [
-                    { tag: "h1", inner: "Create an application!", style: "margin: 0" },
-                    { tag: "input", class: "clear", type: "text", id: "app-name", placeholder: "Project name", "aria-label": "Project name" },
-                    { inner: [
-                        { tag: "label", for: "app-description", inner: [ "Description ", LS.Create("ls-box", { class: "inline text-tag", inner: "Optional" }), LS.Create("i", { class: "bi-markdown-fill", "ls-tooltip": "Supports markdown" }) ] },
-                        { tag: "br" },
-                        { tag: "textarea", style: "height: 150px; resize: none; margin-top: 10px", id: "app-description", placeholder: "Enter a brief description of your application" },
-                        { tag: "br" }
-                    ] },
-                    { inner: [
-                        { tag: "label", for: "app-type", inner: [ "Primary purpose ", LS.Create("ls-box", { class: "inline text-tag", inner: "Optional" }) ] },
-                        { tag: "br" },
-                        LS.Create('ls-select', {
-                            id: "app-type",
-                            style: { marginTop: '10px' },
-                            class: "elevated pill",
-                            value: "other",
-                            options: this.getCategoryOptions()
-                        })
-                    ] }
-                ] }
-            ]
-        }));
-
-        this.container.querySelector("#app-setup-form").addEventListener("submit", (e) => {
-            e.preventDefault();
-            this.handleFormSubmit();
-        });
-    }
-
-    getCategoryOptions() {
-        return [
-            { icon: APP_CATEGORY_ICONS.web, value: "web", text: "Web Application" },
-            { icon: APP_CATEGORY_ICONS.widget, value: "widget", text: "lstv.space Widget" },
-            { icon: APP_CATEGORY_ICONS.software, value: "software", text: "Mobile/Desktop Application" },
-            { icon: APP_CATEGORY_ICONS.mobile, value: "mobile", text: "Mobile Application" },
-            { icon: APP_CATEGORY_ICONS.game, value: "game", text: "Game" },
-            { icon: APP_CATEGORY_ICONS.bot, value: "bot", text: "Bot" },
-            { icon: APP_CATEGORY_ICONS.api, value: "api", text: "API Service" },
-            { icon: APP_CATEGORY_ICONS.other, value: "other", text: "Other" }
-        ];
-    }
-
-    handleFormSubmit() {
-        const form = document.forms['app-setup-form'];
-        const payload = {
-            name: String(form['app-name'].value).trim(),
-            category: String(this.container.get('#app-type').value).trim(),
-            description: String(form['app-description'].value).trim(),
-            slug: ""
-        };
-
-        website.fetch("v1/apps/create", {
-            method: "POST",
-            body: JSON.stringify(payload),
-            headers: { "Content-Type": "application/json" }
-        }, (error) => {
-            if (error) {
-                LS.Modal.buildEphemeral({
-                    title: "App creation failed",
-                    content: error.error || error.message || "Sorry, an error occurred while creating your app. Please try again later.",
-                    buttons: [{ label: "Ok" }]
-                });
-            }
-        });
-    }
-}
-
+const siteHandlers = { profile: ProfileHandler, account: AccountHandler, applications: ApplicationsHandler };
 
 /**
  * Main page module
@@ -585,6 +569,15 @@ website.register(document.currentScript, class extends LS.Context {
     constructor(context, container) {
         super();
         this.context = context;
+        this.container = container;
+
+        this.init();
+    }
+
+    init() {
+        this.auth = this.context.requestPermission(["auth"]).auth;
+        this.siteScripts = new Map();
+        this.tabHandlers = {};
 
         this.context.setOptions({
             dynamicAccount: true,
@@ -592,14 +585,6 @@ website.register(document.currentScript, class extends LS.Context {
             path: "/home" // Canonical path
         });
 
-        this.container = container;
-        this.auth = context.requestPermission(["auth"]).auth;
-        this.siteScriptsOnce = new Set();
-        this.tabHandlers = {};
-        this.init();
-    }
-
-    init() {
         // -- SPA Extensions
         this.context.registerSPAExtension("/home/{,*}", (page) => {
             this.handleNavigation();
@@ -616,8 +601,8 @@ website.register(document.currentScript, class extends LS.Context {
         this.loginSwitch = this.addDestroyable(new LS.Util.ElementSwitch([this.container.querySelector('.loadingIndicator'), LS.Create('div', {
             class: "login-notice container-content",
             inner: [
-                N("h3", "You are not logged in"),
-                N("button", {
+                LS.Create("h3", "You are not logged in"),
+                LS.Create("button", {
                     textContent: "Log in",
                     class: "pill",
                     onclick: () => website.showLoginToolbar()
@@ -690,7 +675,7 @@ website.register(document.currentScript, class extends LS.Context {
                         return;
                     }
 
-                    if(!this.developerAppEditor) this.developerAppEditor = new DeveloperAppEditor(this);
+                    if(!this.developerAppEditor) this.developerAppEditor = new ApplicationsHandler(this);
                     this.tabs.set("applications/" + (segments[2] || "details"));
                     break;
                 }
@@ -709,7 +694,7 @@ website.register(document.currentScript, class extends LS.Context {
         let sidebarTab = "home";
 
         if (tab.startsWith("applications")) {
-            if(!this.developerAppEditor) this.developerAppEditor = new DeveloperAppEditor(this);
+            if(!this.developerAppEditor) this.developerAppEditor = new ApplicationsHandler(this);
 
             if(tab.indexOf("/") !== -1) {
                 if(!tab.endsWith("/create")) {
@@ -723,19 +708,8 @@ website.register(document.currentScript, class extends LS.Context {
 
         this.sidebarTabs.set(sidebarTab);
 
-        if (!this.siteScriptsOnce.has(tab)) {
-            if (tab === "profile" && !this.tabHandlers.profile) {
-                this.tabHandlers.profile = new ProfileHandler(this, this.auth);
-                this.tabHandlers.profile?.init();
-            } else if (tab === "account" && !this.tabHandlers.account) {
-                this.tabHandlers.account = new AccountHandler(this, this.auth);
-                this.tabHandlers.account?.init();
-            } else if (tab === "applications" && !this.tabHandlers.applications) {
-                this.tabHandlers.applications = new ApplicationsHandler(this, this.developerAppEditor, this.tabs);
-                this.tabHandlers.applications?.init();
-            }
-
-            this.siteScriptsOnce.add(tab);
+        if(!this.siteScripts.has(tab) && siteHandlers[tab]) {
+            this.siteScripts.set(tab, new siteHandlers[tab](this));
         }
 
         this.container.querySelector('.title').textContent = view.getAttribute("tab-title") || "User Settings";

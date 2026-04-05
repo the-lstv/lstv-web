@@ -23,10 +23,7 @@
 </div>
 
 <div .container .width-container .level-0>
-    <div .loadingIndicator state="loading">
-        <br><br><br><br>
-        <h3>Loading...</h3>
-    </div>
+    <div .loadingIndicator state="loading"></div>
 
     <div .container-content .settings-container style="display: none">
         <ls-tabs .menu .sidebar-items .level-n1>
@@ -82,7 +79,11 @@
 
         <div .sidebar-content>
             <ls-tab tab-id="home" tab-title="Home">
-                <svg .home-triangle viewBox="0 0 165 143" fill="none"><path d="M82.273 0l82.273 142.5H0L82.273 0z" fill="currentColor"/></svg>
+                <svg .home-triangle viewBox="0 0 165 143" fill="none">
+                    <path d="M82.273 0l82.273 142.5H0L82.273 0z" fill="currentColor"/>
+                    <!-- <path class="rshape" d="M 128 0 C 147.68 0 164.04 14.213 167.377 32.934 C 182.974 22.055 204.594 23.574 218.51 37.49 C 232.426 51.406 233.944 73.025 223.066 88.622 C 241.787 91.96 256 108.32 256 128 C 256 147.68 241.787 164.04 223.065 167.377 C 233.944 182.974 232.426 204.594 218.51 218.51 C 204.594 232.426 182.974 233.944 167.377 223.065 C 164.04 241.787 147.68 256 128 256 C 108.32 256 91.959 241.787 88.622 223.065 C 73.025 233.944 51.406 232.426 37.49 218.51 C 23.574 204.594 22.055 182.974 32.934 167.377 C 14.213 164.04 0 147.68 0 128 C 0 108.32 14.213 91.96 32.934 88.622 C 22.056 73.025 23.574 51.406 37.49 37.49 C 51.406 23.574 73.025 22.055 88.622 32.934 C 91.96 14.213 108.32 0 128 0 Z" fill="var(--surface-2)"></path> -->
+                </svg>
+
                 <div style="text-align: center">
                     <h2 style="margin: 0">Welcome, {{ user.displayname:DisplayName }}!</h2>
                     <h3 style="margin: 0">Select what do you want to do.</h3>
@@ -135,7 +136,6 @@
                     <button ls-accent="red" .ls-button>Delete Account</button>
                 </ls-div>
             </ls-tab>
-
 
             <ls-tab tab-id="profile" tab-title="Profile" style="padding-bottom: 60px">
                 <div .profile-editor-container>
@@ -284,7 +284,6 @@
             </ls-tab>
 
             <ls-tab tab-id="applications/create" tab-title="Create an app" #app-setup-tab></ls-tab>
-
             <ls-tab tab-id="applications/details" tab-title="Edit application"></ls-tab>
 
             <ls-tab tab-id="applications/store" tab-title="Store page">
@@ -295,8 +294,8 @@
                 Something
             </ls-tab>
 
-            <ls-tab tab-id="sub-users" tab-title="Bot Accounts">F</ls-tab>
-            <ls-tab tab-id="keys" tab-title="API Keys">G</ls-tab>
+            <ls-tab tab-id="sub-users" tab-title="Bot Accounts"></ls-tab>
+            <ls-tab tab-id="keys" tab-title="API Keys"></ls-tab>
             <ls-tab tab-id="api" tab-title="API Documentation">H</ls-tab>
             <ls-tab tab-id="support" tab-title="Support / Write us">I</ls-tab>
         </div>

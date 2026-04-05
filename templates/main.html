@@ -60,7 +60,7 @@
     <!-- <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdn.extragon.cloud https://cdn.extragon.localhost https://fonts.googleapis.com https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.extragon.cloud https://cdn.extragon.localhost https://fonts.googleapis.com; font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net; connect-src 'self' wss://*.lstv.space wss://*.extragon.cloud wss://*.extragon.localhost https://api.extragon.cloud https://api.extragon.localhost;"> -->
 
     <!-- LS, icons, fonts -->
-    @use (ls[flat, color, tooltips, toast, menu, reactive, tabs, animation, resize, modal, ShortcutManager, CompileTemplate], bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800"]);
+    @use (ls[flat, color, tooltips, toast, range, menu, reactive, tabs, animation, resize, modal, ShortcutManager, CompileTemplate], bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800"]);
 
     <!-- @use (bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800"]); -->
 
@@ -83,6 +83,7 @@
     <script .whitelist>
         // Apply theme based on user preference
         document.body.setAttribute("ls-theme", localStorage.getItem("ls-theme") || (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches? "light": "dark"));
+        document.body.style.setProperty("--border-radius-multiplier", localStorage.getItem("ls-border-radius") || "1");
     </script>
 
     <div .loaderContainer>
@@ -169,6 +170,19 @@
                         <i .bi-eyedropper />
                     </button>
                 </ls-box>
+
+                <ls-div>
+                    Rounded corners<br>
+                    <ls-range style="width: 80%" value="1" min="0" max="1.5" step="0.5" onconnected="this.value = localStorage.getItem('ls-border-radius') || this.value" oninput='document.body.style.setProperty("--border-radius-multiplier", this.value);localStorage.setItem("ls-border-radius", this.value)'></ls-range>
+                </ls-div>
+
+                <!-- <ls-div>
+                    <label .ls-switch>
+                        Show link information
+                        <input type="checkbox">
+                        <span></span>
+                    </label>
+                </ls-div> -->
 
                 <ls-div .grouped-buttons style="margin: 18px 30px 24px">
                     <button>

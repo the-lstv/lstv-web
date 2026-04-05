@@ -1676,3 +1676,22 @@ ls-text-input.has-textarea {
     font-family: "JetBrains Mono", Poppins, sans-serif;
     line-height: 0;
 }
+
+[ls][ls-style=flat] {
+    --border-radius-multiplier: 1;
+    --border-radius-tiny: calc(2px * var(--border-radius-multiplier, 1));
+    --border-radius-small: calc(4px * var(--border-radius-multiplier, 1));
+    --border-radius: calc(7px * var(--border-radius-multiplier, 1));
+    --border-radius-medium: calc(12px * var(--border-radius-multiplier, 1));
+    --border-radius-large: calc(16px * var(--border-radius-multiplier, 1));
+    --border-radius-xlarge: calc(20px * var(--border-radius-multiplier, 1));
+    --border-radius-xxlarge: calc(24px * var(--border-radius-multiplier, 1));
+    --border-radius-full: calc(100px * var(--border-radius-multiplier, 1));
+    --border-radius-circle: 50%;
+}
+
+// /*
+//     The following will only apply in Chrome 137+
+// */ button, .ls-button, .ls-box, .ls-switch span, .ls-modal-styled, .container-content, .sidebar-items {
+//     corner-shape: if(style(--border-radius-multiplier: 1.5): superellipse(1.5));
+// }

@@ -431,3 +431,22 @@ textarea#profile-about {
     min-width: 0;
     min-height: 0;
 } */
+
+.rshape {
+    transform-origin: center center;
+    transform-box: fill-box;
+    animation: rotate-shape 60s linear infinite;
+    translate: -45px -45px;
+    scale: 1.5;
+    opacity: .5;
+}
+
+@keyframes rotate-shape {
+    from { rotate: 0 }
+    to { rotate: 360deg }
+}
+
+.ls-modal-body input {
+    width: 100%;
+    margin-bottom: 18px;
+}
