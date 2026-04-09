@@ -571,3 +571,13 @@ ls-box.inline.color {
 .showcase-gallery-item button i {
     position: relative;
 }
+
+span.gallery-item-title {
+    background: var(--elevate);
+    padding: 2px 12px;
+    border-radius: var(--border-radius-medium);
+    box-shadow: 0px 5px 10px 0 #000a;
+    outline: 1px solid var(--elevate-2);
+    display: inline-block;
+    opacity: 0.8;
+}

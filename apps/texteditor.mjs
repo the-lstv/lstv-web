@@ -7,11 +7,14 @@ class TextEditor extends website.ContentContext {
         });
 
         this.fromElement(LS.Create({
-            tag: "div",
             class: "text-editor",
-            inner: [
-                { tag: "textarea", class: "text-area", style: "width: 100%; height: 100%; box-sizing: border-box;", placeholder: "Start typing..." }
-            ]
+            inner: [],
+            onclick: () => this.addTab()
+        }));
+
+        this.tabs = this.addDestroyable(new LS.Tabs(this.content, {
+            list: true,
+            closeable: true
         }));
 
         this.window = this.createWindow({
@@ -21,9 +24,22 @@ class TextEditor extends website.ContentContext {
         });
     }
 
+    addTab() {
+        const tab = LS.Create({
+            class: "text-editor-tab"
+        });
+
+        this.tabs.add(tab);
+    }
+
     destroy() {
         this.window.destroy();
         super.destroy();
+    }
+
+    static postInstall(env) {
+        // env.registerCommand({});
+        env.log("Text Editor installed successfully.");
     }
 }
 
