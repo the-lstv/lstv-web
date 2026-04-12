@@ -1450,7 +1450,7 @@ class Window extends Viewport {
     // }));
 
     // Precompiled
-    static TEMPLATE = function(d){'use strict';var e0=document.createElement("div");e0.className="window-container";var e1=document.createElement("div");e1.className="level-1 window-header";var e2=document.createElement("div");var e3=document.createElement("img");e3.src=d.icon;e3.className="window-icon";e2.appendChild(e3);var e4=document.createElement("span");e4.textContent=d.name;e4.className="window-title text-overflow-nowrap";e2.appendChild(e4);var e5=document.createElement("div");e5.className="window-header-buttons";var e6=document.createElement("button");e6.onclick=d.toggleView;e6.setAttribute("ls-tooltip","Toggle Window View");LS.Tooltips.updateElement(e6);e6.className="window-maximize-button circle elevated";var e7=document.createElement("i");e7.className="bi-window";e6.appendChild(e7);var e8=document.createElement("button");e8.onclick=d.minimize;e8.className="window-minimize-button circle elevated";var e9=document.createElement("i");e9.className="bi-dash-lg";e8.appendChild(e9);var e10=document.createElement("button");e10.onclick=d.maximize;e10.className="window-maximize-button circle elevated";var e11=document.createElement("i");e11.className="bi-square";e10.appendChild(e11);var e12=document.createElement("button");e12.onclick=d.close;e12.className="window-close-button circle elevated";var e13=document.createElement("i");e13.className="bi-x-lg";e12.appendChild(e13);e5.append(e6,e8,e10,e12);e1.append(e2,e5);var dyn14=LS.__dynamicInnerToNode(d.target);e0.append(e1,dyn14);var __rootValue=e0;return{"header":e1,"icon":e3,"title":e4,root:__rootValue};}
+    static TEMPLATE = function(d){'use strict';var e0=document.createElement("div");e0.className="window-container";var e1=document.createElement("div");e1.className="level-1 window-header";var e2=document.createElement("div");var e3=document.createElement("img");e3.src=d.icon;e3.className="window-icon";e2.appendChild(e3);var e4=document.createElement("span");e4.textContent=d.name;e4.className="window-title text-overflow-nowrap";e2.appendChild(e4);var e5=document.createElement("div");e5.className="window-header-buttons";var e6=document.createElement("button");e6.onclick=d.toggleView;e6.setAttribute("ls-tooltip","Toggle Window View");LS.Tooltips.updateElement(e6);e6.className="window-maximize-button circle elevated";var e7=document.createElement("i");e7.className="bi-window";e6.appendChild(e7);var e8=document.createElement("button");e8.onclick=d.minimize;e8.className="window-minimize-button circle elevated";var e9=document.createElement("i");e9.className="bi-dash-lg";e8.appendChild(e9);var e10=document.createElement("button");e10.onclick=d.maximize;e10.className="window-maximize-button circle elevated";var e11=document.createElement("i");e11.className="bi-square";e10.appendChild(e11);var e12=document.createElement("button");e12.onclick=d.close;e12.className="window-close-button circle elevated";var e13=document.createElement("i");e13.className="bi-x-lg";e12.appendChild(e13);e5.append(e6,e8,e10,e12);e1.append(e2,e5);var dyn14=LS.toNode(d.target);e0.append(e1,dyn14);var __rootValue=e0;return{"header":e1,"icon":e3,"title":e4,root:__rootValue};}
 
     constructor(options = {}) {
         super(`window-${options.id || "untitled"}-${LS.Tiny.M.uid()}`, N({
@@ -2847,7 +2847,7 @@ const kernel = new class Kernel extends LoggerContext {
 
     appManifests = new Map();
 
-    queryParams = LS.Util.params();
+    queryParams = LS.Util.parseURLParams();
     userFragment = LS.Reactive.wrap("user", {});
 
     SPAExtensions = new Matcher();
@@ -4130,7 +4130,7 @@ const kernel = new class Kernel extends LoggerContext {
 
         website.collapseItems = collapseItems;
 
-        O("#logOutButton").on("click", function (){
+        O("#logOutButton").addEventListener("click", function (){
             kernel.auth.logout(() => {
                 LS.Toast.show("Logged out successfully.", {
                     timeout: 2000
@@ -4258,14 +4258,14 @@ const kernel = new class Kernel extends LoggerContext {
 
         website.loginTabs.set(location.pathname.startsWith("/login") ? "login" : location.pathname.startsWith("/sign-up") ?  "register" : "default");
 
-        O("#randomPassword").on("click", function (){
+        O("#randomPassword").addEventListener("click", function (){
             const password = website.utils.generateSecurePassword(12);
             O("#regPassword").value = password;
             O("#regPassword").dispatchEvent(new Event("input"));
             alert("Your generated password: " + password);
         });
 
-        O("#randomUsername").on("click", function (){
+        O("#randomUsername").addEventListener("click", function (){
             const username = website.utils.generateUsername();
             O("#regUsername").value = username.toLowerCase();
             O("#regUsername").dispatchEvent(new Event("input"));
@@ -4283,7 +4283,7 @@ const kernel = new class Kernel extends LoggerContext {
                 }
             }));
 
-            O("#accentButtons").get("input[type=color]").on("input", function (){
+            O("#accentButtons").querySelector("input[type=color]").addEventListener("input", function (){
                 LS.Color.setAccent(this.value);
             });
         }
@@ -4412,7 +4412,7 @@ const kernel = new class Kernel extends LoggerContext {
             this.initialized = true;
 
             const container = website.toolbars.get("apps").element;
-            this.appListElement = container.get(".app-list");
+            this.appListElement = container.querySelector(".app-list");
 
             kernel.events.on("application-installed", (manifest) => {
                 this.addApplicationEntry(manifest);

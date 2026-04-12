@@ -344,7 +344,7 @@ website.register(document.currentScript, class extends LS.Context {
             //         }
             //     ]
             // }));
-            static TEMPLATE = function(d){'use strict';var e0=document.createElement("div");e0.className="showcase-item";var e1=document.createElement("div");e1.className="showcase-item-left-panel";var e2=document.createElement("img");e2.src=d.icon;e2.width="128";e2.height="128";e2.crossOrigin="anonymous";e2.alt=d.title;e2.onload=d.onload;e2.className="showcase-item-icon";e1.appendChild(e2);var e3=document.createElement("div");e3.className="showcase-item-content";var e4=document.createElement("div");e4.className="showcase-item-title";e4.append(LS.__dynamicInnerToNode(d.title));var e5=document.createElement("div");e5.innerHTML=d.description;e5.className="showcase-item-description";e3.append(e4,e5);e0.append(e1,e3);var __rootValue=e0;return{"leftPanel":e1,"title":e4,"description":e5,root:__rootValue};}
+            static TEMPLATE = function(d){'use strict';var e0=document.createElement("div");e0.className="showcase-item";var e1=document.createElement("div");e1.className="showcase-item-left-panel";var e2=document.createElement("img");e2.src=d.icon;e2.width="128";e2.height="128";e2.crossOrigin="anonymous";e2.alt=d.title;e2.onload=d.onload;e2.className="showcase-item-icon";e1.appendChild(e2);var e3=document.createElement("div");e3.className="showcase-item-content";var e4=document.createElement("div");e4.className="showcase-item-title";e4.append(LS.toNode(d.title));var e5=document.createElement("div");e5.innerHTML=d.description;e5.className="showcase-item-description";e3.append(e4,e5);e0.append(e1,e3);var __rootValue=e0;return{"leftPanel":e1,"title":e4,"description":e5,root:__rootValue};}
 
             constructor(project) {
                 super();
@@ -435,7 +435,7 @@ website.register(document.currentScript, class extends LS.Context {
             // }));
 
             // Pre-compiled
-            static TEMPLATE = function(d){'use strict';var e0=document.createElement("div");e0.onclick=d.onclick;e0.className="showcase-gallery-item";var e1=document.createElement("img");e1.src=(String("https://cdn.extragon.cloud/file/") + String(d.media));e1.crossOrigin="anonymous";e1.alt=d.title;e1.loading="lazy";var e2=document.createElement("div");var e3=document.createElement("div");var e4=document.createElement("span");e4.className="gallery-item-title";e4.append(LS.__dynamicInnerToNode(d.title));e3.appendChild(e4);e2.appendChild(e3);var e5=document.createElement("div");var e6=document.createElement("button");e6.onclick=d.likePost;e6.setAttribute("ls-tooltip","Like");LS.Tooltips.updateElement(e6);e6.className="pill clear";var e7=document.createElement("i");e7.className="bi-heart";var e8=document.createElement("span");e8.append(LS.__dynamicInnerToNode(d.likes));e6.append(e7,e8);e5.appendChild(e6);e2.appendChild(e5);e0.append(e1,e2);var __rootValue=e0;return{root:__rootValue};}
+            static TEMPLATE = function(d){'use strict';var e0=document.createElement("div");e0.onclick=d.onclick;e0.className="showcase-gallery-item";var e1=document.createElement("img");e1.src=(String("https://cdn.extragon.cloud/file/") + String(d.media));e1.crossOrigin="anonymous";e1.alt=d.title;e1.loading="lazy";var e2=document.createElement("div");var e3=document.createElement("div");var e4=document.createElement("span");e4.className="gallery-item-title";e4.append(LS.toNode(d.title));e3.appendChild(e4);e2.appendChild(e3);var e5=document.createElement("div");var e6=document.createElement("button");e6.onclick=d.likePost;e6.setAttribute("ls-tooltip","Like");LS.Tooltips.updateElement(e6);e6.className="pill clear";var e7=document.createElement("i");e7.className="bi-heart";var e8=document.createElement("span");e8.append(LS.toNode(d.likes));e6.append(e7,e8);e5.appendChild(e6);e2.appendChild(e5);e0.append(e1,e2);var __rootValue=e0;return{root:__rootValue};}
 
             constructor(art) {
                 super();
@@ -568,8 +568,8 @@ website.register(document.currentScript, class extends LS.Context {
 
         // DOM references
         this.logoContainer = container.querySelector(".logo-board");
-        this.loreSection = container.get(".lore-section");
-        this.chevron = container.get("#chevron");
+        this.loreSection = container.querySelector(".lore-section");
+        this.chevron = container.querySelector("#chevron");
         this.cloudsInView = false;
         this.introInView = false;
         this.logoOpacity = 1;
