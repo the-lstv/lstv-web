@@ -17,7 +17,7 @@ You can now do almost anything blazingly fast with the site-wide command palette
 <img src="etc/terminal.png" alt="Screenshot" style="width: 100%; max-width: 500px;">
 
 ## 📦 Kernel
-<img src="assets/image/kernel-icons/kernel-1.2.png" alt="Kernel Logo" style="height: 200px"><br>
+<img src="assets/image/kernel-icons/1x.png" alt="Kernel Logo" style="height: 200px"><br>
 As lstv.space is a pretty complex web application, there needs to be a robust central system to manage everything smoothly. The Zen Kernel is that - it's a powerful core custom built from the ground up for this website, which manages everything from page routing, history & resource management, viewports, caching, authentication, threads & isolation, and much more.<br>
 
 ## 🪄 Features
@@ -58,11 +58,14 @@ After that you can run the website from almost anywhere and any server (such as 
 
 ## 🗂️ File structure
 - `static/`: Contains actual site content (webserver root), though not exclusively.
+    - `blog/`: Blog posts written in markdown
+    - `app/`: Currently just an empty site where you can open apps via URL (eg. https://lstv.space/app/text-editor)
 - `assets/`: Contains assets like global css, js, and images.
     - `assets/css/`: Contains global CSS files.
     - `assets/js/`: Contains global JavaScript files.
     - `assets/images/`: Contains image assets.
     - `assets/shaders/`: Contains WebGL shader source files.
+- `apps/`: Apps
 - `backend/`: Contains the backend (submodule). The source is currently private, but may become public in the future.
 - `templates/`: Contains templates used by the application. At this moment this has one `main.html` file, which is the main template used across all pages. Any code here will be available globally.
 - `app.conf`: Akeno configuration file. Generic server settings are located here.
