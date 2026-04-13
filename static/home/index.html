@@ -1,8 +1,10 @@
 #template /templates/main.html
 
+<span hidden #scope-key>@file-scope-key();</span>
+
 <head>
     @use (/home/index.css, /home/index.js[defer]);
-    @use (ls.js.ImageCropper:5.2.6) { async }
+    @use (ls.js.ImageCropper) { async }
 
     @page {
         title: "LSTV | User settings";
@@ -14,51 +16,78 @@
 <div .top>
     <div .width-container>
         <h1 .title>User Settings</h1>
-        <button .menu-button .clear .square onclick="O('.menu').parentElement.toggleClass('sidebar-menu-visible')">
+        <button .menu-button .clear .square aria-label="Open settings menu">
             <i .bi-list></i>
         </button>
     </div>
 </div>
 
 <div .container .width-container .level-0>
+    <div .loadingIndicator state="loading"></div>
+
     <div .container-content .settings-container style="display: none">
-        <div .menu .sidebar-items .level-n1>
-            <div .grouped-buttons>
-                <a .ls-button .elevated href="/home" data-tab-id="home"><i .bi-house-fill /><span>Home</span></a>
-            </div>
+        <ls-tabs .menu .sidebar-items .level-n1>
+            <ls-tab tab-id="home">
+                <div .grouped-buttons>
+                    <a .ls-button .elevated href="/home" data-tab-id="home"><i .bi-house-fill /><span>Home</span></a>
+                </div>
 
-            <span .menu-category-title>Account</span>
+                <span .menu-category-title>Account</span>
 
-            <div .grouped-buttons>
-                <a .ls-button .elevated href="/home/account" data-tab-id="account"><i .bi-person-fill /><span>Account</span></a>
-                <a .ls-button .elevated href="/home/profile" data-tab-id="profile"><i .bi-person-badge /><span>Profile</span></a>
-            </div>
+                <div .grouped-buttons>
+                    <a .ls-button .elevated href="/home/account" data-tab-id="account"><i .bi-person-fill /><span>Account</span></a>
+                    <a .ls-button .elevated href="/home/profile" data-tab-id="profile"><i .bi-person-badge /><span>Profile</span></a>
+                </div>
 
-            <span .menu-category-title>Applications</span>
-            <div .grouped-buttons>
-                <a .ls-button .elevated href="/home/apps" data-tab-id="apps"><i .bi-app-indicator /><span>Applications</span></a>
-            </div>
-            
-            <span .menu-category-title>Developers</span>
-            <div .grouped-buttons>
-                <a .ls-button .elevated href="/home/dev" data-tab-id="dev"><i .bi-app /><span>My applications</span></a>
-                <a .ls-button .elevated href="/home/sub-users" data-tab-id="sub-users"><i .bi-robot /><span>Bot accounts</span></a>
-                <a .ls-button .elevated href="/home/keys" data-tab-id="keys"><i .bi-key-fill /><span>API Keys</span></a>
-                <a .ls-button .elevated href="/home/api" data-tab-id="api"><i .bi-file-earmark-text /><span>API Documentation</span></a>
-            </div>
+                <span .menu-category-title>Applications</span>
+                <div .grouped-buttons>
+                    <a .ls-button .elevated href="/home/apps" data-tab-id="apps"><i .bi-app-indicator /><span>Apps</span></a>
+                </div>
+                
+                <span .menu-category-title>Developers</span>
+                <div .grouped-buttons>
+                    <a .ls-button .elevated href="/home/applications" data-tab-id="applications"><i .bi-app /><span>Applications</span></a>
+                    <a .ls-button .elevated href="/home/sub-users" data-tab-id="sub-users"><i .bi-robot /><span>Bot accounts</span></a>
+                    <a .ls-button .elevated href="/home/keys" data-tab-id="keys"><i .bi-key-fill /><span>API Keys</span></a>
+                    <a .ls-button .elevated href="/home/api" data-tab-id="api"><i .bi-file-earmark-text /><span>API Documentation</span></a>
+                </div>
 
-            <span .menu-category-title>Help</span>
-            <div .grouped-buttons>
-                <a .ls-button .elevated href="/home/support" data-tab-id="support"><i .bi-bug-fill /><span>Report a bug</span></a>
-                <a .ls-button .elevated href="/chat"><i .bi-chat-left-fill /><span>Write us</span></a>
-                <a .ls-button .elevated target="_blank" href="/tos"><i .bi-shield-lock-fill /><span>Terms Of Service</span><i .bi-box-arrow-up-right .external-indicator /></a>
-                <a .ls-button .elevated target="_blank" href="/privacy-policy"><i .bi-shield-lock /><span>Privacy Policy</span><i .bi-box-arrow-up-right .external-indicator /></a>
-            </div>
-        </div>
+                <span .menu-category-title>Help</span>
+                <div .grouped-buttons>
+                    <a .ls-button .elevated href="/home/support" data-tab-id="support"><i .bi-bug-fill /><span>Report a bug</span></a>
+                    <a .ls-button .elevated href="/chat/user/admin"><i .bi-chat-left-fill /><span>Write us</span></a>
+                    <a .ls-button .elevated target="_blank" href="/tos"><i .bi-shield-lock-fill /><span>Terms Of Service</span><i .bi-box-arrow-up-right .external-indicator /></a>
+                    <a .ls-button .elevated target="_blank" href="/privacy-policy"><i .bi-shield-lock /><span>Privacy Policy</span><i .bi-box-arrow-up-right .external-indicator /></a>
+                </div>
+            </ls-tab>
 
-        <div .sidebar-content .ls-slide-animation>
+            <ls-tab tab-id="application">
+                <div .grouped-buttons>
+                    <a .ls-button .elevated href="/home/applications"><i .bi-arrow-return-left /><span>Back</span></a>
+                </div>
+
+                <span .menu-category-title>Edit</span>
+
+                <div .grouped-buttons>
+                    <a base-href="/home/applications/$id/details" data-tab-id="applications/details" .ls-button .elevated><i .bi-pencil-fill /><span>Edit Application</span></a>
+                    <a base-href="/home/applications/$id/store" data-tab-id="applications/store" .ls-button .elevated><i .bi-shop /><span>Store Page</span></a>
+                    <a base-href="/home/applications/$id/team" data-tab-id="applications/team" .ls-button .elevated><i .bi-people-fill /><span>Team</span></a>
+                    <a base-href="/home/applications/$id/delete" data-tab-id="applications/delete" .ls-button .elevated ls-accent="red"><i .bi-trash-fill /><span>Delete Application</span></a>
+                </div>
+            </ls-tab>
+        </ls-tabs>
+
+        <div .sidebar-content>
             <ls-tab tab-id="home" tab-title="Home">
-                <h1>Welcome, {{ user.displayname:DisplayName }}!</h1>
+                <svg .home-triangle viewBox="0 0 165 143" fill="none">
+                    <path d="M82.273 0l82.273 142.5H0L82.273 0z" fill="currentColor"/>
+                    <!-- <path class="rshape" d="M 128 0 C 147.68 0 164.04 14.213 167.377 32.934 C 182.974 22.055 204.594 23.574 218.51 37.49 C 232.426 51.406 233.944 73.025 223.066 88.622 C 241.787 91.96 256 108.32 256 128 C 256 147.68 241.787 164.04 223.065 167.377 C 233.944 182.974 232.426 204.594 218.51 218.51 C 204.594 232.426 182.974 233.944 167.377 223.065 C 164.04 241.787 147.68 256 128 256 C 108.32 256 91.959 241.787 88.622 223.065 C 73.025 233.944 51.406 232.426 37.49 218.51 C 23.574 204.594 22.055 182.974 32.934 167.377 C 14.213 164.04 0 147.68 0 128 C 0 108.32 14.213 91.96 32.934 88.622 C 22.056 73.025 23.574 51.406 37.49 37.49 C 51.406 23.574 73.025 22.055 88.622 32.934 C 91.96 14.213 108.32 0 128 0 Z" fill="var(--surface-2)"></path> -->
+                </svg>
+
+                <div style="text-align: center">
+                    <h2 style="margin: 0">Welcome, {{ user.displayname:DisplayName }}!</h2>
+                    <h3 style="margin: 0">Select what do you want to do.</h3>
+                </div>
             </ls-tab>
 
 
@@ -108,7 +137,6 @@
                 </ls-div>
             </ls-tab>
 
-
             <ls-tab tab-id="profile" tab-title="Profile" style="padding-bottom: 60px">
                 <div .profile-editor-container>
                     <div style="flex: 1">
@@ -149,21 +177,16 @@
                             <br>
 
                             <label .ls-checkbox>
-                                <input type="checkbox" id="fullscreen-banner" name="fullscreen-banner" {{ editingUser.fullscreen_banner }}>
+                                <input type="checkbox" id="fullscreen-banner" name="fullscreen-banner" {{ editingUser.profileEffects.banner.fullscreen }}>
                                 Fullscreen banner
                                 <span />
                             </label>
                         </ls-div>
 
-
-                        <span style="display: inline" .settings-subtext ls-tooltip="Some GIFs may be unstable.
-    We convert GIFs to WebM anyway, so using MP4/WebM
-    directly may be better and have much better quality." ls-tooltip-detached>*GIF is not recommended <i .bi-info-circle /></span>
-
                         <hr>
 
                         <ls-div .margin-v-xlarge>
-                            <h3>About Me</h3>
+                            <h3>About Me  <i class="bi-markdown-fill" ls-tooltip="Supports markdown"></i></h3>
                             <span .settings-subtext>You can use markdown and links.</span>
                             <ls-text-input .has-textarea>
                                 <textarea name="about" #profile-about placeholder="Tell us about yourself..." maxlength="500" {{ editingUser.bio || '' }}></textarea>
@@ -197,7 +220,7 @@
                             <span .settings-subtext>Limited edition glossy style for your profile.</span>
 
                             <label .ls-checkbox>
-                                <input type="checkbox" id="secret-glossy-style" name="secret-glossy-style" {{ editingUser.profile_style }}>
+                                <input type="checkbox" id="secret-glossy-style" name="secret-glossy-style" {{ editingUser.profileEffects.style.id == 'glossy' }}>
                                 Enable
                                 <span />
                             </label>
@@ -216,23 +239,25 @@
                     </div>
 
                     <div>
-                        <div style="position: sticky; top: 10px">
+                        <div style="position: sticky; top: 30px">
                             <div .profile .profile-block .level-1>
                                 <div .profile-banner .editable {{ editingUser.banner:ProfileBanner }} />
                                 <div .profile-avatar .editable {{ editingUser.pfp:ProfilePicture(120px) }} />
-            
+
                                 <div .profile-content>
                                     <ls-box .contained .level-2 style="border-radius: var(--border-radius-large)">
-                                        <h2 {{ editingUser.displayname:DisplayName }} style="margin-bottom: 0; font-weight: 700" />
+                                        <div .profile-header>
+                                            <h2 {{ editingUser.displayname:DisplayName }} style="margin-bottom: 0; font-weight: 700" />
+                                            {{ editingUser.badges:ProfileBadges }}
+                                        </div>
                                         {{ editingUser.username:ProfileUsername }}
                                     </ls-box>
-            
+
                                     {{ editingUser.bio:ProfileBio(true) }}
                                     {{ editingUser.profileLinks:ProfileLinks }}
                                 </div>
-        
-                                <span hidden {{ editingUser.profile_style:ProfileEffects(style) }} />
-                                <span hidden {{ editingUser.fullscreen_banner:ProfileEffects(fullscreen-banner) }} />
+
+                                {{ editingUser.profileEffects:ProfileEffects }}
                             </div>
 
                             <ls-div>
@@ -244,173 +269,33 @@
                 </div>
             </ls-tab>
 
-            <ls-tab tab-id="apps" tab-title="My applications">D</ls-tab>
-
-            <ls-tab tab-id="dev" tab-title="Developer Applications">
-                <div #dev-apps-list></div>
+            <ls-tab tab-id="apps" tab-title="Applications">
+                You currently don't have any connected applications.
             </ls-tab>
 
-            <ls-tab tab-id="app-setup" tab-title="Create an app" #app-setup-tab>
-                <form  #app-setup-form onsubmit="return false">
-                    <div style="display: flex; overflow: auto; flex-direction: column; gap: 32px; padding-bottom: 80px">
-                        <h1 style="margin: 0">Create an application!</h1>
-                        <input class="clear" type="text" id="app-name" placeholder="Project name" aria-label="Project name">
-        
-                        <div>
-                            <label for="app-description">Description <ls-box class="inline text-tag">Optional</ls-box></label> <br>
-                            <textarea style="height: 150px; resize: none; margin-top: 10px" id="app-description" placeholder="Enter a brief description of your application"></textarea> <br>
-                        </div>
-        
-                        <div>
-                            <label for="app-type">Primary purpose <ls-box class="inline text-tag">Optional</ls-box></label> <br>
-                            <ls-select id="app-type" style="margin-top: 10px" placeholder="What are you building?">
-                                <ls-option value="web">Web Application</ls-option>
-                                <ls-option value="software">Mobile/Desktop Application</ls-option>
-                                <ls-option value="game">Game</ls-option>
-                                <ls-option value="bot">Bot</ls-option>
-                                <ls-option value="other">Other</ls-option>
-                            </ls-select>
-        
-                            <script>
-                            class LSSelect extends HTMLElement {
-                                constructor() {
-                                    super();
-                                    this.selected = '';
-                                    this.options = [];
-                                }
-        
-                                connectedCallback() {
-                                    this.setAttribute('role', 'combobox');
-                                    this.setAttribute('tabindex', '0');
-                                    this._render();
-        
-                                    this.addEventListener('click', () => this.toggle());
-                                    this.addEventListener('keydown', (e) => {
-                                        if (e.key === 'Enter' || e.key === ' ') {
-                                            e.preventDefault();
-                                            this.toggle();
-                                        } else if (e.key === 'Escape') {
-                                            this.close();
-                                        } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-                                            e.preventDefault();
-                                            const currentIndex = this.options.findIndex(opt => opt.value === this.selected);
-                                            const newIndex = e.key === 'ArrowDown' 
-                                                ? Math.min(currentIndex + 1, this.options.length - 1)
-                                                : Math.max(currentIndex - 1, 0);
-                                            this.selectOption(this.options[newIndex].value);
-                                        }
-                                    });
-        
-                                    document.addEventListener('click', (e) => {
-                                        if (!this.contains(e.target)) this.close();
-                                    });
-                                }
-        
-                                _render() {
-                                    // const select = this.querySelector('select') || document.createElement('select');
-                                    // select.style.display = 'none';
-        
-                                    let selectedOption = null;
-                                    this.options = [];
-                                    for(const opt of this.querySelectorAll('ls-option')) {
-                                        if (opt.selected) selectedOption = opt;
-                                        opt.setAttribute('role', 'option');
-        
-                                        const option = {
-                                            value: opt.value || opt.getAttribute('value') || opt.textContent,
-                                            text: opt.getAttribute("label") || opt.textContent,
-                                            selected: opt.getAttribute("selected") !== null,
-                                            optionElement: opt,
-                                            element: N({
-                                                class: "ls-list-item ls-select-option",
-                                                textContent: opt.textContent,
-                                                tabindex: -1
-                                            })
-                                        };
-        
-                                        option.element.dataset.value = option.value;
-                                        this.options.push(option);
-        
-                                        option.element.addEventListener('click', (event) => {
-                                            event.stopPropagation();
-                                            this.selectOption(option);
-                                        });
-        
-                                        opt.remove();
-                                    }
-        
-                                    this._labelTarget = this.querySelector('.ls-select-display .ls-select-label-target, .ls-select-display');
-        
-                                    this.handle = this.querySelector('.ls-select-display') || N({
-                                        class: "ls-select-display",
-                                        textContent: selectedOption ? selectedOption.textContent : (this.getAttribute("placeholder") || 'Select an option')
-                                    }).addTo(this);
-                                }
-        
-                                toggle() {
-        
-                                }
-        
-                                open() {
-        
-                                }
-        
-                                close() {
-        
-                                }
-        
-                                selectOption(value) {
-                                    const option = typeof value === "object" && this.options.indexOf(value) !== -1? value: this.options.find(opt => opt.value === value);
-                                    if(!option) return;
-        
-                                    this.selected = option;
-                                    if(this._labelTarget) this._labelTarget.textContent = option?.text || '';
-                                    this.dispatchEvent(new Event('change', { bubbles: true, detail: { value } }));
-                                    this.close();
-                                }
-        
-                                get value() {
-                                    return this.selected.value || null;
-                                }
-        
-                                set value(val) {
-                                    this.selectOption(val);
-                                }
-                            }
-        
-                            customElements.define('ls-select', LSSelect);
-        
-                            LS.LoadComponent(class Menu extends LS.Component {
-                                constructor(element, options = {}) {
-                                    super();
-                                    this.open = false;
-        
-                                    const isElement = element instanceof HTMLElement;
-        
-                                    this.container = (isElement? element : N({
-                                        class: "ls-menu"
-                                    }));
-        
-                                    this.options = options || !isElement? element: {};
-                                }
-        
-                                addItems(items) {
-                                    for(const item of items) {
-                                    }
-                                }
-                            }, { global: true, name: "Menu" });
-                            </script>
-                        </div>
+            <ls-tab tab-id="applications" tab-title="Developer Applications">
+                <button .create-app-button .pill .elevated><i .bi-plus-lg /> Create application</button>
+                <div #dev-apps-list>
+                    <div .loadingIndicator>
+                        <div .ui-loader></div>
                     </div>
-        
-                    <div .bottom-buttons>
-                        <button type="submit" .pill #app-create>Create Application</button>
-                    </div>
-                </form>
+                    <div .loadingContent></div>
+                </div>
             </ls-tab>
 
-            <ls-tab tab-id="sub-users" tab-title="Bot Accounts">F</ls-tab>
-            <ls-tab tab-id="keys" tab-title="API Keys">G</ls-tab>
+            <ls-tab tab-id="applications/create" tab-title="Create an app" #app-setup-tab></ls-tab>
+            <ls-tab tab-id="applications/details" tab-title="Edit application"></ls-tab>
+
+            <ls-tab tab-id="applications/store" tab-title="Store page">
+                Something
+            </ls-tab>
+
+            <ls-tab tab-id="applications/team" tab-title="Team management">
+                Something
+            </ls-tab>
+
+            <ls-tab tab-id="sub-users" tab-title="Bot Accounts"></ls-tab>
+            <ls-tab tab-id="keys" tab-title="API Keys"></ls-tab>
             <ls-tab tab-id="api" tab-title="API Documentation">H</ls-tab>
             <ls-tab tab-id="support" tab-title="Support / Write us">I</ls-tab>
         </div>

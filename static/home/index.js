@@ -1,480 +1,744 @@
-website.register(document.currentScript, function(context, container) {
-    context.setOptions({
-        // title: "User Settings",
-        dynamicAccount: true,
-        path: "/home"
-    });
+/**
+ * TODO: Requires a lot of refactoration, this is temporary
+ */
 
-    const auth = context.requestPermission(["auth"]).auth;
-    const panel = container.get('.container');
-    const panelContent = container.get(".settings-container");
-    const loginNotice = LS.Create('div', { inner: [N("h3", "You are not logged in"), N("button", {
-        textContent: "Log in",
-        class: "pill",
-        onclick() {
-            website.showLoginToolbar();
-        }
-    })], class: "login-notice container-content" });
+// Constants
+/*inline enum*/ const APP_CATEGORY_ICONS = {
+    web: "bi-globe",
+    widget: "bi-app-indicator",
+    software: "bi-laptop",
+    mobile: "bi-phone",
+    game: "bi-controller",
+    bot: "bi-robot",
+    api: "bi-code-slash",
+    other: "bi-three-dots"
+};
 
-    const tabs = new LS.Tabs(container.querySelector('.sidebar-content'), {
-        list: false
-    });
+/**
+ * Manages developer applications
+ */
+class ApplicationsHandler extends LS.Context {
+    constructor(context) {
+        super();
+        this.parent = context;
+        this.currentAppId = null;
+        this.list = [];
 
-    context.registerSPAExtension("/home/", (page) => {
-        panel.classList.remove('sidebar-menu-visible');
-        tabs.set(page || "home");
-    });
+        this.loadingSwitch = new LS.Util.ElementSwitch(context.panelContent.querySelectorAll('#dev-apps-list :is(.loadingIndicator, .loadingContent)'), null, { mode: "dom", parent: context.panelContent.querySelector('#dev-apps-list') });
+    }
 
-    website.watchUser((loggedIn, userFragment) => {
-        if(!loggedIn) {
-            panelContent.remove();
-            panel.append(loginNotice);
-            return;
-        } else {
-            panelContent.style.display = "";
-            loginNotice.remove();
-            panel.append(panelContent);
-        }
-    });
+    update() {
+        this.loadingSwitch.back();
 
-    context.on("destroy", () => {
-        // Technically *should* destroy everything else as there should be nothing pointing to anything here
-        // But I'm not sure
-        tabs.destroy();
-    });
-
-    const siteScriptsOnce = new Set();
-    const siteScripts = {
-        profile() {
-            const confirmButtons = container.get('.profile-editor-confirm-buttons');
-            let editingUser = LS.Reactive.fork("editingUser", website.userFragment);
-
-            website.watchUser((loggedIn, userFragment) => {
-                if(loggedIn) {
-                    editingUser.__reset(); // Reset the reactive user data
-                }
-            });
-
-            editingUser.__binding.on("mutated", () => {
-                confirmButtons.classList.add("visible");
-            });
-
-            editingUser.__binding.on("reset", () => {
-                updateTextAreaLength();
-            });
-
-            window.addEventListener('beforeunload', function(e) {
-                if(!confirmButtons.classList.contains("visible")) return;
-
-                e.preventDefault();
-                e.returnValue = '';
-            });
-
-            const _profile_about_length = container.get('#profile-about-length');
-            const _profile_about = container.get("#profile-about");
-            function updateTextAreaLength() {
-                _profile_about_length && (_profile_about_length.textContent = `${_profile_about.value.length}/500`);
+        website.fetch("v1/apps/list?publisher=@me", {}, (error, response) => {
+            if (error) {
+                console.error("Failed to fetch app list:", error);
+                return;
             }
 
-            container.get("#profile-avatar").on("change", function() {
-                const file = this.files[0];
+            const listElement = this.loadingSwitch.frontElement;
+            listElement.innerHTML = "";
 
-                if (file) {
-                    openCropper(file, {
-                        width: 256,
-                        height: 256,
-                        shape: "circle",
-                        field: "pfp",
-                        animated: true
-                    });
-                }
-
-                this.value = "";
-            });
-
-            container.get("#profile-remove-avatar").on("click", function() {
-                editingUser.pfp = null;
-            });
-
-            container.get("#profile-banner").on("change", function() {
-                const file = this.files[0];
-
-                const fullscreenBanner = container.get(".profile-editor-container .profile").classList.contains("fullscreen-banner");
-
-                const width = fullscreenBanner ? 170 : 340;
-                const height = fullscreenBanner ? 240 : 160;
-
-                if (file) {
-                    openCropper(file, {
-                        width,
-                        height,
-                        finalWidth: width * 2,
-                        finalHeight: height * 2,
-                        field: "banner",
-                        animated: true
-                    });
-                }
-
-                this.value = "";
-            });
-
-            container.get("#profile-remove-banner").on("click", function() {
-                editingUser.banner = null;
-            });
-
-            container.get("#profile-displayname").on("input", function() {
-                editingUser.displayname = this.value;
-            });
-
-            container.get("#profile-about").on("input", function() {
-                editingUser.bio = this.value;
-                updateTextAreaLength();
-            });
-
-            container.get("#profile-save").on("click", function() {
-                saveProfile();
-            });
-
-            container.get("#profile-reset").on("click", function() {
-                resetProfile();
-            });
-
-            container.get("#mature-content").on("change", function() {
-                editingUser.mature_content = this.checked;
-            });
-
-            container.get("#fullscreen-banner").on("change", function() {
-                editingUser.fullscreen_banner = this.checked;
-            });
-
-            container.get("#secret-glossy-style").on("change", function() {
-                editingUser.profile_style = this.checked ? "glossy" : null;
-            });
-
-            const links_table = container.get("#links");
-            for(const link of website.userFragment.external_links || []) {
-                const row = document.createElement("tr");
-                row.innerHTML = `
-                    <td>${link.platform}</td>
-                    <td><input type="text" name="link-${link.platform}" value="${link.url}" /></td>
-                `;
-                links_table.appendChild(row);
-            }
-
-            const blobs = {};
-
-            function openCropper(file, options) {
-                if(!LS.ImageCropper) {
-                    console.error("ImageCropper module not loaded (yet).");
-                    return;
-                }
-
-                const cropper = new LS.ImageCropper(file, {
-                    ...options,
-                    createURL: true,
-
-                    async onResult(result) {
-                        modal.close();
-                        blobs[options.field] = result;
-                        editingUser[`__animated_${options.field}`] = result.animated;
-                        editingUser[options.field] = blobs[options.field].url;
-                    },
-
-                    onError(){
-                        LS.Modal.buildEphemeral({
-                            title: "Crop failed",
-                            content: "Sorry, an error occurred while cropping or loading your image. Please try again later.",
-                            buttons: [
-                                { label: "Ok" }
-                            ]
-                        });
-                        modal.close();
-                    }
-                });
-
-                const modal = LS.Modal.buildEphemeral({
-                    title: "Crop image",
-                    content: cropper.wrapper,
-                    buttons: [
-                        { class: "elevated", label: "Cancel" },
+            for (let app of response) {
+                if(!app.previewElement) app.previewElement = LS.Create("a", {
+                    class: "app-entry ls-plain",
+                    href: "/home/applications/" + app.id + "/details",
+                    inner: [
                         {
-                            label: "Crop",
-                            onClick() {
-                                cropper.crop();
-                            }
+                            class: "app-icon",
+                            inner: [
+                                app.icon ? LS.Create('img', {
+                                    class: "elevated app-icon",
+                                    src: website.cdn + "/file/" + app.icon,
+                                    alt: app.name + " icon"
+                                }) : LS.Create('ls-box', {
+                                    class: "elevated placeholder-icon app-icon",
+                                    inner: [LS.Create("i", { class: APP_CATEGORY_ICONS[app.category] || "bi-app-indicator" })]
+                                })
+                            ]
+                        },
+                        {
+                            class: "app-info",
+                            inner: [
+                                { tag: "span", inner: app.id, class: "app-id text-overflow-nowrap" },
+                                { tag: "span", inner: " " + app.name, class: "app-name text-overflow-nowrap" }
+                            ]
                         }
                     ]
-                }, { canClickAway: false });
-
-                modal.on("close", function() {
-                    setTimeout(() => {
-                        cropper.destroy();
-                    }, 1000);
                 });
+
+                listElement.appendChild(app.previewElement);
             }
 
-            async function saveProfile() {
-                confirmButtons.getAll("button").forEach(button => {
-                    button.attrAssign("disabled");
+            this.list = response;
+            this.loadingSwitch.front();
+        });
+    }
+
+    async load() {
+        const segments = location.href.split("/");
+        const appId = segments[segments.indexOf("applications") + 1];
+        this.currentAppId = appId;
+
+        if (!website.isLoggedIn) return;
+
+        website.fetch("v1/apps/info/?id=" + appId, {}, (error, app) => {
+            if (error || !app || !app.owned) {
+                console.error("Failed to fetch app info:", error);
+                LS.Modal.buildEphemeral({
+                    title: "Could not load app",
+                    content: (app && !app.owned)
+                        ? "You do not have permission to edit this app."
+                        : error.error || error.message || "An unknown error occurred while loading the app. Please try again later.",
+                    buttons: [{ label: "Ok", class: "elevated" }]
                 });
+                return;
+            }
 
-                if (blobs.pfp || blobs.banner) {
-                    // First, we need to upload the cropped image to the CDN file bucket. The API allows us to upload both at once.
-                    try {
-                        const formData = new FormData();
-                        if (blobs.pfp) formData.append("file", blobs.pfp.blob, "avatar." + (editingUser.__animated_pfp ? "webm" : "webp"));
-                        if (blobs.banner) formData.append("file", blobs.banner.blob, "banner." + (editingUser.__animated_banner ? "webm" : "webp"));
+            for (const element of this.parent.panelContent.querySelectorAll('.menu [tab-id="application"] [base-href]')) {
+                element.setAttribute("href", element.getAttribute("base-href").replace("$id", appId));
+            }
+        });
+    }
 
-                        const response = await fetch(website.cdn + "/upload?intent=avatar&origin_id=" + editingUser.id, {
-                            method: "POST",
-                            body: formData
-                        });
+    initCreateForm() {
+        this.parent.panelContent.querySelector(".create-app-button").addEventListener("click", () => {
+            this.parent.tabs.set("applications/create");
+        });
 
-                        if (!response.ok) {
-                            throw new Error("Failed to upload media");
-                        }
+        this.developerAppEditor.update();
 
-                        const result = await response.json();
-
-                        if (result && result.length > 0) {
-                            if (blobs.pfp) blobs.pfp.uploadResult = result.find(file => file.originalName.startsWith("avatar"));
-                            if (blobs.banner) blobs.banner.uploadResult = result.find(file => file.originalName.startsWith("banner"));
-                        }
-                    } catch (error) {
-                        console.error("Error uploading media:", error);
-
-                        LS.Modal.buildEphemeral({
-                            title: "Upload failed",
-                            content: "Sorry, an error occurred while uploading your media. Please try again later. If this persists, please contact us.",
-                            buttons: [
-                                { label: "Ok" }
+        this.parent.panelContent.querySelector('#app-setup-tab').appendChild(LS.Create("form", {
+            id: "app-setup-form",
+            onsubmit: () => false,
+            inner: [
+                { style: "display: flex; overflow: auto; flex-direction: column; gap: 32px; padding-bottom: 80px", inner: [
+                    { tag: "h1", inner: "Create an application!", style: "margin: 0" },
+                    { tag: "input", class: "clear", type: "text", id: "app-name", placeholder: "Project name", "aria-label": "Project name" },
+                    { inner: [
+                        { tag: "label", for: "app-description", inner: [ "Description ", LS.Create("ls-box", { class: "inline text-tag", inner: "Optional" }), LS.Create("i", { class: "bi-markdown-fill", "ls-tooltip": "Supports markdown" }) ] },
+                        { tag: "br" },
+                        { tag: "textarea", style: "height: 150px; resize: none; margin-top: 10px", id: "app-description", placeholder: "Enter a brief description of your application" },
+                        { tag: "br" }
+                    ] },
+                    { inner: [
+                        { tag: "label", for: "app-type", inner: [ "Primary purpose ", LS.Create("ls-box", { class: "inline text-tag", inner: "Optional" }) ] },
+                        { tag: "br" },
+                        LS.Create('ls-select', {
+                            id: "app-type",
+                            style: { marginTop: '10px' },
+                            class: "elevated pill",
+                            value: "other",
+                            options: [
+                                { icon: APP_CATEGORY_ICONS.web, value: "web", text: "Web Application" },
+                                { icon: APP_CATEGORY_ICONS.widget, value: "widget", text: "lstv.space Widget" },
+                                { icon: APP_CATEGORY_ICONS.software, value: "software", text: "Mobile/Desktop Application" },
+                                { icon: APP_CATEGORY_ICONS.mobile, value: "mobile", text: "Mobile Application" },
+                                { icon: APP_CATEGORY_ICONS.game, value: "game", text: "Game" },
+                                { icon: APP_CATEGORY_ICONS.bot, value: "bot", text: "Bot" },
+                                { icon: APP_CATEGORY_ICONS.api, value: "api", text: "API Service" },
+                                { icon: APP_CATEGORY_ICONS.other, value: "other", text: "Other" }
                             ]
-                        });
+                        })
+                    ] },
+                    { tag: "button", type: "submit", class: "elevated", textContent: "Create Application" }
+                ] }
+            ]
+        }));
 
-                        confirmButtons.getAll("button").forEach(button => {
-                            button.removeAttribute("disabled");
-                        });
-                        return;
-                    }
-                }
+        this.container.querySelector("#app-setup-form").addEventListener("submit", (e) => {
+            e.preventDefault();
+            this.handleFormSubmit();
+        });
+    }
 
-                // Now we can patch the user profile with the new image hash
-                const patch = editingUser.__data;
+    handleFormSubmit() {
+        const form = document.forms['app-setup-form'];
+        const payload = {
+            name: String(form['app-name'].value).trim(),
+            category: String(this.container.get('#app-type').value).trim(),
+            description: String(form['app-description'].value).trim(),
+            slug: ""
+        };
 
-                if (blobs.pfp && blobs.pfp.uploadResult) {
-                    patch.pfp = blobs.pfp.uploadResult.name;
-                }
-
-                if (blobs.banner && blobs.banner.uploadResult) {
-                    patch.banner = blobs.banner.uploadResult.name;
-                }
-
-                auth.patch(patch, (error, response) => {
-                    confirmButtons.getAll("button").forEach(button => {
-                        button.removeAttribute("disabled");
-                    });
-
-                    if (error) {
-                        LS.Modal.buildEphemeral({
-                            title: "Update failed",
-                            content: error.error || error.message || "Sorry, an error occurred while updating your profile. Please try again later. If this persists, please contact us.",
-                            buttons: [
-                                { label: "Ok" }
-                            ]
-                        });
-                        return;
-                    }
-
-                    confirmButtons.classList.remove("visible");
-
-                    // Reset the blobs after successful update
-                    if (blobs.pfp) {
-                        URL.revokeObjectURL(blobs.pfp.url);
-                        blobs.pfp = null;
-                    }
-
-                    if (blobs.banner) {
-                        URL.revokeObjectURL(blobs.banner.url);
-                        blobs.banner = null;
-                    }
-
-                    LS.Toast.show("Profile updated successfully!", { timeout: 3000 });
-                    editingUser.__reset();
+        website.fetch("v1/apps/create", {
+            method: "POST",
+            body: JSON.stringify(payload),
+            headers: { "Content-Type": "application/json" }
+        }, (error) => {
+            if (error) {
+                LS.Modal.buildEphemeral({
+                    title: "App creation failed",
+                    content: error.error || error.message || "Sorry, an error occurred while creating your app. Please try again later.",
+                    buttons: [{ label: "Ok" }]
                 });
             }
+        });
+    }
 
-            function resetProfile() {
-                editingUser.__reset();
-                blobs.pfp = null;
-                blobs.banner = null;
-                confirmButtons.classList.remove("visible");
-            }
-        },
+    destroy() {
+        this.loadingSwitch.destroy();
+    }
+}
 
-        account() {
-            const newPasswordField = N([
-                N("label", { textContent: "New password:", attr: { for: "new-password" } }),
-                N("input", { type: "password", id: "new-password", attr: { autocomplete: "new-password" } }),
-                N("label", { textContent: "Confirm new password:", attr: { for: "confirm-new-password" } }),
-                N("input", { type: "password", id: "confirm-new-password", attr: { autocomplete: "new-password" } })
-            ]);
 
-            function clearInputs(){
-                confirmationModal.container.querySelectorAll("input").forEach(input => input.value = "");
-            }
+/**
+ * Handles user profile editing
+ */
+class ProfileHandler extends LS.Context {
+    constructor(parent) {
+        super();
+        this.parent = parent;
+        this.container = parent.container;
+        this.auth = parent.auth;
+        this.blobs = {};
+        this.editingUser = LS.Reactive.fork("editingUser", website.userFragment);
+        this.confirmButtons = this.container.get('.profile-editor-confirm-buttons');
+        window.editingUser = this.editingUser;
 
-            const confirmationModal = LS.Modal.build({
-                title: "Confirm Changes",
-                content: [
-                    N("label", { textContent: "Current password:", attr: { for: "current-password" } }),
-                    N("input", { type: "password", id: "current-password", attr: { autocomplete: "current-password" } }),
-                    newPasswordField
-                ],
-                buttons: [
-                    {
-                        label: "Cancel",
-                        class: "elevated"
-                    },
-                    {
-                        label: "Confirm",
-                        onClick() {
-                            const patch = { password: confirmationModal.container.querySelector("input").value };
-                            const changedUsername = container.get("#settings-username").value;
-                            const changedEmail = container.get("#settings-email").value;
-                            const changedPassword = newPasswordField.querySelector("input").value;
+        // Init
+        this.setupUserWatcher();
+        this.setupEventListeners();
+        this.setupExternalLinks();
+    }
 
-                            if (changedPassword) {
-                                if(container.get("#confirm-new-password").value !== changedPassword) {
-                                    LS.Modal.buildEphemeral({
-                                        title: "Password mismatch",
-                                        content: "The new passwords do not match.",
-                                        buttons: [
-                                            { label: "Ok" }
-                                        ]
-                                    });
-                                    return;
-                                }
-                                patch.newPassword = changedPassword;
-                            }
+    setupUserWatcher() {
+        this.editingUser.__bind.on("mutated", () => {
+            this.confirmButtons.classList.add("visible");
+        });
 
-                            if (changedUsername && website.userFragment.username !== changedUsername) {
-                                patch.username = changedUsername;
-                            }
+        this.editingUser.__bind.on("reset", () => {
+            this.updateTextAreaLength();
+        });
 
-                            if (changedEmail && website.userFragment.email !== changedEmail) {
-                                patch.email = changedEmail;
-                            }
+        window.addEventListener('beforeunload', (e) => {
+            if (!this.confirmButtons.classList.contains("visible")) return;
+            e.preventDefault();
+            e.returnValue = '';
+        });
+    }
 
-                            confirmationModal.close();
+    setupEventListeners() {
+        this.container.get("#profile-avatar").on("change", () => this.handleAvatarChange());
+        this.container.get("#profile-remove-avatar").on("click", () => this.handleRemoveAvatar());
+        this.container.get("#profile-banner").on("change", () => this.handleBannerChange());
+        this.container.get("#profile-remove-banner").on("click", () => this.handleRemoveBanner());
+        this.container.get("#profile-displayname").on("input", (e) => this.editingUser.displayname = e.target.value);
+        this.container.get("#profile-about").on("input", (e) => {
+            this.editingUser.bio = e.target.value;
+            this.updateTextAreaLength();
+        });
+        this.container.get("#profile-save").on("click", () => this.saveProfile());
+        this.container.get("#profile-reset").on("click", () => this.resetProfile());
+        this.container.get("#mature-content").on("change", (e) => this.editingUser.mature_content = e.target.checked);
+        this.container.get("#fullscreen-banner").on("change", (e) => this.editingUser.profileEffects.banner.fullscreen = e.target.checked);
+        this.container.get("#secret-glossy-style").on("change", (e) => this.editingUser.profileEffects.style.id = e.target.checked ? "glossy" : null);
+    }
 
-                            auth.patch(patch, (error, response) => {
-                                if (error) {
-                                    LS.Modal.buildEphemeral({
-                                        title: "Update failed",
-                                        content: error.error || error.message || "Sorry, an error occurred while updating your account. Please try again later. If this persists, please contact us.",
-                                        buttons: [
-                                            { label: "Ok" }
-                                        ]
-                                    });
-                                    return;
-                                }
+    setupExternalLinks() {
+        const links_table = this.container.get("#links");
+        for (const link of website.userFragment.external_links || []) {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${link.platform}</td>
+                <td><input type="text" name="link-${link.platform}" value="${link.url}" /></td>
+            `;
+            links_table.appendChild(row);
+        }
+    }
 
-                                LS.Toast.show("Account updated successfully!", { timeout: 3000 });
-                            });
-
-                            clearInputs();
-                        }
-                    }
-                ]
-            });
-
-            container.get("#settings-save-changes").on("click", function() {
-                newPasswordField.style.display = "none";
-                clearInputs();
-                confirmationModal.open();
-            });
-
-            container.get("#account-change-password").on("click", function() {
-                newPasswordField.style.display = "block";
-                clearInputs();
-                newPasswordField.querySelector("input").focus();
-                confirmationModal.open();
-            });
-        },
-
-        dev() {
-            website.fetch("v1/apps/list", {}, (error, response) => {
-                if (error) {
-                    console.error("Failed to fetch app list:", error);
-                    return;
-                }
-
-                const listElement = container.get("#dev-apps-list");
-                listElement.innerHTML = "";
-
-                for(let app of response) {
-                    const appElement = N("div", {
-                        class: "dev-app-entry",
-                        inner: []
-                    });
-
-                    listElement.add(appElement);
-                }
-
-                tabs.set("app-setup");
-            });
-
-            container.get("#app-setup-form").on("submit", function() {
-                const form = document.forms['app-setup-form'];
-                const payload = {
-                    name: String(form['app-name'].value).trim(),
-                    description: String(form['app-description'].value).trim(),
-                    slug: "",
-                }
-                website.fetch("v1/apps/create", {
-                    method: "POST",
-                    body: {}
-                }, (error, response) => {
-                    if (error) {
-                        LS.Modal.buildEphemeral({
-                            title: "App creation failed",
-                            content: error.error || error.message || "Sorry, an error occurred while creating your app. Please try again later. If this persists, please contact us.",
-                            buttons: [
-                                { label: "Ok" }
-                            ]
-                        });
-                        return;
-                    }
-                });
-                return false;
+    handleAvatarChange() {
+        const file = this.container.get("#profile-avatar").files[0];
+        if (file) {
+            this.openCropper(file, {
+                width: 256,
+                height: 256,
+                shape: "circle",
+                field: "pfp",
+                animated: true
             });
         }
     }
 
-    tabs.on("changed", function(tab, old) {
-        const view = tabs.currentElement();
-        const oldElement = tabs.tabs.get(old)?.element;
+    handleRemoveAvatar() {
+        this.editingUser.pfp = null;
+    }
 
-        if(!siteScriptsOnce.has(tab) && siteScripts[tab]) {
-            siteScripts[tab]?.();
-            siteScriptsOnce.add(tab);
+    handleBannerChange() {
+        const file = this.container.get("#profile-banner").files[0];
+        if (!file) return;
+
+        const fullscreenBanner = this.container.get(".profile-editor-container .profile").classList.contains("fullscreen-banner");
+        const width = fullscreenBanner ? 170 : 340;
+        const height = fullscreenBanner ? 240 : 160;
+
+        this.openCropper(file, {
+            width,
+            height,
+            finalWidth: width * 2,
+            finalHeight: height * 2,
+            field: "banner",
+            animated: true
+        });
+    }
+
+    handleRemoveBanner() {
+        this.editingUser.banner = null;
+    }
+
+    updateTextAreaLength() {
+        const lengthElement = this.container.get('#profile-about-length');
+        const textArea = this.container.get("#profile-about");
+        if (lengthElement) {
+            lengthElement.textContent = `${textArea.value.length}/500`;
+        }
+    }
+
+    openCropper(file, options) {
+        if (!LS.ImageCropper) {
+            console.error("ImageCropper module not loaded (yet).");
+            return;
         }
 
-        LS.Animation.slideInToggle(view, oldElement);
-        container.get('.title').textContent = view.getAttribute("tab-title") || "User Settings";
+        const cropper = new LS.ImageCropper(file, {
+            ...options,
+            createURL: true,
+            onResult: (result) => {
+                modal.close();
+                this.blobs[options.field] = result;
+                this.editingUser[`__animated_${options.field}`] = result.animated;
+                this.editingUser[options.field] = this.blobs[options.field].url;
+            },
+            onError: () => {
+                LS.Modal.buildEphemeral({
+                    title: "Crop failed",
+                    content: "Sorry, an error occurred while cropping or loading your image. Please try again later.",
+                    buttons: [{ label: "Ok" }]
+                });
+                modal.close();
+            }
+        });
 
-        const button = container.get(`[data-tab-id="${tab}"]`);
-        const activeButton = container.get(`.menu .active`);
+        const modal = LS.Modal.buildEphemeral({
+            title: "Crop image",
+            content: cropper.wrapper,
+            buttons: [
+                { class: "elevated", label: "Cancel" },
+                {
+                    label: "Crop",
+                    onClick: () => cropper.crop()
+                }
+            ]
+        }, { canClickAway: false });
+
+        modal.on("close", () => {
+            setTimeout(() => cropper.destroy(), 1000);
+        });
+    }
+
+    contentModerationError(profanity) {
+        console.log(profanity);
+        
+        return LS.Create({
+            inner: [
+                "Couldn't update due to the following restricted content that is not allowed in this context:",
+                LS.Create("ul", {
+                    inner: profanity.map(item => LS.Create("li", `Word "${item.censored}", reason: "${item.notes}${item.illegal? " - refers to illegal content or practices" : ""}" (language: "${item.lang}", score ${item.severity}/5)`))
+                }),
+                LS.Create("p", "Please contact us if this is a mistake.")
+            ]
+        });
+    }
+
+    async saveProfile() {
+        this.disableButtons();
+
+        if (this.blobs.pfp || this.blobs.banner) {
+            const uploadSuccess = await this.uploadMedia();
+            if (!uploadSuccess) {
+                this.enableButtons();
+                return;
+            }
+        }
+
+        const patch = this.editingUser.__bind.object;
+        if (this.blobs.pfp?.uploadResult) patch.pfp = this.blobs.pfp.uploadResult.name;
+        if (this.blobs.banner?.uploadResult) patch.banner = this.blobs.banner.uploadResult.name;
+
+        this.auth.patch(patch, (error) => {
+            this.enableButtons();
+            if (error) {
+                console.log(error);
+                
+                LS.Modal.buildEphemeral({
+                    title: "Update failed",
+                    content: (error?.error?.profanity && this.contentModerationError(error.error.profanity)) || error.error || error.message || "Sorry, an error occurred while updating your profile. Please try again later.",
+                    buttons: [{ label: "Ok" }]
+                });
+                return;
+            }
+
+            this.confirmButtons.classList.remove("visible");
+            this.cleanupBlobs();
+            LS.Toast.show("Profile updated successfully!", { timeout: 3000 });
+            this.editingUser.__bind.reset();
+        });
+    }
+
+    async uploadMedia() {
+        try {
+            const formData = new FormData();
+            if (this.blobs.pfp) {
+                formData.append("file", this.blobs.pfp.blob, "avatar." + (this.editingUser.__animated_pfp ? "webm" : "webp"));
+            }
+            if (this.blobs.banner) {
+                formData.append("file", this.blobs.banner.blob, "banner." + (this.editingUser.__animated_banner ? "webm" : "webp"));
+            }
+
+            const response = await fetch(website.cdn + "/upload?intent=avatar&origin_id=" + this.editingUser.id, {
+                method: "POST",
+                body: formData
+            });
+
+            if (!response.ok) throw new Error("Failed to upload media");
+
+            const result = await response.json();
+            if (result?.length > 0) {
+                if (this.blobs.pfp) this.blobs.pfp.uploadResult = result.find(file => file.originalName.startsWith("avatar"));
+                if (this.blobs.banner) this.blobs.banner.uploadResult = result.find(file => file.originalName.startsWith("banner"));
+            }
+            return true;
+        } catch (error) {
+            console.error("Error uploading media:", error);
+            LS.Modal.buildEphemeral({
+                title: "Upload failed",
+                content: "Sorry, an error occurred while uploading your media. Please try again later.",
+                buttons: [{ label: "Ok" }]
+            });
+            return false;
+        }
+    }
+
+    resetProfile() {
+        this.editingUser.__bind.reset();
+        this.blobs.pfp = null;
+        this.blobs.banner = null;
+        this.confirmButtons.classList.remove("visible");
+    }
+
+    cleanupBlobs() {
+        if (this.blobs.pfp) {
+            URL.revokeObjectURL(this.blobs.pfp.url);
+            this.blobs.pfp = null;
+        }
+        if (this.blobs.banner) {
+            URL.revokeObjectURL(this.blobs.banner.url);
+            this.blobs.banner = null;
+        }
+    }
+
+    disableButtons() {
+        this.confirmButtons.getAll("button").forEach(button => button.attrAssign("disabled"));
+    }
+
+    enableButtons() {
+        this.confirmButtons.getAll("button").forEach(button => button.removeAttribute("disabled"));
+    }
+}
+
+
+/**
+ * Handles account settings
+ */
+class AccountHandler extends LS.Context {
+    constructor(parent) {
+        super();
+        this.parent = parent;
+        this.container = parent.container;
+        this.auth = parent.auth;
+
+        // Init
+        this.setupEventListeners();
+    }
+
+    setupModal() {
+        if (this.confirmationModal) return;
+
+        const newPasswordField = LS.Create([
+            { tag: "label", text: "New password:", attr: { for: "new-password" } }, { tag: "br" },
+            { tag: "input", type: "password", id: "new-password", attr: { autocomplete: "new-password" } }, { tag: "br" },
+            { tag: "label", text: "Confirm new password:", attr: { for: "confirm-new-password" } }, { tag: "br" },
+            { tag: "input", type: "password", id: "confirm-new-password", attr: { autocomplete: "new-password" } }
+        ]);
+
+        this.newPasswordField = newPasswordField;
+        this.confirmationModal = LS.Modal.build({
+            title: "Confirm Changes",
+            content: [
+                { tag: "label", text: "Current password:", attr: { for: "current-password" } }, { tag: "br" },
+                { tag: "input", type: "password", id: "current-password", attr: { autocomplete: "current-password" } }, { tag: "br" },
+                newPasswordField
+            ],
+            buttons: [
+                { label: "Cancel", class: "elevated" },
+                {
+                    label: "Confirm",
+                    onClick: () => this.handleConfirm()
+                }
+            ]
+        });
+    }
+
+    setupEventListeners() {
+        this.container.get("#settings-save-changes").on("click", () => this.handleSaveChanges());
+        this.container.get("#account-change-password").on("click", () => this.handleChangePassword());
+    }
+
+    handleSaveChanges() {
+        this.setupModal();
+
+        this.newPasswordField.style.display = "none";
+        this.clearInputs();
+        this.confirmationModal.open();
+    }
+
+    handleChangePassword() {
+        this.setupModal();
+
+        this.newPasswordField.style.display = "block";
+        this.clearInputs();
+        this.newPasswordField.querySelector("input").focus();
+        this.confirmationModal.open();
+    }
+
+    handleConfirm() {
+        const patch = { password: this.confirmationModal.container.querySelector("input").value };
+        const changedUsername = this.container.get("#settings-username").value;
+        const changedEmail = this.container.get("#settings-email").value;
+        const changedPassword = this.newPasswordField.querySelector("input").value;
+
+        if (changedPassword) {
+            if (this.container.get("#confirm-new-password").value !== changedPassword) {
+                LS.Modal.buildEphemeral({
+                    title: "Password mismatch",
+                    content: "The new passwords do not match.",
+                    buttons: [{ label: "Ok" }]
+                });
+                return;
+            }
+            patch.newPassword = changedPassword;
+        }
+
+        if (changedUsername && website.userFragment.username !== changedUsername) {
+            patch.username = changedUsername;
+        }
+
+        if (changedEmail && website.userFragment.email !== changedEmail) {
+            patch.email = changedEmail;
+        }
+
+        this.confirmationModal.close();
+
+        this.auth.patch(patch, (error) => {
+            if (error) {
+                LS.Modal.buildEphemeral({
+                    title: "Update failed",
+                    content: error.error || error.message || "Sorry, an error occurred while updating your account. Please try again later.",
+                    buttons: [{ label: "Ok" }]
+                });
+                return;
+            }
+
+            LS.Toast.show("Account updated successfully!", { timeout: 3000 });
+        });
+
+        this.clearInputs();
+    }
+
+    clearInputs() {
+        this.confirmationModal.container.querySelectorAll("input").forEach(input => input.value = "");
+    }
+}
+
+const siteHandlers = { profile: ProfileHandler, account: AccountHandler, applications: ApplicationsHandler };
+
+/**
+ * Main page module
+ */
+website.register(document.currentScript, class extends LS.Context {
+    constructor(context, container) {
+        super();
+        this.context = context;
+        this.container = container;
+
+        this.init();
+    }
+
+    init() {
+        this.auth = this.context.requestPermission(["auth"]).auth;
+        this.siteScripts = new Map();
+        this.tabHandlers = {};
+
+        this.context.setOptions({
+            dynamicAccount: true,
+            persistable: true, // Future use
+            path: "/home" // Canonical path
+        });
+
+        // -- SPA Extensions
+        this.context.registerSPAExtension("/home/{,*}", (page) => {
+            this.handleNavigation();
+        });
+
+        this.context.registerSPAExtension("/home/applications/{*,*/details,*/store,*/team,*/delete}", (page) => {
+            this.handleNavigation();
+        });
+
+        // -- DOM elements
+        this.panel = this.container.querySelector('.container');
+        this.panelContent = this.container.querySelector(".settings-container");
+
+        this.loginSwitch = this.addDestroyable(new LS.Util.ElementSwitch([this.container.querySelector('.loadingIndicator'), LS.Create('div', {
+            class: "login-notice container-content",
+            inner: [
+                LS.Create("h3", "You are not logged in"),
+                LS.Create("button", {
+                    textContent: "Log in",
+                    class: "pill",
+                    onclick: () => website.showLoginToolbar()
+                })
+            ]
+        }), this.panelContent], null, {
+            mode: "dom",
+            parent: this.panel,
+            initial: -1
+        }));
+
+        const menuButton = this.container.querySelector('.menu-button');
+        menuButton.addEventListener("click", () => this.panel.classList.toggle('sidebar-menu-visible'));
+
+        // -- Tabs
+        this.tabs = this.addDestroyable(new LS.Tabs(this.panelContent.querySelector('.sidebar-content'), {
+            list: false,
+            slideAnimation: true
+        }));
+
+        this.sidebarTabs = this.addDestroyable(new LS.Tabs(this.panelContent.querySelector('.menu'), {
+            list: false,
+            slideAnimation: true
+        }));
+
+        // -- Lifecycle
+        this.tabs.on("changed", (tab) => this.handleTabChange(tab));
+        this.context.on("destroy", () => this.destroy());
+        window.s = this;
+
+        // First thing that we do, is we wait for the user state to be ready.
+        // Once that happens this callback will be called, including future changes, as this page should update user state dynamically.
+        this.context.watchUser((loggedIn, userFragment) => {
+            this.handleUserStateChange(loggedIn);
+        });
+    }
+
+    handleUserStateChange(loggedIn) {
+        if (!loggedIn) {
+            this.loginSwitch.set(1);
+            return;
+        }
+
+        if(this.tabHandlers.profile && this.tabHandlers.profile.editingUser) {
+            this.tabHandlers.profile.editingUser.__bind.reset(true);
+        }
+
+        this.loginSwitch.front();
+
+        if (!this.firstLoadDone) {
+            this.firstLoadDone = true;
+            this.panelContent.style.display = "";
+            this.handleNavigation();
+        }
+    }
+    
+    handleNavigation() {
+        const segments = location.pathname.split("/").filter(Boolean);
+        segments.shift();
+
+        switch(segments[0]) {
+            case "applications":
+                if (segments[1]) {
+                    if(segments[2] === "delete") {
+                        LS.Modal.buildEphemeral({
+                            title: "Are you sure?",
+                            content: LS.Create({ innerHTML: "This will permanently delete your application and any related resources.<br><br>You can restore it within 30 days." }),
+                            buttons: [{ label: "Cancel", class: "elevated" },  { label: "Continue", accent: "red" }]
+                        });
+                        return;
+                    }
+
+                    if(!this.developerAppEditor) this.developerAppEditor = new ApplicationsHandler(this);
+                    this.tabs.set("applications/" + (segments[2] || "details"));
+                    break;
+                }
+
+            default:
+                this.tabs.set(segments[0] || "home");
+                this.sidebarTabs.set("home");
+                break;
+        }
+    }
+
+    handleTabChange(tab) {
+        const view = this.tabs.currentElement();
+        this.panel.classList.remove('sidebar-menu-visible');
+
+        let sidebarTab = "home";
+
+        if (tab.startsWith("applications")) {
+            if(!this.developerAppEditor) this.developerAppEditor = new ApplicationsHandler(this);
+
+            if(tab.indexOf("/") !== -1) {
+                if(!tab.endsWith("/create")) {
+                    sidebarTab = "application";
+                    this.developerAppEditor.load();
+                }
+    
+                // TODO
+            }
+        }
+
+        this.sidebarTabs.set(sidebarTab);
+
+        if(!this.siteScripts.has(tab) && siteHandlers[tab]) {
+            this.siteScripts.set(tab, new siteHandlers[tab](this));
+        }
+
+        this.container.querySelector('.title').textContent = view.getAttribute("tab-title") || "User Settings";
+
+        const button = this.container.querySelector(`[data-tab-id="${tab}"]`);
+        const activeButton = this.container.querySelector(`.menu .active`);
+
         if (activeButton) {
-            activeButton.classList.remove('active');
-            activeButton.classList.remove('level-1');
+            activeButton.classList.remove('active', 'level-1');
         }
 
         if (button) {
-            button.classList.add('active');
-            button.classList.add('level-1');
+            button.classList.add('active', 'level-1');
         }
-    });
+    }
 
-    tabs.set(location.pathname.split("/").slice(2)[0] || "home");
+    destroy() {
+        if(this.destroyed) return;
+        for (const handlerKey in this.tabHandlers) {
+            this.tabHandlers[handlerKey]?.destroy?.();
+        }
+
+        this.tabHandlers = {};
+
+        this.container = null;
+        this.context = null;
+        this.auth = null;
+        this.panel = null;
+        this.panelContent = null;
+        super.destroy();
+    }
 });

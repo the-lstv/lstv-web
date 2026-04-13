@@ -4,7 +4,7 @@
 [-] = Work in progress
 [!] = Bug
 [x] = Early beta, attention needed
-[/] = Functional, but not fully polished
+[/] = Functional, but not fully polished (work may continue)
 [*] = Completed
 
 - [-] Projects showcase
@@ -13,19 +13,21 @@
 - [-] App integration & apps
 - [ ] Chat platform
 - [ ] Blog
-- [ ] Better introduction
+- [-] Better introduction
 - [ ] Sitewide navigation
-- [ ] Bring back SPA design
+- [*] Bring back SPA design
 - [ ] Reason of insanity
-- [x] Design gallery
-- [/] Profile editor
-- [ ] Instant login where supported (login hooks)
-- [ ] Clean kernel APIs (currently its very messy)
-- [ ] Realtime intergration
-- [ ] Optimize for low-end devices
+- [/] Design gallery
+- [x] Profile editor
+- [*] Instant login where supported (login hooks)
+- [-] Clean kernel APIs (currently its very messy)
+- [ ] Realtime intergration(?)
+- [-] Optimize for low-end devices
 - [ ] Site history showcase/wayback
 - [ ] Cloud dashboard
 - [ ] Notifications center
-- [ ] Account switcher
+- [/] Account switcher
 
-
+- [ ] User apps
+- [ ] App user data storage
+- [ ] App login

@@ -8,10 +8,10 @@
     }
 </head>
 
-@import("./privacy-policy/text.html");
+<pre @import="./text.md" markdown />
 
-<div class="open-plain">
-    <a href="/privacy-policy/text.html" target="_blank" class="ls-button">Open plaintext version</a>
+<div .open-plain>
+    <a href="/privacy-policy/text.md" target="_blank" class="ls-button">Open plain Markdown version</a>
 </div>
 
 <script>
@@ -26,18 +26,19 @@
         display: block;
         margin: auto;
         white-space: pre-wrap;
-        font-family: "IBM Plex Mono";
+        font-family: "IBM Plex Mono", "JetBrains Mono", monospace;
         font-weight: 200;
         background: var(--surface-n1);
         padding: 20px 40px;
         border-radius: 0 0 20px 20px;
+        user-select: text;
     }
 
     p > span {
         margin-left: 16px;
         display: inline-block;
     }
-    
+
     strong {
         font-weight: 800;
         display: inline-block;

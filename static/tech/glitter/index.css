@@ -1,0 +1,25 @@
+[ls-theme=dark] :root {
+    background: black !important;
+}
+
+.podium > img {
+    width: 150px;
+    height: auto;
+}
+
+.podium {
+    display: flex;
+    padding-top: 100px;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+    text-align: center;
+    background: linear-gradient(180deg, color-mix(in oklab, transparent 60%, var(--accent-20) 40%), transparent);
+}
+
+.content {
+    margin: auto;
+    max-width: 860px;
+    padding: 2rem;
+    user-select: text;
+}

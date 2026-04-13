@@ -16,6 +16,9 @@ You can now do almost anything blazingly fast with the site-wide command palette
 
 <img src="etc/terminal.png" alt="Screenshot" style="width: 100%; max-width: 500px;">
 
+## 📦 Kernel
+<img src="assets/image/kernel-icons/kernel-1.2.png" alt="Kernel Logo" style="height: 200px"><br>
+As lstv.space is a pretty complex web application, there needs to be a robust central system to manage everything smoothly. The Zen Kernel is that - it's a powerful core custom built from the ground up for this website, which manages everything from page routing, history & resource management, viewports, caching, authentication, threads & isolation, and much more.<br>
 
 ## 🪄 Features
 - Hybrid single-page application design.

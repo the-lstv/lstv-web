@@ -1,0 +1,60 @@
+body {
+    /* Eye-saver! */
+    background: #222;
+    color: #ddd;
+}
+
+@media (prefers-color-scheme: light) {
+    body {
+        background: #ddd;
+        color: #222;
+    }
+
+    .ui-loader {
+        border-color: #111 #0000;
+    }
+}
+
+.loaderContainer, .loaderContainer > .error {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.loaderContainer .message {
+    text-align: center;
+    margin: 40px 20px;
+}
+
+@keyframes l1 { to { transform: rotate(.5turn) } }
+
+.loader {
+    --b: 25%;
+    height: 80px;
+    aspect-ratio: 1/cos(30deg);
+    position: relative;
+    clip-path: polygon(50% 0,100% 100%,0 100%,50% 0,50% var(--b),calc(var(--b)*cos(30deg)) calc(100% - var(--b)/2),calc(100% - var(--b)*cos(30deg)) calc(100% - var(--b)/2),50% var(--b));
+    filter: blur(12px);
+}
+
+.loader:before {
+    content: "";
+    position: absolute;
+    inset: -8% 0;
+    background: conic-gradient(#0000 35%,var(--accent, #0B486B),#0000 65%);
+    animation: l5 2s linear infinite;
+}
+
+.ui-loader {
+    width: 50px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 8px solid;
+    border-color: var(--surface-top, #fff) #0000;
+    animation: l1 1s infinite;
+}
+
+@keyframes l5 { to {rotate: 1turn} }

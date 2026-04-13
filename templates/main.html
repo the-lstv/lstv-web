@@ -1,95 +1,57 @@
+<!--
+    This is the main global template, everything here will be available on all pages.
+    Page content will be rendered where <template::content /> is.
+    It should be kept small
+-->
+
 <head>
 
-    <!-- @import (/~/assets/html/polyfil.html); -->
+    <!-- Optional prefetch (we are going to load the bridge) -->
+    <link rel="preconnect" href="https://auth.extragon.cloud" crossorigin>
+    <link rel="dns-prefetch" href="//auth.extragon.cloud">
+    <link rel="dns-prefetch" href="//cdn.extragon.cloud">
+    <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
 
-    <style>
-        body {
-            /* Eye-saver! */
-            background: #222;
-            color: #ddd;
-        }
-
-        @media (prefers-color-scheme: light) {
-            body {
-                background: #ddd;
-                color: #222;
-            }
-
-            .ui-loader {
-                border-color: #111 #0000;
-            }
-        }
-
-        .loaderContainer, .loaderContainer > .error {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
-
-        .loaderContainer .message {
-            text-align: center;
-            margin: 40px 20px;
-        }
-
-        @keyframes l1 { to { transform: rotate(.5turn) } }
-
-        .loader {
-            --b: 25%;
-            height: 80px;
-            aspect-ratio: 1/cos(30deg);
-            position: relative;
-            clip-path: polygon(50% 0,100% 100%,0 100%,50% 0,50% var(--b),calc(var(--b)*cos(30deg)) calc(100% - var(--b)/2),calc(100% - var(--b)*cos(30deg)) calc(100% - var(--b)/2),50% var(--b));
-            filter: blur(12px);
-        }
-
-        .loader:before {
-            content: "";
-            position: absolute;
-            inset: -8% 0;
-            background: conic-gradient(#0000 35%,#0B486B,#0000 65%);
-            animation: l5 2s linear infinite;
-        }
-
-        .ui-loader {
-            width: 50px;
-            aspect-ratio: 1;
-            border-radius: 50%;
-            border: 8px solid;
-            border-color: var(--surface-top, #fff) #0000;
-            animation: l1 1s infinite;
-        }
-
-        @keyframes l5 { to {rotate: 1turn} }
-    </style>
+    <!-- Styles that we need immediately without waiting -->
+    @import("/~/templates/head.css") { as: inline-style; class: "whitelist" }
 
     <script .whitelist>
         window.__loadTime = Date.now();
         window.__init = [];
+        window.LS_INIT_OPTIONS = {
+            autoScheme: true,
+            autoAccent: true,
+
+            // Temporary while transitioning to v6
+            enableV5Compat: true,
+
+            // This is to catch bad code usage before it leaks.
+            // Not needed in production
+            enforceContextSafety: true
+        };
+
+        window.website = {
+            /**
+             * Requests scoped access. This is required to access the website APIs.
+             * @param {HTMLScriptElement|string} script - The script tag or unique identifier.
+             * @param {LS.Context} runtimeContext - The initialization context instance or class.
+             */
+            register(script, runtimeContext) {
+                window.__init.push({ script, runtimeContext });
+            },
+
+            loaded: false
+        }
+
         window.__loadError = (message) => {
             const container = document.querySelector('.loaderContainer');
             const errorBox = container.querySelector('.error');
             container.querySelector('.loader').remove();
             if (message) errorBox.querySelector('.message').innerHTML = message;
             errorBox.style.display = 'flex';
-        }
+        };
 
         window.LOW_PERFORMANCE_MODE = localStorage.getItem("LOW_PERFORMANCE_MODE") === "true";
-
-        window.website = {
-            /**
-             * Requests scoped access. This is required to access the website APIs.
-             * @param {HTMLScriptElement|string} script - The script tag or unique identifier.
-             * @param {Function} callback - The initialization callback function.
-             */
-            register(script, callback) {
-                window.__init.push({ script, callback });
-            },
-
-            loaded: false
-        }
 
         window.addEventListener("DOMContentLoaded", () => {
             if(!window.LS || !window.website?.loaded) {
@@ -98,8 +60,15 @@
         });
     </script>
 
-    @use (ls:5.2.6[flat, tooltips, toast, reactive, tabs, animation, resize, modal], bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800", "IBM Plex Mono:wght@400;600;800"]);
-    @use (~/assets/css/main.css, ~/assets/js/app.js[defer], ~/assets/js/pallete.js);
+    <!-- <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdn.extragon.cloud https://cdn.extragon.localhost https://fonts.googleapis.com https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.extragon.cloud https://cdn.extragon.localhost https://fonts.googleapis.com; font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net; connect-src 'self' wss://*.lstv.space wss://*.extragon.cloud wss://*.extragon.localhost https://api.extragon.cloud https://api.extragon.localhost;"> -->
+
+    <!-- LS, icons, fonts -->
+    @use (ls[flat, color, tooltips, toast, range, menu, reactive, tabs, animation, resize, modal, ShortcutManager, CompileTemplate], bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800"]);
+
+    <!-- @use (bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800"]); -->
+
+    <!-- Kernel and global CSS -->
+    @use (~/assets/css/main.scss, ~/assets/js/kernel.js[defer]);
 
     @page {
         style: flat;
@@ -117,6 +86,7 @@
     <script .whitelist>
         // Apply theme based on user preference
         document.body.setAttribute("ls-theme", localStorage.getItem("ls-theme") || (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches? "light": "dark"));
+        document.body.style.setProperty("--border-radius-multiplier", localStorage.getItem("ls-border-radius") || "1");
     </script>
 
     <div .loaderContainer>
@@ -133,21 +103,23 @@
     </div>
 
     <div #resizeMessage hidden>
-        Minimum size for this application is 100x100 pixels.
+        Minimum size for this application is 200x100 pixels.
     </div>
 
     <div #app hidden>
-        <nav .level-1>
+        <nav #topPanel .level-1>
 
-            <a href="/" .homeButton aria-label="LSTV Homepage">
-                <svg xmlns="http://www.w3.org/2000/svg" width="21" height="15" fill="none"><path d="M19.1689 12.3682V13.7529H19.1182L18.3242 12.3682H19.1689ZM14.9346 13.7529H2.3457L8.63965 2.81445L14.9346 13.7529ZM19.1689 6.82617V8.48926H16.0996L15.1465 6.82617H19.1689ZM19.1689 1.5625V2.94727H12.9219L12.1279 1.5625H19.1689Z" stroke="currentColor" stroke-width="2.494"/></svg>
-                <span .headerTitle>LSTV</span> <span .headerText />
-            </a>
+            <div .headerLeftContainer>
+                <a href="/" .homeButton aria-label="LSTV Homepage">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="21" height="15" fill="none"><path d="M19.1689 12.3682V13.7529H19.1182L18.3242 12.3682H19.1689ZM14.9346 13.7529H2.3457L8.63965 2.81445L14.9346 13.7529ZM19.1689 6.82617V8.48926H16.0996L15.1465 6.82617H19.1689ZM19.1689 1.5625V2.94727H12.9219L12.1279 1.5625H19.1689Z" stroke="currentColor" stroke-width="2.494"/></svg>
+                    <span .headerTitle>LSTV</span> <span .headerText />
+                </a>
+            </div>
 
             <div .headerButtonsContainer>
                 <div .headerButtons></div>
                 <button #moreButton ls-tooltip="More options" .pill .elevated aria-label="More options">
-                    <i .bi-caret-down-fill />
+                    <i .bi-list />
                 </button>
             </div>
 
@@ -157,7 +129,7 @@
             <div #commandTerminal .level-n3 style="display: none">
                 <div .terminal-output />
             </div>
-    
+
             <div #commandPaletteBar .level-n3>
                 <div #commandPalette onclick="this.querySelector('.command-input').focus()">
                     <div .completion-menu></div>
@@ -171,20 +143,21 @@
                         <input type="text" .command-input autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Command palette input">
                     </div>
                 </div>
-    
+
                 <div .command-palette-buttons>
                     <button ls-tooltip="Close" .square .clear aria-label="Close command palette"><i .bi-x-lg /></button>
                 </div>
             </div>
         </div>
 
-        <div #toolbars .level-1 .ls-slide-animation style="display: none">
-            <div .toolbar #toolbarApps>
+        <div #toolbars .level-1>
+            <div .toolbar .toolbar-styled #toolbarApps style="display: none">
                 <h3>Applications</h3>
-                <div></div>
+                <input type="text" .app-search placeholder="Search apps..." aria-label="Search applications">
+                <div .app-list></div>
             </div>
 
-            <div .toolbar #toolbarTheme>
+            <div .toolbar .toolbar-styled #toolbarTheme style="display: none">
                 <h3>Customize</h3>
                 <ls-box .elevated .inline>
                     <button .elevated ls-tooltip aria-label="Dark theme" onclick="website.theme = 'dark'"> <i class="bi-moon-stars-fill" /> </button>
@@ -195,11 +168,24 @@
                 <br>
 
                 <ls-box .elevated .inline #accentButtons>
-                    <button .accentButton ls-tooltip aria-label="Custom color" onclick="this.querySelector('input[type=color]').click()">
+                    <button .square ls-tooltip aria-label="Custom color" onclick="this.querySelector('input[type=color]').click()">
                         <input type="color" style="visibility: hidden; position: absolute" value="#ffffff">
                         <i .bi-eyedropper />
                     </button>
                 </ls-box>
+
+                <ls-div>
+                    Rounded corners<br>
+                    <ls-range style="width: 80%" value="1" min="0" max="1.5" step="0.5" onconnected="this.value = localStorage.getItem('ls-border-radius') || this.value" oninput='document.body.style.setProperty("--border-radius-multiplier", this.value);localStorage.setItem("ls-border-radius", this.value)'></ls-range>
+                </ls-div>
+
+                <!-- <ls-div>
+                    <label .ls-switch>
+                        Show link information
+                        <input type="checkbox">
+                        <span></span>
+                    </label>
+                </ls-div> -->
 
                 <ls-div .grouped-buttons style="margin: 18px 30px 24px">
                     <button>
@@ -208,7 +194,7 @@
                 </ls-div>
             </div>
 
-            <div .toolbar .level-n1 #toolbarAssistant>
+            <!-- <div .toolbar .toolbar-styled .level-n1 #toolbarAssistant style="display: none">
                 <div .loading>
                     <div .loader></div>
                 </div>
@@ -218,7 +204,7 @@
                         <h1>Assistant</h1>
                         <span>Powered by <a href="https://ai.lstv.space">Arisen</a></span>
                     </div>
-    
+
                     <div .generated-content></div>
 
                     <ls-div .assistant-intro .margin-h-small>
@@ -227,7 +213,7 @@
                     </ls-div>
 
                     <ls-div .assistant-examples />
-    
+
                     <form .input-container name="assistantForm" onsubmit="return false">
                         <div .input-wrapper>
                             <textarea rows="1" .clear name="Assistant input" id="assistant-input" placeholder="Type a message..." aria-label="Assistant input" required></textarea>
@@ -235,9 +221,9 @@
                         <button type="submit" ls-tooltip aria-label="Send message" .send .circle><i .bi-arrow-up-short></i></button>
                     </form>
                 </div>
-            </div>
+            </div> -->
 
-            <div .toolbar #toolbarLogin .level-1 .ls-slide-animation>
+            <div .toolbar .toolbar-styled #toolbarLogin .level-1 style="display: none">
                 <div .login-toolbar-page tab-id="default" #loginPopup>
                     <svg width="45" height="37" fill="none"><rect y="17" width="30" height="10" rx="5" fill="#fcc21b"/><rect x="15" width="30" height="10" rx="5" fill="#ed6c30"/><g fill="#40c0e7"><rect width="10" height="10" rx="5"/><rect x="35" y="17" width="10" height="10" rx="5"/></g></svg>
 
@@ -251,6 +237,15 @@
                         <button onclick="website.loginTabs.set('login')" #login .pill>Log-In</button>
                         <button onclick="website.loginTabs.set('register')" .pill.elevated>Create account</button>
                     </div>
+                </div>
+
+                <div .login-toolbar-page tab-id="switch">
+                    <h2 .login-popout-title>Switch Account</h2>
+
+                    <div .accounts-list .grouped-buttons></div> <br>
+
+                    <button .pill.elevated onclick="website.loginTabs.set('account')">Back</button>
+                    <button .pill.elevated onclick="website.loginTabs.set('login')"><i .bi-plus-lg></i> Add Account</button>
                 </div>
 
                 <div .login-toolbar-page tab-id="login">
@@ -322,6 +317,7 @@
                 <div .login-toolbar-page tab-id="account" .profile style="padding-bottom: 10px">
                     <div .profile-banner {{ user.banner:ProfileBanner }} />
                     <div .profile-avatar {{ user.pfp:ProfilePicture(120px) }} />
+
                     <h2 {{ user.displayname:DisplayName }} style="margin-bottom: 0; font-weight: 700" />
 
                     <a .ls-button .elevated .circle ls-tooltip aria-label="Edit profile" #editProfileButton href="/home/profile">
@@ -337,19 +333,45 @@
                     </ls-div>
 
                     <ls-div .profile-buttons .grouped-buttons>
-                        <button .elevated onclick="website.loginTabs.set('login')"><i .bi-arrow-left-right /><span>Switch accounts</span></button>
+                        <button .elevated onclick="website.loginTabs.set('switch')"><i .bi-arrow-left-right /><span>Switch accounts</span></button>
                         <button .elevated #logOutButton><i .bi-box-arrow-right /><span>Log out</span></button>
                     </ls-div>
-    
-                    <span hidden {{ user.profile_style:ProfileEffects(style) }} />
-                    <span hidden {{ user.fullscreen_banner:ProfileEffects(fullscreen-banner) }} />
+
+                    {{ user.profileEffects:ProfileEffects }}
                 </div>
             </div>
 
-            <div .toolbar #toolbarMore></div>
+            <div .toolbar .left #musicPlayer style="display: none">
+                <div .music-player .toolbar-styled>
+                    <img .music-player-cover alt="Music cover background" crossorigin="anonymous">
+                    <img .music-player-art alt="Music cover art" crossorigin="anonymous">
+
+                    <div .music-player-container>
+                        <div .music-player-info>
+                            <span .text-overflow-nowrap .music-player-title>Lorem Ipsum</span>
+                            <span .text-overflow-nowrap .music-player-artist>Dolor Sit Amet</span>
+                        </div>
+        
+                        <div .music-player-progress>
+                            <div .music-player-progress-bar>
+                                <div .music-player-progress-filled></div>
+                            </div>
+                        </div>
+        
+                        <div .music-player-controls>
+                            <button .circle .clear .music-player-like ls-tooltip aria-label="Like"><i .bi-hand-thumbs-up /></button>
+                            <button .circle .clear .music-player-prev ls-tooltip aria-label="Previous"><i .bi-skip-start-fill /></button>
+                            <button .circle .clear .music-player-play-pause ls-tooltip aria-label="Play/Pause"><i .bi-play-fill /></button>
+                            <button .circle .clear .music-player-next ls-tooltip aria-label="Next"><i .bi-skip-end-fill /></button>
+                            <button .circle .clear .music-player-repeat ls-tooltip="Repeat Off" aria-label="Toggle repeat modes"><i .bi-arrow-repeat /></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div .toolbar .toolbar-styled #toolbarMore style="display: none"></div>
 
         </div>
-
         <main #viewport>
             <div><template::content /></div>
         </main>

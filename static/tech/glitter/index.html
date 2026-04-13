@@ -1,0 +1,26 @@
+#template /templates/main.html
+
+<span hidden #scope-key>@file-scope-key();</span>
+
+<head>
+    @use (/tech/glitter/index.css);
+
+    @page {
+        title: "LSTV | Glitterlang";
+        description: "Homepage for Glitterlang";
+        keywords: "programming, glitter, glitterlang, language, tech";
+    }
+</head>
+
+<div ls-accent="purple">
+    <div .podium>
+        <img src="https://cdn.extragon.cloud/file/724244a87db227c8.svg" alt="Icon">
+        <h1>Say hello to <span style="color: var(--accent-60)">Glitter</span>.</h1>
+    </div>
+
+    <div .content markdown>
+        ## What is Glitter?
+        Glitter is a modern programming language designed for building scalable and efficient applications. It combines the best features of existing languages with innovative concepts to provide developers with a powerful toolset.
+    </div>
+</div>
+

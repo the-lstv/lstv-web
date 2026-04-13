@@ -110,6 +110,6 @@ void main() {
     glow = clamp(glow * areaMask, 0.0, 1.0);
     vec3 color = vec3(1.0) * glow;
     float alpha = glow * 0.85;
-    
+
     gl_FragColor = vec4(color, alpha);
 }

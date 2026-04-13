@@ -11,8 +11,19 @@
 <div #loginContainer />
 
 <script>
-    website.register(document.currentScript, (page, container) => {
-        O("#toolbarLogin").addTo(container.get("#loginContainer"));
+    website.register(document.currentScript, (context, container) => {
+        context.setOptions({ aliases: ["/login", "/sign-up"] });
+
+        const toolbarLogin = document.getElementById("toolbarLogin");
+        const originalOwner = toolbarLogin.parentElement;
+
+        context.on("suspend", () => {
+            toolbarLogin.addTo(originalOwner);
+        });
+
+        context.on("resume", () => {
+            toolbarLogin.addTo(container.get("#loginContainer"));
+        });
     })
 </script>
 
@@ -35,6 +46,6 @@
         position: relative;
         opacity: 1;
         transform: none;
-        width: 380px;
+        max-width: 380px !important;
     }
 </style>

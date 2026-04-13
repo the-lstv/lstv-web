@@ -4,6 +4,7 @@ class ShaderContext {
         this.source = source
         this.program = this.createProgram()
         this.uniformLocations = {};
+        this.positionAttribute = -1;
     }
 
     createProgram() {
@@ -12,10 +13,10 @@ class ShaderContext {
         this.gl.attachShader(program, this.source.fragmentShader);
         this.gl.linkProgram(program);
 
-        if (!this.gl.getProgramParameter(program, this.gl.LINK_STATUS)) {
-            console.error('Program linking error:', this.gl.getProgramInfoLog(program));
-            return null;
-        }
+        // if (!this.gl.getProgramParameter(program, this.gl.LINK_STATUS)) {
+        //     console.error('Program linking error:', this.gl.getProgramInfoLog(program));
+        //     return null;
+        // }
 
         return program;
     }
@@ -26,10 +27,26 @@ class ShaderContext {
         }
         return this.uniformLocations[name];
     }
+
+    getPositionAttribute() {
+        if (this.positionAttribute === -1) {
+            this.positionAttribute = this.gl.getAttribLocation(this.program, 'a_position');
+        }
+        return this.positionAttribute;
+    }
 }
 
-class CombinedShaderRenderer {
-    constructor(canvas, dimensions = { width: 1024, height: 1024 }) {
+class CombinedShaderRenderer extends LS.Util.FrameScheduler {
+    constructor(canvas, dimensions = { width: 512, height: 512 }, options = {}) {
+        super(null, options);
+
+        this.callback = this.render.bind(this);
+
+        this.width = dimensions.width;
+        this.height = dimensions.height;
+        canvas.width = this.width;
+        canvas.height = this.height;
+
         this.gl = canvas.getContext('webgl2', {
             alpha: true,
             // premultipliedAlpha: false,
@@ -44,11 +61,7 @@ class CombinedShaderRenderer {
         this.canvas = canvas;
         this.shaders = [];
         this.uniforms = [];
-
-        this.width = dimensions.width;
-        this.height = dimensions.height;
         this.qualityReduction = 1;
-        this.animating = false;
         this.paused = true;
 
         // FPS tracking
@@ -57,9 +70,6 @@ class CombinedShaderRenderer {
         this.fpsFrameTimes = [];
         this.fpsLastReportTime = 0;
         this.fpsReportInterval = 500; // Report FPS every 500ms
-
-        canvas.width = this.width;
-        canvas.height = this.height;
 
         this.setupBuffers();
         this.frame = this.render.bind(this);
@@ -91,11 +101,6 @@ class CombinedShaderRenderer {
     }
 
     render(time) {
-        if (this.paused) {
-            this.animating = false;
-            return;
-        }
-
         // FPS tracking
         if (this.fpsEnabled) {
             this.fpsFrameTimes.push(time);
@@ -125,16 +130,21 @@ class CombinedShaderRenderer {
         // gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
 
+        // Bind buffer once for all shaders sharing the same quad geometry
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
 
         this.shaders.forEach((shaderContext, index) => {
             const uniforms = this.uniforms[index];
             gl.useProgram(shaderContext.program);
 
             // Bind position buffer
-            const positionLocation = gl.getAttribLocation(shaderContext.program, 'a_position');
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
-            gl.enableVertexAttribArray(positionLocation);
-            gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+            // Use cached attribute location
+            const positionLocation = shaderContext.getPositionAttribute();
+            
+            if (positionLocation !== -1) {
+                gl.enableVertexAttribArray(positionLocation);
+                gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+            }
 
             // Set uniforms
             for (const [name, { type, value }] of Object.entries(uniforms)) {
@@ -145,8 +155,6 @@ class CombinedShaderRenderer {
 
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         });
-
-        requestAnimationFrame(this.frame);
     }
 
     calculateFPS() {
@@ -181,21 +189,9 @@ class CombinedShaderRenderer {
         this.canvas.height = this.height;
     }
 
-    resume() {
-        if (!this.paused || this.animating) return;
-        this.paused = false;
-        this.animating = true;
-        requestAnimationFrame(this.frame);
-    }
-
-    pause() {
-        this.paused = true;
-    }
-
     destroy() {
         // Stop animation
-        this.pause();
-        this.animating = false;
+        this.stop();
 
         const gl = this.gl;
         if (!gl) return;
@@ -212,11 +208,11 @@ class CombinedShaderRenderer {
                 // Detach and delete shaders
                 if (shaderContext.source.vertexShader) {
                     gl.detachShader(shaderContext.program, shaderContext.source.vertexShader);
-                    gl.deleteShader(shaderContext.source.vertexShader);
+                    // gl.deleteShader(shaderContext.source.vertexShader);
                 }
                 if (shaderContext.source.fragmentShader) {
                     gl.detachShader(shaderContext.program, shaderContext.source.fragmentShader);
-                    gl.deleteShader(shaderContext.source.fragmentShader);
+                    // gl.deleteShader(shaderContext.source.fragmentShader);
                 }
                 gl.deleteProgram(shaderContext.program);
             }
@@ -228,6 +224,8 @@ class CombinedShaderRenderer {
 
         // Clear FPS tracking
         this.unwatchFPS();
+
+        super.destroy();
     }
 }
 
@@ -243,11 +241,11 @@ class ShaderSource {
         this.gl.shaderSource(shader, source);
         this.gl.compileShader(shader);
 
-        if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
-            console.error('Shader compilation error:', this.gl.getShaderInfoLog(shader));
-            this.gl.deleteShader(shader);
-            return null;
-        }
+        // if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
+        //     console.error('Shader compilation error:', this.gl.getShaderInfoLog(shader));
+        //     this.gl.deleteShader(shader);
+        //     return null;
+        // }
 
         return shader;
     }

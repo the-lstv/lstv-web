@@ -1,9 +1,9 @@
 .vscode
 .idea
-api
-api/node_modules
-api/pnpm-*
-api/package-lock.json
+*.env
+
+backend
 
 static/simple-uploader.html
-assets/js/.test.editor-mode.js
+
+.well-known

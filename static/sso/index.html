@@ -157,7 +157,7 @@
 
             container.get("#sso-user").set(website.user.fragment.displayname)
             container.get("#sso-avatar").set(website.user.getProfilePictureView())
-    
+
             let userList = website.user.list(),
                 query = LS.Util.params(),
                 modal = {
@@ -175,29 +175,29 @@
                 modal.content = 'Wrong or missing target URL.'
                 return LS.Modal.build(modal).show()
             }
-    
+
             if(!query.app){
                 modal.content = 'The URL does not specify the required "app" parameter.'
                 return LS.Modal.build(modal).show()
             }
-    
+
             let validation = await website.get("auth/check_sso", {
                 app: query.app || "",
                 permissions: query.permissions,
                 target: query.ref,
                 type: query.type
             }).json()
-    
+
             if(!validation) {
                 modal.content = "Could not connect with our server to validate the login request.";
                 return LS.Modal.build(modal).show()
             }
-    
+
             if(validation.error) {
                 modal.content = validation.error;
                 return LS.Modal.build(modal).show()
             }
-    
+
             if(!validation.success || !validation.app) {
                 modal.content = "Failed validating the login request.";
                 return LS.Modal.build(modal).show()
@@ -210,11 +210,11 @@
                     class: "profilePicture bi-grid-1x2-fill"
                 }))
             }
-    
+
             O("#appName").set(validation.app.displayname || validation.app.name);
 
             container.get("#sso-domain").set(url.origin)
-    
+
             let permissions = {
                 'pockets.list': ["cash-coin", "Manage own pockets"],
                 'pockets.transaction': ["cash-coin", "Make pocket transactions"],
@@ -228,7 +228,7 @@
                 'info.password.change': ["key-fill", "Request a password change", 1],
                 'info.password.validate': ["key-fill", "Make password validation attempts", 2],
             }
-    
+
             if(validation.permissions.length < 1){
                 O("#sso-permissions").add(N("div", {
                     inner: `This app is not asking for any extra permissions.`,
@@ -252,9 +252,9 @@
             // Here, the SSO page is ready for render
 
             tabs.setActive("sso")
-    
+
             O("#authorize").on("click", async () => {
-    
+
                 let token = await website.get("auth/authorize_sso", {
                     app: query.app || "",
                     permissions: query.permissions,
@@ -270,7 +270,7 @@
 
                 location.replace(query.ref + `?result=success#${token.token}`)
             })
-    
+
             O("#cancel").on("click", async () => {
                 location.replace(query.ref + "?result=canceled")
             })
