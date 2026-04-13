@@ -84,8 +84,8 @@ website.register(document.currentScript, class Chat extends LS.Context {
         this.loginSwitch = this.addDestroyable(new LS.Util.ElementSwitch([this.container.querySelector('.loadingIndicator'), LS.Create('div', {
             class: "login-notice container-content",
             inner: [
-                N("h3", "You are not logged in"),
-                N("button", {
+                LS.Create("h3", "You are not logged in"),
+                LS.Create("button", {
                     textContent: "Log in",
                     class: "pill",
                     onclick: () => website.showLoginToolbar()

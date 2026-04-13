@@ -1,0 +1,280 @@
+<head><script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+        <title>LSTV LIBRARY</title>
+        <link rel="icon" type="image/png" href="icon.png">
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+		<link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		</head>
+<h1><br><br><br>The LSTV Projects library<br></h1>Last updated: 23.1.2022 | aprox. 61% of projects 2020-2022 are catched here (<span class="total"></span>).<br>Older projects (2014-2019) are not available. Not all urls were catched.<br><br>
+
+
+
+<!-- NAVIGATION -->
+<div class="cat-buttons cat-content">
+<div id="cat-main-web" class="cat" onclick="clicked(this)"><div class="cat-content"><span class="circle blue"></span>Web</div></div>
+<div id="cat-games" class="cat" onclick="clicked(this)"><div class="cat-content"><span class="circle red"></span>Games</div></div>
+<div id="cat-android" class="cat" onclick="clicked(this)"><div class="cat-content"><span class="circle #00ff87"></span>Android</div></div>
+<!-- tag selector -->
+<div id="cat-tags" class="cat c-drop dropdown"><span class="circle white" style="clip-path: polygon(91% 37%, 9% 37%, 50% 80%);"></span>Tags
+	<div class="dropdown-content">
+	...
+	</div>
+</div>
+</div>
+
+
+
+<!-- LIST -->
+<ul><br><br>
+<div class="category main-web"><h2>Web</h2>
+  <li>ExtraGon [Pending update]<a>http://ExtraGon.ga</a></li>
+  <li>PStudio (+ARen)<a>http://ps.lstv.ml</a></li>
+  <li>Free icons [Beta]<a>http://icons.lstv.ml</a></li>
+  <li>LSTV Gaming [Beta]<a>@gaming</a></li>
+  <li>LSTV APIs [Beta]<a>@api</a></li>
+  <li>ScratchFW [Beta]<a>@experiments/scratchFW</a></li>
+  <li>TurboWarp Addons/Extensions</li>
+  <li>LocalStream</li>
+  <li>Polable [Beta]</li>
+  <li>LSTV Experiments<a>@experiments</a></li>
+  <li>LSTV Gaming Lanuacher (Currently deprecated)</li>
+  <li>STChat [Beta][v2]</li>
+  <li>OpenChat [Old][Deprecated]</li>
+</div>
+  
+<div class="category games"><h2>Games</h2>
+  <li>MichalKnight [Beta]</li>
+  <li>OVSU [Beta]</li>
+  <li>FanTale [Only demo]</li>
+  <li>BH [Only demo]</li>
+  <li>Among US (Wallmart edition) [Beta]</li>
+  <li>LSTV RPG Engine [Beta]</li>
+  <li>MyLoy [Beta]</li>
+  <li>Temnacka [Old]</li>
+</div>
+  
+<div class="category wp"><h2>Web panels/Content services</h2>
+  <li>CDN (Free file dock, + free CDN with controll panel)</li>
+  <li>ExtraGon WebPanel [Beta][Opensource]</li>
+  <li>BUAD WebPanel [Old][Deprecated]</li>
+  <li>LSTV QG proxy (LSTV WS but without CloudFlare. More info)</li>
+</div>
+ 
+<div class="category android"><h2>Android Apps:</h2>
+  <li>YouDif - Rewritten YT client [Not yet released]</li>
+  <li>2ndNet [Not yet released]</li>
+  <li>LocalStream</li>
+  <li>LSTV AC manager</li>
+  <li>XiWatch [Deprecated]</li>
+  <li>YS4S - Automated YT sub-4-sub [Beta]</li>
+  <li>MiBand Notes [Not yet released]</li>
+  <li>QuickMarkup</li>
+  <li>BroW</li>
+  <li>LSTV Comunity</li>
+  <li>MazeChat [v2]</li>
+  <li>LexpoFiles</li>
+  <li>Symbian WGZ Builder [Beta]</li>
+  <li>Getrox [No longer maintained]</li>
+  <li>MineWorlds2 [No longer maintained]</li>
+  <li>YTWB [Old]</li>
+  <li>XBucket | Server [Old]</li>
+  <li>Sketchware backup manager [Old]</li>
+  <li>JumpAndRun DEMO [Old]</li>
+  <li>XaryTycoon [Old]</li>
+  <li>MapDroid [Old]<a>@apps/mapdroid</a></li>
+</div>
+</ul>
+
+
+
+
+
+
+
+
+<!-- SCRIPTS AND STYLES -->
+<script>
+/*Vars*/
+var categories=$(".category"),circles=$(".circle"),items=document.getElementsByTagName("li"),$stag="",
+$tag_categories={
+	"Beta":
+	  {color:"orange", id:"beta", description:"This project is still in development."},
+	"Not yet released":
+	  {color:"#bbb", id:"nyr", description:"This project exists and has a working prototype but is still not released"},
+	"Old":
+	  {color:"gray", id:"old", description:"This project is too old and may not be in very good state of quality. But it also might get a big update and refresh if it gets enough attention."},
+	"Deprecated":
+	  {color:"gray", id:"deprecated", description:"It is not recommended to use this project anymore. There probably exists a newer, supported and better alternative already made by us. Try searching on this list."},
+	"No longer maintained":
+	  {color:"#aa0000", id:"nlm", description:"This project is no longer supported and maintained by us, so it might not work and it won't get updates/support anymore."},
+	"v2":
+	  {color:"cyan", id:"v2", description:"This is a fully remade or upgraded verzion of the project. Probably it was labeled as 'old' once but got updated and renewed."},
+	"Only demo":
+	  {color:"red", id:"od", description:"This project is still in development and only a small demo is available to public."},
+	"Pending update":
+	  {color:"green", id:"pu", description:"This project is pending a huge update that is currently being worked on. Until its release you can't use it or can only request a beta pre-access."},
+	"Opensource":
+	  {color:"purple", id:"opensource", description:"This project is made for others to build something cool using it. You can just get the code and do whatever you like with it."},
+	"Paid":
+	  {color:"black", id:"paid", description:"Ew, no."},
+};
+$(".total")[0].innerText=items.length;
+/*Set the colour of the circles by their class*/
+for(let i=0;i<circles.length;i++){
+circles[i].style.background=circles[i].classList[1];
+}
+
+/*Generate anchors*/
+for(let i=0;i<categories.length;i++){
+categories[i].querySelector("h2").style="margin-top:10px;";
+categories[i].style="margin-top:70px;";
+categories[i].outerHTML='<a name="'+categories[i].classList[1]+'"></a>'+categories[i].outerHTML;
+}
+/*Generate material ripple effect on li elements*/
+for(let i=0;i<items.length;i++){
+items[i].classList.add("c-button");
+try{var $tags=items[i].innerHTML.match(/\[(.*?)\]/gi);
+if($tags.length){}
+for(let o=0;o<$tags.length;o++){
+var $tag_text=$tags[o].substr(1,$tags[o].length-2),
+$res="<span class='tag tag-"+$tag_categories[$tag_text].id+" c-drop dropdown' style='color:"+$tag_categories[$tag_text].color+"'>"+$tag_text+"<div class='dropdown-content'>"+$tag_categories[$tag_text].description+"</div></span>";
+items[i].innerHTML=items[i].innerHTML.replaceAll($tags[o],$res);
+}}catch(e){}
+items[i].innerHTML='<div class="c-ripple js-ripple"><span class="c-ripple__circle"></span></div>'+items[i].innerHTML+"<span class='notice nolink'>No link available yet!</span>";
+}
+$(".dropdown-content")[0].innerHTML="";
+for(let i=0;i<Object.keys($tag_categories).length;i++){
+var $tagID=$tag_categories[Object.keys($tag_categories)[i]];
+$(".dropdown-content")[0].innerHTML=$(".dropdown-content")[0].innerHTML+'<a class="tag-button tag-button-'+$tagID.id+'" style="color:'+$tagID.color+'" onclick="categoryClick(\''+$tagID.id+'\')">'+Object.entries($tag_categories)[i][0]+" ("+$(".tag-"+$tagID.id).length+")"+'</a>';
+}
+function liClicked(e){
+e=e[0].parentElement;
+if(e.querySelector("a")==null){
+noticeAnim(e.querySelector(".notice.nolink"));
+}else{
+setTimeout(function(){openInNewTab(e.querySelector("a").innerText.replaceAll("@","http://lstv.ml/"))},500);
+}}
+function clicked(e){
+$b.style.position="fixed";
+var $id=e.id.replace("cat-",''),$c=document.querySelector(".category."+$id);
+location.href="#"+$id;
+setTimeout(function(){$c.style.background="rgba(255,255,255,0.15)";$c.style.border="1px solid rgba(255,255,255,0.2)";
+setTimeout(function(){$c.style.background="";$c.style.border="";},1500)},100);
+}
+function noticeAnim(el){
+el.style.display="inline-block";
+el.style.opacity="0";
+setTimeout(function(){
+el.style.opacity="1";
+setTimeout(function(){
+el.style.opacity="0";
+el.style.display="none";
+},1500);
+},100);
+}
+function categoryClick(categoryid){
+  for(let i=0;i<$(".tag-button").length;i++){$(".tag-button")[i].style.fontWeight="normal";$(".tag-button")[i].style.boxShadow="none";$(".tag-button")[i].innerHTML=Object.entries($tag_categories)[i][0]+" ("+$(".tag-"+$tag_categories[Object.keys($tag_categories)[i]].id).length+")"}
+  	for(let i=0;i<$("ul")[0].querySelectorAll("h2").length;i++){$("ul")[0].querySelectorAll("h2")[i].style.display="block";
+	$("ul")[0].querySelectorAll("h2")[i].parentElement.style.marginTop="70px";}
+  if($stag==categoryid){
+	$stag="";
+	for(let i=0;i<items.length;i++){items[i].style.display="flex";}
+  }else{
+	$stag=categoryid;
+	$ci=$(".tag-"+categoryid);
+	$cq=$(".tag-button-"+categoryid)[0];
+	$cq.style.fontWeight="900";
+	$cq.style.boxShadow="inset 0 0 0 1px #888";
+	$cq.innerHTML="> "+$cq.innerHTML;
+	for(let i=0;i<items.length;i++){items[i].style.display="none";}
+	for(let i=0;i<$("ul")[0].querySelectorAll("h2").length;i++){$("ul")[0].querySelectorAll("h2")[i].style.display="none";
+	$("ul")[0].querySelectorAll("h2")[i].parentElement.style.marginTop="0px";}
+	for(let i=0;i<$ci.length;i++){
+		$ci[i]=$ci[i].parentElement;
+		$ci[i].style.display="flex";
+	}
+  }
+}
+/*autogenerated | Set the buttons fixed to top when scrolled*/function _fw_loop001(a){$b.style.position=scrollY<160?"static":"fixed",setTimeout(function(){_fw_loop001(a)},a)}var $s=document.getElementById("scr"),$b=document.querySelector(".cat-buttons");_fw_loop001(60);
+/*Ripple effect by Kris Ellery*/
+!function(a){"use strict";var e=a(".js-ripple");e.on("click.ui.ripple",function(b){liClicked(a(this));var c=a(this),d=c.parent().offset(),e=c.find(".c-ripple__circle"),f=b.pageX-d.left,g=b.pageY-d.top;c.removeClass("is-active");e.css({top:g+"px",left:f+"px"}),c.addClass("is-active")}),e.on("animationend webkitAnimationEnd oanimationend MSAnimationEnd",function(){a(this).removeClass("is-active")})}(jQuery,window,document);
+
+/*Just a log*/
+setTimeout(function(){
+console.log("[Generated content] Generated "+categories.length+" categories with anchors, added ripple effect to "+items.length+" elements and generated "+$(".tag").length+" tags on items with descriptions. In total registered "+Object.keys($tag_categories).length+" tags. It took aprox. "+String(window.performance.timing.loadEventEnd-window.performance.timing.navigationStart)+"ms.");},1000);
+function openInNewTab(href){Object.assign(document.createElement('a'),{target:'_blank',href:href,}).click();}
+</script>
+<style>
+h1,h2,h3,h4,h5,h6{margin:0;padding:0}
+.cat-buttons{
+position:fixed;top:0px;text-align:center;background:#262626;left:0px;right:0px;padding:10px;flex-wrap:wrap;z-index:99;}
+.cat{
+display:inline-block;padding:10px;border-radius:100px;border:1px solid #aaa;margin-right:10px;color:white;text-decoration:none;transition-duration:0.2s;user-select:none;cursor:pointer;}
+.cat-content{
+display:flex;align-items:center;justify-content:center;}
+.cat:hover{
+border:1px solid gray;background:rgba(255,255,255,0.1);}
+.circle{
+display:inline-block;width:15px;height:15px;border-radius:100px;margin-right:5px;}
+.circle.green{
+background:green;}
+ul {counter-reset:index;padding:0;width:100%;}
+li{z-index:9;cursor:pointer;counter-increment:index;display:flex;align-items:center;padding:12px 0;box-sizing:border-box;}
+li::before{content:counters(index, ".", decimal-leading-zero);font-size:1.5rem;text-align:right;font-weight:bold;min-width:50px;padding-right:12px;font-feature-settings:"tnum";font-variant-numeric:tabular-nums;align-self:flex-start;background-image:linear-gradient(to bottom, aquamarine, orangered);background-attachment:fixed;-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+li+li{border-top:1px solid rgba(255,255,255,0.2);}
+body,html{scroll-behavior:smooth;background:#262626;color:#fff;text-align:center;font-family:'Montserrat',sans-serif;margin:auto;text-align:center;padding-bottom:100px;}::-webkit-scrollbar{width:7px;}::-webkit-scrollbar-track{background:#3b3b3b;border-radius:10px;}::-webkit-scrollbar-thumb{background:#888;border-radius:15px;}::-webkit-scrollbar-thumb:hover{background:#555;}
+.category{
+transition-duration:0.5s;margin-left:20%;margin-right:20%;}
+li a{display:none;}
+.c-button{z-index:5;-webkit-appearance:none;position:relative;overflow:visible;color:#fff;font:inherit;font-size:14px;line-height:20px;font-weight:400;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;transition:all .2s ease}.c-ripple{position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden;background:transparent}.c-ripple__circle{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0;width:0;height:0;border-radius:50%;background:rgba(255,255,255,0.25)}.c-ripple.is-active .c-ripple__circle{-webkit-animation:a-ripple .4s ease-in;animation:a-ripple .4s ease-in}@-webkit-keyframes a-ripple{0%{opacity:0}25%{opacity:1}100%{width:200%;padding-bottom:200%;opacity:0}}@keyframes a-ripple{0%{opacity:0}25%{opacity:1}100%{width:200%;padding-bottom:200%;opacity:0}}
+.cl_date{color:blue;font-weight:bold;font-size:13px;}
+.tag{padding:3px 7px;margin-left:10px;display:inline-block;border-radius:10px;background:black;}
+.notice.nolink{color:red;margin-left:auto;display:none;}
+.notice{transition-duration:0.4s;}
+.c-drop{position:relative;z-index:998;}
+    .dropdown-content{overflow:visible;transition-duration:0.2s;padding:5px;border-radius:10px;border:1px solid #777;display:none;position:absolute;background:#262626;min-width:180px;z-index:999;text-align:left;top:29px;}
+    .dropdown-content a {border-radius:10px;color:white;padding:4px 10px;text-decoration:none;display:block;transition-duration:0.2s;}
+    .dropdown-content a:hover {background:#373737;}
+    .dropdown:hover .dropdown-content {display:block;}
+    .dropdown:hover .dropbtn {background:#272727;}
+	
+.fakeHref{color:white;text-decoration:underline;cursor:pointer}
+</style><!--
+<div class="changelog">
+<h2 style="margin-top:60px">Website changelog</h2>
+<span class="cl_date">23.1.2022</span><br>
+- Project database updated (Now has aprox. 64%)<br>
+- Providing an API to get the list (limited)<br>
+- Many structure updates<br>
+- Loading speed optimised<br>
+- Auto-Generating many things<br>
+- Navigation bar added<br>
+- Added ripple effects<br>
+- Layout fixes+optimised for phones<br>
+- Clickable items<br><br>
+
+<span class="cl_date">9.12.2021</span><br>
+- Project database updated (Now has aprox. 82%)<br>
+- Changelog added<br>
+- Gradient text<br><br>
+
+<span class="cl_date">11.1.2021</span><br>
+- New url (./s/o/s/lib.php > ./lib/)<br>
+- Project database updated (Now has aprox. 41%)<br><br>
+
+<span class="cl_date">24.12.2020</span><br>
+- Created<br>
+</div>-->
+
+
+<!--<br>
+About all this:<br>
+This is a colection of catched projects.<br>
+Not all projects are here - once upon a time we update this collection with new projects we grabbed-->
+
+<span>
+<span style="font-size:15px">Made with ❤ by <a href="https://lstv.ml" style="color:white">LSTV</a><br></span>
+<a onclick="aditionalShowChangelog()" class="fakeHref">Show changelog</a> |&nbsp;
+<a onclick="aditionalShowAbout()" class="fakeHref">About</a> |&nbsp;
+<a onclick="aditionalShowAPIURLs()" class="fakeHref">API</a> |&nbsp;
+<a href="https://github.com" class="fakeHref">Get yourself one too</a></span>

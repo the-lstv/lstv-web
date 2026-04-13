@@ -1813,7 +1813,7 @@ class CommandPalette {
     log(...args) {
         if (!this.terminalOutput) return this.#log(...args);
 
-        const line = N("div", { class: "terminal-line" });
+        const line = LS.Create("div", { class: "terminal-line" });
 
         // Check if first arg contains styles (%c)
         if (typeof args[0] === "string" && args[0].includes("%c")) {
@@ -1826,7 +1826,7 @@ class CommandPalette {
                     line.append(document.createTextNode(part));
                 } else {
                     const style = args[styleIndex++] || "";
-                    const span = N("span", {
+                    const span = LS.Create("span", {
                         textContent: part,
                         style: style
                     });
@@ -1852,27 +1852,27 @@ class CommandPalette {
     }
 
     #serializeValue(value) {
-        if (value === null) return N("span", { textContent: "null", class: "terminal-null" });
-        if (value === undefined) return N("span", { textContent: "undefined", class: "terminal-undefined" });
+        if (value === null) return LS.Create("span", { textContent: "null", class: "terminal-null" });
+        if (value === undefined) return LS.Create("span", { textContent: "undefined", class: "terminal-undefined" });
 
         const type = typeof value;
 
         if (type === "string") {
-            return N("span", { textContent: value, class: "terminal-string" });
+            return LS.Create("span", { textContent: value, class: "terminal-string" });
         }
         if (type === "number") {
-            return N("span", { textContent: String(value), class: "terminal-number" });
+            return LS.Create("span", { textContent: String(value), class: "terminal-number" });
         }
         if (type === "boolean") {
-            return N("span", { textContent: String(value), class: "terminal-boolean" });
+            return LS.Create("span", { textContent: String(value), class: "terminal-boolean" });
         }
         if (type === "function") {
-            return N("span", { textContent: value.toString(), class: "terminal-function" });
+            return LS.Create("span", { textContent: value.toString(), class: "terminal-function" });
         }
 
         // Handle Error objects
         if (value instanceof Error) {
-            return N("span", {
+            return LS.Create("span", {
                 textContent: value.toString(),
                 class: "terminal-error"
             });
@@ -1886,17 +1886,17 @@ class CommandPalette {
                 ? `(${value.length})`
                 : `{${Object.keys(value).slice(0, 3).join(", ")}${Object.keys(value).length > 3 ? "..." : ""}}`;
 
-            const wrapper = N("span", { class: "terminal-object" });
-            const toggle = N("span", {
+            const wrapper = LS.Create("span", { class: "terminal-object" });
+            const toggle = LS.Create("span", {
                 class: "terminal-object-toggle",
                 textContent: "▶ ",
                 style: "cursor: pointer; user-select: none;"
             });
-            const header = N("span", {
+            const header = LS.Create("span", {
                 class: "terminal-object-header",
                 innerHTML: `<i class="bi-${isArray ? 'list-ul' : 'braces'}"></i> ${typeName} ${preview}`
             });
-            const content = N("pre", {
+            const content = LS.Create("pre", {
                 class: "terminal-object-content",
                 textContent: JSON.stringify(value, null, 2),
                 style: "display: none; margin-left: 20px; padding: 5px; background: rgba(0,0,0,0.1);"

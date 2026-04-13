@@ -112,8 +112,8 @@ window._assistantCallback = async (website, auth) => {
         return TOKEN.token;
     }
 
-    const container = O("#toolbarAssistant");
-    const chatInput = O("#assistant-input");
+    const container = LS.SelectOne("#toolbarAssistant");
+    const chatInput = LS.SelectOne("#assistant-input");
 
     website.assistant = {
         GET: 1,
@@ -359,7 +359,7 @@ window._assistantCallback = async (website, auth) => {
 
     if (exampleContainer) {
         for(let [value, text] of [["Hello! Who are you?", "Say hi"], ["Check my saved reminders.", "Check reminders"], ["I want to report a bug or suggest a feature related to lstv.space.", "Report a bug"]]) {
-            exampleContainer.add(N("button", {
+            exampleContainer.add(LS.Create("button", {
                 class: "pill elevated",
                 onclick() { chatInput.value = value; },
                 inner: text
@@ -380,34 +380,34 @@ window._assistantCallback = async (website, auth) => {
             chatInput.value = '';
             autoResize(chatInput);
 
-            const infoBar = O(".assistant-intro");
+            const infoBar = LS.SelectOne(".assistant-intro");
             if (infoBar) infoBar.remove();
 
             if (exampleContainer) exampleContainer.style.display = "none";
 
             website.assistant.generating = true;
 
-            website.assistant.chatContainer.appendChild(N('div', {
+            website.assistant.chatContainer.appendChild(LS.Create('div', {
                 class: 'message-container message-user',
                 inner: [
-                    N('div', {
+                    LS.Create('div', {
                         class: 'message',
-                        inner: N('div', { textContent: message })
+                        inner: LS.Create('div', { textContent: message })
                     })
                 ]
             }));
 
-            let renderingTarget = N();
+            let renderingTarget = LS.Create();
 
             const renderer = new MD_Renderer(renderingTarget);
             const parser = smd.parser(renderer);
 
             const wasScrolledAtBottom = website.assistant.chatContainer.scrollHeight - website.assistant.chatContainer.scrollTop === website.assistant.chatContainer.clientHeight;
 
-            const messageElement = N('div', {
+            const messageElement = LS.Create('div', {
                 class: 'message-container message-assistant',
                 inner: [
-                    N('div', {
+                    LS.Create('div', {
                         class: 'message',
                         inner: renderingTarget
                     })
@@ -438,11 +438,11 @@ window._assistantCallback = async (website, auth) => {
 
                 if (typeof chunk === 'string') {
                     // if(chunk === "<think>") {
-                    //     const newRenderingTarget = N();
+                    //     const newRenderingTarget = LS.Create();
                     //     renderingTargetStack.push(newRenderingTarget);
-                    //     renderingTarget.appendChild(N('details', {
+                    //     renderingTarget.appendChild(LS.Create('details', {
                     //         class: 'reasoning-container',
-                    //         inner: [N("summary", "Reasoning..."), newRenderingTarget],
+                    //         inner: [LS.Create("summary", "Reasoning..."), newRenderingTarget],
                     //         attr: ["ls-accent"],
                     //         onclick(){
                     //             this.classList.toggle("expanded");
@@ -501,7 +501,7 @@ window._assistantCallback = async (website, auth) => {
 
     function start(shaders) {
         if(shaders) {
-            const background_canvas = N("canvas", {
+            const background_canvas = LS.Create("canvas", {
                 class: "background",
             });
 
