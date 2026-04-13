@@ -581,3 +581,13 @@ span.gallery-item-title {
     display: inline-block;
     opacity: 0.8;
 }
+
+.showcase-item-left-panel {
+    max-width: 140px;
+    width: 140px;
+    min-width: 140px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}

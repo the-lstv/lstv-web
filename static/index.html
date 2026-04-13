@@ -134,7 +134,7 @@
 
         <ls-tabs #showcase-tabs>
             <ls-tab style="position: relative" tab-id="showcase-projects" #showcase-projects>
-                <img src="/assets/image/home/planets.svg" loading="lazy" alt="Planets Illustration" style="position: absolute; z-index: -1; width: 100%">
+                <img src="/~/assets/image/home/planets.svg" loading="lazy" alt="Planets Illustration" style="position: absolute; z-index: -1; width: 100%">
             </ls-tab>
             <ls-tab style="position: relative" tab-id="showcase-libraries" #showcase-libraries></ls-tab>
             <ls-tab style="position: relative" tab-id="showcase-gallery" #showcase-gallery></ls-tab>
@@ -188,7 +188,8 @@ const data = {
         { title: "Getrox", icon: "d11562ce585e205b.svg", tags: ["paused"], description: "Currency/finance platform, used as a token across our services.", link: "" },
         { title: "LS Icons v2", icon: "b909f2638b3b085b.svg", tags: ["paused"], description: "A symbolic icon library, with each icon being in at least 8 styles. Currently 200 icons exist, but it's a paused project because the effort is not paying off, and they need a refactoration anyways.", link: "" },
         { title: "Unifya", icon: "ff153edceb4394d1.webp", description: "An universal data flow library used across my creative software (video editors, game engines, audio tools etc.) to ensure seamless integration by streamlining data flow.", link: "" },
-        { title: "Arisen", icon: "65887818849cc412.webp", description: "Former machine learning \"division\". Featured an interface (both for users and developers) for interacting with our (or any) LLM/ML models such as Arisen-NLP/GPM 1.6/GPM 1.5/GPM-8Bv2/GPM-11B/GPM-6B/GPM Nano/GPM Pico, with a smart router system & privacy in mind, and many cool features. Last project was an interactive assistant for lstv.space - but that was while the tech was still cool... After controversies around AI started popping up, I decided to close this branch as I value ethics and the environment, and I think it is safe to say we are all tired of AI anyway.<br><br>Our models still exist and we can use them at some point for some purposeful tasks. By the way, no water was harmed during training. They are tiny models I made for fun.", link: "" },
+        { title: "Arisen", icon: "65887818849cc412.webp", description: "Former machine learning division. There was an interface (both for users and developers) for interacting with our/any ML/LLM models such as Arisen-NLP/GPM 1.5/GPM-8Bv2/GPM-11B/GPM-6B/GPM Nano/Pico, with privacy & fun in mind, and many cool features. Last project was an interactive assistant here at lstv.space, but that was while the tech was still ethical... At this point, I think we are all tired of AI, so I cancelled it.", link: "" },
+        { title: "pixelplace", icon: "", tags: ["paused"], description: "In the same day that r/Place 2023 ended, I've made a clone that features an exact copy of how the place has been when it was ending, and is also compatible with previous r/Place events and has some extra fancy features.\n\nIt also allows anyone to create their own new places, share them, or just revisit past events & make copies." },
 
         { title: "Arc", icon: "22c5f89454f62ffc.svg", tags: ["discontinued"], description: "An application and game runtime/launcher. All of my early apps were made in this, but no stable build has been completed." },
         { title: "Gear Calc", icon: "38ace2148cd1e376.webp", tags: ["discontinued"], description: "A calculator app for Tizen (Galaxy Watch 3 and older) with advanced features, units conversion, and a currency converter." },
@@ -196,17 +197,34 @@ const data = {
         { title: "LocalStream", icon: "a41b7512d4d3a874.svg", tags: ["discontinued"], description: "App that allows you to instantly stream or sync your music playlists, gallery, or text data via a local connection with minimal latency." },
         { title: "FOSSHome", icon: "8a61a157e6c85819.webp", tags: ["discontinued"], description: "FOSSHome was a cloud-synced \"WebOS\" launchpad environment with a Linux-like shell and a sleek interface and a window/widget framework, to make you feel right at home. It's code is in an unusable state, but a lot of it's ideas are a part of lstv.space now!", link: "https://github.com/the-lstv/fosshome" },
         { title: "LSVM", icon: "3c1871e0ee6780c4.svg", tags: ["discontinued"], description: "A virtual machine manager for 'lsvm' format VMs. It primarily ran the LiOS 11 build. Only archived builds survived (not the original source)" },
+        { title: "WSDK", icon: "", tags: ["discontinued"], description: "My dream IDE for automated project management I started working on when I was 14 and later made many re-iterations.\nIts now been abandoned for a long time and is no longer functional at this moment due to a missing LS archive. It was never put to use 😢.\nThere is a GitHub page with a bit more information, screnshots and the changelog." },
         { title: "MazeChat", icon: "753bf30abc37cacd.svg", tags: ["discontinued"], description: "Old open chat platform, replaced by Townhall.", source: "https://github.com/the-lstv/maze-chat" },
         { title: "osu!bot", icon: "2e9f590799ed2127.webp", tags: ["discontinued"], description: "Made for fun, a bot to play or live-preview osu! classic maps." },
+        { title: "ovsu", icon: "", tags: ["discontinued"], description: "An osu! inspired open-source rythm game." },
         { title: "Syntherium", tags: ["discontinued"], description: "A simple aditive synthetizer plugin with envelopes and basic shapes. I want to make a better one someday." },
         { title: "ATF New", icon: "b9f7600fca3ac0a0.svg", tags: ["discontinued"], description: "A modernized remake of the ancient school program 'ATF' from 1992 we... still somehow use in schools today. Features a dark theme, modern features, and a clean, unobtrusive UI, free from the early Windows UI clunk." },
         { title: "FNAF 2 web port", icon: "8cb36521f777e5f.webp", tags: ["discontinued"], description: "A web port of Five Nights at Freddy's 2." },
-        { title: "My Loy", icon: "65755e7053b3050.webp", tags: ["discontinued"], description: "A fun game where you take care of a virtual pet, inspired by one of my childhood classics, Moy from Frojo Apps, that I made a (very) long time ago in TurboWarp. Maybe a v2 someday 🤔" },
-        // { title: "Bona", tags: ["discontinued"], description: "Recreation of Baldi's basics in a custom 3D engine for fanmade content." },
-        // { title: "Among Us Walmart edition", icon: "7ae4525a1d19aa95.webp", tags: ["discontinued"], description: "An Among Us clone made in Scratch" },
-        // { title: "Kerplunk", icon: "7a85cf0df74db8a2.webp", tags: ["discontinued"], description: "I think it was a game or something" },
-        // { title: "RPG Engine v2", icon: "84df80d23ac8c9aa.webp", tags: ["discontinued"], description: "A Scratch-based RPG engine." },
-        // { title: "Temňačka", tags: ["discontinued"], description: "A mildly spooky semi-3D puzzle game set in a subterranean world." },
+        { title: "Tsirc", icon: "", tags: ["discontinued"], description: "A way too secure chat platform. Tripple-encrypted, 100% anonymous, no login, rendering sandbox & lockout, and segmented distribution, it's one of the most secure ways to share information over the internet." },
+        { title: "My Loy", icon: "65755e7053b3050.webp", tags: ["discontinued"], description: "A tamagotchi game where you take care of a virtual pet, inspired by one of my favorite childhood classics, Moy from Frojo Apps, that I made a (very) long time ago in TurboWarp." },
+        { title: "Frutiger desktop", tags: ["discontinued"], description: "Make your device feel fresh and full of life again with this Frutiger-Aero inspired launcher / user interface kit." },
+        { title: "iS6", tags: ["discontinued"], description: "A mobile IDE for making Symbian apps." },
+        { title: "Baldi's foot", icon: "", tags: ["discontinued"], description: "Recreation of Baldi's basics in a custom 3D engine for fanmade content (my school, specifically)." },
+        { title: "Among Us Walmart edition", icon: "7ae4525a1d19aa95.webp", tags: ["discontinued"], description: "An Among Us clone made in Scratch" },
+        { title: "RPG Engine", icon: "", tags: ["discontinued"], description: "A Scratch-based RPG engine." },
+        { title: "Firefox Gaming (legacy)", tags: ["discontinued"], description: "A discontinued unofficial modification of Firefox for those OperaGX fans, just in case they dont want malware on their machines." },
+        { title: "ScratchAtom", icon: "", tags: ["discontinued"], description: "A fast code editor in Scratch." },
+        { title: "Temňačka", tags: ["discontinued"], description: "A mildly spooky semi-3D puzzle game set in a subterranean world." },
+        { title: "(name unknown)", tags: ["discontinued"], description: "A pretty cool & detailed Windows 10 simulator with apps & touchpad emulation. Sadly lost." },
+        { title: "(name unknown)", tags: ["discontinued"], description: "A neat web-based OS with a fake kernel and everything. Sadly lost." },
+        { title: "(name unknown)", tags: ["discontinued"], description: "Terminal simulator on Android." },
+        { title: "(name unknown)", tags: ["discontinued"], description: "Code editor/project manager for Android." },
+        { title: "htedit", tags: ["discontinued"], description: "HTML editor on Android." },
+        { title: "(name unknown)", tags: ["discontinued"], description: "Website builder for Android." },
+        { title: "(name unknown)", tags: ["discontinued"], description: "Web based FTP client with a text editor" },
+        { title: "Mineworld", tags: ["discontinued"], description: "An utility app for managing and organizing your Minecraft worlds." },
+        { title: "HackersOnline", tags: ["discontinued"], description: "A multiplayer hacking simulation game." },
+        { title: "LukasWiki", tags: ["discontinued"], description: "A wiki site, made in HTML & LibreOffice. My first project ever!" },
+        { title: "delegation6", tags: ["discontinued"], description: "Content transmorphization engine escaping the Sonic via perlin warps mapped on a 3D surface. Does not like<incomplete sentence>" },
     ],
 
     libraries: [
@@ -361,6 +379,12 @@ website.register(document.currentScript, class extends LS.Context {
                         LS.Color.apply(this.container, LS.Color.fromImage(event.target));
                     }
                 }, this);
+            
+                if(!icon) {
+                    this.content.leftPanel.replaceChildren(LS.Create("i", {
+                        class: "bi-file-earmark",
+                    }));
+                }
 
                 this.container = this.content.root;
 
@@ -659,7 +683,7 @@ website.register(document.currentScript, class extends LS.Context {
                         data.projects.forEach((project, index) => {
                             if(project.type === "separator") {
                                 const separator = LS.Create("details", { class: "showcase-separator", inner: [
-                                    { tag: "summary", inner: project.title || "Show Old/Misc/Abandoned Projects" }, [] // <= That is the div slot
+                                    { tag: "summary", inner: project.title || "Show older or inactive projects" }, [] // <= That is the div slot
                                 ]});
 
                                 projectContainer.appendChild(separator);

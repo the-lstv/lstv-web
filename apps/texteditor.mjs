@@ -208,6 +208,7 @@ class TextEditor extends website.ContentContext {
 
     suspend() {
         if(this.content) this.content.setAttribute("data-ls-state", "suspended");
+        super.suspend();
     }
 
     resume() {
@@ -215,6 +216,7 @@ class TextEditor extends website.ContentContext {
             this.content.setAttribute("data-ls-state", "ready");
         }
         this.#syncEditorSize();
+        super.resume();
     }
 
     destroy() {

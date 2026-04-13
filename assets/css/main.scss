@@ -1352,6 +1352,28 @@ ls-text-input.has-textarea {
     &.top {
         box-shadow: 0 10px 30px 5px rgba(0, 0, 0, 0.4);
     }
+
+    &.window-pinned,
+    &.window-maximized {
+        .window-header {
+            cursor: default;
+        }
+    }
+
+    &.window-maximized {
+        --ls-resize-corner-size: 0;
+        border-radius: 0;
+        outline: none;
+        box-shadow: none !important;
+
+        .window-header {
+            border-radius: 0;
+        }
+
+        .window-content-container {
+            border-radius: 0;
+        }
+    }
     
     .window-header {
         display: flex;
@@ -1666,17 +1688,6 @@ ls-text-input.has-textarea {
             gap: 8px;
         }
     }
-}
-
-.clock-app {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2em;
-    width: 100%;
-    height: 100%;
-    font-family: "JetBrains Mono", Poppins, sans-serif;
-    line-height: 0;
 }
 
 .text-editor {
