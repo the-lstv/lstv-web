@@ -1,0 +1,4 @@
+<div style="position: fixed; bottom: 0px; background-color: black; width: 99%" id="end">
+BETA! <a href="https://www.lstv.ml">LSTV homepage</a><br>     Copyright (C) LSTV 2013-<?php echo date("Y"); ?><br><t id="cred">Website coded and designed by <a href="https://www.youtube.com/channel/UC4JMEinqYIENiVcOULjMlhA">DevThings</a>, all CSS and HTML code by <a href="https://www.lstv.ml">LSTV</a>. Web background credits: <a href="https://besthqwallpapers.com/computers/blue-neon-earth-neon-digital-technology-background-north-america-south-america-blue-neon-world-map-122960">BestHqWallpapers</a></t>
+</div>
+<?php include 'playscript.html';?>

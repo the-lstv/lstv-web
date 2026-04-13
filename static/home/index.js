@@ -156,7 +156,7 @@ class ApplicationsHandler extends LS.Context {
         const form = document.forms['app-setup-form'];
         const payload = {
             name: String(form['app-name'].value).trim(),
-            category: String(this.container.get('#app-type').value).trim(),
+            category: String(this.container.querySelector('#app-type').value).trim(),
             description: String(form['app-description'].value).trim(),
             slug: ""
         };
@@ -193,7 +193,7 @@ class ProfileHandler extends LS.Context {
         this.auth = parent.auth;
         this.blobs = {};
         this.editingUser = LS.Reactive.fork("editingUser", website.userFragment);
-        this.confirmButtons = this.container.get('.profile-editor-confirm-buttons');
+        this.confirmButtons = this.container.querySelector('.profile-editor-confirm-buttons');
         window.editingUser = this.editingUser;
 
         // Init
@@ -219,24 +219,24 @@ class ProfileHandler extends LS.Context {
     }
 
     setupEventListeners() {
-        this.container.get("#profile-avatar").on("change", () => this.handleAvatarChange());
-        this.container.get("#profile-remove-avatar").on("click", () => this.handleRemoveAvatar());
-        this.container.get("#profile-banner").on("change", () => this.handleBannerChange());
-        this.container.get("#profile-remove-banner").on("click", () => this.handleRemoveBanner());
-        this.container.get("#profile-displayname").on("input", (e) => this.editingUser.displayname = e.target.value);
-        this.container.get("#profile-about").on("input", (e) => {
+        this.container.querySelector("#profile-avatar").addEventListener("change", () => this.handleAvatarChange());
+        this.container.querySelector("#profile-remove-avatar").addEventListener("click", () => this.handleRemoveAvatar());
+        this.container.querySelector("#profile-banner").addEventListener("change", () => this.handleBannerChange());
+        this.container.querySelector("#profile-remove-banner").addEventListener("click", () => this.handleRemoveBanner());
+        this.container.querySelector("#profile-displayname").addEventListener("input", (e) => this.editingUser.displayname = e.target.value);
+        this.container.querySelector("#profile-about").addEventListener("input", (e) => {
             this.editingUser.bio = e.target.value;
             this.updateTextAreaLength();
         });
-        this.container.get("#profile-save").on("click", () => this.saveProfile());
-        this.container.get("#profile-reset").on("click", () => this.resetProfile());
-        this.container.get("#mature-content").on("change", (e) => this.editingUser.mature_content = e.target.checked);
-        this.container.get("#fullscreen-banner").on("change", (e) => this.editingUser.profileEffects.banner.fullscreen = e.target.checked);
-        this.container.get("#secret-glossy-style").on("change", (e) => this.editingUser.profileEffects.style.id = e.target.checked ? "glossy" : null);
+        this.container.querySelector("#profile-save").addEventListener("click", () => this.saveProfile());
+        this.container.querySelector("#profile-reset").addEventListener("click", () => this.resetProfile());
+        this.container.querySelector("#mature-content").addEventListener("change", (e) => this.editingUser.mature_content = e.target.checked);
+        this.container.querySelector("#fullscreen-banner").addEventListener("change", (e) => this.editingUser.profileEffects.banner.fullscreen = e.target.checked);
+        this.container.querySelector("#secret-glossy-style").addEventListener("change", (e) => this.editingUser.profileEffects.style.id = e.target.checked ? "glossy" : null);
     }
 
     setupExternalLinks() {
-        const links_table = this.container.get("#links");
+        const links_table = this.container.querySelector("#links");
         for (const link of website.userFragment.external_links || []) {
             const row = document.createElement("tr");
             row.innerHTML = `
@@ -248,7 +248,7 @@ class ProfileHandler extends LS.Context {
     }
 
     handleAvatarChange() {
-        const file = this.container.get("#profile-avatar").files[0];
+        const file = this.container.querySelector("#profile-avatar").files[0];
         if (file) {
             this.openCropper(file, {
                 width: 256,
@@ -265,10 +265,10 @@ class ProfileHandler extends LS.Context {
     }
 
     handleBannerChange() {
-        const file = this.container.get("#profile-banner").files[0];
+        const file = this.container.querySelector("#profile-banner").files[0];
         if (!file) return;
 
-        const fullscreenBanner = this.container.get(".profile-editor-container .profile").classList.contains("fullscreen-banner");
+        const fullscreenBanner = this.container.querySelector(".profile-editor-container .profile").classList.contains("fullscreen-banner");
         const width = fullscreenBanner ? 170 : 340;
         const height = fullscreenBanner ? 240 : 160;
 
@@ -287,8 +287,8 @@ class ProfileHandler extends LS.Context {
     }
 
     updateTextAreaLength() {
-        const lengthElement = this.container.get('#profile-about-length');
-        const textArea = this.container.get("#profile-about");
+        const lengthElement = this.container.querySelector('#profile-about-length');
+        const textArea = this.container.querySelector("#profile-about");
         if (lengthElement) {
             lengthElement.textContent = `${textArea.value.length}/500`;
         }
@@ -490,8 +490,8 @@ class AccountHandler extends LS.Context {
     }
 
     setupEventListeners() {
-        this.container.get("#settings-save-changes").on("click", () => this.handleSaveChanges());
-        this.container.get("#account-change-password").on("click", () => this.handleChangePassword());
+        this.container.querySelector("#settings-save-changes").addEventListener("click", () => this.handleSaveChanges());
+        this.container.querySelector("#account-change-password").addEventListener("click", () => this.handleChangePassword());
     }
 
     handleSaveChanges() {
@@ -513,12 +513,12 @@ class AccountHandler extends LS.Context {
 
     handleConfirm() {
         const patch = { password: this.confirmationModal.container.querySelector("input").value };
-        const changedUsername = this.container.get("#settings-username").value;
-        const changedEmail = this.container.get("#settings-email").value;
+        const changedUsername = this.container.querySelector("#settings-username").value;
+        const changedEmail = this.container.querySelector("#settings-email").value;
         const changedPassword = this.newPasswordField.querySelector("input").value;
 
         if (changedPassword) {
-            if (this.container.get("#confirm-new-password").value !== changedPassword) {
+            if (this.container.querySelector("#confirm-new-password").value !== changedPassword) {
                 LS.Modal.buildEphemeral({
                     title: "Password mismatch",
                     content: "The new passwords do not match.",

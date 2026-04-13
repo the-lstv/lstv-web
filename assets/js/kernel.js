@@ -33,7 +33,7 @@ const BUILTIN_APPS = [
         "icon": "4cf4213e702a21fe.svg",
         "description": "Monitor loaded pages and applications.",
         "version": "1.0.0",
-        "main": "resourcemanager.mjs"
+        "main": "resourcemanager.mjs?0"
     },
     {
         "name": "Clock",
@@ -41,7 +41,7 @@ const BUILTIN_APPS = [
         "icon": "d2973ce4286307f8.svg",
         "description": "What is the current time?",
         "version": "1.0.0",
-        "main": "clock.mjs"
+        "main": "clock.mjs?0"
     },
     {
         "name": "Text Editor",
@@ -49,7 +49,7 @@ const BUILTIN_APPS = [
         "icon": "ecf15bde6c275d83.svg",
         "description": "A simple Markdown text editor for your notes.",
         "version": "1.0.0",
-        "main": "texteditor.mjs"
+        "main": "texteditor.mjs?0"
     },
     {
         "name": "Store",
@@ -103,7 +103,7 @@ if(globalThis === this) {
 
 window.__kernelInitialized = true;
 
-const KERNEL_VERSION = (typeof __buildVersion !== "undefined")? __buildVersion: "1.2.4-beta";
+const KERNEL_VERSION = (typeof __buildVersion !== "undefined")? __buildVersion: "1.2.5-beta";
 
 window.cacheKey = "?mtime=" + (LS.Util.parseURLParams(document.currentScript?.src, "mtime") || Date.now()); // Mtime mapped to kernel.js (This should never fallback)
 
@@ -115,9 +115,11 @@ if(!window.LS || typeof LS !== "object" || LS.v < 5) {
 // Forward declarations
 const scriptingLoadTime = Date.now();
 const shortcutManager = new LS.ShortcutManager();
-
 const isDebug = window.location.hostname === "lstv.localhost";
 const isBeta = window.location.hostname.startsWith("beta.lstv.");
+
+// Misc constants
+const DEFAULT_PROFILE = "/~/assets/image/default.svg";
 
 // Console welcome message
 if(!isDebug) console.log(
@@ -1575,7 +1577,7 @@ class Window extends Viewport {
     static TEMPLATE = function(d){'use strict';var e0=document.createElement("div");e0.className="window-container";var e1=document.createElement("div");e1.className="level-1 window-header";var e2=document.createElement("div");var e3=document.createElement("img");e3.src=d.icon;e3.className="window-icon";e2.appendChild(e3);var e4=document.createElement("span");e4.textContent=d.name;e4.className="window-title text-overflow-nowrap";e2.appendChild(e4);var e5=document.createElement("div");e5.className="window-header-buttons";var e6=document.createElement("button");e6.onclick=d.toggleView;e6.setAttribute("ls-tooltip","Toggle Window View");LS.Tooltips.updateElement(e6);e6.className="window-maximize-button circle elevated";var e7=document.createElement("i");e7.className="bi-window";e6.appendChild(e7);var e8=document.createElement("button");e8.onclick=d.minimize;e8.className="window-minimize-button circle elevated";var e9=document.createElement("i");e9.className="bi-dash-lg";e8.appendChild(e9);var e10=document.createElement("button");e10.onclick=d.maximize;e10.className="window-maximize-button circle elevated";var e11=document.createElement("i");e11.className="bi-square";e10.appendChild(e11);var e12=document.createElement("button");e12.onclick=d.close;e12.className="window-close-button circle elevated";var e13=document.createElement("i");e13.className="bi-x-lg";e12.appendChild(e13);e5.append(e6,e8,e10,e12);e1.append(e2,e5);var dyn14=LS.toNode(d.target);e0.append(e1,dyn14);var __rootValue=e0;return{"header":e1,"icon":e3,"title":e4,root:__rootValue};}
 
     constructor(options = {}) {
-        super(`window-${options.id || "untitled"}-${LS.Tiny.M.uid()}`, N({
+        super(`window-${options.id || "untitled"}-${LS.Misc.uid()}`, LS.Create({
             class: 'window-content-container viewport-content',
         }), options);
 
@@ -2126,29 +2128,36 @@ const website = {
             }
 
             const isAnimated = filename && (user && user.__animated_pfp) || filename && filename.endsWith(".webm");
-            const src = filename? filename.startsWith("blob:")? filename : website.cdn + '/file/' + filename + (!isAnimated? "?size=" + IMAGE_RESOLUTION: ""): "/~/assets/image/default.svg";
+            const src = filename? filename.startsWith("blob:")? filename : website.cdn + '/file/' + filename + (!isAnimated? "?size=" + IMAGE_RESOLUTION: ""): DEFAULT_PROFILE;
 
-            const img = N(isAnimated ? "video" : "img", {
+            const img = LS.Create(isAnimated ? "video" : "img", {
                 alt: "Profile Picture",
                 class: "profile-picture",
                 draggable: false,
                 onerror() {
+                    // despite everything, some browsers will still hapily burn your PC down
+                    if(this.setDefault) return;
+
                     if (this.tagName.toLowerCase() === "video") {
-                        const image = N("img", {
-                            src: "/~/assets/image/default.svg",
+                        const image = LS.Create("img", {
+                            src: DEFAULT_PROFILE,
                             alt: "Profile Picture",
                             class: "profile-picture",
                             draggable: false,
                         });
 
-                        this.replaceWith(image);
                         this.src = "";
                         this.load();
+                        this.replaceWith(image);
                         if (args && args[0]) image.style.width = image.style.height = typeof args[0] === "number" ? args[0] + "px" : args[0];
                         return;
                     }
 
-                    if(this.src !== "/~/assets/image/default.svg") this.src = "/~/assets/image/default.svg"; // in case the default also fails, don't set again, otherwise the browser will go crazy
+                    if(this.src !== DEFAULT_PROFILE && this.src !== "" && !this.setDefault) {
+                        // in case the default also fails, don't set again, otherwise the browser will go crazy (somehow dumb enough not to realize).
+                        this.setDefault = true;
+                        this.src = DEFAULT_PROFILE;
+                    }
                 },
 
                 ...isAnimated && {
@@ -2198,7 +2207,7 @@ const website = {
                 const src = filename.startsWith("blob:")? filename : website.cdn + '/file/' + filename;
                 const isAnimated = user.__animated_banner || filename.endsWith(".webm");
 
-                const img = N(isAnimated? "video" : "img", {
+                const img = LS.Create(isAnimated? "video" : "img", {
                     alt: "Banner Picture",
                     class: "banner-media",
                     draggable: false,
@@ -2257,7 +2266,7 @@ const website = {
                         class: "profile-badge",
                         tooltip: badgeInfo.label,
                         inner: LS.Create("img", {
-                            src: "/assets/image/badges/" + badgeInfo.icon,
+                            src: "~/assets/image/badges/" + badgeInfo.icon,
                             alt: badgeInfo.label
                         })
                     });
@@ -2283,10 +2292,10 @@ const website = {
                         class: "ls-button pill elevated",
                         accent: link.color || linkInfo.color || null,
                         inner: [
-                            link.type === "url"? N("img", {
+                            link.type === "url"? LS.Create("img", {
                                 src: `https://favicone.com/${new URL(link.link).hostname}?s=32`
-                            }): N("i", { class: "bi-" + (linkInfo?.icon || "globe-americas") }),
-                            N("span", {
+                            }): LS.Create("i", { class: "bi-" + (linkInfo?.icon || "globe-americas") }),
+                            LS.Create("span", {
                                 textContent: link.label || (link.type === "url"? new URL(link.link).hostname : link.link)
                             })
                         ]
@@ -2301,7 +2310,7 @@ const website = {
 
             if (!bio) return;
 
-            return N({
+            return LS.Create({
                 class: "profile-bio",
                 innerHTML: website.utils.basicMarkDown(bio)
             })
@@ -2610,7 +2619,7 @@ const website = {
             website.openToolbar("login", toggle);
 
             if(!website.isLoggedIn) setTimeout(() => {
-                O("#loginPopup")?.querySelector("button,input")?.focus();
+                LS.SelectOne("#loginPopup")?.querySelector("button,input")?.focus();
             }, 0);
         }, 0);
     },
@@ -2640,7 +2649,7 @@ const website = {
         });
     },
 
-    loginTabs: new LS.Tabs(O("#toolbarLogin"), {
+    loginTabs: new LS.Tabs("#toolbarLogin", {
         list: false,
         selector: ".login-toolbar-page",
         styled: false
@@ -2655,7 +2664,7 @@ const website = {
         //     website.openToolbar("assistant", true);
         // } }],
 
-        ["themeButton", { buttonLabel: N('i', { class: "bi-palette-fill" }), label: "Customize", description: "Customize the site appearance", icon: "bi-palette-fill", onclick() {
+        ["themeButton", { buttonLabel: LS.Create('i', { class: "bi-palette-fill" }), label: "Customize", description: "Customize the site appearance", icon: "bi-palette-fill", onclick() {
             website.openToolbar("theme", true);
         }}],
 
@@ -2667,7 +2676,7 @@ const website = {
 
     toolbars: new Map([
         ["login", {
-            element: O("#toolbarLogin"),
+            element: LS.SelectOne("#toolbarLogin"),
             name: "Account",
             description: "View and edit your profile or log-in",
             panelItem: "accountsButton",
@@ -2677,7 +2686,7 @@ const website = {
         }],
 
         ["apps", {
-            element: O("#toolbarApps"),
+            element: LS.SelectOne("#toolbarApps"),
             name: "Apps",
             description: "View applications",
             panelItem: "appsButton",
@@ -2690,7 +2699,7 @@ const website = {
         }],
 
         // ["assistant", {
-        //     element: O("#toolbarAssistant"),
+        //     element: LS.SelectOne("#toolbarAssistant"),
         //     name: "Assistant",
         //     description: "Open Assistant",
         //     panelItem: "assistantButton",
@@ -2714,14 +2723,14 @@ const website = {
         // }],
 
         ["theme", {
-            element: O("#toolbarTheme"),
+            element: LS.SelectOne("#toolbarTheme"),
             name: "Theme",
             description: "Customize the site appearance",
             panelItem: "themeButton"
         }],
 
         ["musicPlayer", {
-            element: O("#musicPlayer"),
+            element: LS.SelectOne("#musicPlayer"),
             name: "Music Player",
             description: "Control music playback",
             get panelItem() { return website.musicPlayer.musicStatusElement; },
@@ -2732,7 +2741,7 @@ const website = {
         }],
 
         ["more", {
-            element: O("#toolbarMore"),
+            element: LS.SelectOne("#toolbarMore"),
             name: "More",
             description: "More options",
             panelItem: "moreButton"
@@ -2741,7 +2750,7 @@ const website = {
 
     musicPlayer: new class MusicPlayer {
         constructor() {
-            this.toolbarElement = O("#musicPlayer");
+            this.toolbarElement = LS.SelectOne("#musicPlayer");
             this.initialized = false;
             if(!this.toolbarElement) {
                 console.warn("Music Player toolbar element not found.");
@@ -2778,7 +2787,7 @@ const website = {
             }
 
             // Panel
-            this.musicStatusElement = N("button", {
+            this.musicStatusElement = LS.Create("button", {
                 id: "musicButton",
                 class: "pill",
                 tooltip: "Music Player <kbd>Ctrl+M</kbd>",
@@ -2807,7 +2816,7 @@ const website = {
             };
 
             this.musicStatusElement.style.display = "none";
-            O(".headerLeftContainer").appendChild(this.musicStatusElement);
+            LS.SelectOne(".headerLeftContainer").appendChild(this.musicStatusElement);
         }
 
         setCover(imageURL = null, coverArtURL = null) {
@@ -3979,7 +3988,7 @@ const kernel = new class Kernel extends LoggerContext {
         for (const account of website.accounts) {
             const item = LS.Create("button", { class: 'account-item elevated loading-right', tabindex: 0, inner: [
                 website.views.getProfilePictureView(account.pfp, [ 32 ]),
-                N('span', { class: 'account-username', textContent: account.username })
+                { tag: "span", class: 'account-username', textContent: account.username }
             ]});
 
             if(accounts && accounts.activeAccountId === account.id) {
@@ -4060,11 +4069,11 @@ const kernel = new class Kernel extends LoggerContext {
 
     async _initializeCommandPalette() {
         if (this._initializingPalette || website.palette) return;
-        const CommandPalette = (await import("/~/assets/js/pallete.mjs")).default;
-        const topBar = O("#topOverlay");
-        const paletteBar = O("#commandPaletteBar");
-        const paletteContainer = O("#commandPalette");
-        const terminalContainer = O("#commandTerminal");
+        const CommandPalette = (await import("/~/assets/js/pallete.mjs?0")).default;
+        const topBar = LS.SelectOne("#topOverlay");
+        const paletteBar = LS.SelectOne("#commandPaletteBar");
+        const paletteContainer = LS.SelectOne("#commandPalette");
+        const terminalContainer = LS.SelectOne("#commandTerminal");
         const terminalOutput = terminalContainer.querySelector(".terminal-output");
 
         const paletteLogger = new LoggerContext("Command Palette");
@@ -4445,15 +4454,15 @@ const kernel = new class Kernel extends LoggerContext {
     }
 
     #initializeToolbars() {
-        const nav = O("#topPanel");
-        const moreButton = O("#moreButton");
-        const container = O(".headerButtons");
+        const nav = LS.SelectOne("#topPanel");
+        const moreButton = LS.SelectOne("#moreButton");
+        const container = LS.SelectOne(".headerButtons");
 
         moreButton.addEventListener("click", () => {
             website.openToolbar("more", true);
         });
 
-        const menu = O("#toolbarMore");
+        const menu = LS.SelectOne("#toolbarMore");
 
         const navPadding = 28 + 5;
         const gap = 10;
@@ -4479,7 +4488,7 @@ const kernel = new class Kernel extends LoggerContext {
                         class: "toolbar-button pill elevated",
                         attributes: { "aria-label": item.description },
                         tooltip: item.tooltip || item.label,
-                        inner: item.showLabel !== false? [icon, N("span", { inner: buttonLabel, class: typeof buttonLabel === "string" ? "label" : "" })]: icon,
+                        inner: item.showLabel !== false? [icon, { tag: "span", inner: buttonLabel, class: typeof buttonLabel === "string" ? "label" : "" }]: icon,
                         onclick: () => {
                             if(item.onclick) item.onclick.call(item.element);
                         }
@@ -4552,7 +4561,7 @@ const kernel = new class Kernel extends LoggerContext {
 
         website.collapseItems = collapseItems;
 
-        O("#logOutButton").addEventListener("click", function (){
+        LS.SelectOne("#logOutButton").addEventListener("click", function (){
             kernel.auth.logout(() => {
                 LS.Toast.show("Logged out successfully.", {
                     timeout: 2000
@@ -4605,11 +4614,11 @@ const kernel = new class Kernel extends LoggerContext {
         document.forms["loginForm"].addEventListener("submit", (event) => {
             event.preventDefault();
             clearLoginError();
-            const username = O("#username").value;
-            const password = O("#password").value;
+            const username = LS.SelectOne("#username").value;
+            const password = LS.SelectOne("#password").value;
 
             if (!username || !password) {
-                displayLoginError("Username and password are required", O(!username? "#username" : "#password"));
+                displayLoginError("Username and password are required", LS.SelectOne(!username? "#username" : "#password"));
                 return;
             }
 
@@ -4637,9 +4646,9 @@ const kernel = new class Kernel extends LoggerContext {
         document.forms["registerStep2Form"].addEventListener("submit", (event) => {
             event.preventDefault();
             clearLoginError();
-            const email = O("#regEmail").value;
-            const username = O("#regUsername").value.toLowerCase();
-            const password = O("#regPassword").value;
+            const email = LS.SelectOne("#regEmail").value;
+            const username = LS.SelectOne("#regUsername").value.toLowerCase();
+            const password = LS.SelectOne("#regPassword").value;
             const displayName = event.target.querySelector("input[name='displayname']").value;
 
             if (!email || !username || !password) {
@@ -4651,9 +4660,9 @@ const kernel = new class Kernel extends LoggerContext {
             this.auth.register({ email, username, password, displayname: displayName || null }, (error, result) => {
                 if (error) {
                     website.loginTabs.set('register');
-                    console.log(error, (error.code === 4 || error.code === 5)? O("#regEmail"): (error.code === 3 || error.code === 6)? O("#regUsername"): error.code === 7? O("#regPassword"): null);
+                    console.log(error, (error.code === 4 || error.code === 5)? LS.SelectOne("#regEmail"): (error.code === 3 || error.code === 6)? LS.SelectOne("#regUsername"): error.code === 7? LS.SelectOne("#regPassword"): null);
                     
-                    displayLoginError(error.message || error.error || "An error occurred while signing up", (error.code === 4 || error.code === 5)? O("#regEmail"): (error.code === 3 || error.code === 6)? O("#regUsername"): error.code === 6? O("#regPassword"): null);
+                    displayLoginError(error.message || error.error || "An error occurred while signing up", (error.code === 4 || error.code === 5)? LS.SelectOne("#regEmail"): (error.code === 3 || error.code === 6)? LS.SelectOne("#regUsername"): error.code === 6? LS.SelectOne("#regPassword"): null);
                     return;
                 }
 
@@ -4674,30 +4683,30 @@ const kernel = new class Kernel extends LoggerContext {
             LS.Animation.slideInToggle(view, oldElement);
 
             setTimeout(() => {
-                O("#toolbarLogin").style.height = view.offsetHeight + "px";
+                LS.SelectOne("#toolbarLogin").style.height = view.offsetHeight + "px";
             });
         });
 
         website.loginTabs.set(location.pathname.startsWith("/login") ? "login" : location.pathname.startsWith("/sign-up") ?  "register" : "default");
 
-        O("#randomPassword").addEventListener("click", function (){
+        LS.SelectOne("#randomPassword").addEventListener("click", function (){
             const password = website.utils.generateSecurePassword(12);
-            O("#regPassword").value = password;
-            O("#regPassword").dispatchEvent(new Event("input"));
+            LS.SelectOne("#regPassword").value = password;
+            LS.SelectOne("#regPassword").dispatchEvent(new Event("input"));
             alert("Your generated password: " + password);
         });
 
-        O("#randomUsername").addEventListener("click", function (){
+        LS.SelectOne("#randomUsername").addEventListener("click", function (){
             const username = website.utils.generateUsername();
-            O("#regUsername").value = username.toLowerCase();
-            O("#regUsername").dispatchEvent(new Event("input"));
-            O("#displayname").value = username;
+            LS.SelectOne("#regUsername").value = username.toLowerCase();
+            LS.SelectOne("#regUsername").dispatchEvent(new Event("input"));
+            LS.SelectOne("#displayname").value = username;
         });
 
         for(let accent of website.ACCENT_COLORS) {
-            O("#accentButtons").add(N("button", {
+            LS.SelectOne("#accentButtons").add(LS.Create("button", {
                 class: "square",
-                inner: accent === "white" ? N("i", { class: "bi-x-circle-fill" }) : null,
+                inner: accent === "white" ? LS.Create("i", { class: "bi-x-circle-fill" }) : null,
                 accent,
                 tooltip: accent === "white" ? "Reset": (accent.charAt(0).toUpperCase() + accent.slice(1)),
                 onclick(){
@@ -4705,7 +4714,7 @@ const kernel = new class Kernel extends LoggerContext {
                 }
             }));
 
-            O("#accentButtons").querySelector("input[type=color]").addEventListener("input", function (){
+            LS.SelectOne("#accentButtons").querySelector("input[type=color]").addEventListener("input", function (){
                 LS.Color.setAccent(this.value);
             });
         }
@@ -4859,7 +4868,7 @@ const kernel = new class Kernel extends LoggerContext {
 
                 inner: [
                     website.views.getAppIconView(manifest, [64]),
-                    N('span', { class: 'app-name text-overflow-nowrap', textContent: manifest.name || appId })
+                    LS.Create('span', { class: 'app-name text-overflow-nowrap', textContent: manifest.name || appId })
                 ],
 
                 onclick: () => {

@@ -45,7 +45,8 @@
         </div>
 
         <div .flex-center>
-            <canvas #glCanvas .bga.clouds />
+            <!-- <canvas #glCanvas .bga.clouds /> -->
+            <video #cloudsVideo .bga.clouds muted playsinline preload="none" aria-hidden="true" tabindex="-1" disablepictureinpicture fetchpriority="low" style="object-position: bottom center" data-src="https://cdn.extragon.cloud/file/be48d5c2feafd66a.webm"></video>
 
             <!-- The following section supports markdown -->
             <div .guy-lore .padding .flex-center markdown>
@@ -175,7 +176,7 @@ const data = {
         { title: "Fantale", icon: "8f3389ce442eef1d.webp", description: "A fangame of the game Undertale, taking place after the world reset." },
         { title: "Froggie", icon: "4eab18a5b0d45d99.webp", description: "A very simple game where you merge bubbles to get different animals." },
         { title: "Slides", icon: "https://slides.lstv.space/~/assets/icon.svg", description: "A simple presentation tool for creating and sharing slides with code. (No interactive UI yet, just a presentation API.)", link: "https://slides.lstv.space", source: "https://github.com/the-lstv/slides" },
-        
+
         { title: "MetaDaw", icon: "1e13f96a16b37c33.svg", description: "An experimental VST3 plugin controlled from a web interface." },
         { title: "Quicksand", icon: "7eb4acc292c766b5.svg", tags: ["paused"], description: "A fast and friendly powerful game engine, for various types of games, made for anyone from beginners to proffesionals. Incomplete :(" },
         { title: "MotionCast", icon: "2dbab853ce2cc04c.svg", tags: ["discontinued"], description: "A light remote desktop application with an easy web-based client with multi-stream support." },
@@ -213,21 +214,25 @@ const data = {
         { title: "RPG Engine", icon: "", tags: ["discontinued"], description: "A Scratch-based RPG engine." },
         { title: "Firefox Gaming (legacy)", tags: ["discontinued"], description: "A discontinued unofficial modification of Firefox for those OperaGX fans, just in case they dont want malware on their machines." },
         { title: "ScratchAtom", icon: "", tags: ["discontinued"], description: "A fast code editor in Scratch." },
+        { title: "XiWatch", tags: ["discontinued", "lost-media"], description: "A smartwatch GUI interface with apps." },
+        { title: "XiWatch", tags: ["discontinued", "lost-media"], description: "A smartwatch GUI interface with apps." },
         { title: "Temňačka", tags: ["discontinued"], description: "A mildly spooky semi-3D puzzle game set in a subterranean world." },
-        { title: "(name unknown)", tags: ["discontinued"], description: "A pretty cool & detailed Windows 10 simulator with apps & touchpad emulation. Sadly lost." },
-        { title: "(name unknown)", tags: ["discontinued"], description: "A neat web-based OS with a fake kernel and everything. Sadly lost." },
-        { title: "(name unknown)", tags: ["discontinued"], description: "Terminal simulator on Android." },
-        { title: "(name unknown)", tags: ["discontinued"], description: "Code editor/project manager for Android." },
-        { title: "htedit", tags: ["discontinued"], description: "HTML editor on Android." },
-        { title: "(name unknown)", tags: ["discontinued"], description: "Website builder for Android." },
-        { title: "(name unknown)", tags: ["discontinued"], description: "Web based FTP client with a text editor" },
+        { title: "(name unknown)", tags: ["discontinued", "lost-media"], description: "A web-based OS with a fake kernel and everything. Sadly lost." },
+        { title: "(name unknown)", tags: ["discontinued", "lost-media"], description: "A detailed Windows 10 simulator with apps & touchpad emulation. Sadly lost." },
+        { title: "(name unknown)", tags: ["discontinued", "lost-media"], description: "Code editor/project manager for Android." },
+        { title: "htedit", tags: ["discontinued", "lost-media"], description: "HTML editor on Android." },
+        { title: "(name unknown)", tags: ["discontinued", "lost-media"], description: "Website builder for Android." },
+        { title: "(name unknown)", tags: ["discontinued", "lost-media"], description: "Web based FTP client with a text editor" },
         { title: "Mineworld", tags: ["discontinued"], description: "An utility app for managing and organizing your Minecraft worlds." },
-        { title: "HackersOnline", tags: ["discontinued"], description: "A multiplayer hacking simulation game." },
-        { title: "LukasWiki", tags: ["discontinued"], description: "A wiki site, made in HTML & LibreOffice. My first project ever!" },
-        { title: "delegation6", tags: ["discontinued"], description: "Content transmorphization engine escaping the Sonic via perlin warps mapped on a 3D surface. Does not like<incomplete sentence>" },
+        { title: "HackersOnline", tags: ["lost-media"], description: "A multiplayer hacking simulation game. At least the website is preserved", link: "/archives/hackers" },
+        { title: "LSTV Gaming launcher", tags: ["discontinued", "lost-media"], icon: "5543e9b14a8296a4.webp", description: "A visual heavy gaming launcher, later replaced by Arc." },
+        { title: "JumpAndRun, LSParty 2, XaryTycoon 2, Rope thing, Gallaxy Wars 2, Rocket", tags: ["discontinued", "lost-media"], description: "Some of my early lost games." },
+        { title: "LukasWiki", tags: ["discontinued", "lost-media"], description: "A wiki site, made in HTML & LibreOffice. My first project ever!" },
+        { title: "Old archives", tags: ["lost-media"], description: "There is a project library from 2022..", link: "/archives/lib" },
     ],
 
     libraries: [
+        { title: "LS Icons", description: "A growing icon library!", link: "https://github.com/the-lstv/ls-icons" },
         { title: "LS.EventEmitter", description: "Really fast and full featured event emitter library.", link: "https://github.com/the-lstv/LS" },
         { title: "LS.Color", description: "Extensive color manipulation library.", link: "https://github.com/the-lstv/LS/blob/main/js/color.js" },
         { title: "LS.Knob", description: "A responsive, customizable beautiful knob/dial UI component.", link: "https://github.com/the-lstv/LS/blob/main/js/knob.js" },
@@ -245,9 +250,9 @@ const data = {
         { title: "LS.DragDrop", description: "Drag and drop library.", link: "https://github.com/the-lstv/LS/blob/main/js/dragdrop.js" },
         { title: "LS.Reactive", description: "Reactive binding library.", link: "https://github.com/the-lstv/LS/blob/main/js/reactive.js" },
         { title: "LS.Animation", description: "A very early work in progress animation library.", link: "https://github.com/the-lstv/LS/blob/main/js/animation2.js" },
+        { title: "LSXb", description: "An (experimental) interface rendering and utility library for the original Xbox using NXDK & OpenGL." },
         { title: "Undertale Engine", description: "A PIXI.js powered, pixel-perfect Undertale engine - sadly unfinished and currently outdated.", link: "https://github.com/the-lstv/undertale" },
         { title: "Quickly", description: "A faster and enhanced alternative to Google Blockly, capable of rendering huge projects even on old hardware. Sadly unfinished due to lack of time and me no longer being a part of TurboWarp community.", link: "https://github.com/the-lstv/quickly" },
-        { title: "LSXb", description: "An (experimental) interface rendering and utility library for the original Xbox using NXDK & OpenGL." },
         { title: "Linux.js", description: "UNIX-like shell emulator in JavaScript.", link: "https://github.com/the-lstv/LinuxJS" },
         { title: "lsdb", description: "A high-performance memory-mapped database (unfinished).", link: "https://github.com/the-lstv/lsdb" },
         { title: "Atrium", description: "Flexible config parser.", link: "https://github.com/the-lstv/Atrium" },
@@ -257,9 +262,9 @@ const data = {
         { title: "Akeno FileBucket", description: "Utility for efficiently storing UGC, such as avatars, with really fast reads thanks to lmdb on small files.", link: "https://github.com/the-lstv/Akeno/blob/main/core/bucket/index.js" },
         { title: "DiscordAI", description: "A discontinued library for making chatbots on Discord, please don't do that :)", link: "https://github.com/the-lstv/discord-ai" },
         { title: "LWMD", description: "A fast streaming Markdown parser (unfinished).", link: "https://github.com/the-lstv/lwmd" },
-        { title: "LS Editor", description: "A code editor in early development." },
+        { title: "LS Terminal", description: "A super fast hardware-accelerated grid text renderer." },
+        { title: "LS Editor", description: "A super fast code editor in early development." },
         { title: "OF3DE", description: "A buggy 3D engine I made to make a Baldi's basics clone themed around my school." },
-        { title: "Vyvaid / Jahon", description: "My first \"programming language\" compiler that I made back in elementary" },
     ]
 }
 
@@ -403,7 +408,7 @@ website.register(document.currentScript, class extends LS.Context {
                         class: "ls-button pill elevated",
                         inner: [{ tag: "i", class: "bi-box-arrow-up-right" }, "Open"],
                         href: project.link,
-                        // target: "_blank"
+                        target: "_blank"
                     }));
                 }
 
@@ -580,10 +585,10 @@ website.register(document.currentScript, class extends LS.Context {
 
         // Rendering properties
         this.bgaSpeedFactor = .001;
-        this.cloudsCanvas = container.querySelector("#glCanvas");
+        this.cloudsVideo = container.querySelector("#cloudsVideo");
         this.introCanvas = container.querySelector("#raysBga");
-        this.cloudsRenderer = null;
         this.blurRenderer = null;
+        this.cloudsVideoLoaded = false;
         
         // Scroll tracking
         this.scrollHandler = null;
@@ -683,7 +688,7 @@ website.register(document.currentScript, class extends LS.Context {
                         data.projects.forEach((project, index) => {
                             if(project.type === "separator") {
                                 const separator = LS.Create("details", { class: "showcase-separator", inner: [
-                                    { tag: "summary", inner: project.title || "Show older or inactive projects" }, [] // <= That is the div slot
+                                    { tag: "summary", inner: project.title || "Show miscellaneous, older or inactive projects" }, [] // <= That is the div slot
                                 ]});
 
                                 projectContainer.appendChild(separator);
@@ -793,7 +798,7 @@ website.register(document.currentScript, class extends LS.Context {
             // Lifecycle: Resume - resume animations and renderers
             context.on("resume", () => {
                 if(!window.LOW_PERFORMANCE_MODE) {
-                    if(this.cloudsRenderer && this.cloudsCanvas.isInView()) this.cloudsRenderer.start();
+                    this.syncCloudsRendering();
                     if(this.blurRenderer && this.introCanvas.isInView()) this.blurRenderer.start();
                 }
 
@@ -807,7 +812,7 @@ website.register(document.currentScript, class extends LS.Context {
             });
 
             context.on("suspend", () => {
-                if(this.cloudsRenderer) this.cloudsRenderer.stop();
+                if(this.cloudsVideo) this.cloudsVideo.pause();
                 if(this.blurRenderer) this.blurRenderer.stop();
                 if(this.onScroll) this.onScroll.cancel();
             });
@@ -885,7 +890,7 @@ website.register(document.currentScript, class extends LS.Context {
         if(!("IntersectionObserver" in window) || !this.container) return;
         this.renderObserver = this.addDestroyable(new IntersectionObserver(entries => {
             for (const entry of entries) {
-                if(entry.target === this.cloudsCanvas) {
+                if(entry.target === this.cloudsVideo) {
                     this.cloudsInView = entry.isIntersecting;
                     this.syncCloudsRendering();
                 } else if(entry.target === this.introCanvas) {
@@ -895,17 +900,43 @@ website.register(document.currentScript, class extends LS.Context {
             }
         }, { root: this.container, threshold: 0.1 }));
 
-        [this.cloudsCanvas, this.introCanvas].forEach(canvas => {
+        [this.cloudsVideo, this.introCanvas].forEach(canvas => {
             if(canvas) this.renderObserver.observe(canvas);
         });
     }
 
     syncCloudsRendering() {
-        if(!this.cloudsRenderer) return;
+        if(!this.cloudsVideo) return;
         if(window.LOW_PERFORMANCE_MODE || !this.cloudsInView) {
-            this.cloudsRenderer.stop();
-        } else {
-            this.cloudsRenderer.start();
+            this.cloudsVideo.pause();
+            return;
+        }
+
+        this.playCloudsVideo();
+    }
+
+    ensureCloudsVideoSource() {
+        if(!this.cloudsVideo || this.cloudsVideoLoaded) return;
+
+        const source = this.cloudsVideo.dataset.src;
+        if(!source) return;
+
+        this.cloudsVideo.src = source;
+        this.cloudsVideo.load();
+        this.cloudsVideoLoaded = true;
+    }
+
+    playCloudsVideo() {
+        if(!this.cloudsVideo) return;
+
+        this.ensureCloudsVideoSource();
+
+        this.cloudsVideo.loop = true;
+        this.cloudsVideo.playbackRate = 1;
+
+        const playPromise = this.cloudsVideo.play();
+        if(playPromise && typeof playPromise.catch === "function") {
+            playPromise.catch(() => {});
         }
     }
 
@@ -921,14 +952,10 @@ website.register(document.currentScript, class extends LS.Context {
     setupGL() {
         this.context.log("Setting up rendering");
         if(!window.LOW_PERFORMANCE_MODE) {
-            const logger = new website.LoggerContext("rendering");
-
-            this.cloudsRenderer = this.addDestroyable(new CombinedShaderRenderer(this.cloudsCanvas));
             this.blurRenderer = this.addDestroyable(new CombinedShaderRenderer(this.introCanvas, { width: 1024, height: 1024 }));
 
             const FRAMERATE = 30;
 
-            this.cloudsRenderer.limitFPS(FRAMERATE);
             this.blurRenderer.limitFPS(FRAMERATE);
 
             this.blurRenderer.addShaderContext(ShaderSource.blurredColors(this.blurRenderer.gl), {
@@ -953,62 +980,11 @@ website.register(document.currentScript, class extends LS.Context {
             });
 
             this.blurRenderer.start();
-
-            this.cloud_q = 1;
-            this.cloudsRenderer.addShaderContext(ShaderSource.clouds(this.cloudsRenderer.gl), {
-                u_time: { type: "uniform1f", value: time => [(time * this.bgaSpeedFactor) % 15000] }, // Precision breaks after a longer time
-                u_resolution: { type: "uniform2f", value: () => [this.cloudsCanvas.width, this.cloudsCanvas.height] },
-                u_speed: { type: "uniform1f", value: [0.196] },
-                u_scale: { type: "uniform1f", value: [0] },
-                u_quality: { type: "uniform1f", value: () => [this.cloud_q] },
-                u_colors: { type: "uniform4fv", value: [[1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0]] },
-                light: { type: "uniform1f", value: [0.5] },
-                shadow: { type: "uniform1f", value: [0.5] },
-                tint: { type: "uniform1f", value: [0.5] },
-                coverage: { type: "uniform1f", value: [0.3] },
-                alpha: { type: "uniform1f", value: [1.0] },
-            });
-
-            // Track FPS samples for better quality decisions
-            this.fpsSamples = [];
-            this.FPS_SAMPLE_SIZE = 5;
-            this.FPS_THRESHOLD_LOW = FRAMERATE / 3; // Average FPS below this triggers quality reduction
-            this.FPS_THRESHOLD_HIGH = FRAMERATE - 10; // Average FPS above this allows quality increase
-
-            this.cloudsRenderer.watchFPS(fps => {
-                if(this.cloudsRenderer.running && document.visibilityState === "visible") {
-                    // Add current FPS to samples
-                    this.fpsSamples.push(fps);
-                    if(this.fpsSamples.length > this.FPS_SAMPLE_SIZE) {
-                        this.fpsSamples.shift(); // Remove oldest sample
-                    }
-
-                    if(this.fpsSamples.length >= 4 && fps < 15 && fps !== 0) {
-                        logger.warn(`Low FPS detected: ${fps.toFixed(1)} FPS`);
-                        this.cloud_q = 0;
-                        this.fpsSamples.length = 0;
-                        return;
-                    }
-
-                    // Only make quality decisions once we have enough samples
-                    if(this.fpsSamples.length >= this.FPS_SAMPLE_SIZE) {
-                        const avgFps = this.fpsSamples.reduce((a, b) => a + b, 0) / this.fpsSamples.length;
-
-                        if(avgFps < this.FPS_THRESHOLD_LOW && this.cloud_q > 0) {
-                            logger.warn(`Average FPS too low: ${avgFps.toFixed(1)}, lowering cloud quality from ${this.cloud_q} to ${Math.max(0, this.cloud_q - 0.5)}`);
-                            this.cloud_q = Math.max(0, this.cloud_q - 0.5);
-                            this.fpsSamples.length = 0; // Reset samples after quality change
-                        } else if(avgFps > this.FPS_THRESHOLD_HIGH && this.cloud_q < 1) {
-                            logger.info(`Average FPS stable: ${avgFps.toFixed(1)}, increasing cloud quality from ${this.cloud_q} to ${Math.min(1, this.cloud_q + 0.5)}`);
-                            this.cloud_q = Math.min(1, this.cloud_q + 0.5);
-                            this.fpsSamples.length = 0; // Reset samples after quality change
-                        }
-                    }
-                }
-            });
-
-            this.syncCloudsRendering();
             this.syncIntroRendering();
+        }
+
+        if(this.cloudsVideo) {
+            this.syncCloudsRendering();
         }
     }
 
@@ -1016,11 +992,15 @@ website.register(document.currentScript, class extends LS.Context {
         // Clear references
         this.scrollHandler = null;
         this.chevronSwitch = null;
-        this.fpsSamples = null;
         this.logoContainer = null;
         this.loreSection = null;
         this.chevron = null;
-        this.cloudsCanvas = null;
+        if(this.cloudsVideo) {
+            this.cloudsVideo.pause();
+            this.cloudsVideo.removeAttribute("src");
+            this.cloudsVideo.load();
+        }
+        this.cloudsVideo = null;
         this.introCanvas = null;
 
         this.words = null;
@@ -1029,7 +1009,6 @@ website.register(document.currentScript, class extends LS.Context {
         this.currentWord = null;
         this.wordStopped = null;
 
-        this.cloudsRenderer = null;
         this.blurRenderer = null;
 
         this.onScroll = null;

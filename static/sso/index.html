@@ -206,12 +206,12 @@
             if(validation.app.icon){
                 container.get("#sso-icon img").src = website.cdn + "/file/" + validation.app.icon + (validation.app.icon.endsWith("svg")? "" : "?size=120")
             } else {
-                container.get("#sso-icon .pfpWrap").set(N("i", {
+                container.get("#sso-icon .pfpWrap").set(LS.Create("i", {
                     class: "profilePicture bi-grid-1x2-fill"
                 }))
             }
 
-            O("#appName").set(validation.app.displayname || validation.app.name);
+            LS.SelectOne("#appName").set(validation.app.displayname || validation.app.name);
 
             container.get("#sso-domain").set(url.origin)
 
@@ -230,14 +230,14 @@
             }
 
             if(validation.permissions.length < 1){
-                O("#sso-permissions").add(N("div", {
+                LS.SelectOne("#sso-permissions").add(LS.Create("div", {
                     inner: `This app is not asking for any extra permissions.`,
                     class: "elevated ls-button",
                     accent: "gray-light"
                 }))
             } else {
                 for(let permission of validation.permissions.sort((a, b) => (permissions[a]?.[2] || 0) - (permissions[b]?.[2] || 0)).reverse()){
-                    O("#sso-permissions").add(N("div", {
+                    LS.SelectOne("#sso-permissions").add(LS.Create("div", {
                         inner: `<i class="bi-${permissions[permission]?.[0] || "wrench-adjustable-circle-fill"}"></i>${permissions[permission]?.[1] || permission}`,
                         class: (permissions[permission]?.[2] == 2? "important" : "elevated") + " ls-button",
                         accent: ["auto", "deep-orange", "rusty-red"][permissions[permission]?.[2]] || "auto"
@@ -253,7 +253,7 @@
 
             tabs.setActive("sso")
 
-            O("#authorize").on("click", async () => {
+            LS.SelectOne("#authorize").addEventListener("click", async () => {
 
                 let token = await website.get("auth/authorize_sso", {
                     app: query.app || "",
@@ -271,7 +271,7 @@
                 location.replace(query.ref + `?result=success#${token.token}`)
             })
 
-            O("#cancel").on("click", async () => {
+            LS.SelectOne("#cancel").addEventListener("click", async () => {
                 location.replace(query.ref + "?result=canceled")
             })
         })
