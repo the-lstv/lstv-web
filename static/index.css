@@ -248,6 +248,9 @@ ls-box.inline.color {
     white-space: nowrap;
     pointer-events: none;
     color: var(--accent);
+    border-radius: var(--border-radius-full);
+    background: var(--surface-top);
+    padding: 4px 12px;
 }
 
 .underline-link {

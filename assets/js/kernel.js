@@ -135,6 +135,11 @@ Document.prototype.write = Document.prototype.writeln = function() {
 
 // --- MEMORY SAFETY ---
 // We can use globals in the kernel, anywhere else should throw an error
+
+// This is to catch bad code usage before it leaks. Not needed in production, but can be useful during development. Will throw if any context-unsafe APIs are used outside of the kernel or a registered application context.
+// LS.Context.debugEnforceContextSafety();
+// LS.Context.debugWarnContextSafety();
+
 const setTimeout = LS.Context.setTimeout;
 const setInterval = LS.Context.setInterval;
 const clearTimeout = LS.Context.clearTimeout;
@@ -142,6 +147,7 @@ const clearInterval = LS.Context.clearInterval;
 const requestAnimationFrame = LS.Context.requestAnimationFrame;
 const queueMicrotask = LS.Context.queueMicrotask;
 const fetch = LS.Context.fetch;
+
 
 /**
  * Application model:
@@ -5035,16 +5041,16 @@ const kernel = new class Kernel extends LoggerContext {
     }
 }
 
+/**
+ * Promise helpers
+ */
 class ApplicationOpenerPromise {
     loading(callback) { if (callback) this._l = callback; return this; }
     done(callback) { if (callback) this._d = callback; return this; }
     catch(callback) { if (callback) this._c = callback; return this; }
     finally(callback) { if (callback) this._f = callback; return this; }
 
-    loadingState(state) {
-        if (this._l) this._l(state);
-        return this;
-    }
+    loadingState(state) { if (this._l) this._l(state); return this; }
 
     throw(error) {
         if (this._c) this._c(error);

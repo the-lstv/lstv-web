@@ -76,7 +76,17 @@
                         <ls-div>
                             **Note:** LSTV is not my nickname. To refer to me, please use my name or an alias.<br><br>
                             On this website I showcase my works and write posts, but it is also the center of LSTV's services and products, not only my personal website (and it may become more general in the coming future). There is a lot more to explore!<br><br>
-                            My favorite artists: <a target="_blank" .poppable-link .underline-link .koba-button style="--accent: #6817eb" href="https://www.youtube.com/@Kobaryo">Kobaryo</a>, <a target="_blank" .poppable-link .underline-link style="--accent: #a81446" href="https://www.youtube.com/@Cametek.CamelliaOfficial">Camellia</a>, <a target="_blank" .poppable-link .has-icon .underline-link style="--accent: #04CEFC" href="https://www.youtube.com/channel/UCdxf3SY8xgI6x7TRTc8jxrg"><i .bi-heart-fill /> Akira Complex<span .pops>Rest In Peace.</span></a>, <a href="https://www.youtube.com/@tpazolite_jp" target="_blank" .poppable-link .underline-link style="--accent: #A8DB7C">tpz</a>, <a target="_blank" .poppable-link .underline-link style="--accent: #FF6F61" href="https://www.youtube.com/channel/UCiMeKrcMsRPLu8E55W2sr7g">Dustvoxx</a>, <a target="_blank" .poppable-link .underline-link style="--accent: #5b9220" href="https://www.youtube.com/@ARPWIRE">ArpWire</a>, and many more!
+                            My favorite artists:
+                            <a target="_blank" .poppable-link .underline-link .koba-button .has-icon style="--accent: #6817eb" href="https://www.youtube.com/@Kobaryo"><i .bi-heart-fill /> Kobaryo (#1)<span .pops>(๑´▿｀๑)♫•*¨*•.¸¸♪✧</span></a>,
+                            <a target="_blank" .poppable-link .underline-link style="--accent: #a81446" href="https://www.youtube.com/@Cametek.CamelliaOfficial">Camellia (#2)</a>,
+                            <a target="_blank" .poppable-link .underline-link .has-icon style="--accent: #04CEFC" href="https://www.youtube.com/channel/UCdxf3SY8xgI6x7TRTc8jxrg"><i .bi-heart-fill /> Akira Complex<span .pops>Rest In Peace.</span></a>,
+                            <a target="_blank" .poppable-link .underline-link href="https://www.youtube.com/@tpazolite_jp" style="--accent: #A8DB7C">tpz</a>,
+                            <a target="_blank" .poppable-link .underline-link href="https://www.youtube.com/channel/UCxrFC1kZSD6l4FMg3xpy9cQ" style="--accent: #782d10">RoughSketch</a>,
+                            <a target="_blank" .poppable-link .underline-link href="https://www.youtube.com/channel/UCxrFC1kZSD6l4FMg3xpy9cQ" style="--accent: #141414">DJ Myosuke</a>,
+                            <a target="_blank" .poppable-link .underline-link .has-icon href="https://www.youtube.com/c/ninajirachi" style="--accent: #ffbc70"><i .bi-pc-display-horizontal /> Ninajirachi<span .pops>I Too Love My Computer</span></a>,
+                            <a target="_blank" .poppable-link .underline-link href="https://www.youtube.com/channel/UCRq2L_KpWvMRBzbNc6OFpXw" style="--accent: #3ee319">Frutiger Dillion</a>,
+                            <a target="_blank" .poppable-link .underline-link style="--accent: #FF6F61" href="https://www.youtube.com/channel/UCiMeKrcMsRPLu8E55W2sr7g">Dustvoxx</a>,
+                            <a target="_blank" .poppable-link .underline-link style="--accent: #5b9220" href="https://www.youtube.com/@ARPWIRE">ArpWire</a>, and many more!
                         </ls-div>
 
                         <ls-div .margin-top-xxxlarge>
@@ -214,7 +224,6 @@ const data = {
         { title: "RPG Engine", icon: "", tags: ["discontinued"], description: "A Scratch-based RPG engine." },
         { title: "Firefox Gaming (legacy)", tags: ["discontinued"], description: "A discontinued unofficial modification of Firefox for those OperaGX fans, just in case they dont want malware on their machines." },
         { title: "ScratchAtom", icon: "", tags: ["discontinued"], description: "A fast code editor in Scratch." },
-        { title: "XiWatch", tags: ["discontinued", "lost-media"], description: "A smartwatch GUI interface with apps." },
         { title: "XiWatch", tags: ["discontinued", "lost-media"], description: "A smartwatch GUI interface with apps." },
         { title: "Temňačka", tags: ["discontinued"], description: "A mildly spooky semi-3D puzzle game set in a subterranean world." },
         { title: "(name unknown)", tags: ["discontinued", "lost-media"], description: "A web-based OS with a fake kernel and everything. Sadly lost." },
@@ -799,7 +808,9 @@ website.register(document.currentScript, class extends LS.Context {
             context.on("resume", () => {
                 if(!window.LOW_PERFORMANCE_MODE) {
                     this.syncCloudsRendering();
-                    if(this.blurRenderer && this.introCanvas.isInView()) this.blurRenderer.start();
+                    // if(this.blurRenderer && this.introCanvas.isInView()) this.blurRenderer.start();
+                    // TODO: isInView is a deprecated method, though technically not even really needed here
+                    if(this.blurRenderer) this.blurRenderer.start();
                 }
 
                 // Restart word animation if scrolled past intro

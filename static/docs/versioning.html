@@ -1,0 +1,29 @@
+#template /templates/main.html
+
+<head>
+    @page {
+        title: "LSTV | Versioning";
+        description: "Learn about our versioning strategy and how we manage releases.";
+        keywords: "versioning, releases, software versions, lstv versioning";
+    }
+</head>
+
+<div>
+    <h1>Versioning</h1>
+    <p>At LSTV, we follow a structured versioning strategy. It's inspired by Semantic Versioning (SemVer) principles and uses the classic three-part version number: MAJOR.MINOR.PATCH-SUFFIX, but is not quite the same in exact meaning, because Semantic Versioning isn't always ideal for human readability.</p>
+
+    <h2>MAJOR Version</h2>
+    <p>We increment our MAJOR version for huge updates that bring significant changes or breaking/restructuring changes, or mark the next evolution of our software. Unlike SemVer it doesn't always mean breaking changes. If you are using an older version of our software and we release a new MAJOR version, you may need to update your code, though we also often provide compatibility layers, and sometimes a major version can be more of a marker.</p>
+
+    <h2>MINOR Version</h2>
+    <p>A MINOR version is incremented when we add larger enhancements, fixes, or feature additions in a backward-compatible manner. These releases can include major functionality updates.</p>
+
+    <h2>PATCH Version</h2>
+    <p>A PATCH version is incremented when we make backward-compatible changes. Unlike SemVer, we also increment it for medium/pre-test updates as well in addition to optimizations or bug fixes that retain compatibility.</p>
+
+    <h2>Release Cycle</h2>
+    <p>We release updates regularly, but there's no fixed schedule. Major updates often come yearly, but not as a rule.</p>
+
+    <h2>Support Policy</h2>
+    <p>We provide support for the latest MAJOR version of our software, as well as the previous MAJOR version, for a limited time. In some cases we keep LTS releases for prior MAJOR versions.</p>
+</div>
