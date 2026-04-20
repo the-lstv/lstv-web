@@ -2272,7 +2272,7 @@ const website = {
                         class: "profile-badge",
                         tooltip: badgeInfo.label,
                         inner: LS.Create("img", {
-                            src: "~/assets/image/badges/" + badgeInfo.icon,
+                            src: "/~/assets/image/badges/" + badgeInfo.icon,
                             alt: badgeInfo.label
                         })
                     });

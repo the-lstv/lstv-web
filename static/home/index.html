@@ -16,7 +16,7 @@
 <div .top>
     <div .width-container>
         <h1 .title>User Settings</h1>
-        <button .menu-button .clear .square aria-label="Open settings menu">
+        <button .sidebar-menu-button .clear .square aria-label="Open settings menu">
             <i .bi-list></i>
         </button>
     </div>
@@ -26,25 +26,25 @@
     <div .loadingIndicator state="loading"></div>
 
     <div .container-content .settings-container style="display: none">
-        <ls-tabs .menu .sidebar-items .level-n1>
+        <ls-tabs .sidebar-menu .sidebar-items .level-n1>
             <ls-tab tab-id="home">
                 <div .grouped-buttons>
                     <a .ls-button .elevated href="/home" data-tab-id="home"><i .bi-house-fill /><span>Home</span></a>
                 </div>
 
-                <span .menu-category-title>Account</span>
+                <span .sidebar-menu-category-title>Account</span>
 
                 <div .grouped-buttons>
                     <a .ls-button .elevated href="/home/account" data-tab-id="account"><i .bi-person-fill /><span>Account</span></a>
                     <a .ls-button .elevated href="/home/profile" data-tab-id="profile"><i .bi-person-badge /><span>Profile</span></a>
                 </div>
 
-                <span .menu-category-title>Applications</span>
+                <span .sidebar-menu-category-title>Applications</span>
                 <div .grouped-buttons>
                     <a .ls-button .elevated href="/home/apps" data-tab-id="apps"><i .bi-app-indicator /><span>Apps</span></a>
                 </div>
                 
-                <span .menu-category-title>Developers</span>
+                <span .sidebar-menu-category-title>Developers</span>
                 <div .grouped-buttons>
                     <a .ls-button .elevated href="/home/applications" data-tab-id="applications"><i .bi-app /><span>Applications</span></a>
                     <a .ls-button .elevated href="/home/sub-users" data-tab-id="sub-users"><i .bi-robot /><span>Bot accounts</span></a>
@@ -52,7 +52,7 @@
                     <a .ls-button .elevated href="/home/api" data-tab-id="api"><i .bi-file-earmark-text /><span>API Documentation</span></a>
                 </div>
 
-                <span .menu-category-title>Help</span>
+                <span .sidebar-menu-category-title>Help</span>
                 <div .grouped-buttons>
                     <a .ls-button .elevated href="/home/support" data-tab-id="support"><i .bi-bug-fill /><span>Report a bug</span></a>
                     <a .ls-button .elevated href="/chat/user/admin"><i .bi-chat-left-fill /><span>Write us</span></a>
@@ -66,7 +66,7 @@
                     <a .ls-button .elevated href="/home/applications"><i .bi-arrow-return-left /><span>Back</span></a>
                 </div>
 
-                <span .menu-category-title>Edit</span>
+                <span .sidebar-menu-category-title>Edit</span>
 
                 <div .grouped-buttons>
                     <a base-href="/home/applications/$id/details" data-tab-id="applications/details" .ls-button .elevated><i .bi-pencil-fill /><span>Edit Application</span></a>

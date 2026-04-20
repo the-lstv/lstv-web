@@ -252,6 +252,7 @@ const data = {
         { title: "LS.Tabs", description: "Library for creating tabs.", link: "https://github.com/the-lstv/LS/blob/main/js/tabs.js" },
         { title: "LS.Toast", description: "Library for creating simple toast notifications.", link: "https://github.com/the-lstv/LS/blob/main/js/toast.js" },
         { title: "LS.Tooltips", description: "Adds efficient tooltips.", link: "https://github.com/the-lstv/LS/blob/main/js/tooltips.js" },
+        { title: "LS.Multipane", description: "A flexible multipane UI component.", link: "https://github.com/the-lstv/LS/blob/main/js/multipane.js" },
         { title: "LS.ShortcutManager", description: "Simple library for managing global shortcuts or keybinds.", link: "https://github.com/the-lstv/LS/blob/main/js/shortcutmanager.js" },
         { title: "LS.Patcher", description: "An awesome patcher UI library.", link: "https://github.com/the-lstv/LS/blob/main/js/patcher.js" },
         { title: "LS.ImageCropper", description: "Library for cropping images.", link: "https://github.com/the-lstv/LS/blob/main/js/imagecropper.js" },
@@ -261,7 +262,7 @@ const data = {
         { title: "LS.Animation", description: "A very early work in progress animation library.", link: "https://github.com/the-lstv/LS/blob/main/js/animation2.js" },
         { title: "LS.Util.emmetParser", description: "A lightweight Emmet abbreviation to DOM parser." },
         { title: "LSXb", description: "An (experimental) interface rendering and utility library for the original Xbox using NXDK & OpenGL." },
-        { title: "Undertale Engine", description: "A PIXI.js powered, pixel-perfect Undertale engine - sadly unfinished and currently outdated.", link: "https://github.com/the-lstv/undertale" },
+        { title: "Undertale Engine", description: "A PIXI.js powered, pixel-perfect Undertale engine - unfinished and currently outdated.", link: "https://github.com/the-lstv/undertale" },
         { title: "Quickly", description: "A faster and enhanced alternative to Google Blockly, capable of rendering huge projects even on old hardware. Sadly unfinished due to lack of time and me no longer being a part of TurboWarp community.", link: "https://github.com/the-lstv/quickly" },
         { title: "Linux.js", description: "UNIX-like shell emulator in JavaScript.", link: "https://github.com/the-lstv/LinuxJS" },
         { title: "lsdb", description: "A high-performance memory-mapped database (unfinished).", link: "https://github.com/the-lstv/lsdb" },
@@ -273,7 +274,7 @@ const data = {
         { title: "DiscordAI", description: "A discontinued library for making chatbots on Discord, please don't do that :)", link: "https://github.com/the-lstv/discord-ai" },
         { title: "LWMD", description: "A fast streaming Markdown parser (unfinished).", link: "https://github.com/the-lstv/lwmd" },
         { title: "LS Terminal", description: "A super fast hardware-accelerated grid text renderer." },
-        { title: "LS Editor", description: "A super fast code editor in early development." },
+        { title: "LS Editor", description: "Fast code editor in early development." },
         { title: "OF3DE", description: "A buggy 3D engine I made to make a Baldi's basics clone themed around my school." },
     ]
 }
@@ -590,6 +591,7 @@ website.register(document.currentScript, class extends LS.Context {
 
         // State tracking
         this.projects_loaded = false;
+        this.libraries_loaded = false;
         this.music_loaded = false;
         this.gallery_loaded = false;
 
@@ -715,27 +717,157 @@ website.register(document.currentScript, class extends LS.Context {
                     if(!this.libraries_loaded) {
                         this.libraries_loaded = true;
 
-                        data.libraries.forEach((library, index) => {
-                            container.querySelector("#showcase-libraries").appendChild(LS.Create({
-                                class: "showcase-item",
-                                inner: [
-                                    {
-                                        class: "showcase-item-left-panel",
-                                        inner: [
-                                            { tag: "i", class: "bi-app-indicator" }
-                                        ]
-                                    },
-                                    {
-                                        class: "showcase-item-content",
-                                        inner: [
-                                            { class: "showcase-item-title", inner: library.title },
-                                            { class: "showcase-item-description", inner: library.description },
-                                            library.link ? LS.Create("a", { href: library.link, target: "_blank", rel: "noopener", inner: "View on GitHub" }) : null
-                                        ]
-                                    }
-                                ]
-                            }));
+                        const librariesContainer = container.querySelector("#showcase-libraries");
+                        const categoryRules = [
+                            { name: "frontend", match: /(ui|component|tabs|timeline|menu|modal|tooltip|drag|drop|image|crop|editor|knob|icons|rendering|pixi|web interface|frontend)/i },
+                            { name: "backend", match: /(ipc|server|backend|node|webserver|storage|database|bucket|lmdb|shell|unix)/i },
+                            { name: "parser", match: /(parser|markdown|emmet|config)/i },
+                            { name: "framework", match: /(framework|library used by all|reactive|event emitter|utility library)/i },
+                            { name: "graphics", match: /(graphics|3d|opengl|engine|animation|renderer)/i },
+                            { name: "tooling", match: /(tool|sdk|ide|manager|processor)/i },
+                        ];
+
+                        const titleCase = value => value
+                            .split("-")
+                            .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+                            .join(" ");
+
+                        const toLibraryMetadata = library => {
+                            const sourceText = [library.title, library.description, library.link].filter(Boolean).join(" ");
+                            const categories = Array.isArray(library.categories) && library.categories.length
+                                ? [...new Set(library.categories.map(item => String(item).toLowerCase()))]
+                                : categoryRules
+                                    .filter(rule => rule.match.test(sourceText))
+                                    .map(rule => rule.name);
+
+                            if(!categories.length) categories.push("other");
+
+                            const tags = new Set(Array.isArray(library.tags) ? library.tags : []);
+                            if(/experimental|early|unfinished|buggy|discontinued|outdated/i.test(sourceText)) tags.add("wip");
+                            if(/fast|high-performance|accelerated/i.test(sourceText)) tags.add("performance");
+                            if(/opengl|pixi|render|graphics|animation/i.test(sourceText)) tags.add("visual");
+
+                            return {
+                                ...library,
+                                categories,
+                                tags: [...tags]
+                            };
+                        };
+
+                        const libraries = data.libraries.map(toLibraryMetadata);
+                        const allCategories = ["all", ...new Set(libraries.flatMap(library => library.categories))];
+
+                        const controls = LS.Create("div", {
+                            style: "display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px;"
                         });
+
+                        const countIndicator = LS.Create("ls-box", {
+                            class: "inline pill",
+                            text: ""
+                        });
+
+                        const categoryFilterContainer = LS.Create("ls-box", {
+                            class: "inline chips",
+                            style: "display: flex; gap: 8px; flex-wrap: wrap;"
+                        });
+
+                        controls.append(
+                            LS.Create("h3", { text: "Browse libraries by category" }),
+                            countIndicator,
+                            categoryFilterContainer
+                        );
+
+                        const listContainer = LS.Create("div", {
+                            style: "display: flex; flex-direction: column; gap: 12px;"
+                        });
+
+                        librariesContainer.append(controls, listContainer);
+
+                        let activeCategory = "all";
+                        const categoryButtons = new Map();
+
+                        const renderLibraries = () => {
+                            const visibleLibraries = activeCategory === "all"
+                                ? libraries
+                                : libraries.filter(library => library.categories.includes(activeCategory));
+
+                            countIndicator.textContent = `Showing ${visibleLibraries.length} of ${libraries.length} libraries`;
+                            listContainer.replaceChildren();
+
+                            visibleLibraries.forEach(library => {
+                                const metadataChips = LS.Create("div", {
+                                    style: "margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap;"
+                                });
+
+                                library.categories.forEach(category => {
+                                    metadataChips.appendChild(LS.Create("ls-box", {
+                                        class: "inline pill color",
+                                        text: titleCase(category)
+                                    }));
+                                });
+
+                                library.tags.forEach(tag => {
+                                    metadataChips.appendChild(LS.Create("ls-box", {
+                                        class: "inline pill",
+                                        text: `#${tag}`
+                                    }));
+                                });
+
+                                listContainer.appendChild(LS.Create({
+                                    class: "showcase-item",
+                                    inner: [
+                                        {
+                                            class: "showcase-item-left-panel",
+                                            inner: [
+                                                { tag: "i", class: "bi-app-indicator" }
+                                            ]
+                                        },
+                                        {
+                                            class: "showcase-item-content",
+                                            inner: [
+                                                { class: "showcase-item-title", inner: library.title },
+                                                { class: "showcase-item-description", inner: library.description },
+                                                metadataChips,
+                                                library.link ? LS.Create("a", { href: library.link, target: "_blank", rel: "noopener", inner: "View on GitHub" }) : null
+                                            ]
+                                        }
+                                    ]
+                                }));
+                            });
+                        };
+
+                        allCategories.forEach(category => {
+                            const button = LS.Create("button", {
+                                class: "chip pill clear",
+                                text: titleCase(category)
+                            });
+
+                            button.addEventListener("click", () => {
+                                activeCategory = category;
+
+                                categoryButtons.forEach((entryButton, entryCategory) => {
+                                    if(entryCategory === category) {
+                                        entryButton.setAttribute("data-active", "");
+                                        entryButton.classList.add("elevated");
+                                    } else {
+                                        entryButton.removeAttribute("data-active");
+                                        entryButton.classList.remove("elevated");
+                                    }
+                                });
+
+                                renderLibraries();
+                            });
+
+                            if(category === "all") {
+                                button.setAttribute("data-active", "");
+                                button.classList.add("elevated");
+                            }
+
+                            categoryButtons.set(category, button);
+                            categoryFilterContainer.appendChild(button);
+                        });
+
+                        renderLibraries();
                     }
                     break;
 

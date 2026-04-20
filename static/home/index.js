@@ -95,7 +95,7 @@ class ApplicationsHandler extends LS.Context {
                 return;
             }
 
-            for (const element of this.parent.panelContent.querySelectorAll('.menu [tab-id="application"] [base-href]')) {
+            for (const element of this.parent.panelContent.querySelectorAll('.sidebar-menu [tab-id="application"] [base-href]')) {
                 element.setAttribute("href", element.getAttribute("base-href").replace("$id", appId));
             }
         });
@@ -614,7 +614,7 @@ website.register(document.currentScript, class extends LS.Context {
             initial: -1
         }));
 
-        const menuButton = this.container.querySelector('.menu-button');
+        const menuButton = this.container.querySelector('.sidebar-menu-button');
         menuButton.addEventListener("click", () => this.panel.classList.toggle('sidebar-menu-visible'));
 
         // -- Tabs
@@ -623,7 +623,7 @@ website.register(document.currentScript, class extends LS.Context {
             slideAnimation: true
         }));
 
-        this.sidebarTabs = this.addDestroyable(new LS.Tabs(this.panelContent.querySelector('.menu'), {
+        this.sidebarTabs = this.addDestroyable(new LS.Tabs(this.panelContent.querySelector('.sidebar-menu'), {
             list: false,
             slideAnimation: true
         }));
@@ -715,7 +715,7 @@ website.register(document.currentScript, class extends LS.Context {
         this.container.querySelector('.title').textContent = view.getAttribute("tab-title") || "User Settings";
 
         const button = this.container.querySelector(`[data-tab-id="${tab}"]`);
-        const activeButton = this.container.querySelector(`.menu .active`);
+        const activeButton = this.container.querySelector(`.sidebar-menu .active`);
 
         if (activeButton) {
             activeButton.classList.remove('active', 'level-1');

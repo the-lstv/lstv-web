@@ -1,3 +1,727 @@
-#template /templates/main.html
+#template /templates/tool.html
 
-test
+<head>
+    @page {
+        title: "LSTV | Tools > LS Import Generator";
+        description: "An intuitive way to get the LS import snippet based on your selections.";
+        keywords: "LSTV, tool, framework, ls-loader, loader";
+    }
+</head>
+
+<div>
+    <h1>LS Import Generator</h1>
+
+    <ls-div>
+        LS Version:
+        <ls-select .elevated.pill #loader-lsVersion ls-options-values="latest,6.0.0-alpha.0,5.2.9,4.0.2"></ls-select>
+    </ls-div>
+
+    <label .ls-checkbox>
+        <input type="checkbox" #loader-includeCore checked>
+        Include LS core
+        <span></span>
+    </label>
+
+    <br>
+
+    <ls-div>
+        <div #loader-components></div>
+        <br>
+        <div style="display: flex; gap: .5rem; flex-wrap: wrap;">
+            <button .elevated #loader-selectAll><i class="bi bi-check2-all"></i> Select all</button>
+            <button .elevated #loader-selectBasics><i class="bi bi-arrow-clockwise"></i> Restore defaults</button>
+        </div>
+    </ls-div>
+
+    <ls-div>
+        <label .ls-switch>
+            <input type="checkbox" #loader-includeJs checked>
+            JS
+            <span></span>
+        </label>
+
+        <br>
+
+        <label .ls-switch>
+            <input type="checkbox" #loader-includeCss checked>
+            CSS
+            <span></span>
+        </label>
+
+        <br>
+        <br>
+
+        <label .ls-switch>
+            <input type="checkbox" #loader-compress checked>
+            Minify
+            <span></span>
+        </label>
+
+        <br>
+
+        <label .ls-switch>
+            <input type="checkbox" #loader-esm>
+            Use ESM
+            <span></span>
+        </label>
+    </ls-div>
+
+    <ls-div>
+        <h3>Generated import snippet</h3>
+        <ls-box .elevated .contained>
+            <pre #loader-output style="white-space: pre-wrap; user-select: text; word-break: break-word"></pre>
+        </ls-box>
+        <br>
+        <button .ls-button #loader-copySnippet><i class="bi bi-clipboard"></i> Copy</button>
+    </ls-div>
+
+    <style>
+        #loader-components {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.2rem;
+        }
+
+        #loader-components .loader-component-group {
+            min-width: 220px;
+            flex: 1 1 260px;
+        }
+
+        #loader-components .loader-component-grid {
+            column-count: 1;
+            column-gap: .8rem;
+        }
+
+        #loader-components .loader-component-grid label {
+            break-inside: avoid;
+            display: inline-flex;
+            width: 100%;
+            margin: 0 0 .35rem 0;
+            align-items: flex-start;
+            gap: .4rem;
+            min-width: 0;
+        }
+
+        #loader-components .loader-component-label {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+        }
+
+        #loader-components .loader-component-tags {
+            display: inline-flex;
+            align-items: center;
+            gap: .25rem;
+        }
+
+        #loader-components .loader-component-tag {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: smaller;
+            opacity: .9;
+        }
+
+        #loader-components .loader-component-grid label.is-unavailable {
+            opacity: .55;
+        }
+
+        @media (min-width: 760px) {
+            #loader-components .loader-component-grid {
+                column-count: 2;
+            }
+        }
+
+        @media (min-width: 1220px) {
+            #loader-components .loader-component-grid {
+                column-count: 3;
+            }
+        }
+
+        #loader-output .ͼb {
+            color: #e777f7;
+        }
+
+        #loader-output .ͼl {
+            color: #ffd409;
+        }
+
+        #loader-output .ͼe {
+            color: #9ece6a;
+        }
+
+        #loader-output .ͼf {
+            color: #f7768e;
+        }
+
+        #loader-output .ͼd {
+            color: #7dcfff;
+        }
+
+        #loader-output .ͼj {
+            color: #09d6ff;
+        }
+
+        #loader-output .ͼg {
+            color: var(--surface-10);
+        }
+
+        #loader-output .ͼm {
+            color: var(--surface-6);
+        }
+
+        [ls-theme="light"] #loader-output .ͼb {
+            color: #c02bd5;
+        }
+
+        [ls-theme="light"] #loader-output .ͼl {
+            color: #e35d00;
+        }
+
+        [ls-theme="light"] #loader-output .ͼe {
+            color: #548359;
+        }
+
+        [ls-theme="light"] #loader-output .ͼf {
+            color: #d55c73;
+        }
+
+        [ls-theme="light"] #loader-output .ͼd {
+            color: #519fcc;
+        }
+
+        [ls-theme="light"] #loader-output .ͼj {
+            color: #1696af;
+        }
+    </style>
+
+    <script>
+        const EXTRAGON_CDN = "https://cdn.extragon.cloud";
+        const LATEST = "6.0.0-alpha.0";
+
+        const components = {
+            "js": [
+                "animation",
+                "animation2",
+                "automationgraph",
+                "color",
+                "compiletemplate",
+                "dragdrop",
+                "gl",
+                "imagecropper",
+                "knob",
+                "menu",
+                "modal",
+                "network",
+                "node",
+                "patcher",
+                "reactive",
+                "resize",
+                "shortcutmanager",
+                "multipane",
+                "layout",
+                "tabs",
+                "timeline",
+                "toast",
+                "tooltips",
+                "tree",
+                "range"
+            ],
+            "css": [
+                "flat",
+                "knob",
+                "timeline"
+            ]
+        };
+
+        const new_in = {
+            6: ["multipane", "layout", "animation2", "patcher"],
+            5: ["shortcutmanager", "network", "node", "reactive", "animation", "range", "compiletemplate", "gl", "imagecropper", "menu", "tree"],
+        }
+
+        const selected_by_default = {
+            js: ["animation", "color", "menu", "modal", "tooltips", "toast", "range"],
+            css: ["flat"]
+        };
+
+        // Extend this map to add tags/description per component.
+        const component_meta = {
+            js: {
+                animation: { description: "Provides basic UI animations and transitions." },
+                animation2: { tags: ["experimental"], description: "An experimental advanced dual-engine\nanimation system." },
+                automationgraph: { tags: ["experimental"], description: "A component for creating automation graphs,\nsuch as an envelope editor." },
+                compiletemplate: { tags: ["experimental"], description: "Experimental template compiler mainly\nintended to be run at build time." },
+                gl: { tags: ["experimental"], description: "Experimental graphics engine & utilities" },
+                dragdrop: { tags: ["deprecated"] },
+                knob: { description: "A dial-like input control." },
+                menu: { description: "Context menu component. Also provides ls-select element functionality." },
+                modal: { description: "Allows for creating various modal dialogs." },
+                network: { description: "Utilities for networking, such as a WebSocket and HTTP helper." },
+                color: { description: "Color manipulation library + accent utilities." },
+                patcher: { tags: ["experimental"], description: "Node graph editor component." },
+                reactive: { tags: ["experimental"] },
+                resize: { description: "Allows anything to be resized, with a lot of options." },
+                toast: { description: "Component for showing quick transient\nmessages/notifications (LS.Toast.show)." },
+                tooltips: { description: "A component for showing simple tooltips." },
+                range: { description: "This component provides the ls-range\nelement for customizable sliders." },
+                // node: { description: "" },
+                // tabs: { description: "A versatile tab component." },
+                // timeline: { description: "Timeline component." },
+            },
+            css: {
+                flat: { description: "The default look and feel of LS." },
+                knob: { description: "Styles for the LS.Knob component." },
+                timeline: { description: "Styles for the LS.Timeline component." }
+            }
+        };
+
+        const componentsContainer = document.querySelector("#loader-components");
+        const lsVersion = document.querySelector("#loader-lsVersion");
+        const includeCore = document.querySelector("#loader-includeCore");
+        const includeJs = document.querySelector("#loader-includeJs");
+        const includeCss = document.querySelector("#loader-includeCss");
+        const compress = document.querySelector("#loader-compress");
+        const esm = document.querySelector("#loader-esm");
+        const output = document.querySelector("#loader-output");
+        const copyButton = document.querySelector("#loader-copySnippet");
+        const selectAllButton = document.querySelector("#loader-selectAll");
+        const selectBasicsButton = document.querySelector("#loader-selectBasics");
+
+        let latestSnippet = "";
+
+        const componentMinVersion = {};
+        Object.entries(new_in).forEach(([major, names]) => {
+            const majorVersion = Number(major);
+            names.forEach(name => {
+                if (!(name in componentMinVersion)) {
+                    componentMinVersion[name] = majorVersion;
+                    return;
+                }
+
+                componentMinVersion[name] = Math.min(componentMinVersion[name], majorVersion);
+            });
+        });
+
+        const getCdnOrigin = version => version === "beta" ? EXTRAGON_CDN.replace("cdn.", "cdn-origin.") : EXTRAGON_CDN;
+
+        const getCurrentVersion = () => {
+            let value = lsVersion.value || lsVersion.getAttribute("value");
+
+            if (!value) {
+                const options = (lsVersion.getAttribute("ls-options-values") || "")
+                    .split(",")
+                    .map(entry => entry.trim())
+                    .filter(Boolean);
+                value = options[0] || "latest";
+            }
+
+            return value ? value.trim() : "";
+        };
+
+        const normalizeVersion = version => version === "latest" ? LATEST : version;
+
+        const getMajorVersion = version => {
+            const normalized = normalizeVersion(version);
+            const parsed = Number((normalized.split(".")[0] || "0").replace(/[^0-9]/g, ""));
+            return Number.isFinite(parsed) ? parsed : 0;
+        };
+
+        const readSelectedComponents = () => {
+            const selected = { js: [], css: [] };
+
+            componentsContainer.querySelectorAll("input[data-component]").forEach(input => {
+                if (!input.checked) return;
+                const type = input.getAttribute("data-type");
+                const component = input.getAttribute("data-component");
+
+                if (type && component && selected[type]) {
+                    selected[type].push(component);
+                }
+            });
+
+            return selected;
+        };
+
+        const getAvailableComponentsByType = type => {
+            return Array.from(componentsContainer.querySelectorAll(`input[data-type="${type}"][data-component]:not(:disabled)`))
+                .map(input => input.getAttribute("data-component"))
+                .filter(Boolean);
+        };
+
+        const getComponentMeta = (type, component) => {
+            const scope = component_meta[type] || {};
+            const meta = scope[component] || {};
+            return {
+                tags: Array.isArray(meta.tags) ? meta.tags : [],
+                description: typeof meta.description === "string" ? meta.description : ""
+            };
+        };
+
+        const getTagIconClass = tag => {
+            const normalized = String(tag || "").toLowerCase();
+            if (normalized === "deprecated") return "bi-exclamation-triangle";
+            if (normalized === "experimental") return "bi-flask";
+            return "bi-tag";
+        };
+
+        const isDefaultComponent = (type, component) => {
+            const defaults = selected_by_default[type] || [];
+            return defaults.includes(component);
+        };
+
+        const hasAllAvailableSelected = (type, selectedComponents) => {
+            const available = getAvailableComponentsByType(type);
+            if (available.length === 0) return false;
+            if (selectedComponents.length !== available.length) return false;
+
+            const selectedSet = new Set(selectedComponents);
+            return available.every(component => selectedSet.has(component));
+        };
+
+        const createCssTag = ({ version, selectedComponents, useCore, isCompressed, selectAllAvailable }) => {
+            const cdnOrigin = getCdnOrigin(version);
+
+            if (selectAllAvailable) {
+                if (!useCore) {
+                    return [`<link rel="stylesheet" href="${cdnOrigin}/ls/${version}/*.${isCompressed ? "min." : ""}css">`];
+                }
+
+                return [`<link rel="stylesheet" href="${cdnOrigin}/ls/${version}/*/ls.${isCompressed ? "min." : ""}css">`];
+            }
+
+            if (!useCore) {
+                return selectedComponents.map(component => `<link rel="stylesheet" href="${cdnOrigin}/ls/${version}/${component}.${isCompressed ? "min." : ""}css">`);
+            }
+
+            if (selectedComponents.length === 0) {
+                return [`<link rel="stylesheet" href="${cdnOrigin}/ls/${version}/ls.${isCompressed ? "min." : ""}css">`];
+            }
+
+            const componentsPath = `${selectedComponents.join()}/`;
+            return [`<link rel="stylesheet" href="${cdnOrigin}/ls/${version}/${componentsPath}ls.${isCompressed ? "min." : ""}css">`];
+        };
+
+        const createJsTag = ({ version, selectedComponents, useCore, isCompressed, useEsm, selectAllAvailable }) => {
+            const cdnOrigin = getCdnOrigin(version);
+            const appendEsm = value => useEsm ? `${value}?esm` : value;
+            const closeScriptTag = "<" + "/script>";
+
+            const wrapScript = src => {
+                if (useEsm) {
+                    return `<script type="module">\nimport LS from \"${appendEsm(src)}\";\n${closeScriptTag}`;
+                }
+
+                return `<script src=\"${src}\">${closeScriptTag}`;
+            };
+
+            if (selectAllAvailable) {
+                if (!useCore) {
+                    return [wrapScript(`${cdnOrigin}/ls/${version}/*.${isCompressed ? "min." : ""}js`)];
+                }
+
+                return [wrapScript(`${cdnOrigin}/ls/${version}/*/ls.${isCompressed ? "min." : ""}js`)];
+            }
+
+            if (!useCore) {
+                return selectedComponents.map(component => wrapScript(`${cdnOrigin}/ls/${version}/${component}.${isCompressed ? "min." : ""}js`));
+            }
+
+            if (selectedComponents.length === 0) {
+                return [wrapScript(`${cdnOrigin}/ls/${version}/ls.${isCompressed ? "min." : ""}js`)];
+            }
+
+            const componentsPath = `${selectedComponents.join()}/`;
+            return [wrapScript(`${cdnOrigin}/ls/${version}/${componentsPath}ls.${isCompressed ? "min." : ""}js`)];
+        };
+
+        const escapeHtml = value => value
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+
+        const highlightTag = tag => {
+            const match = tag.match(/^(<\/?)([a-zA-Z0-9-]+)([^>]*?)(\/?>)$/);
+            if (!match) {
+                return `<span class="ͼg">${escapeHtml(tag)}</span>`;
+            }
+
+            const [, open, tagName, rawAttrs, close] = match;
+            const attrsPattern = /([\s]+)([a-zA-Z-:]+)(=)("[^"]*"|'[^']*'|[^\s"'>]+)/g;
+            let lastIndex = 0;
+            let attrsHtml = "";
+            let attrMatch;
+
+            while ((attrMatch = attrsPattern.exec(rawAttrs)) !== null) {
+                const [full, spacing, attrName, eq, attrValue] = attrMatch;
+                const start = attrMatch.index;
+                attrsHtml += escapeHtml(rawAttrs.slice(lastIndex, start));
+                attrsHtml += `${escapeHtml(spacing)}<span class="ͼl">${escapeHtml(attrName)}</span>${escapeHtml(eq)}<span class="ͼe">${escapeHtml(attrValue)}</span>`;
+                lastIndex = start + full.length;
+            }
+
+            attrsHtml += escapeHtml(rawAttrs.slice(lastIndex));
+
+            return `${escapeHtml(open)}<span class="ͼb">${escapeHtml(tagName)}</span>${attrsHtml}${escapeHtml(close)}`;
+        };
+
+        const highlightHtmlLine = line => {
+            const tagPattern = /<\/?[a-zA-Z0-9-]+(?:\s+[^>]*?)?\/?>/g;
+            let html = "";
+            let lastIndex = 0;
+            let match;
+
+            while ((match = tagPattern.exec(line)) !== null) {
+                const start = match.index;
+                const tag = match[0];
+
+                if (start > lastIndex) {
+                    html += `<span class="ͼg">${escapeHtml(line.slice(lastIndex, start))}</span>`;
+                }
+
+                html += highlightTag(tag);
+                lastIndex = start + tag.length;
+            }
+
+            if (lastIndex < line.length) {
+                html += `<span class="ͼg">${escapeHtml(line.slice(lastIndex))}</span>`;
+            }
+
+            return html || `<span class="ͼg">${escapeHtml(line)}</span>`;
+        };
+
+        const highlightScriptLine = line => {
+            let html = escapeHtml(line);
+
+            html = html.replace(/\"([^\"]*)\"/g, (_, text) => `"<span class="ͼe">${escapeHtml(text)}</span>"`);
+            html = html.replace(/\b(import|from|as|const|let|var)\b/g, `<span class="ͼf">$1</span>`);
+            html = html.replace(/\bLS\b/g, `<span class="ͼd">LS</span>`);
+
+            return `<span class="ͼg">${html}</span>`;
+        };
+
+        const highlightSnippet = value => {
+            return value
+                .split("\n")
+                .map(line => {
+                    if (line.includes("<") && line.includes(">")) {
+                        return highlightHtmlLine(line);
+                    }
+
+                    return highlightScriptLine(line);
+                })
+                .join("<br>");
+        };
+
+        const applyVersionAvailability = () => {
+            const majorVersion = getMajorVersion(getCurrentVersion());
+
+            componentsContainer.querySelectorAll("input[data-component]").forEach(input => {
+                const component = input.getAttribute("data-component");
+                const minVersion = component ? (componentMinVersion[component] || 0) : 0;
+                const supported = majorVersion >= minVersion;
+                const label = input.closest("label");
+
+                input.disabled = !supported;
+                if (!supported && input.checked) {
+                    input.checked = false;
+                }
+
+                if (label) {
+                    label.classList.toggle("is-unavailable", !supported);
+                    if (minVersion > 0) {
+                        label.setAttribute("title", `Available since LS v${minVersion}`);
+                    }
+                }
+            });
+        };
+
+        const areBasicsSelected = () => {
+            return Array.from(componentsContainer.querySelectorAll("input[data-component]")).every(input => {
+                if (input.disabled) return !input.checked;
+
+                const type = input.getAttribute("data-type");
+                const component = input.getAttribute("data-component");
+                if (!type || !component) return !input.checked;
+
+                return input.checked === isDefaultComponent(type, component);
+            });
+        };
+
+        const setBasicsSelection = () => {
+            componentsContainer.querySelectorAll("input[data-component]").forEach(input => {
+                const type = input.getAttribute("data-type");
+                const component = input.getAttribute("data-component");
+
+                if (!type || !component || input.disabled) {
+                    input.checked = false;
+                    return;
+                }
+
+                input.checked = isDefaultComponent(type, component);
+            });
+        };
+
+        const updateSelectAllButtonLabel = () => {
+            const checkboxes = Array.from(componentsContainer.querySelectorAll("input[data-component]:not(:disabled)"));
+            const allChecked = checkboxes.length > 0 && checkboxes.every(input => input.checked);
+            selectAllButton.innerHTML = allChecked
+                ? '<i class="bi bi-x-circle"></i> Unselect all'
+                : '<i class="bi bi-check2-all"></i> Select all';
+        };
+
+        const renderOutput = value => {
+            latestSnippet = value;
+
+            if (!value) {
+                output.innerHTML = `<span class=\"ͼm\">Select at least one target (JS/CSS) and component, or enable Include LS core.</span>`;
+                return;
+            }
+
+            output.innerHTML = highlightSnippet(value);
+        };
+
+        const updateOutput = () => {
+            applyVersionAvailability();
+
+            const selected = readSelectedComponents();
+            const tags = [];
+            const version = normalizeVersion(getCurrentVersion());
+            const wantJs = includeJs.checked;
+            const wantCss = includeCss.checked;
+            const wantsCore = includeCore.checked;
+            const isCompressed = compress.checked;
+            const useEsm = esm.checked;
+            const cssAllSelected = hasAllAvailableSelected("css", selected.css);
+            const jsAllSelected = hasAllAvailableSelected("js", selected.js);
+
+            if (wantCss) {
+                tags.push(...createCssTag({
+                    version,
+                    selectedComponents: selected.css,
+                    useCore: wantsCore,
+                    isCompressed,
+                    selectAllAvailable: cssAllSelected
+                }));
+            }
+
+            if (wantJs) {
+                tags.push(...createJsTag({
+                    version,
+                    selectedComponents: selected.js,
+                    useCore: wantsCore,
+                    isCompressed,
+                    useEsm,
+                    selectAllAvailable: jsAllSelected
+                }));
+            }
+
+            selectBasicsButton.disabled = areBasicsSelected();
+            updateSelectAllButtonLabel();
+
+            renderOutput(tags.length === 0 ? "" : tags.join("\n"));
+        };
+
+        const syncSharedComponent = sourceInput => {
+            const type = sourceInput.getAttribute("data-type");
+            const component = sourceInput.getAttribute("data-component");
+            if (!type || !component) return;
+
+            const otherType = type === "js" ? "css" : "js";
+            const mirror = componentsContainer.querySelector(`input[data-type="${otherType}"][data-component="${component}"]`);
+            if (!mirror || mirror.checked === sourceInput.checked) return;
+
+            mirror.checked = sourceInput.checked;
+        };
+
+        for (const type in components) {
+            const group = LS.Create("div.loader-component-group").addTo(componentsContainer);
+            group.appendChild(LS.Create("h4", { text: type.toUpperCase() }));
+
+            const list = LS.Create("div.loader-component-grid").addTo(group);
+
+            for (const component of components[type]) {
+                const meta = getComponentMeta(type, component);
+                const options = meta.description ? { tooltip: meta.description } : undefined;
+                const label = LS.Create("label.ls-checkbox>input[type=checkbox]+div.text-overflow-nowrap.loader-component-label+span", options);
+                const input = label.querySelector("input");
+                const textContainer = label.querySelector(".loader-component-label");
+                input.setAttribute("data-type", type);
+                input.setAttribute("data-component", component);
+                label.setAttribute("title", component);
+
+                const name = component[0].toUpperCase() + component.slice(1);
+                textContainer.append(LS.Create("span.text-overflow-nowrap", { text: name }));
+
+                if (meta.tags.length !== 0) {
+                    const tagsWrap = document.createElement("span");
+                    tagsWrap.className = "loader-component-tags";
+
+                    meta.tags.forEach(tag => {
+                        const icon = document.createElement("i");
+                        icon.className = `bi ${getTagIconClass(tag)} loader-component-tag`;
+                        icon.setAttribute("title", tag);
+                        tagsWrap.append(icon);
+                    });
+
+                    textContainer.prepend(tagsWrap);
+                }
+
+                if (isDefaultComponent(type, component)) {
+                    input.checked = true;
+                }
+
+                list.append(label);
+            }
+        }
+
+        componentsContainer.addEventListener("change", event => {
+            const target = event.target;
+            if (!(target instanceof HTMLInputElement)) return;
+            if (!target.matches("input[data-component]")) return;
+            if (target.disabled) return;
+
+            syncSharedComponent(target);
+            updateOutput();
+        });
+
+        copyButton.addEventListener("click", () => {
+            if (!latestSnippet) return;
+            LS.Util.copy(latestSnippet);
+            LS.Toast.show("Snippet copied to clipboard", {
+                timeout: 2000,
+                accent: "green"
+            });
+        });
+
+        selectAllButton.addEventListener("click", () => {
+            const checkboxes = componentsContainer.querySelectorAll("input[data-component]:not(:disabled)");
+            const allChecked = Array.from(checkboxes).every(input => input.checked);
+
+            checkboxes.forEach(input => {
+                input.checked = !allChecked;
+                syncSharedComponent(input);
+            });
+
+            updateOutput();
+        });
+
+        selectBasicsButton.addEventListener("click", () => {
+            setBasicsSelection();
+            updateOutput();
+        });
+
+        [
+            lsVersion,
+            includeCore,
+            includeJs,
+            includeCss,
+            compress,
+            esm
+        ].forEach(element => {
+            element.addEventListener("change", updateOutput);
+            element.addEventListener("input", updateOutput);
+        });
+
+        updateOutput();
+    </script>
+</div>

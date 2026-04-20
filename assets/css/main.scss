@@ -215,6 +215,139 @@ body {
     --load-size: 1em;
 }
 
+/* Part: Home Menu */
+.sidebar-menu {
+    width: 320px;
+    max-width: 320px;
+    overflow: auto;
+    padding: 15px;
+    position: relative;
+    --scrollbar-size: 3px;
+
+    /* Account for padding in absolute position */
+    > ls-tab {
+        left: 15px;
+        right: 15px;
+    }
+}
+
+.sidebar-menu-button {
+    position: absolute !important;
+    left: 20px;
+    bottom: 20px;
+    font-size: x-large;
+}
+
+.sidebar-menu-category-title {
+    margin: 4px 0;
+    margin-left: 8px;
+    margin-top: 18px;
+    color: var(--accent);
+    display: block;
+}
+
+[data-tab-id] {
+    transition: padding-left 0.2s ease-in-out;
+
+    &.active {
+        font-weight: 600;
+        padding-left: 30px !important;
+    }
+
+    &::before {
+        content: "";
+        position: absolute;
+        top: 15px;
+        bottom: 15px;
+        width: 5px;
+        left: 18px;
+        background: var(--accent);
+        border-radius: var(--border-radius-full);
+        opacity: 0;
+        transition: opacity 0.2s ease-in-out;
+    }
+
+    &.active::before {
+        opacity: 1;
+    }
+}
+
+.external-indicator {
+    font-size: smaller;
+    float: right;
+    margin: 0 !important;
+    color: var(--surface-6);
+}
+
+[ls-theme="light"] .sidebar-menu .grouped-buttons > :is(button, .ls-button) {
+    background-color: var(--accent-mix-10);
+    --accent-mix-40: var(--accent-mix-20); /* Hacky */
+}
+
+@media screen and (max-width: 760px) {
+    .sidebar-menu {
+        position: absolute;
+        max-width: 360px;
+        width: unset;
+        inset: 0;
+
+        --background: var(--surface-1);
+        background: var(--background);
+        --elevate-0: var(--surface-0);
+        --elevate-n1: var(--surface-n1);
+        --elevate: var(--surface-2);
+        --elevate-1: var(--surface-3);
+        --elevate-2: var(--surface-4);
+        --elevate-3: var(--surface-5);
+
+        transform: translateX(-10px);
+        pointer-events: none;
+        opacity: 0;
+        transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
+        z-index: -1;
+        outline: 1px solid var(--accent-mix-20);
+        box-shadow: 0 10px 20px 0 #0002;
+    }
+
+    .sidebar-menu::before {
+        content: "";
+        position: absolute;
+        top: -10px;
+        left: 0;
+        width: 100%;
+        height: 10px;
+        background: linear-gradient(to bottom, transparent, var(--surface-1));
+    }
+
+    .sidebar-menu-visible .sidebar-menu {
+        transform: translateX(0);
+        pointer-events: auto;
+        z-index: 1000;
+        opacity: 1;
+    }
+
+    .container::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: 100;
+        pointer-events: none;
+        transition: opacity 0.2s ease-in-out;
+        background-color: #0008;
+        opacity: 0;
+    }
+
+    .container.sidebar-menu-visible::before {
+        opacity: 1;
+    }
+}
+
+@media screen and (min-width: 760px) {
+    .sidebar-menu-button {
+        display: none !important;
+    }
+}
+
 #editProfileButton {
     --padding-control-v: 12px;
     position: absolute;
