@@ -1,0 +1,33 @@
+#template /templates/docs.html
+<head>
+@page { title: "LS.Timeline.applyRedo API Reference", description: "Apply a redo operation with the given action state. Called by external history manager with the action to redo.", keywords: "action, redo, apply, called, external, given, history, manager, operation, state, applyredo, timeline" }
+</head>
+@import("/docs/ls/sidebar.json");
+<div .docs-content>
+<markdown>
+<h1 id="ls-timeline-applyredo">LS.Timeline.applyRedo</h1>
+
+<div class="api-reference" data-symbol="LS.Timeline.applyRedo">
+<article class="api-symbol api-symbol-method" id="api-ls-timeline-applyredo" data-symbol="LS.Timeline.applyRedo">
+<h3 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.applyRedo.html"><code>LS.Timeline.applyRedo</code></a></h3>
+<p class="api-summary">Apply <a class="api-symbol-ref" href="LS.Color.a.html">a</a> redo operation with the given action state.<br>Called by external history manager with the action to redo.</p>
+<div class="api-source">Defined in <code>js/timeline.js:1870</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">applyRedo</span>(action)</code></pre>
+<div class="api-params">
+<h4>Parameters</h4>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>action</code></td><td><a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></td><td>- The action state to redo</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<h4>Returns</h4>
+<p><span class="api-type">boolean</span> — Whether the redo was applied successfully</p>
+</div>
+</article>
+</div>
+
+</markdown>
+</div>

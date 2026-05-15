@@ -95,9 +95,7 @@
         </noscript>
     </div>
 
-    <div #resizeMessage hidden>
-        Minimum size for this application is 200x100 pixels.
-    </div>
+    <div #resizeMessage hidden>Minimum size for this application is 200x100 pixels.</div>
 
     <div #app hidden>
         <nav #topPanel .level-1>
@@ -118,30 +116,7 @@
 
         </nav>
 
-        <div #topOverlay style="display: none">
-            <div #commandTerminal .level-n3 style="display: none">
-                <div .terminal-output />
-            </div>
-
-            <div #commandPaletteBar .level-n3>
-                <div #commandPalette onclick="this.querySelector('.command-input').focus()">
-                    <div .completion-menu></div>
-        
-                    <i .bi-terminal .command-icon />
-
-                    <div .textContainer>
-                        <span .command-selection></span>
-                        <span .command-caret></span>
-                        <span .command-text></span><span .command-hint></span>
-                        <input type="text" .command-input autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Command palette input">
-                    </div>
-                </div>
-
-                <div .command-palette-buttons>
-                    <button ls-tooltip="Close" .square .clear aria-label="Close command palette"><i .bi-x-lg /></button>
-                </div>
-            </div>
-        </div>
+        <div #topOverlay style="display: none"></div>
 
         <div #toolbars .level-1>
             <div .toolbar .toolbar-styled #toolbarApps style="display: none">
@@ -334,37 +309,12 @@
                 </div>
             </div>
 
-            <div .toolbar .left #musicPlayer style="display: none">
-                <div .music-player .toolbar-styled>
-                    <img .music-player-cover alt="Music cover background" crossorigin="anonymous">
-                    <img .music-player-art alt="Music cover art" crossorigin="anonymous">
-
-                    <div .music-player-container>
-                        <div .music-player-info>
-                            <span .text-overflow-nowrap .music-player-title>Lorem Ipsum</span>
-                            <span .text-overflow-nowrap .music-player-artist>Dolor Sit Amet</span>
-                        </div>
-        
-                        <div .music-player-progress>
-                            <div .music-player-progress-bar>
-                                <div .music-player-progress-filled></div>
-                            </div>
-                        </div>
-        
-                        <div .music-player-controls>
-                            <button .circle .clear .music-player-like ls-tooltip aria-label="Like"><i .bi-hand-thumbs-up /></button>
-                            <button .circle .clear .music-player-prev ls-tooltip aria-label="Previous"><i .bi-skip-start-fill /></button>
-                            <button .circle .clear .music-player-play-pause ls-tooltip aria-label="Play/Pause"><i .bi-play-fill /></button>
-                            <button .circle .clear .music-player-next ls-tooltip aria-label="Next"><i .bi-skip-end-fill /></button>
-                            <button .circle .clear .music-player-repeat ls-tooltip="Repeat Off" aria-label="Toggle repeat modes"><i .bi-arrow-repeat /></button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <div .toolbar .left #musicPlayer style="display: none"></div>
 
             <div .toolbar .toolbar-styled #toolbarMore style="display: none"></div>
 
         </div>
+
         <main #viewport>
             <div><template::content /></div>
         </main>

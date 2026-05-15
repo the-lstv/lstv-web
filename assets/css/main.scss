@@ -231,7 +231,7 @@ body {
     }
 }
 
-.sidebar-menu-button {
+.width-container > .sidebar-menu-button {
     position: absolute !important;
     left: 20px;
     bottom: 20px;
@@ -1982,4 +1982,78 @@ ls-text-input.has-textarea {
 
 .ls-menu {
     line-height: 1;
+}
+
+
+// --- Part: HLJS Syntax Highlighting Theme
+
+/* Keywords / important syntax */
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-built_in {
+    color: #e777f7;
+}
+
+/* Strings */
+.hljs-string {
+    color: #9ece6a;
+}
+
+/* Numbers / literals */
+.hljs-number,
+.hljs-literal, .hljs-subst {
+    color: #7dcfff;
+}
+
+/* Types / titles */
+.hljs-title,
+.hljs-type, .hljs-name {
+    color: #f7768e;
+}
+
+/* Functions / variables */
+.hljs-attr {
+    color: #ffb109;
+}
+
+/* Symbols / operators */
+.hljs-symbol,
+.hljs-operator {
+    color: #09d6ff;
+}
+
+/* Comments */
+.hljs-comment {
+    color: var(--surface-6);
+}
+
+[ls-theme="light"] {
+    .hljs-keyword,
+    .hljs-selector-tag,
+    .hljs-built_in {
+        color: #7c4dff;
+    }
+
+    .hljs-string {
+        color: #43a047;
+    }
+
+    .hljs-number,
+    .hljs-literal, .hljs-subst {
+        color: #039be5;
+    }
+
+    .hljs-title,
+    .hljs-type, .hljs-name {
+        color: #e91e63;
+    }
+
+    .hljs-attr {
+        color: #ff5722;
+    }
+
+    .hljs-symbol,
+    .hljs-operator {
+        color: #00bcd4;
+    }
 }

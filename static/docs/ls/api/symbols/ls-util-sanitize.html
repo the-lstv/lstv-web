@@ -1,0 +1,51 @@
+#template /templates/docs.html
+
+<head>
+    @page {
+        title: "LS.Util.sanitize · API · LS Docs";
+        description: "Sanitize a node, stripping all elements not on an allowlist, and removes all attributes.";
+        keywords: "LSTV, LS Docs, API, LS.Util.sanitize";
+    }
+</head>
+@use(/docs/ls/sidebar.json["docs-sidebar"]);
+
+<div .docs-content>
+<markdown>
+<h1 id="lsutilsanitize">LS.Util.sanitize</h1>
+
+Source: ls.js:2196
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">sanitize</span>()</code></pre>
+
+Sanitize a node, stripping all elements not on an allowlist, and removes all attributes.
+
+<h3 id="parameters">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>node</code></td>
+<td><code>*</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+
+<h3 id="examples">Examples</h3>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">const</span> dangerous = <span class="hljs-variable constant_">LS</span>.<span class="hljs-title class_">Create</span>({ <span class="hljs-attr">html</span>: <span class="hljs-string">&quot;&lt;script&gt;console.log(&#x27;Unsafe HTML&#x27;)&lt;/script&gt;&quot;</span> });
+<span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Util</span>.<span class="hljs-title function_">sanitize</span>(dangerous); <span class="hljs-comment">// Removes &lt;script&gt;</span></code></pre>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-comment">// This can also be done directly when creating:</span>
+<span class="hljs-variable constant_">LS</span>.<span class="hljs-title class_">Create</span>(<span class="hljs-string">&quot;span&quot;</span>, { <span class="hljs-attr">html</span>: <span class="hljs-string">&quot;..unsafe html..&quot;</span>, <span class="hljs-attr">sanitize</span>: <span class="hljs-literal">true</span> })</code></pre>
+
+</markdown>
+</div>

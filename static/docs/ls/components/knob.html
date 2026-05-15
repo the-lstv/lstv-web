@@ -2,18 +2,227 @@
 
 <head>
     @page {
-        title: "LSTV | LS Docs > Knob";
+        title: "Knob · LS Docs";
         description: "Documentation for the knob component.";
-        keywords: "LSTV, LS Docs, LS, Knob";
+        keywords: "LSTV, LS Docs, LS, Knob, knob, API Reference, Root API, Members";
     }
 </head>
-@import("/docs/ls/sidebar.html");
+@use(/docs/ls/sidebar.json["docs-sidebar"]);
 
 <div .docs-content>
 <markdown>
-# knob
+<h1 id="knob">knob</h1>
 
 Documentation for the knob component.
+
+<h2 id="api-reference">API Reference</h2>
+
+Component symbol: [`LS.Knob`](/docs/ls/components/knob.html)
+
+<h3 id="root-api">Root API</h3>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Knob</span></code></pre>
+
+<h3 id="members">Members</h3>
+
+<h4 id="presets">presets</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> presets</code></pre>
+
+<h4 id="defaultstyle">defaultStyle</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> defaultStyle</code></pre>
+
+<h4 id="defaults">defaults</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> defaults</code></pre>
+
+<h4 id="constructor">constructor</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">constructor</span>(<span class="hljs-params"></span>)</code></pre>
+
+Creates a new Knob instance
+
+<h5 id="parameters">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>element</code></td>
+<td><code><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement" target="_blank">HTMLElement</a></code></td>
+<td>Container element</td>
+</tr>
+<tr>
+<td><code>options</code></td>
+<td><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object" target="_blank">Object</a></code></td>
+<td>Configuration options</td>
+</tr>
+</tbody>
+</table>
+
+<h4 id="value">value</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">get</span> <span class="hljs-title function_">value</span>()</code></pre>
+
+<h4 id="value-2">value</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">set</span> <span class="hljs-title function_">value</span>()</code></pre>
+
+<h4 id="min">min</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">get</span> <span class="hljs-title function_">min</span>()</code></pre>
+
+<h4 id="min-2">min</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">set</span> <span class="hljs-title function_">min</span>()</code></pre>
+
+<h4 id="max">max</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">get</span> <span class="hljs-title function_">max</span>()</code></pre>
+
+<h4 id="max-2">max</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">set</span> <span class="hljs-title function_">max</span>()</code></pre>
+
+<h4 id="step">step</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">get</span> <span class="hljs-title function_">step</span>()</code></pre>
+
+<h4 id="step-2">step</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">set</span> <span class="hljs-title function_">step</span>()</code></pre>
+
+<h4 id="disabled">disabled</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">get</span> <span class="hljs-title function_">disabled</span>()</code></pre>
+
+<h4 id="disabled-2">disabled</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">set</span> <span class="hljs-title function_">disabled</span>()</code></pre>
+
+<h4 id="fill">fill</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes">fill</code></pre>
+
+<h4 id="reset">reset</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">reset</span>()</code></pre>
+
+<h4 id="setpreset">setPreset</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">setPreset</span>()</code></pre>
+
+Set the knob preset/style
+
+<h5 id="parameters-2">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>preset</code></td>
+<td><code>string|<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object" target="_blank">Object</a></code></td>
+<td>Preset name or style object</td>
+</tr>
+<tr>
+<td><code>quiet</code></td>
+<td><code>boolean</code></td>
+<td>If true, skip re-render</td>
+</tr>
+</tbody>
+</table>
+
+<h4 id="updatestyle">updateStyle</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">updateStyle</span>()</code></pre>
+
+Update style options
+
+<h5 id="parameters-3">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>styleOptions</code></td>
+<td><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object" target="_blank">Object</a></code></td>
+<td>Style properties to update</td>
+</tr>
+</tbody>
+</table>
+
+<h4 id="updateoptions">updateOptions</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">updateOptions</span>()</code></pre>
+
+Update knob options
+
+<h5 id="parameters-4">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>options</code></td>
+<td><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object" target="_blank">Object</a></code></td>
+<td>Options to update (min, max, step, etc.)</td>
+</tr>
+</tbody>
+</table>
+
+<h4 id="label">label</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">get</span> <span class="hljs-title function_">label</span>()</code></pre>
+
+<h4 id="label-2">label</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">set</span> <span class="hljs-title function_">label</span>()</code></pre>
+
+<h4 id="bipolar">bipolar</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">get</span> <span class="hljs-title function_">bipolar</span>()</code></pre>
+
+<h4 id="bipolar-2">bipolar</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">set</span> <span class="hljs-title function_">bipolar</span>()</code></pre>
+
+<h4 id="render">render</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">render</span>()</code></pre>
+
+Force a render update
+
+<h4 id="destroy">destroy</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">destroy</span>()</code></pre>
+
+Clean up all resources
+
 
 </markdown>
 </div>

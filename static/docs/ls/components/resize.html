@@ -2,18 +2,307 @@
 
 <head>
     @page {
-        title: "LSTV | LS Docs > Resize";
+        title: "Resize · LS Docs";
         description: "Documentation for the resize component.";
-        keywords: "LSTV, LS Docs, LS, Resize";
+        keywords: "LSTV, LS Docs, LS, Resize, resize, API Reference, Root API, Members";
     }
 </head>
-@import("/docs/ls/sidebar.html");
+@use(/docs/ls/sidebar.json["docs-sidebar"]);
 
 <div .docs-content>
 <markdown>
-# resize
+<h1 id="resize">resize</h1>
 
 Documentation for the resize component.
+
+<h2 id="api-reference">API Reference</h2>
+
+Component symbol: [`LS.Resize`](/docs/ls/components/resize.html)
+
+<h3 id="root-api">Root API</h3>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Resize</span></code></pre>
+
+<h3 id="members">Members</h3>
+
+<h4 id="constructor">constructor</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">constructor</span>(<span class="hljs-params"></span>)</code></pre>
+
+<h4 id="set">set</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">set</span>()</code></pre>
+
+Adds a resize handle to a target element. It can be called multiple times on the same element to change sides or options (upsert).<br><br>Certain options (anchor, size) can also be set per specific handle with CSS (eg. element > .ls-resize-handle.ls-top { --ls-resize-handle-size: 8px; --ls-resize-anchor: 0.5 })
+
+<h5 id="parameters">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>target</code></td>
+<td><code>*</code></td>
+<td>Yes</td>
+<td></td>
+<td>The target element to resize.</td>
+</tr>
+<tr>
+<td><code>options</code></td>
+<td><code>*</code></td>
+<td>Yes</td>
+<td></td>
+<td>The options for the resize handle.<br><br>Sides and corners can be specified in four ways:<br>- As a CSS-style array of booleans/numbers (e.g. { sides: [true, false, true, false] }), clockwise<br>- As an array of strings (e.g. { sides: [&quot;top&quot;, &quot;bottom&quot;] })<br>- As keys { top: true, right: false, bottom: true, left: false }<br>- All at once { sides: &quot;all&quot; }<br><br>Other options:</td>
+</tr>
+<tr>
+<td><code>options.styled</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td><code>true</code></td>
+<td>Whether to apply default visual styles, eg. highlight on hover. Otherwise only functional styles will apply.</td>
+</tr>
+<tr>
+<td><code>options.sides</code></td>
+<td><code>boolean|<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array" target="_blank">Array</a>|string</code></td>
+<td>No</td>
+<td><code>true</code></td>
+<td>Which sides to add handles to. Can be a boolean (true = all sides), an array of booleans/numbers [top, right, bottom, left], or an array of strings [&quot;top&quot;, &quot;right&quot;, &quot;bottom&quot;, &quot;left&quot;].</td>
+</tr>
+<tr>
+<td><code>options.corners</code></td>
+<td><code>boolean|<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array" target="_blank">Array</a>|string</code></td>
+<td>No</td>
+<td><code>false</code></td>
+<td>Which corners to add handles to. Can be a boolean (true = all corners), an array of booleans/numbers [top-left, top-right, bottom-right, bottom-left], or an array of strings [&quot;top-left&quot;, &quot;top-right&quot;, &quot;bottom-right&quot;, &quot;bottom-left&quot;].</td>
+</tr>
+<tr>
+<td><code>options.top</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td></td>
+<td>Whether to add a handle to the top side.</td>
+</tr>
+<tr>
+<td><code>options.right</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td></td>
+<td>Whether to add a handle to the right side.</td>
+</tr>
+<tr>
+<td><code>options.bottom</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td></td>
+<td>Whether to add a handle to the bottom side.</td>
+</tr>
+<tr>
+<td><code>options.left</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td></td>
+<td>Whether to add a handle to the left side.</td>
+</tr>
+<tr>
+<td><code>options.topLeft</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td></td>
+<td>Whether to add a handle to the top-left corner.</td>
+</tr>
+<tr>
+<td><code>options.topRight</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td></td>
+<td>Whether to add a handle to the top-right corner.</td>
+</tr>
+<tr>
+<td><code>options.bottomRight</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td></td>
+<td>Whether to add a handle to the bottom-right corner.</td>
+</tr>
+<tr>
+<td><code>options.bottomLeft</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td></td>
+<td>Whether to add a handle to the bottom-left corner.</td>
+</tr>
+<tr>
+<td><code>options.handleSize</code></td>
+<td><code>number|string</code></td>
+<td>No</td>
+<td></td>
+<td>Size of the side handles (thickness).</td>
+</tr>
+<tr>
+<td><code>options.cornerSize</code></td>
+<td><code>number|string</code></td>
+<td>No</td>
+<td></td>
+<td>Size of the corner handles (square size).</td>
+</tr>
+<tr>
+<td><code>options.anchor</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td><code>0.5</code></td>
+<td>Whether handles should be outside, inside, or in the center of the edge. (0 = inside, 0.5 = center, 1 = outside)</td>
+</tr>
+<tr>
+<td><code>options.cursors</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td><code>true</code></td>
+<td>Whether to set the cursor when dragging (this does not effect the CSS cursor style of the handle itself).</td>
+</tr>
+<tr>
+<td><code>options.boundsCursors</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td><code>true</code></td>
+<td>Set the cursor to a single direction when dragging past min/max.</td>
+</tr>
+<tr>
+<td><code>options.snapArea</code></td>
+<td><code>number</code></td>
+<td>No</td>
+<td><code>40</code></td>
+<td>Pixel threshold for snapping.</td>
+</tr>
+<tr>
+<td><code>options.snapCollapse</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td><code>false</code></td>
+<td>If true, shrinking within snapArea snaps to collapsed height/width.</td>
+</tr>
+<tr>
+<td><code>options.snapExpand</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td><code>false</code></td>
+<td>If true, expanding within snapArea of parent height snaps to 100% height/width.</td>
+</tr>
+<tr>
+<td><code>options.snapVertical</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td><code>false</code></td>
+<td>If true, enables snapping vertically.</td>
+</tr>
+<tr>
+<td><code>options.snapHorizontal</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td><code>false</code></td>
+<td>If true, enables snapping horizontally.</td>
+</tr>
+<tr>
+<td><code>options.minWidth</code></td>
+<td><code>number</code></td>
+<td>No</td>
+<td><code>20</code></td>
+<td>Minimum width of the target element (overrides CSS min-width value).</td>
+</tr>
+<tr>
+<td><code>options.minHeight</code></td>
+<td><code>number</code></td>
+<td>No</td>
+<td><code>20</code></td>
+<td>Minimum height of the target element (overrides CSS min-height value).</td>
+</tr>
+<tr>
+<td><code>options.maxWidth</code></td>
+<td><code>number</code></td>
+<td>No</td>
+<td><code>null</code></td>
+<td>Maximum width of the target element (overrides CSS max-width value).</td>
+</tr>
+<tr>
+<td><code>options.maxHeight</code></td>
+<td><code>number</code></td>
+<td>No</td>
+<td><code>null</code></td>
+<td>Maximum height of the target element (overrides CSS max-height value).</td>
+</tr>
+<tr>
+<td><code>options.boundary</code></td>
+<td><code>string|object</code></td>
+<td>No</td>
+<td><code>null</code></td>
+<td>Boundary to constrain resizing. Can be &quot;viewport&quot; or a rect object {x, y, width, height}.</td>
+</tr>
+<tr>
+<td><code>options.store</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td><code>null</code></td>
+<td>Key name for storage. If set, updates will be persistent and saved into a storage object.</td>
+</tr>
+<tr>
+<td><code>options.storeStringify</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td><code>true</code></td>
+<td>Whether to stringify the stored data.</td>
+</tr>
+<tr>
+<td><code>options.storage</code></td>
+<td><code>object</code></td>
+<td>No</td>
+<td><code>null</code></td>
+<td>Custom storage object (must implement getItem/setItem). Default is localStorage.</td>
+</tr>
+<tr>
+<td><code>options.translate</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td></td>
+<td>Use translate3d instead of left/top</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns">Returns</h5>
+
+- value: An object with the registered handles<br>Events on handle:<br>- resize: Emitted when the element is resized with the new width, height, and state.<br>- start: Emitted when resizing starts.<br>- end: Emitted when resizing ends.
+
+<h5 id="examples">Examples</h5>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Resize</span>.<span class="hljs-title function_">set</span>(element, {
+    <span class="hljs-attr">sides</span>: [<span class="hljs-string">&quot;top&quot;</span>, <span class="hljs-string">&quot;bottom&quot;</span>],
+    <span class="hljs-attr">corners</span>: [<span class="hljs-number">1</span>, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>, <span class="hljs-number">0</span>]
+});</code></pre>
+
+<h4 id="cursormap">cursorMap</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> cursorMap</code></pre>
+
+<h4 id="remove">remove</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">remove</span>()</code></pre>
+
+<h4 id="gethandle">getHandle</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">getHandle</span>()</code></pre>
+
+<h4 id="gettarget">getTarget</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">getTarget</span>()</code></pre>
+
 
 </markdown>
 </div>

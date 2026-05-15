@@ -2,18 +2,197 @@
 
 <head>
     @page {
-        title: "LSTV | LS Docs > Menu";
+        title: "Menu · LS Docs";
         description: "Documentation for the menu component.";
-        keywords: "LSTV, LS Docs, LS, Menu";
+        keywords: "LSTV, LS Docs, LS, Menu, menu, API Reference, Root API, Members";
     }
 </head>
-@import("/docs/ls/sidebar.html");
+@use(/docs/ls/sidebar.json["docs-sidebar"]);
 
 <div .docs-content>
 <markdown>
-# menu
+<h1 id="menu">menu</h1>
 
 Documentation for the menu component.
+
+<h2 id="api-reference">API Reference</h2>
+
+Component symbol: [`LS.Menu`](/docs/ls/components/menu.html)
+
+<h3 id="root-api">Root API</h3>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Menu</span></code></pre>
+
+<h3 id="members">Members</h3>
+
+<h4 id="index">index</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> index</code></pre>
+
+<h4 id="groups">groups</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> groups</code></pre>
+
+<h4 id="contextmenubindings">contextMenuBindings</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> contextMenuBindings</code></pre>
+
+<h4 id="contextmenus">contextMenus</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> contextMenus</code></pre>
+
+<h4 id="openmenus">openMenus</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> openMenus</code></pre>
+
+<h4 id="globalclicklistenerbound">globalClickListenerBound</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> globalClickListenerBound</code></pre>
+
+<h4 id="zindexcounter">zIndexCounter</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> zIndexCounter</code></pre>
+
+<h4 id="defaults">DEFAULTS</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-variable constant_">DEFAULTS</span></code></pre>
+
+<h4 id="addcontextmenu">addContextMenu</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-title function_">addContextMenu</span>()</code></pre>
+
+<h4 id="constructor">constructor</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">constructor</span>(<span class="hljs-params"></span>)</code></pre>
+
+Menu constructor
+
+<h5 id="parameters">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>element</code></td>
+<td><code>*</code></td>
+<td>(optional) Container element or null to create a new one</td>
+</tr>
+<tr>
+<td><code>options</code></td>
+<td><code>*</code></td>
+<td>Menu options</td>
+</tr>
+</tbody>
+</table>
+
+<h4 id="render">render</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">render</span>()</code></pre>
+
+<h4 id="focus">focus</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">focus</span>()</code></pre>
+
+<h4 id="select">select</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">select</span>()</code></pre>
+
+<h4 id="add">add</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">add</span>()</code></pre>
+
+Add a new item to the menu
+
+<h5 id="parameters-2">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>item</code></td>
+<td><code>*</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+<h4 id="replaceitems">replaceItems</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">replaceItems</span>()</code></pre>
+
+Replaces menu items
+
+<h5 id="parameters-3">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>items</code></td>
+<td><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array" target="_blank">Array</a></code></td>
+<td>Array of items.</td>
+</tr>
+</tbody>
+</table>
+
+<h4 id="remove">remove</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">remove</span>()</code></pre>
+
+<h4 id="additems">addItems</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">addItems</span>()</code></pre>
+
+<h4 id="toggle">toggle</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">toggle</span>()</code></pre>
+
+<h4 id="open">open</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">open</span>()</code></pre>
+
+<h4 id="close">close</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">close</span>()</code></pre>
+
+<h4 id="closeall">closeAll</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">closeAll</span>()</code></pre>
+
+<h4 id="navigate">navigate</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">navigate</span>()</code></pre>
+
+<h4 id="cloneoption">cloneOption</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">cloneOption</span>()</code></pre>
+
+<h4 id="export">export</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">export</span>()</code></pre>
+
+<h4 id="destroy">destroy</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">destroy</span>()</code></pre>
+
 
 </markdown>
 </div>

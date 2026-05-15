@@ -2,16 +2,16 @@
 
 <head>
     @page {
-        title: "LSTV | LS Docs > Multipane";
+        title: "Multipane · LS Docs";
         description: "The LS.Multipane component allows you to create complex multipane layouts";
-        keywords: "LSTV, LS Docs, LS, Multipane";
+        keywords: "LSTV, LS Docs, LS, Multipane, multipane, API Reference, Root API, Members";
     }
 </head>
-@import("/docs/ls/sidebar.html");
+@use(/docs/ls/sidebar.json["docs-sidebar"]);
 
 <div .docs-content>
 <markdown>
-# multipane
+<h1 id="multipane">multipane</h1>
 The LS.Multipane component allows you to create complex multipane layouts
 <!-- TODO -->
 
@@ -21,6 +21,70 @@ API:
 
 
 Examples:
+
+<h2 id="api-reference">API Reference</h2>
+
+Component symbol: [`LS.Multipane`](/docs/ls/components/multipane.html)
+
+<h3 id="root-api">Root API</h3>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Multipane</span></code></pre>
+
+<h3 id="members">Members</h3>
+
+<h4 id="presets">PRESETS</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-variable constant_">PRESETS</span></code></pre>
+
+<h4 id="constructor">constructor</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">constructor</span>(<span class="hljs-params"></span>)</code></pre>
+
+Main Layout Manager<br><br>LS.Multipane manages a schema and a set of slots.<br>Views can specify an array of slot names where they want to be placed, in order.<br><br>The schema defines the layout structure, which can be virtually any combination with an unlimited amount of slots.
+
+<h4 id="cloneschema">cloneSchema</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-title function_">cloneSchema</span>()</code></pre>
+
+<h4 id="add">add</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">add</span>()</code></pre>
+
+<h4 id="render">render</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">render</span>()</code></pre>
+
+<h4 id="setschema">setSchema</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">setSchema</span>()</code></pre>
+
+<h4 id="getavailablelayouts">getAvailableLayouts</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">getAvailableLayouts</span>()</code></pre>
+
+<h4 id="exportlayout">exportLayout</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">exportLayout</span>()</code></pre>
+
+<h4 id="importlayout">importLayout</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">importLayout</span>()</code></pre>
+
+<h4 id="destroy">destroy</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">destroy</span>()</code></pre>
+
+<h4 id="view">View</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-title class_">View</span></code></pre>
+
+View class<br>Base class for all views
+
+<h4 id="slot">Slot</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-title class_">Slot</span></code></pre>
+
+Slot class<br>Represents a slot in the layout where views can be placed
 
 
 </markdown>

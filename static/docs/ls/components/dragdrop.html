@@ -2,18 +2,237 @@
 
 <head>
     @page {
-        title: "LSTV | LS Docs > Dragdrop";
+        title: "Dragdrop · LS Docs";
         description: "Documentation for the dragdrop component.";
-        keywords: "LSTV, LS Docs, LS, Dragdrop";
+        keywords: "LSTV, LS Docs, LS, Dragdrop, dragdrop, API Reference, Root API, Members";
     }
 </head>
-@import("/docs/ls/sidebar.html");
+@use(/docs/ls/sidebar.json["docs-sidebar"]);
 
 <div .docs-content>
 <markdown>
-# dragdrop
+<h1 id="dragdrop">dragdrop</h1>
 
 Documentation for the dragdrop component.
+
+<h2 id="api-reference">API Reference</h2>
+
+Component symbol: [`LS.DragDrop`](/docs/ls/components/dragdrop.html)
+
+<h3 id="root-api">Root API</h3>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">class</span> <span class="hljs-title class_">DragDrop</span></code></pre>
+
+<h3 id="members">Members</h3>
+
+<h4 id="droptargetdefaults">DROPTARGETDEFAULTS</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-variable constant_">DROP_TARGET_DEFAULTS</span></code></pre>
+
+<h4 id="moving">moving</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes">moving</code></pre>
+
+<h4 id="engaged">engaged</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes">engaged</code></pre>
+
+<h4 id="current">current</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes">current</code></pre>
+
+<h4 id="items">items</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes">items</code></pre>
+
+<h4 id="multi">multi</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes">multi</code></pre>
+
+<h4 id="parent">parent</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes">parent</code></pre>
+
+<h4 id="previewbox">previewBox</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes">previewBox</code></pre>
+
+<h4 id="dragarea">dragArea</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes">dragArea</code></pre>
+
+<h4 id="target">target</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes">target</code></pre>
+
+<h4 id="prevx">prevX</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes">prevX</code></pre>
+
+<h4 id="prevy">prevY</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes">prevY</code></pre>
+
+<h4 id="currentx">currentX</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes">currentX</code></pre>
+
+<h4 id="currenty">currentY</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes">currentY</code></pre>
+
+<h4 id="velocityx">velocityX</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes">velocityX</code></pre>
+
+<h4 id="velocityy">velocityY</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes">velocityY</code></pre>
+
+<h4 id="initialx">initialX</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes">initialX</code></pre>
+
+<h4 id="initialy">initialY</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes">initialY</code></pre>
+
+<h4 id="boundx">boundX</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes">boundX</code></pre>
+
+<h4 id="boundy">boundY</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes">boundY</code></pre>
+
+<h4 id="relative">relative</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes">relative</code></pre>
+
+<h4 id="scrollallowed">scrollAllowed</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes">scrollAllowed</code></pre>
+
+<h4 id="snapvalues">snapValues</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes">snapValues</code></pre>
+
+<h4 id="constructor">constructor</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">constructor</span>(<span class="hljs-params"></span>)</code></pre>
+
+Creates a DragDrop manager with specified options.
+
+<h5 id="parameters">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>options</code></td>
+<td><code>*</code></td>
+<td>Options</td>
+</tr>
+</tbody>
+</table>
+
+<h4 id="set">set</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">set</span>()</code></pre>
+
+Makes an element draggable.
+
+<h5 id="parameters-2">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>target</code></td>
+<td><code>*</code></td>
+<td>Element or selector</td>
+</tr>
+</tbody>
+</table>
+
+<h4 id="remove">remove</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">remove</span>()</code></pre>
+
+Removes drag capability from an element.
+
+<h5 id="parameters-3">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>target</code></td>
+<td><code>*</code></td>
+<td>Element or selector</td>
+</tr>
+</tbody>
+</table>
+
+<h4 id="dropzone">dropZone</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">dropZone</span>()</code></pre>
+
+Marks an element as a drop zone (where elements can be dropped).
+
+<h5 id="parameters-4">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>zone</code></td>
+<td><code>*</code></td>
+<td>Element or selector</td>
+</tr>
+</tbody>
+</table>
+
+<h4 id="dragging">dragging</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">get</span> <span class="hljs-title function_">dragging</span>()</code></pre>
+
+<h4 id="currentelement">currentElement</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">get</span> <span class="hljs-title function_">currentElement</span>()</code></pre>
+
+<h4 id="render">render</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">render</span>()</code></pre>
+
+<h4 id="destroy">destroy</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">destroy</span>()</code></pre>
+
 
 </markdown>
 </div>

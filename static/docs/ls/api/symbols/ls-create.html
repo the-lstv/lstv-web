@@ -1,0 +1,52 @@
+#template /templates/docs.html
+
+<head>
+    @page {
+        title: "LS.Create · API · LS Docs";
+        description: "Dynamic utility for creating elements";
+        keywords: "LSTV, LS Docs, API, LS.Create";
+    }
+</head>
+@use(/docs/ls/sidebar.json["docs-sidebar"]);
+
+<div .docs-content>
+<markdown>
+<h1 id="lscreate">LS.Create</h1>
+
+Source: ls.js:1236
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title class_">Create</span>()</code></pre>
+
+Dynamic utility for creating elements
+
+<h3 id="parameters">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>emmet</code></td>
+<td><code>*</code></td>
+<td>Emmet abbreviation (or options object)</td>
+</tr>
+<tr>
+<td><code>content</code></td>
+<td><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array" target="_blank">Array</a>|<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String" target="_blank">String</a>|<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object" target="_blank">Object</a></code></td>
+<td>Content or options</td>
+</tr>
+</tbody>
+</table>
+
+
+<h3 id="returns">Returns</h3>
+
+- <code><a href="https://developer.mozilla.org/en-US/docs/Web/API/Element" target="_blank">Element</a></code>: Created element
+
+</markdown>
+</div>

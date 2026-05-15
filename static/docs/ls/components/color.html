@@ -2,18 +2,1985 @@
 
 <head>
     @page {
-        title: "LSTV | LS Docs > Color";
+        title: "Color · LS Docs";
         description: "Documentation for the color component.";
-        keywords: "LSTV, LS Docs, LS, Color";
+        keywords: "LSTV, LS Docs, LS, Color, color, API Reference, Root API, Members";
     }
 </head>
-@import("/docs/ls/sidebar.html");
+@use(/docs/ls/sidebar.json["docs-sidebar"]);
 
 <div .docs-content>
 <markdown>
-# color
+<h1 id="color">color</h1>
 
 Documentation for the color component.
+
+<h2 id="api-reference">API Reference</h2>
+
+Component symbol: [`LS.Color`](/docs/ls/components/color.html)
+
+<h3 id="root-api">Root API</h3>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Color</span></code></pre>
+
+Author: Lukas (thelstv)<br>Copyright: (c) https://lstv.space<br><br>Last modified: 2026
+
+<h3 id="members">Members</h3>
+
+<h4 id="constructor">constructor</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">constructor</span>(<span class="hljs-params"></span>)</code></pre>
+
+<h4 id="r">r</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">get</span> <span class="hljs-title function_">r</span>()</code></pre>
+
+Get or set red channel value (0-255)
+
+<h4 id="r-2">r</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">set</span> <span class="hljs-title function_">r</span>()</code></pre>
+
+<h4 id="g">g</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">get</span> <span class="hljs-title function_">g</span>()</code></pre>
+
+Get or set green channel value (0-255)
+
+<h4 id="g-2">g</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">set</span> <span class="hljs-title function_">g</span>()</code></pre>
+
+<h4 id="b">b</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">get</span> <span class="hljs-title function_">b</span>()</code></pre>
+
+Get or set blue channel value (0-255)
+
+<h4 id="b-2">b</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">set</span> <span class="hljs-title function_">b</span>()</code></pre>
+
+<h4 id="a">a</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">get</span> <span class="hljs-title function_">a</span>()</code></pre>
+
+Get or set alpha channel value (0-1)
+
+<h4 id="a-2">a</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">set</span> <span class="hljs-title function_">a</span>()</code></pre>
+
+<h4 id="int">int</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">get</span> <span class="hljs-title function_">int</span>()</code></pre>
+
+Get the color as an integer in 0xRRGGBB format
+
+<h4 id="hexint">hexInt</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">get</span> <span class="hljs-title function_">hexInt</span>()</code></pre>
+
+Get the color as an integer in 0xAARRGGBB format
+
+<h4 id="hex">hex</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">get</span> <span class="hljs-title function_">hex</span>()</code></pre>
+
+Get the color as a hex string in #RRGGBB format
+
+<h4 id="rgb">rgb</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">get</span> <span class="hljs-title function_">rgb</span>()</code></pre>
+
+Get the color as rgb(r, g, b) string
+
+<h4 id="rgba">rgba</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">get</span> <span class="hljs-title function_">rgba</span>()</code></pre>
+
+Get the color as rgba(r, g, b, a) string
+
+<h4 id="gethsl">getHSL</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">getHSL</span>()</code></pre>
+
+Get the color as an HSL array [hue (0-360), saturation (0-100), lightness (0-100)]
+
+<h5 id="parameters">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>out</code></td>
+<td><code>array</code></td>
+<td>Optional array to store the result in</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns">Returns</h5>
+
+- <code>array</code>: HSL array
+
+<h4 id="hsl">hsl</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">get</span> <span class="hljs-title function_">hsl</span>()</code></pre>
+
+Get the color as an HSL array
+
+<h4 id="hsb">hsb</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">get</span> <span class="hljs-title function_">hsb</span>()</code></pre>
+
+Get the color as an HSB array
+
+<h4 id="color-2">color</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">get</span> <span class="hljs-title function_">color</span>()</code></pre>
+
+Get the color as an RGBA array with alpha normalized to 0-1
+
+<h4 id="pixel">pixel</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">get</span> <span class="hljs-title function_">pixel</span>()</code></pre>
+
+Get the color as an RGBA array with alpha in 0-255
+
+<h4 id="browse">browse</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">browse</span>()</code></pre>
+
+Get the value of a specific channel (0 = red, 1 = green, 2 = blue, 3 = alpha)
+
+<h4 id="copyto">copyTo</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">copyTo</span>()</code></pre>
+
+Copy the color values to a target array at the given offset
+
+<h5 id="parameters-2">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>target</code></td>
+<td><code>*</code></td>
+<td>Target array to copy the color into</td>
+</tr>
+<tr>
+<td><code>offset</code></td>
+<td><code>*</code></td>
+<td>Optional offset in the target array</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-2">Returns</h5>
+
+- value: Target array with copied color values
+
+<h4 id="floatpixel">floatPixel</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">get</span> <span class="hljs-title function_">floatPixel</span>()</code></pre>
+
+Get the color as an RGBA array with values normalized to 0-1 and rounded to the nearest float32 representation (useful for WebGL shaders)
+
+<h4 id="luma">luma</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">get</span> <span class="hljs-title function_">luma</span>()</code></pre>
+
+Get the perceived brightness of the color using the Rec. 709 formula
+
+<h4 id="brightness">brightness</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">get</span> <span class="hljs-title function_">brightness</span>()</code></pre>
+
+Get the perceived brightness of the color using the HSP color model
+
+<h4 id="bit">bit</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">get</span> <span class="hljs-title function_">bit</span>()</code></pre>
+
+Get a binary value representing whether the color is closer to black (0) or white (1) based on its brightness, using a threshold of 127.5
+
+<h4 id="isdark">isDark</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">get</span> <span class="hljs-title function_">isDark</span>()</code></pre>
+
+Get a boolean value indicating whether the color is considered dark (true) or light (false) based on its brightness, using a threshold of 127.5
+
+<h4 id="hue">hue</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">hue</span>()</code></pre>
+
+Set the hue of the color while preserving saturation and lightness
+
+<h5 id="parameters-3">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>hue</code></td>
+<td><code>*</code></td>
+<td>New hue value (0-360)</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-3">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: Self
+
+<h4 id="saturation">saturation</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">saturation</span>()</code></pre>
+
+Set the saturation of the color while preserving hue and lightness
+
+<h5 id="parameters-4">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>percent</code></td>
+<td><code>*</code></td>
+<td>New saturation value (0-100)</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-4">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: Self
+
+<h4 id="lightness">lightness</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">lightness</span>()</code></pre>
+
+Set the lightness of the color while preserving hue and saturation
+
+<h5 id="parameters-5">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>percent</code></td>
+<td><code>*</code></td>
+<td>New lightness value (0-100)</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-5">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: Self
+
+<h4 id="lerp">lerp</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">lerp</span>()</code></pre>
+
+Linear interpolation between current color and target color by a given ratio
+
+<h5 id="parameters-6">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>target</code></td>
+<td><code><a href="/docs/ls/api/symbols/color.html">Color</a>|array|number|string</code></td>
+<td>Target color</td>
+</tr>
+<tr>
+<td><code>progress</code></td>
+<td><code>number</code></td>
+<td>Interpolation factor (0-1)</td>
+</tr>
+<tr>
+<td><code>source</code></td>
+<td><code><a href="/docs/ls/api/symbols/color.html">Color</a>|array</code></td>
+<td>Optional source color (otherwise uses and mutates current color)</td>
+</tr>
+</tbody>
+</table>
+
+<h4 id="tone">tone</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">tone</span>()</code></pre>
+
+Sets the tone of the color by adjusting its hue, saturation, and lightness
+
+<h5 id="parameters-7">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>hue</code></td>
+<td><code>*</code></td>
+<td>New hue value (0-360)</td>
+</tr>
+<tr>
+<td><code>saturation</code></td>
+<td><code>*</code></td>
+<td>New saturation value (0-100)</td>
+</tr>
+<tr>
+<td><code>lightness</code></td>
+<td><code>*</code></td>
+<td>New lightness value (0-100)</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-6">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: Self
+
+<h4 id="lighten">lighten</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">lighten</span>()</code></pre>
+
+Lightens the color by increasing its lightness by the given percentage (0-100)
+
+<h5 id="parameters-8">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>percent</code></td>
+<td><code>*</code></td>
+<td>Percentage to lighten the color by</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-7">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: Self
+
+<h4 id="saturate">saturate</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">saturate</span>()</code></pre>
+
+Saturates the color by increasing its saturation by the given percentage (0-100)
+
+<h5 id="parameters-9">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>percent</code></td>
+<td><code>*</code></td>
+<td>Percentage to saturate the color by</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-8">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: Self
+
+<h4 id="darken">darken</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">darken</span>()</code></pre>
+
+Darkens the color by decreasing its lightness by the given percentage (0-100)
+
+<h5 id="parameters-10">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>percent</code></td>
+<td><code>*</code></td>
+<td>Percentage to darken the color by</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-9">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: Self
+
+<h4 id="hueshift">hueShift</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">hueShift</span>()</code></pre>
+
+Shifts the hue of the color by the given degrees (positive or negative)
+
+<h5 id="parameters-11">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>deg</code></td>
+<td><code>*</code></td>
+<td>Degrees to shift the hue by</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-10">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: Self
+
+<h4 id="multiply">multiply</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">multiply</span>()</code></pre>
+
+Multiplies each channel by the given factor<br>Provide null to skip a channel
+
+<h5 id="parameters-12">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>factorR</code></td>
+<td><code>number|null</code></td>
+<td>Factor to multiply the red channel by (or null to skip)</td>
+</tr>
+<tr>
+<td><code>factorG</code></td>
+<td><code>number|null</code></td>
+<td>Factor to multiply the green channel by (or null to skip)</td>
+</tr>
+<tr>
+<td><code>factorB</code></td>
+<td><code>number|null</code></td>
+<td>Factor to multiply the blue channel by (or null to skip)</td>
+</tr>
+<tr>
+<td><code>factorA</code></td>
+<td><code>number|null</code></td>
+<td>Factor to multiply the alpha channel by (or null to skip)</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-11">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: Self
+
+<h4 id="divide">divide</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">divide</span>()</code></pre>
+
+Divides each channel by the given factor<br>Provide null to skip a channel
+
+<h5 id="parameters-13">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>factorR</code></td>
+<td><code>number|null</code></td>
+<td>Factor to divide the red channel by (or null to skip)</td>
+</tr>
+<tr>
+<td><code>factorG</code></td>
+<td><code>number|null</code></td>
+<td>Factor to divide the green channel by (or null to skip)</td>
+</tr>
+<tr>
+<td><code>factorB</code></td>
+<td><code>number|null</code></td>
+<td>Factor to divide the blue channel by (or null to skip)</td>
+</tr>
+<tr>
+<td><code>factorA</code></td>
+<td><code>number|null</code></td>
+<td>Factor to divide the alpha channel by (or null to skip)</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-12">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: Self
+
+<h4 id="add">add</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">add</span>()</code></pre>
+
+Adds the given color values to the current color
+
+<h5 id="parameters-14">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>r2</code></td>
+<td><code>number</code></td>
+<td>Red value to add (0-255)</td>
+</tr>
+<tr>
+<td><code>g2</code></td>
+<td><code>number</code></td>
+<td>Green value to add (0-255)</td>
+</tr>
+<tr>
+<td><code>b2</code></td>
+<td><code>number</code></td>
+<td>Blue value to add (0-255)</td>
+</tr>
+<tr>
+<td><code>a2</code></td>
+<td><code>number</code></td>
+<td>Alpha value to add (0-1)</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-13">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: Self
+
+<h4 id="subtract">subtract</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">subtract</span>()</code></pre>
+
+Subtracts the given color values from the current color
+
+<h5 id="parameters-15">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>r2</code></td>
+<td><code>number</code></td>
+<td>Red value to subtract (0-255)</td>
+</tr>
+<tr>
+<td><code>g2</code></td>
+<td><code>number</code></td>
+<td>Green value to subtract (0-255)</td>
+</tr>
+<tr>
+<td><code>b2</code></td>
+<td><code>number</code></td>
+<td>Blue value to subtract (0-255)</td>
+</tr>
+<tr>
+<td><code>a2</code></td>
+<td><code>number</code></td>
+<td>Alpha value to subtract (0-1)</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-14">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: Self
+
+<h4 id="mix">mix</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">mix</span>()</code></pre>
+
+Mixes this color with another one by the given weight (0 to 1)
+
+<h5 id="parameters-16">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>val</code></td>
+<td><code><a href="/docs/ls/api/symbols/color.html">Color</a>|array|number|string</code></td>
+<td>Color to mix with (can be a Color instance, an array of RGBA values, or any valid color input)</td>
+</tr>
+<tr>
+<td><code>weight</code></td>
+<td><code>number</code></td>
+<td>Weight to mix by (0 to 1)</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-15">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: Self
+
+<h4 id="alpha">alpha</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">alpha</span>()</code></pre>
+
+Sets the alpha channel to a value
+
+<h5 id="parameters-17">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>v</code></td>
+<td><code>number</code></td>
+<td>Alpha value to set (0-1)</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-16">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: Self
+
+<h4 id="sethsl">setHSL</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">setHSL</span>()</code></pre>
+
+Sets the color in HSL format
+
+<h5 id="parameters-18">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>h</code></td>
+<td><code>number</code></td>
+<td>Hue (0-360)</td>
+</tr>
+<tr>
+<td><code>s</code></td>
+<td><code>number</code></td>
+<td>Saturation (0-100)</td>
+</tr>
+<tr>
+<td><code>l</code></td>
+<td><code>number</code></td>
+<td>Lightness (0-100)</td>
+</tr>
+<tr>
+<td><code>alpha</code></td>
+<td><code>number</code></td>
+<td>Alpha (0-1)</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-17">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: Self
+
+<h4 id="sethsb">setHSB</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">setHSB</span>()</code></pre>
+
+Sets the color in HSB/HSV format
+
+<h5 id="parameters-19">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>h</code></td>
+<td><code>number</code></td>
+<td>Hue (0-360)</td>
+</tr>
+<tr>
+<td><code>s</code></td>
+<td><code>number</code></td>
+<td>Saturation (0-100)</td>
+</tr>
+<tr>
+<td><code>b</code></td>
+<td><code>number</code></td>
+<td>Brightness/Value (0-100)</td>
+</tr>
+<tr>
+<td><code>alpha</code></td>
+<td><code>number</code></td>
+<td>Alpha (0-1)</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-18">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: Self
+
+<h4 id="setclamped">setClamped</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">setClamped</span>()</code></pre>
+
+Sets the color channels and clamps them to valid ranges<br>Provide null or NaN to skip a channel
+
+<h5 id="parameters-20">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>r</code></td>
+<td><code>number|null</code></td>
+<td>Red value to set (0-255)</td>
+</tr>
+<tr>
+<td><code>g</code></td>
+<td><code>number|null</code></td>
+<td>Green value to set (0-255)</td>
+</tr>
+<tr>
+<td><code>b</code></td>
+<td><code>number|null</code></td>
+<td>Blue value to set (0-255)</td>
+</tr>
+<tr>
+<td><code>a</code></td>
+<td><code>number|null</code></td>
+<td>Alpha value to set (0-1)</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-19">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: Self
+
+<h4 id="set">set</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">set</span>()</code></pre>
+
+Sets the color from any valid input<br>Accepts the same inputs as the Color.parse() method
+
+<h4 id="sethex">setHex</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">setHex</span>()</code></pre>
+
+Sets the color from a hex string, faster for hex inputs than the generic set() method
+
+<h5 id="parameters-21">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>hex</code></td>
+<td><code>string</code></td>
+<td>Hex color string in #RRGGBB or #RGB format</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-20">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: Self
+
+<h4 id="clone">clone</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">clone</span>()</code></pre>
+
+Creates a copy of this color, optionally into a provided target and offset
+
+<h5 id="parameters-22">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>target</code></td>
+<td><code><a href="/docs/ls/api/symbols/uint8array.html">Uint8Array</a>|<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array" target="_blank">Array</a></code></td>
+<td>Optional target array to copy the color into (if not provided, a new array will be created)</td>
+</tr>
+<tr>
+<td><code>offset</code></td>
+<td><code>number</code></td>
+<td>Optional offset in the target array (default is 0)</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-21">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: New Color instance with copied values
+
+<h4 id="tostring">toString</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">toString</span>()</code></pre>
+
+Returns a string representation of the color, which is the rgba() format
+
+<h4 id="toarray">toArray</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">toArray</span>()</code></pre>
+
+Returns an array representation of the color in [r, g, b, a] format with alpha in 0-255
+
+<h4 id="tojson">toJSON</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">toJSON</span>()</code></pre>
+
+Returns a JSON representation of the color with r, g, b, a properties (alpha in 0-1)
+
+<h4 id="valueof">valueOf</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">valueOf</span>()</code></pre>
+
+<h4 id="touint8array">toUint8Array</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">toUint8Array</span>()</code></pre>
+
+Creates a Uint8Array pixel with RGBA values
+
+<h5 id="returns-22">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/uint8array.html">Uint8Array</a></code>
+
+<h4 id="totexture">toTexture</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">toTexture</span>()</code></pre>
+
+Creates a WebGL texture with this color
+
+<h5 id="parameters-23">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>gl</code></td>
+<td><code>WebGLRenderingContext</code></td>
+<td>WebGL context</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-23">Returns</h5>
+
+- <code>WebGLTexture</code>
+
+<h4 id="toimagedata">toImageData</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">toImageData</span>()</code></pre>
+
+Creates an ImageData object with this color
+
+<h5 id="returns-24">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/imagedata.html">ImageData</a></code>
+
+<h4 id="todiv">toDiv</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">toDiv</span>()</code></pre>
+
+Creates a div element with this color as background
+
+<h5 id="parameters-24">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>w</code></td>
+<td><code>number|string</code></td>
+<td>Optional width</td>
+</tr>
+<tr>
+<td><code>h</code></td>
+<td><code>number|string</code></td>
+<td>Optional height</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-25">Returns</h5>
+
+- <code><a href="https://developer.mozilla.org/en-US/docs/Web/API/Element" target="_blank">Element</a></code>
+
+<h4 id="applyasaccent">applyAsAccent</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">applyAsAccent</span>()</code></pre>
+
+Sets the sitewide accent from this color
+
+<h5 id="returns-26">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: Self
+
+<h4 id="toaccent">toAccent</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">toAccent</span>()</code></pre>
+
+Creates or updates a sitewide named accent
+
+<h5 id="parameters-25">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>Name of the accent to create or update (default is &quot;default&quot;)</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-27">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: Self
+
+<h4 id="toaccentcss">toAccentCSS</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">toAccentCSS</span>()</code></pre>
+
+Generates a CSS accent from this color
+
+<h5 id="returns-28">Returns</h5>
+
+- <code>string</code>: CSS color string that can be used in accent-color properties
+
+<h4 id="at">at</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">at</span>()</code></pre>
+
+Set offset by pixel index
+
+<h5 id="parameters-26">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>index</code></td>
+<td><code>number</code></td>
+<td>Pixel index to set the offset to (0-based)</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-29">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: Self
+
+<h4 id="setoffset">setOffset</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">setOffset</span>()</code></pre>
+
+Set offset by raw index (snapped to pixel index)
+
+<h5 id="parameters-27">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>index</code></td>
+<td><code>number</code></td>
+<td>Raw index to set the offset to</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-30">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: Self
+
+<h4 id="next">next</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">next</span>()</code></pre>
+
+Move to the next pixel by incrementing the offset by 4
+
+<h5 id="parameters-28">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>by</code></td>
+<td><code>number</code></td>
+<td>Number of pixels to move forward (default is 1)</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-31">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: Self
+
+<h4 id="pixelcount">pixelCount</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">get</span> <span class="hljs-title function_">pixelCount</span>()</code></pre>
+
+Returns the pixel count
+
+<h4 id="atend">atEnd</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">get</span> <span class="hljs-title function_">atEnd</span>()</code></pre>
+
+Returns whether the current offset is at or beyond the last pixel
+
+<h4 id="fill">fill</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">fill</span>()</code></pre>
+
+Fills the color data with the given color starting from the current offset. If limit is provided, fills up to that many pixels, otherwise fills to the end of the array.
+
+<h5 id="parameters-29">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>r</code></td>
+<td><code>*</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>g</code></td>
+<td><code>number</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>b</code></td>
+<td><code>number</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>a</code></td>
+<td><code>number</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>offset</code></td>
+<td><code>number</code></td>
+<td>Optional offset in pixels</td>
+</tr>
+<tr>
+<td><code>limit</code></td>
+<td><code>number</code></td>
+<td>Optional maximum number of pixels to fill</td>
+</tr>
+</tbody>
+</table>
+
+<h4 id="autoschemeenabled">autoSchemeEnabled</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> autoSchemeEnabled</code></pre>
+
+<h4 id="initoptions">initOptions</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-title function_">initOptions</span>()</code></pre>
+
+<h4 id="on">on</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-title function_">on</span>()</code></pre>
+
+<h4 id="once">once</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-title function_">once</span>()</code></pre>
+
+<h4 id="off">off</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-title function_">off</span>()</code></pre>
+
+<h4 id="parse">parse</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-title function_">parse</span>()</code></pre>
+
+Parses a color from various input formats and writes it into the target array at the given offset. Strings are case-insensitive and trimmed.<br>Supports:<br>- Hex strings (#RGB, #RGBA, #RRGGBB, #RRGGBBAA)<br>- Integer RGB/RGBA (0xRRGGBB, 0xRRGGBBAA)<br>- RGB/RGBA strings (rgb(255, 0, 0), rgba(255, 0, 0, 0.5))<br>- HSL/HSLA strings (hsl(120, 100%, 50%), hsla(120, 100%, 50%, 0.5))<br>- HSB/HSBA strings (hsb(120, 100%, 100%), hsba(120, 100%, 100%, 0.5))<br>- Named CSS colors<br>- Arrays [r, g, b], [r, g, b, a]<br>- Objects { r, g, b }, { r, g, b, a }<br>- Another Color instance<br>- Integer values for r, g, b, a (0-255 for r, g, b and 0-1 for a)<br>- Any valid CSS color string (as a fallback, using the browser's parser)
+
+<h5 id="parameters-30">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>r</code></td>
+<td><code>*</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>g</code></td>
+<td><code>number</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>b</code></td>
+<td><code>number</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>a</code></td>
+<td><code>number</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>target</code></td>
+<td><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array" target="_blank">Array</a></code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>offset</code></td>
+<td><code>number</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-32">Returns</h5>
+
+- <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array" target="_blank">Array</a></code>: Target array with parsed color
+
+<h5 id="examples">Examples</h5>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-comment">// Note: if you only parse hex colors, use Color.parseHex for better performance</span>
+<span class="hljs-title class_">Color</span>.<span class="hljs-title function_">parse</span>(<span class="hljs-string">&quot;#ff0000&quot;</span>);
+<span class="hljs-title class_">Color</span>.<span class="hljs-title function_">parse</span>(<span class="hljs-string">&quot;rgba(255, 0, 0, 0.5)&quot;</span>);
+<span class="hljs-title class_">Color</span>.<span class="hljs-title function_">parse</span>(<span class="hljs-string">&quot;hsl(120, 100%, 50%)&quot;</span>);
+<span class="hljs-title class_">Color</span>.<span class="hljs-title function_">parse</span>(<span class="hljs-string">&quot;hsb(120, 100%, 100%)&quot;</span>);
+<span class="hljs-title class_">Color</span>.<span class="hljs-title function_">parse</span>(<span class="hljs-string">&quot;red&quot;</span>);
+<span class="hljs-title class_">Color</span>.<span class="hljs-title function_">parse</span>([<span class="hljs-number">255</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>]);
+<span class="hljs-title class_">Color</span>.<span class="hljs-title function_">parse</span>({ <span class="hljs-attr">r</span>: <span class="hljs-number">255</span>, <span class="hljs-attr">g</span>: <span class="hljs-number">0</span>, <span class="hljs-attr">b</span>: <span class="hljs-number">0</span> });
+<span class="hljs-title class_">Color</span>.<span class="hljs-title function_">parse</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Color</span>());
+<span class="hljs-title class_">Color</span>.<span class="hljs-title function_">parse</span>(<span class="hljs-number">255</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0.5</span>);
+<span class="hljs-title class_">Color</span>.<span class="hljs-title function_">parse</span>(<span class="hljs-number">0xff0000</span>);</code></pre>
+
+<h4 id="clamp">clamp</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-title function_">clamp</span>()</code></pre>
+
+<h4 id="parsehex">parseHex</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-title function_">parseHex</span>()</code></pre>
+
+Parses a hex code string to a RGB array.<br>Pretty much as fast as JavaScript can realistically get.<br><br>Note: invalid hex characters result in -1 rather than an error. To validate, check for -1 in any channel. Invalid string length will throw an error, however.<br>This library will automatically treat such as 0 after clamping; you may or may not want that behavior (eg. #ggg => #000, and the opposite for typed arrays as there -1 flips to 255!).<br>https://jsbm.dev/YUQagaiMDfxOv<br><br>Note: This does not check the first character for '#', it assumes it's already checked
+
+<h5 id="parameters-31">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>hex</code></td>
+<td><code>string</code></td>
+<td>Hex string in the format #RGB, #RGBA, #RRGGBB or #RRGGBBAA</td>
+</tr>
+<tr>
+<td><code>target</code></td>
+<td><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array" target="_blank">Array</a>|<a href="/docs/ls/api/symbols/uint8array.html">Uint8Array</a></code></td>
+<td>Optional target array to write the result to (default: [0, 0, 0, 255])</td>
+</tr>
+<tr>
+<td><code>offset</code></td>
+<td><code>number</code></td>
+<td>Optional offset in the target array to write to (default: 0)</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-33">Returns</h5>
+
+- <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array" target="_blank">Array</a></code>: [r, g, b, a] with r, g, b in 0-255 and a in 0-255
+
+<h4 id="validatehex">validateHex</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-title function_">validateHex</span>()</code></pre>
+
+<h4 id="fromhsl">fromHSL</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-title function_">fromHSL</span>()</code></pre>
+
+Creates a color from HSL values.
+
+<h5 id="parameters-32">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>h</code></td>
+<td><code>number</code></td>
+<td>Hue (0-360)</td>
+</tr>
+<tr>
+<td><code>s</code></td>
+<td><code>number</code></td>
+<td>Saturation (0-1)</td>
+</tr>
+<tr>
+<td><code>l</code></td>
+<td><code>number</code></td>
+<td>Lightness (0-1)</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-34">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: The created color
+
+<h4 id="fromhsb">fromHSB</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-title function_">fromHSB</span>()</code></pre>
+
+Creates a color from HSB/HSV values.
+
+<h5 id="parameters-33">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>h</code></td>
+<td><code>number</code></td>
+<td>Hue (0-360)</td>
+</tr>
+<tr>
+<td><code>s</code></td>
+<td><code>number</code></td>
+<td>Saturation (0-1)</td>
+</tr>
+<tr>
+<td><code>b</code></td>
+<td><code>number</code></td>
+<td>Brightness/Value (0-1)</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-35">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: The created color
+
+<h4 id="fromhex">fromHex</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-title function_">fromHex</span>()</code></pre>
+
+Creates a color from a hex string.
+
+<h5 id="parameters-34">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>hex</code></td>
+<td><code>string</code></td>
+<td>The hex string in the format #RGB, #RGBA, #RRGGBB or #RRGGBBAA</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-36">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: The created color
+
+<h4 id="fromint">fromInt</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-title function_">fromInt</span>()</code></pre>
+
+Creates a color from a 32-bit integer.
+
+<h5 id="parameters-35">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>int</code></td>
+<td><code>number</code></td>
+<td>The integer in the format 0xRRGGBB</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-37">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: The created color
+
+<h4 id="frompixel">fromPixel</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-title function_">fromPixel</span>()</code></pre>
+
+Creates a color from a pixel array.
+
+<h5 id="parameters-36">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pixel</code></td>
+<td><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array" target="_blank">Array</a></code></td>
+<td>The pixel array in the format [r, g, b, a]</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-38">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: The created color
+
+<h4 id="frombuffer">fromBuffer</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-title function_">fromBuffer</span>()</code></pre>
+
+Creates a colorview from a buffer. This does not copy and reflects changes to the buffer.
+
+<h5 id="parameters-37">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>buffer</code></td>
+<td><code>*</code></td>
+<td>Buffer containing color data</td>
+</tr>
+<tr>
+<td><code>offset</code></td>
+<td><code>*</code></td>
+<td>Offset into the buffer</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-39">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: The created color instance
+
+<h4 id="fromimage">fromImage</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-title function_">fromImage</span>()</code></pre>
+
+Creates a color from an image by sampling pixels to obtain a representative color.
+
+<h5 id="parameters-38">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>image</code></td>
+<td><code>*</code></td>
+<td>Image element to sample</td>
+</tr>
+<tr>
+<td><code>sampleGap</code></td>
+<td><code>*</code></td>
+<td>Gap between sampled pixels</td>
+</tr>
+<tr>
+<td><code>maxResolution</code></td>
+<td><code>*</code></td>
+<td>Maximum resolution of the processed image</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-40">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: The created color instance
+
+<h4 id="fromuint8">fromUint8</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-title function_">fromUint8</span>()</code></pre>
+
+Creates a color (not a ColorView) from a Uint8Array.
+
+<h5 id="parameters-39">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>data</code></td>
+<td><code><a href="/docs/ls/api/symbols/uint8array.html">Uint8Array</a></code></td>
+<td>The array containing color data</td>
+</tr>
+<tr>
+<td><code>offset</code></td>
+<td><code>number</code></td>
+<td>The starting index in the array</td>
+</tr>
+<tr>
+<td><code>alpha</code></td>
+<td><code>boolean</code></td>
+<td>Whether to include alpha channel</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-41">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: The created color
+
+<h4 id="fromobject">fromObject</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-title function_">fromObject</span>()</code></pre>
+
+Creates a color from an object with r, g, b, and a properties.
+
+<h5 id="parameters-40">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>obj</code></td>
+<td><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object" target="_blank">Object</a></code></td>
+<td>The object containing color properties</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-42">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: The created color
+
+<h4 id="fromarray">fromArray</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-title function_">fromArray</span>()</code></pre>
+
+Creates a color from an array of color values.
+
+<h5 id="parameters-41">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>arr</code></td>
+<td><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array" target="_blank">Array</a></code></td>
+<td>The array containing color values in the format [r, g, b, a]</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-43">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: The created color
+
+<h4 id="fromnamed">fromNamed</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-title function_">fromNamed</span>()</code></pre>
+
+Creates a color from a named CSS color.
+
+<h5 id="parameters-42">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>The name of the CSS color (case-insensitive)</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-44">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: The created color
+
+<h4 id="fromcss">fromCSS</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-title function_">fromCSS</span>()</code></pre>
+
+Creates a color from a CSS color string.
+
+<h5 id="parameters-43">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>colorString</code></td>
+<td><code>string</code></td>
+<td>The CSS color string</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-45">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: The created color
+
+<h4 id="random">random</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-title function_">random</span>()</code></pre>
+
+Creates a random color using a pseudorandom number generator.
+
+<h5 id="returns-46">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: The created random color
+
+<h4 id="truerandom">trueRandom</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-title function_">trueRandom</span>()</code></pre>
+
+Creates a random color using a cryptographically secure random number generator. Requires crypto.
+
+<h5 id="returns-47">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: The created random color
+
+<h4 id="lightmodepreffered">lightModePreffered</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-keyword">get</span> <span class="hljs-title function_">lightModePreffered</span>()</code></pre>
+
+Checks if the user has a light color scheme preference.
+
+<h5 id="returns-48">Returns</h5>
+
+- <code>boolean</code>: True if the user prefers a light color scheme, false otherwise
+
+<h4 id="theme">theme</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-keyword">get</span> <span class="hljs-title function_">theme</span>()</code></pre>
+
+<h4 id="theme-2">theme</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-keyword">set</span> <span class="hljs-title function_">theme</span>()</code></pre>
+
+<h4 id="accent">accent</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-keyword">get</span> <span class="hljs-title function_">accent</span>()</code></pre>
+
+<h4 id="accent-2">accent</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-keyword">set</span> <span class="hljs-title function_">accent</span>()</code></pre>
+
+<h4 id="generate">generate</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-title function_">generate</span>()</code></pre>
+
+<h4 id="add-2">add</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-title function_">add</span>()</code></pre>
+
+<h4 id="ensurerule">ensureRule</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-title function_">ensureRule</span>()</code></pre>
+
+<h4 id="update">update</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-title function_">update</span>()</code></pre>
+
+<h4 id="apply">apply</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-title function_">apply</span>()</code></pre>
+
+<h4 id="remove">remove</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-title function_">remove</span>()</code></pre>
+
+<h4 id="setaccent">setAccent</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-title function_">setAccent</span>()</code></pre>
+
+Sets the sitewide accent color.
+
+<h5 id="parameters-44">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>accent</code></td>
+<td><code>*</code></td>
+<td>Accent color</td>
+</tr>
+<tr>
+<td><code>store</code></td>
+<td><code>*</code></td>
+<td>Whether to store the accent in localStorage (default: true)</td>
+</tr>
+<tr>
+<td><code>doBatch</code></td>
+<td><code>*</code></td>
+<td>Whether to batch the change to the next animation frame (default: true)</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-49">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: Self
+
+<h4 id="settheme">setTheme</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-title function_">setTheme</span>()</code></pre>
+
+Sets the sitewide theme.
+
+<h5 id="parameters-45">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>theme</code></td>
+<td><code>string</code></td>
+<td>Name of the theme to set</td>
+</tr>
+<tr>
+<td><code>store</code></td>
+<td><code>boolean</code></td>
+<td>Whether to store the theme in localStorage (default: true)</td>
+</tr>
+<tr>
+<td><code>doBatch</code></td>
+<td><code>boolean</code></td>
+<td>Whether to batch the change to the next animation frame (default: true)</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-50">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/color.html">Color</a></code>: Self
+
+<h4 id="setadaptivetheme">setAdaptiveTheme</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-title function_">setAdaptiveTheme</span>()</code></pre>
+
+<h4 id="autoscheme">autoScheme</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-title function_">autoScheme</span>()</code></pre>
+
+<h4 id="autoaccent">autoAccent</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> <span class="hljs-title function_">autoAccent</span>()</code></pre>
+
+<h4 id="namedcolors">namedColors</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> namedColors</code></pre>
+
+A map of named CSS colors to their RGB values.
+
 
 </markdown>
 </div>

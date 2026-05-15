@@ -2,18 +2,496 @@
 
 <head>
     @page {
-        title: "LSTV | LS Docs > Reactive";
+        title: "Reactive · LS Docs";
         description: "Documentation for the reactive component.";
-        keywords: "LSTV, LS Docs, LS, Reactive";
+        keywords: "LSTV, LS Docs, LS, Reactive, reactive, API Reference, Root API, Members";
     }
 </head>
-@import("/docs/ls/sidebar.html");
+@use(/docs/ls/sidebar.json["docs-sidebar"]);
 
 <div .docs-content>
 <markdown>
-# reactive
+<h1 id="reactive">reactive</h1>
 
 Documentation for the reactive component.
+
+<h2 id="api-reference">API Reference</h2>
+
+Component symbol: [`LS.Reactive`](/docs/ls/components/reactive.html)
+
+<h3 id="root-api">Root API</h3>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Reactive</span></code></pre>
+
+<h3 id="members">Members</h3>
+
+<h4 id="emptypath">EMPTYPATH</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-variable constant_">EMPTY_PATH</span></code></pre>
+
+<h4 id="types">types</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes">types</code></pre>
+
+<h4 id="registertype">registerType</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">registerType</span>()</code></pre>
+
+<h4 id="constructor">constructor</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">constructor</span>(<span class="hljs-params"></span>)</code></pre>
+
+<h4 id="createbinding">createBinding</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">createBinding</span>()</code></pre>
+
+<h4 id="wrap">wrap</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">wrap</span>()</code></pre>
+
+Wraps an object with a reactive proxy.<br>The proxy will get the following extra properties:<br>* `__isProxy` - A boolean indicating that this is a reactive proxy<br>* `__binding` - The binding instance
+
+<h5 id="parameters">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>prefix</code></td>
+<td><code>string</code></td>
+<td>The prefix to bind to</td>
+</tr>
+<tr>
+<td><code>object</code></td>
+<td><code>object</code></td>
+<td>The object to wrap</td>
+</tr>
+<tr>
+<td><code>options</code></td>
+<td><code>object</code></td>
+<td>Options for the binding</td>
+</tr>
+<tr>
+<td><code>options.shallow</code></td>
+<td><code>boolean</code></td>
+<td>Whether to only wrap the top-level object</td>
+</tr>
+<tr>
+<td><code>options.render</code></td>
+<td><code>boolean|<a href="/docs/ls/api/symbols/function.html">function</a></code></td>
+<td>Disables rendering if set to false, or replaces with a custom render function</td>
+</tr>
+<tr>
+<td><code>options.propagate</code></td>
+<td><code>boolean</code></td>
+<td>Whether to propagate changes to parent bindings (eg. if user.data.name changes, user.data and user also update)</td>
+</tr>
+<tr>
+<td><code>options.extends</code></td>
+<td><code>boolean</code></td>
+<td>Fallback object to use when the key is not found</td>
+</tr>
+<tr>
+<td><code>options.collapseValue</code></td>
+<td><code>boolean</code></td>
+<td>Whether to collapse references to the object itself to its _value property (eg. if &quot;test&quot; is {_value: 5} and we bind {{ test }}, 5 will be used instead of the object)</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/proxy.html">Proxy</a></code>: The reactive proxy object
+
+<h4 id="fork">fork</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">fork</span>()</code></pre>
+
+Forks an object into a new reactive proxy without mutating the original object.<br>Mutating this proxy will affect only the new object.
+
+<h5 id="parameters-2">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>prefix</code></td>
+<td><code>*</code></td>
+<td>The prefix to bind to</td>
+</tr>
+<tr>
+<td><code>object</code></td>
+<td><code>*</code></td>
+<td>The object to fork</td>
+</tr>
+<tr>
+<td><code>data</code></td>
+<td><code>*</code></td>
+<td>New object to patch new values to, defaults to an empty object</td>
+</tr>
+<tr>
+<td><code>options</code></td>
+<td><code>*</code></td>
+<td>Options for the binding (same as wrap())</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-2">Returns</h5>
+
+- <code><a href="/docs/ls/api/symbols/proxy.html">Proxy</a></code>: The reactive proxy object
+
+<h4 id="valueref">valueRef</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">valueRef</span>()</code></pre>
+
+Creates a shallow reactive reference object with a single "value" property.
+
+<h5 id="parameters-3">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>prefix</code></td>
+<td><code>string</code></td>
+<td>The prefix to bind to</td>
+</tr>
+<tr>
+<td><code>value</code></td>
+<td><code>*</code></td>
+<td>The initial value of the reference</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-3">Returns</h5>
+
+- <code>object</code>: The reference object with a &quot;value&quot; property
+
+<h5 id="examples">Examples</h5>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">const</span> countRef = reactive.<span class="hljs-title function_">valueRef</span>(<span class="hljs-string">&quot;count&quot;</span>, <span class="hljs-number">0</span>);
+countRef.<span class="hljs-property">value</span> = <span class="hljs-number">5</span>;
+
+<span class="hljs-comment">// In HTML: {{ countRef }} &lt;!-- This will update to 5 --&gt;</span></code></pre>
+
+<h4 id="destroybinding">destroyBinding</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">destroyBinding</span>()</code></pre>
+
+Destroys a binding by its prefix.
+
+<h5 id="parameters-4">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>prefix</code></td>
+<td><code>*</code></td>
+<td>The prefix of the binding to destroy</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-4">Returns</h5>
+
+- <code>boolean</code>: True if the binding was found and destroyed
+
+<h4 id="destroyall">destroyAll</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">destroyAll</span>()</code></pre>
+
+Destroys all bindings.
+
+<h5 id="returns-5">Returns</h5>
+
+- <code>void</code>
+
+<h4 id="splitpath">splitPath</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">splitPath</span>()</code></pre>
+
+Splits a path into prefix, key name and extras<br>Eg. "user.name extra stuff" => [ "user.", "name", " extra stuff" ]<br>Note that leading whitespace is trimmed so joining won't produce the exact original string
+
+<h5 id="parameters-5">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>path</code></td>
+<td><code>*</code></td>
+<td>The path to split</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-6">Returns</h5>
+
+- <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array" target="_blank">Array</a></code>: An array like [prefix, name, extra]
+
+<h4 id="parseexpression">parseExpression</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">parseExpression</span>()</code></pre>
+
+A light parser to parse extra properties, eg. "username || anonymous".
+
+<h5 id="parameters-6">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>expr</code></td>
+<td><code>string</code></td>
+<td>The expression to parse</td>
+</tr>
+<tr>
+<td><code>result</code></td>
+<td><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object" target="_blank">Object</a></code></td>
+<td>An optional object to fill with results</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-7">Returns</h5>
+
+- <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object" target="_blank">Object</a></code>: An object with parsed properties
+
+<h4 id="return">return</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">return</span>()</code></pre>
+
+<h4 id="char">char</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes">char</code></pre>
+
+<h4 id="parsebindingstring">parseBindingString</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">parseBindingString</span>()</code></pre>
+
+<h4 id="scan">scan</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">scan</span>()</code></pre>
+
+Scans the document or specific element for elements with the data-reactive attribute and caches them
+
+<h5 id="parameters-7">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>scanTarget</code></td>
+<td><code><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement" target="_blank">HTMLElement</a></code></td>
+<td>The target element to scan</td>
+</tr>
+</tbody>
+</table>
+
+<h4 id="bindelement">bindElement</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">bindElement</span>()</code></pre>
+
+Binds an element to the reactive system
+
+<h5 id="parameters-8">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>target</code></td>
+<td><code><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement" target="_blank">HTMLElement</a></code></td>
+<td>Yes</td>
+<td>The target element to bind</td>
+</tr>
+<tr>
+<td><code>override</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>Optional override for the binding string</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-8">Returns</h5>
+
+- <code>void</code>
+
+<h4 id="unbindelement">unbindElement</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">unbindElement</span>()</code></pre>
+
+Unbinds an element from the reactive system
+
+<h5 id="parameters-9">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>target</code></td>
+<td><code><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement" target="_blank">HTMLElement</a></code></td>
+<td>The target element to unbind</td>
+</tr>
+<tr>
+<td><code>keepAttribute</code></td>
+<td><code>boolean</code></td>
+<td>Whether to keep the data-reactive attribute</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-9">Returns</h5>
+
+- <code>void</code>
+
+<h4 id="valueat">valueAt</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">valueAt</span>()</code></pre>
+
+Gets the value at a specific path in the reactive system
+
+<h5 id="parameters-10">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fullPath</code></td>
+<td><code>string</code></td>
+<td>The full path to get the value from</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="returns-10">Returns</h5>
+
+- <code>*</code>: The value at the specified path, or undefined if not found
+
+<h4 id="renderall">renderAll</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">renderAll</span>()</code></pre>
+
+Renders all bindings in the cache (everything from any bound element)
+
+<h5 id="parameters-11">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>bindings</code></td>
+<td><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array" target="_blank">Array</a>&<a href="/docs/ls/api/symbols/lt.html">lt</a>;ReactiveBinding&gt;</code></td>
+<td>An array of bindings to render, defaults to all bindings in the cache</td>
+</tr>
+</tbody>
+</table>
+
+<h4 id="render">render</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">render</span>()</code></pre>
+
+Renders a binding object
+
+<h5 id="parameters-12">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>binding</code></td>
+<td><code>object</code></td>
+<td>The binding object to render</td>
+</tr>
+</tbody>
+</table>
+
 
 </markdown>
 </div>

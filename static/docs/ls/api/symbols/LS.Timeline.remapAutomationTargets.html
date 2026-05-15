@@ -1,0 +1,30 @@
+#template /templates/docs.html
+<head>
+@page { title: "LS.Timeline.remapAutomationTargets API Reference", description: "Remaps automation target nodeIds in cloned/pasted items. If an automation clip's target was also cloned, update the target reference to point to the new clone.", keywords: "target, automation, cloned, also, clip's, clone, items, new, nodeids, pasted, point, remaps" }
+</head>
+@import("/docs/ls/sidebar.json");
+<div .docs-content>
+<markdown>
+<h1 id="ls-timeline-remapautomationtargets">LS.Timeline.remapAutomationTargets</h1>
+
+<div class="api-reference" data-symbol="LS.Timeline.remapAutomationTargets">
+<article class="api-symbol api-symbol-method" id="api-ls-timeline-remapautomationtargets" data-symbol="LS.Timeline.remapAutomationTargets">
+<h3 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.remapAutomationTargets.html"><code>LS.Timeline.remapAutomationTargets</code></a></h3>
+<p class="api-summary">Remaps automation target nodeIds in cloned/pasted items.<br>If an automation clip's target was also cloned, <a class="api-symbol-ref" href="LS.Color.update.html">update</a> the target reference to point to the new <a class="api-symbol-ref" href="LS.Color.clone.html">clone</a>.</p>
+<div class="api-source">Defined in <code>js/timeline.js:1390</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">remapAutomationTargets</span>(items, idMap)</code></pre>
+<div class="api-params">
+<h4>Parameters</h4>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>items</code></td><td><a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></td><td>- The cloned/pasted items to process</td></tr>
+<tr><td><code>idMap</code></td><td><a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map">Map</a></td><td>- <a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map">Map</a> from original item IDs to new item IDs</td></tr>
+</tbody>
+</table>
+</div>
+</article>
+</div>
+
+</markdown>
+</div>

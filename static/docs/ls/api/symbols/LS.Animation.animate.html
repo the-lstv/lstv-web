@@ -1,0 +1,36 @@
+#template /templates/docs.html
+<head>
+@page { title: "LS.Animation.animate API Reference", description: "Creates a new animation for the target object. Note: Animations are short-lived and removed once completed.", keywords: "animation, animations, completed, creates, lived, new, note, once, removed, short, target, animate" }
+</head>
+@import("/docs/ls/sidebar.json");
+<div .docs-content>
+<markdown>
+<h1 id="ls-animation-animate">LS.Animation.animate</h1>
+
+<div class="api-reference" data-symbol="LS.Animation.animate">
+<article class="api-symbol api-symbol-method" id="api-ls-animation-animate" data-symbol="LS.Animation.animate">
+<h3 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Animation.animate.html"><code>LS.Animation.animate</code></a></h3>
+<p class="api-summary">Creates <a class="api-symbol-ref" href="LS.Color.a.html">a</a> new <a class="api-symbol-ref" href="LS.Gl.animation.html">animation</a> for the target object.<br>Note: Animations are short-lived and removed <a class="api-symbol-ref" href="LS.Color.once.html">once</a> completed.</p>
+<div class="api-source">Defined in <code>js/animation2.js:325</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Animation</span>.<span class="hljs-title function_">animate</span>(target, properties = {}, options = {}, group = <span class="hljs-literal">null</span>)</code></pre>
+<div class="api-params">
+<h4>Parameters</h4>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>target</code></td><td>object|<a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>|<a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/API/NodeList">NodeList</a>|string|function</td><td>Yes</td><td>The target object to <a class="api-symbol-ref" href="LS.Animation.Context.animate.html">animate</a>. Optionally <a class="api-symbol-ref" href="LS.Color.a.html">a</a> selector, function or array.</td></tr>
+<tr><td><code>properties</code></td><td>object|<a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></td><td>Yes</td><td>The properties to <a class="api-symbol-ref" href="LS.Animation.Context.animate.html">animate</a>, either as an object or entries ([[property, [from, to]]]).</td></tr>
+<tr><td><code>properties.property</code></td><td>object</td><td>No</td><td>The property to <a class="api-symbol-ref" href="LS.Animation.Context.animate.html">animate</a>. Value can be <a class="api-symbol-ref" href="LS.Color.a.html">a</a> number or instance of <a class="api-symbol-ref" href="LS.Color.html">LS.Color</a>. Optionally you can <a class="api-symbol-ref" href="LS.Color.set.html">set</a> an initial <a class="api-symbol-ref" href="LS.Knob.value.html">value</a> as [from, to].</td></tr>
+<tr><td><code>options</code></td><td>object</td><td>Yes</td><td>The <a class="api-symbol-ref" href="LS.Gl.animation.html">animation</a> options</td></tr>
+<tr><td><code>options.easing</code></td><td>string</td><td>Yes</td><td>The easing function to use (<a class="api-symbol-ref" href="LS.Animation.EASING.linear.html">linear</a>, <a class="api-symbol-ref" href="LS.Animation.EASING.ease.html">ease</a>-in, <a class="api-symbol-ref" href="LS.Animation.EASING.ease.html">ease</a>-out, <a class="api-symbol-ref" href="LS.Animation.EASING.ease.html">ease</a>-in-out)</td></tr>
+<tr><td><code>options.duration</code></td><td>number</td><td>Yes</td><td>The <a class="api-symbol-ref" href="LS.Timeline.duration.html">duration</a> of the <a class="api-symbol-ref" href="LS.Gl.animation.html">animation</a> in milliseconds</td></tr>
+<tr><td><code>options.cutGroup</code></td><td>number</td><td>Yes</td><td>The <a class="api-symbol-ref" href="LS.Timeline.cut.html">cut</a> <a class="api-symbol-ref" href="LS.Menu.DEFAULTS.group.html">group</a> ID. Animating with this ID stops any other animations with the same ID.</td></tr>
+<tr><td><code>group</code></td><td>string</td><td>Yes</td><td>The <a class="api-symbol-ref" href="LS.Gl.animation.html">animation</a> <a class="api-symbol-ref" href="LS.Menu.DEFAULTS.group.html">group</a></td></tr>
+</tbody>
+</table>
+</div>
+</article>
+</div>
+
+</markdown>
+</div>

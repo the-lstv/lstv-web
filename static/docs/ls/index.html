@@ -2,26 +2,26 @@
 
 <head>
     @page {
-        title: "LSTV | LS Docs > LS Documentation";
+        title: "LS Documentation · LS Docs";
         description: "Comprehensive documentation for LS, a flexible and feature-rich frontend/UI framework. Learn about its components, utilities, and how to get started with LS for your frontend development projects.";
-        keywords: "LSTV, LS Docs, LS, LS Documentation, Quick feature overview:, Installation, Method 1 (only when using the Akeno server):, Method 2 (for every other environment):";
+        keywords: "LSTV, LS Docs, LS, LS Documentation, What's LS?, Quick feature overview:, Getting Started, Installation";
     }
 </head>
-@import("/docs/ls/sidebar.html");
+@use(/docs/ls/sidebar.json["docs-sidebar"]);
 
 <div .docs-content>
 <markdown>
 
 ![Logo](https://cdn.extragon.cloud/file/19613b60f986c5f6.webp)
 
-# What's LS?
+<h1 id="whats-ls">What&#39;s LS?</h1>
 
 LS is a flexible & feature-rich frontend/UI framework, that provides various components, utilities, and more.<br>
 It is incredibly lightweight, fast, feature-rich, and designed to make frontend development enjoyable, while making your apps feel super smooth and performant, and significantly reduce bundle size/bloat.
 
 <br>
 
-## Quick feature overview:
+<h2 id="quick-feature-overview">Quick feature overview:</h2>
 
 - JS
     - Flexible UI components & component system
@@ -36,16 +36,16 @@ It is incredibly lightweight, fast, feature-rich, and designed to make frontend 
 
 Either can be used independently or together (Eg. JS only, CSS only, or just include components you want to use. But, of course, they work the best together).
 
-# Getting Started
+<h1 id="getting-started">Getting Started</h1>
 
 Let's get started with some basics.<br>
 There's a lot that LS can do, so there's also many things to look at based on what you need.
 
-## Installation
+<h2 id="installation">Installation</h2>
 
 Adding LS to your project is as easy as just adding any library.
 
-### Method 1 (only when using the Akeno server):
+<h3 id="method-1-only-when-using-the-akeno-server">Method 1 (only when using the Akeno server):</h3>
 
 [Akeno](https://github.com/the-lstv/akeno) is a powerful webserver developed by me, and thus works nicely together with LS.<br>
 
@@ -53,39 +53,31 @@ Adding LS to your project is as easy as just adding any library.
 > If you are not using Akeno, *skip to the second installation method* - if you are using a different server or environment, everything will work just fine, Akeno just makes it a bit more convenient.
 
 All you need to do is to add an @use block like this to your HTML head tag:
-```html
-<head>
-    <!-- Components are added into the square brackets ([]) as a comma separated list. -->
-    <!-- Minimal import is @use(ls:version);, which adds just the core. Or @use(ls:version[*]); for all components. -->
+<pre markdown="off" class=" lang-html"><code class="hljs" data-highlighted="yes"><span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span>
+    <span class="hljs-comment">&lt;!-- Components are added into the square brackets ([]) as a comma separated list. --&gt;</span>
+    <span class="hljs-comment">&lt;!-- Minimal import is @use(ls:version);, which adds just the core. Or @use(ls:version[*]); for all components. --&gt;</span>
     @use(ls:version[...components]);
-</head>
-```
+<span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span></code></pre>
 Such as:
-```html
-<head>
+<pre markdown="off" class=" lang-html"><code class="hljs" data-highlighted="yes"><span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span>
     @use(ls:6.0.0-alpha.0[color, flat, animation, modal, tooltips, tabs]);
-</head>
-```
+<span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span></code></pre>
 
 You can also import a specific component separately, excluding the core:
-```html
-@use (ls.js.ImageCropper:5.2.9);
-```
+<pre markdown="off" class=" lang-html"><code class="hljs" data-highlighted="yes">@use (ls.js.ImageCropper:5.2.9);</code></pre>
 
 Done - you are using LS! That easy.<br>
 Akeno takes care of adding the correct tags, version, and sorting components for optimal caching for you automatically. It will also combine @use directives for an optimal bundle.
 
-### Method 2 (for every other environment):
+<h3 id="method-2-for-every-other-environment">Method 2 (for every other environment):</h3>
 If not using Akeno, you can add LS to your project by using regular script and link tags using the CDN, such as:
-```html
-<head>
-    <!-- Syntax: version/...components/ls.css -->
-    <link rel="stylesheet" href="https://cdn.extragon.cloud/ls/6.0.0-alpha.0/flat/ls.css">
-    <!-- Syntax: version/...components/ls.js -->
-    <script src="https://cdn.extragon.cloud/ls/6.0.0-alpha.0/tabs,tooltips,modal,animation/ls.js"></script>
-    <!-- I recommend using the utility to get the links: https://lstv.space/tools/ls-loader -->
-</head>
-```
+<pre markdown="off" class=" lang-html"><code class="hljs" data-highlighted="yes"><span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span>
+    <span class="hljs-comment">&lt;!-- Syntax: version/...components/ls.css --&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">link</span> <span class="hljs-attr">rel</span>=<span class="hljs-string">&quot;stylesheet&quot;</span> <span class="hljs-attr">href</span>=<span class="hljs-string">&quot;https://cdn.extragon.cloud/ls/6.0.0-alpha.0/flat/ls.css&quot;</span>&gt;</span>
+    <span class="hljs-comment">&lt;!-- Syntax: version/...components/ls.js --&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;https://cdn.extragon.cloud/ls/6.0.0-alpha.0/tabs,tooltips,modal,animation/ls.js&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+    <span class="hljs-comment">&lt;!-- I recommend using the utility to get the links: https://lstv.space/tools/ls-loader --&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span></code></pre>
 These expose LS as a global.
 
 > [!WARNING]
@@ -95,22 +87,16 @@ These expose LS as a global.
 <br>
 
 Also possible using ESM:
-```js
-import * as LS from "...?esm";
-```
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">import</span> * <span class="hljs-keyword">as</span> <span class="hljs-variable constant_">LS</span> <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;...?esm&quot;</span>;</code></pre>
 Or using require (CommonJS):
-```js
-const LS = require("...");
-```
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">const</span> <span class="hljs-variable constant_">LS</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">&quot;...&quot;</span>);</code></pre>
 
-## Setup
+<h2 id="setup">Setup</h2>
 LS has a minimal, mostly optional setup process. The most important thing is to add the `ls` attribute when using LS styles.
 
-### UI Setup
+<h3 id="ui-setup">UI Setup</h3>
 If you are using LS.css for UI & styles, there is some minimal boilerplate you should add to wherever you want LS styles to apply. For example:
-```html
-<body ls ls-theme="dark" ls-accent="blue" ls-style="flat"></body>
-```
+<pre markdown="off" class=" lang-html"><code class="hljs" data-highlighted="yes"><span class="hljs-tag">&lt;<span class="hljs-name">body</span> <span class="hljs-attr">ls</span> <span class="hljs-attr">ls-theme</span>=<span class="hljs-string">&quot;dark&quot;</span> <span class="hljs-attr">ls-accent</span>=<span class="hljs-string">&quot;blue&quot;</span> <span class="hljs-attr">ls-style</span>=<span class="hljs-string">&quot;flat&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span></code></pre>
 
 In detail:
 - `ls` attribute scopes where LS styles apply. LS will style things including default HTML elements (such as buttons & inputs) within this element.
@@ -119,165 +105,227 @@ In detail:
 - `ls-accent` sets the accent color. See more in the color system section. Default is blue.
 
 
-### JS Setup (optional)
+<h3 id="js-setup-optional">JS Setup (optional)</h3>
 It is not required, but LS can be configured with some options before startup. For example:
 
-```js
-// The following must be set before LS is initialized.
-window.LS_INIT_OPTIONS = {
-    autoScheme: true, // Automatically set the theme based on the user's system preference
-    autoAccent: true, // Automatically set the accent color, eg. reading "ls-accent" from localStorage.
-    theme: null, // Default theme
-    accent: null, // Default accent color
-    optimizeEvents: true, // Whether to compile events. See the EventEmitter documentation for more details.
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-comment">// The following must be set before LS is initialized.</span>
+<span class="hljs-variable language_">window</span>.<span class="hljs-property">LS_INIT_OPTIONS</span> = {
+    <span class="hljs-attr">autoScheme</span>: <span class="hljs-literal">true</span>, <span class="hljs-comment">// Automatically set the theme based on the user&#x27;s system preference</span>
+    <span class="hljs-attr">autoAccent</span>: <span class="hljs-literal">true</span>, <span class="hljs-comment">// Automatically set the accent color, eg. reading &quot;ls-accent&quot; from localStorage.</span>
+    <span class="hljs-attr">theme</span>: <span class="hljs-literal">null</span>, <span class="hljs-comment">// Default theme</span>
+    <span class="hljs-attr">accent</span>: <span class="hljs-literal">null</span>, <span class="hljs-comment">// Default accent color</span>
+    <span class="hljs-attr">optimizeEvents</span>: <span class="hljs-literal">true</span>, <span class="hljs-comment">// Whether to compile events. See the EventEmitter documentation for more details.</span>
 };
 
-// You can also set "window.LS_DEFER_INIT = true" to defer the initialization.
-// In that case, you can then call "LS.init(options)" manually whenever you're ready.
-```
+<span class="hljs-comment">// You can also set &quot;window.LS_DEFER_INIT = true&quot; to defer the initialization.</span>
+<span class="hljs-comment">// In that case, you can then call &quot;LS.init(options)&quot; manually whenever you&#x27;re ready.</span></code></pre>
 
-# Helpers & Utilities
+<h1 id="helpers-utilities">Helpers &amp; Utilities</h1>
 
-### Creating elements
+<h3 id="creating-elements">Creating elements</h3>
+
+<div markdown="off" class="api-symbol-help">
+  <p><strong>API symbol:</strong> <a href="/docs/ls/api/symbols/ls-create.html"><code>LS.Create</code></a></p>
+  <p>Dynamic utility for creating elements</p>
+  <pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title class_">Create</span>()</code></pre>
+<ul>
+<li><code>emmet</code> <span>(<code>*</code>)</span>: Emmet abbreviation (or options object)</li>
+<li><code>content</code> <span>(<code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array" target="_blank">Array</a>|<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String" target="_blank">String</a>|<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object" target="_blank">Object</a></code>)</span>: Content or options</li>
+</ul>
+<p><strong>Returns:</strong> <code><a href="https://developer.mozilla.org/en-US/docs/Web/API/Element" target="_blank">Element</a></code>: Created element</p>
+</div>
+
 LS provides a rich utility for creating HTML elements.
 Let's see how it works:
-```js
-// The following creates a plain div.
-// Equivalent to document.createElement("div");
-LS.Create();
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-comment">// The following creates a plain div.</span>
+<span class="hljs-comment">// Equivalent to document.createElement(&quot;div&quot;);</span>
+<span class="hljs-variable constant_">LS</span>.<span class="hljs-title class_">Create</span>();
 
-// The following creates a span.
-// Equivalent to document.createElement("span");
-LS.Create("span");
+<span class="hljs-comment">// The following creates a span.</span>
+<span class="hljs-comment">// Equivalent to document.createElement(&quot;span&quot;);</span>
+<span class="hljs-variable constant_">LS</span>.<span class="hljs-title class_">Create</span>(<span class="hljs-string">&quot;span&quot;</span>);
 
-// Now, let's spice it up a bit.
+<span class="hljs-comment">// Now, let&#x27;s spice it up a bit.</span>
 
-// We can write Emmet abbreviations:
-LS.Create("div.myClass#myId"); // -> <div class="myClass" id="myId"></div>
-LS.Create("ul>li*3"); // -> <ul><li></li><li></li><li></li></ul>
+<span class="hljs-comment">// We can write Emmet abbreviations:</span>
+<span class="hljs-variable constant_">LS</span>.<span class="hljs-title class_">Create</span>(<span class="hljs-string">&quot;div.myClass#myId&quot;</span>); <span class="hljs-comment">// -&gt; &lt;div class=&quot;myClass&quot; id=&quot;myId&quot;&gt;&lt;/div&gt;</span>
+<span class="hljs-variable constant_">LS</span>.<span class="hljs-title class_">Create</span>(<span class="hljs-string">&quot;ul&gt;li*3&quot;</span>); <span class="hljs-comment">// -&gt; &lt;ul&gt;&lt;li&gt;&lt;/li&gt;&lt;li&gt;&lt;/li&gt;&lt;li&gt;&lt;/li&gt;&lt;/ul&gt;</span>
 
-// Or, use the object notation (it's possible to mix and match both):
-LS.Create("div", {
-    id: "myId",
-    class: "myClass",
+<span class="hljs-comment">// Or, use the object notation (it&#x27;s possible to mix and match both):</span>
+<span class="hljs-variable constant_">LS</span>.<span class="hljs-title class_">Create</span>(<span class="hljs-string">&quot;div&quot;</span>, {
+    <span class="hljs-attr">id</span>: <span class="hljs-string">&quot;myId&quot;</span>,
+    <span class="hljs-attr">class</span>: <span class="hljs-string">&quot;myClass&quot;</span>,
 });
 
-// Not specifying the tag name defaults to div:
-LS.Create({ class: "myDiv" });
+<span class="hljs-comment">// Not specifying the tag name defaults to div:</span>
+<span class="hljs-variable constant_">LS</span>.<span class="hljs-title class_">Create</span>({ <span class="hljs-attr">class</span>: <span class="hljs-string">&quot;myDiv&quot;</span> });
 
 
-// Now let's look at how to add content & children:
+<span class="hljs-comment">// Now let&#x27;s look at how to add content &amp; children:</span>
 
-// Either simply textContent:
-LS.Create("div", "Hello World"); // -> <div>Hello World</div>
+<span class="hljs-comment">// Either simply textContent:</span>
+<span class="hljs-variable constant_">LS</span>.<span class="hljs-title class_">Create</span>(<span class="hljs-string">&quot;div&quot;</span>, <span class="hljs-string">&quot;Hello World&quot;</span>); <span class="hljs-comment">// -&gt; &lt;div&gt;Hello World&lt;/div&gt;</span>
 
-// Or an array of children:
-LS.Create("div", ["Hello ", "World"]); // -> <div>Hello World</div>
+<span class="hljs-comment">// Or an array of children:</span>
+<span class="hljs-variable constant_">LS</span>.<span class="hljs-title class_">Create</span>(<span class="hljs-string">&quot;div&quot;</span>, [<span class="hljs-string">&quot;Hello &quot;</span>, <span class="hljs-string">&quot;World&quot;</span>]); <span class="hljs-comment">// -&gt; &lt;div&gt;Hello World&lt;/div&gt;</span>
 
-// Or via the following properties:
-LS.Create({
-    text: "Hello World", // textContent (plain text, safe from HTML injection)
+<span class="hljs-comment">// Or via the following properties:</span>
+<span class="hljs-variable constant_">LS</span>.<span class="hljs-title class_">Create</span>({
+    <span class="hljs-attr">text</span>: <span class="hljs-string">&quot;Hello World&quot;</span>, <span class="hljs-comment">// textContent (plain text, safe from HTML injection)</span>
 });
 
-LS.Create({
-    html: "<h1>Hello World</h1>", // innerHTML (HTML content as a string)
+<span class="hljs-variable constant_">LS</span>.<span class="hljs-title class_">Create</span>({
+    <span class="hljs-attr">html</span>: <span class="hljs-string">&quot;&lt;h1&gt;Hello World&lt;/h1&gt;&quot;</span>, <span class="hljs-comment">// innerHTML (HTML content as a string)</span>
 });
 
-// And finally, the most powerful, the inner property:
-LS.Create({
-    inner: [
-        "Hello ", // text node
-        { tag: "span", text: "World" }, // Recursive element node!
-        { emmet: "ul>li*3" }, // Node created from an Emmet abbreviation!
+<span class="hljs-comment">// And finally, the most powerful, the inner property:</span>
+<span class="hljs-variable constant_">LS</span>.<span class="hljs-title class_">Create</span>({
+    <span class="hljs-attr">inner</span>: [
+        <span class="hljs-string">&quot;Hello &quot;</span>, <span class="hljs-comment">// text node</span>
+        { <span class="hljs-attr">tag</span>: <span class="hljs-string">&quot;span&quot;</span>, <span class="hljs-attr">text</span>: <span class="hljs-string">&quot;World&quot;</span> }, <span class="hljs-comment">// Recursive element node!</span>
+        { <span class="hljs-attr">emmet</span>: <span class="hljs-string">&quot;ul&gt;li*3&quot;</span> }, <span class="hljs-comment">// Node created from an Emmet abbreviation!</span>
 
-        [], // <- an array turns into a <div> wrapper with it's content as children
-        {}, // <- an object turns into a <div> with the specified options
+        [], <span class="hljs-comment">// &lt;- an array turns into a &lt;div&gt; wrapper with it&#x27;s content as children</span>
+        {}, <span class="hljs-comment">// &lt;- an object turns into a &lt;div&gt; with the specified options</span>
 
-        [ { tag: "div", class: "myClass" } ] // <- <div><div class="myClass"></div></div>
+        [ { <span class="hljs-attr">tag</span>: <span class="hljs-string">&quot;div&quot;</span>, <span class="hljs-attr">class</span>: <span class="hljs-string">&quot;myClass&quot;</span> } ] <span class="hljs-comment">// &lt;- &lt;div&gt;&lt;div class=&quot;myClass&quot;&gt;&lt;/div&gt;&lt;/div&gt;</span>
 
-        // The nested object is equivalent to LS.Create(...), so all properties are supported.
-        // This allows creating complex nested structures cleanly in one call!
+        <span class="hljs-comment">// The nested object is equivalent to LS.Create(...), so all properties are supported.</span>
+        <span class="hljs-comment">// This allows creating complex nested structures cleanly in one call!</span>
     ],
 });
 
-// If you want a multi-root Emmet abbreviation:
-LS.Util.parseEmmet("div+span"); // -> DocumentFragment[<div></div>, <span></span>]
+<span class="hljs-comment">// If you want a multi-root Emmet abbreviation:</span>
+<span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Util</span>.<span class="hljs-title function_">parseEmmet</span>(<span class="hljs-string">&quot;div+span&quot;</span>); <span class="hljs-comment">// -&gt; DocumentFragment[&lt;div&gt;&lt;/div&gt;, &lt;span&gt;&lt;/span&gt;]</span>
 
-// 99% of Emmet is supported, as of now only numbering ($) is not supported, but is planned soon.
+<span class="hljs-comment">// 99% of Emmet is supported, as of now only numbering ($) is not supported, but is planned soon.</span>
 
-// There's more that LS.Create can do, such as sanitizing your HTML (sanitize option).
-```
+<span class="hljs-comment">// There&#x27;s more that LS.Create can do, such as sanitizing your HTML (sanitize option).</span></code></pre>
 
-### Selecting elements
+<h3 id="selecting-elements">Selecting elements</h3>
+
+<div markdown="off" class="api-symbol-help">
+  <p><strong>API symbol:</strong> <a href="/docs/ls/api/symbols/ls-select.html"><code>LS.Select</code></a></p>
+  <p>Element selector utility.<br>The current implementation doesn&#39;t include wrapping as of now.</p>
+  <pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title class_">Select</span>()</code></pre>
+</div>
+
+
+<div markdown="off" class="api-symbol-help">
+  <p><strong>API symbol:</strong> <a href="/docs/ls/api/symbols/ls-selectone.html"><code>LS.SelectOne</code></a></p>
+  <pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title class_">SelectOne</span>()</code></pre>
+</div>
+
 LS provides simple utilities (`LS.Select` and `LS.SelectOne`) for selecting elements. Though they aren't much different from document.querySelector.
 
-```js
-LS.Select(".myClass"); // Array of all elements with the myClass class, from the whole document.
-LS.SelectOne("#myId"); // The first element with the id "myId" or null.
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-variable constant_">LS</span>.<span class="hljs-title class_">Select</span>(<span class="hljs-string">&quot;.myClass&quot;</span>); <span class="hljs-comment">// Array of all elements with the myClass class, from the whole document.</span>
+<span class="hljs-variable constant_">LS</span>.<span class="hljs-title class_">SelectOne</span>(<span class="hljs-string">&quot;#myId&quot;</span>); <span class="hljs-comment">// The first element with the id &quot;myId&quot; or null.</span>
 
-// Both also support selecting within a specific parent:
-LS.Select(someParentElement, ".myClass"); // Search only within someParentElement.
-LS.SelectOne(someParentElement, "#myId"); // Search only within someParentElement.
-```
+<span class="hljs-comment">// Both also support selecting within a specific parent:</span>
+<span class="hljs-variable constant_">LS</span>.<span class="hljs-title class_">Select</span>(someParentElement, <span class="hljs-string">&quot;.myClass&quot;</span>); <span class="hljs-comment">// Search only within someParentElement.</span>
+<span class="hljs-variable constant_">LS</span>.<span class="hljs-title class_">SelectOne</span>(someParentElement, <span class="hljs-string">&quot;#myId&quot;</span>); <span class="hljs-comment">// Search only within someParentElement.</span></code></pre>
 
-### Deep cloning data
-LS has a helper for cloning complex structured objects, that performs faster than the native `structuredClone` or even the popular library "klona" (https://jsbm.dev/wFkz6UCGJevxw).
+<h3 id="deep-cloning-data">Deep cloning data</h3>
+
+<div markdown="off" class="api-symbol-help">
+  <p><strong>API symbol:</strong> <a href="/docs/ls/api/symbols/ls-util-clone.html"><code>LS.Util.clone</code></a></p>
+  <p>Deep-clones an Object/Set/Map/Array with filtering support, faster than structuredClone and apparently even the klona library.<br>Very experimental - may not always be reliable for complex objects and as of now ignores functions and prototypes (maybe I&#39;ll expand it later).<br>I recommend to use only on relatively simple/predictable objects.<br>https://jsbm.dev/wFkz6UCGJevxw</p>
+  <pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">clone</span>()</code></pre>
+<ul>
+<li><code>obj</code> <span>(<code>*</code>)</span>: Object to clone</li>
+</ul>
+<p><strong>Returns:</strong> value: Cloned object</p>
+</div>
+
+LS has a helper for cloning complex structured objects, that performs faster than the native `structuredClone` or even the popular library "klona" ([benchmark](https://jsbm.dev/wFkz6UCGJevxw)).
 It accepts any complex object, array, Map, Set, typed array/array buffer, all primitives, and some other types like RegExp or Date. Note: currently it does not support cloning functions or classes.
 
-```js
-// Returns a new clone of that object that doesn't affect the original.
-LS.Util.clone({});
-```
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-comment">// Returns a new clone of that object that doesn&#x27;t affect the original.</span>
+<span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Util</span>.<span class="hljs-title function_">clone</span>({});</code></pre>
 
-### Parsing query parameters
-<jsdoc-generate></jsdoc-generate>
+<h3 id="parsing-query-parameters">Parsing query parameters</h3>
 
 LS has a ridiculously fast utility for passing query parameters, either to an object, or getting the value of one parameter. It's ~11x faster & slightly more convenient than native URLSearchParams (in Chrome) if you aren't expecting multiple values for the same parameter and don't require 100% spec compliance.
 
-```js
-// To get an object of all parameters
-LS.Util.parseQuery("?key=value"); // -> { key: "value" }
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-comment">// To get an object of all parameters</span>
+<span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Util</span>.<span class="hljs-title function_">parseQuery</span>(<span class="hljs-string">&quot;?key=value&quot;</span>); <span class="hljs-comment">// -&gt; { key: &quot;value&quot; }</span>
 
-// To get one value
-LS.Util.parseQuery("?key=value", "key"); // -> "value"
-```
+<span class="hljs-comment">// To get one value</span>
+<span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Util</span>.<span class="hljs-title function_">parseQuery</span>(<span class="hljs-string">&quot;?key=value&quot;</span>, <span class="hljs-string">&quot;key&quot;</span>); <span class="hljs-comment">// -&gt; &quot;value&quot;</span></code></pre>
 
-### Parsing Emmet abbreviations
+<h3 id="parsing-emmet-abbreviations">Parsing Emmet abbreviations</h3>
+
+<div markdown="off" class="api-symbol-help">
+  <p><strong>API symbol:</strong> <a href="/docs/ls/api/symbols/ls-util-parseemmet.html"><code>LS.Util.parseEmmet</code></a></p>
+  <p>Relatively fast &amp; light Emmet abbreviation parser</p>
+  <pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">parseEmmet</span>()</code></pre>
+<ul>
+<li><code>abbreviation</code> <span>(<code>string</code>)</span>: Emmet abbreviation to parse.</li>
+</ul>
+<p><strong>Returns:</strong> <code><a href="/docs/ls/api/symbols/documentfragment.html">DocumentFragment</a></code>: Root element of the parsed structure.</p>
+</div>
+
 LS has a light Emmet abbreviation parser that supports most of the Emmet syntax.<br>
 See: https://docs.emmet.io/abbreviations/syntax/ to see what you can do.<br>
 
-```js
-// Returns a DocumentFragment containing the parsed elements.
-LS.Util.parseEmmet("div.myClass#myId"); // -> DocumentFragment[<div class="myClass" id="myId"></div>]
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-comment">// Returns a DocumentFragment containing the parsed elements.</span>
+<span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Util</span>.<span class="hljs-title function_">parseEmmet</span>(<span class="hljs-string">&quot;div.myClass#myId&quot;</span>); <span class="hljs-comment">// -&gt; DocumentFragment[&lt;div class=&quot;myClass&quot; id=&quot;myId&quot;&gt;&lt;/div&gt;]</span>
 
-// If you want a single element (and discard any other top-level siblings):
-LS.Util.parseEmmet("{I am kept}+{I am discarded}", { singleNode: true });
+<span class="hljs-comment">// If you want a single element (and discard any other top-level siblings):</span>
+<span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Util</span>.<span class="hljs-title function_">parseEmmet</span>(<span class="hljs-string">&quot;{I am kept}+{I am discarded}&quot;</span>, { <span class="hljs-attr">singleNode</span>: <span class="hljs-literal">true</span> });
 
-// Additionally, a custom namespace can be passed.
-// This is the the utility that LS.Create uses; for more options, you can use LS.Create.
-```
+<span class="hljs-comment">// Additionally, a custom namespace can be passed.</span>
+<span class="hljs-comment">// This is the the utility that LS.Create uses; for more options, you can use LS.Create.</span></code></pre>
 
-### Sanitize HTML
+<h3 id="sanitize-html">Sanitize HTML</h3>
+
+<div markdown="off" class="api-symbol-help">
+  <p><strong>API symbol:</strong> <a href="/docs/ls/api/symbols/ls-util-sanitize.html"><code>LS.Util.sanitize</code></a></p>
+  <p>Sanitize a node, stripping all elements not on an allowlist, and removes all attributes.</p>
+  <pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">sanitize</span>()</code></pre>
+<ul>
+<li><code>node</code> <span>(<code>*</code>)</span></li>
+</ul>
+</div>
+
 A very simple utility for sanitizing/cleaning an element.<br>
 It removes all child elements not on a whitelist and removing unsafe attributes.<br>
 Note; this mutates the element you pass.
-```js
-const myElement = LS.Create("span{Hello World}>script{alert('XSS')}");
-LS.Util.sanitize(myElement); // myElement is now <span>Hello World</span>.
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">const</span> myElement = <span class="hljs-variable constant_">LS</span>.<span class="hljs-title class_">Create</span>(<span class="hljs-string">&quot;span{Hello World}&gt;script{alert(&#x27;XSS&#x27;)}&quot;</span>);
+<span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Util</span>.<span class="hljs-title function_">sanitize</span>(myElement); <span class="hljs-comment">// myElement is now &lt;span&gt;Hello World&lt;/span&gt;.</span>
 
-// LS.Create also supports this, eg.:
-LS.Create("span", { html: "<script>alert('XSS')</script><span onclick='alert(\"XSS\")'>Hello World</span>", sanitize: true });
+<span class="hljs-comment">// LS.Create also supports this, eg.:</span>
+<span class="hljs-variable constant_">LS</span>.<span class="hljs-title class_">Create</span>(<span class="hljs-string">&quot;span&quot;</span>, { <span class="hljs-attr">html</span>: <span class="hljs-string">&quot;&lt;script&gt;alert(&#x27;XSS&#x27;)&lt;/script&gt;&lt;span onclick=&#x27;alert(\\\&quot;XSS\\\&quot;)&#x27;&gt;Hello World&lt;/span&gt;&quot;</span>, <span class="hljs-attr">sanitize</span>: <span class="hljs-literal">true</span> });
 
-// Allowlist is in LS.Util.allowedTags
-```
+<span class="hljs-comment">// Allowlist is in LS.Util.allowedTags</span></code></pre>
 
-### Copy to clipboard
+<h3 id="copy-to-clipboard">Copy to clipboard</h3>
+
+<div markdown="off" class="api-symbol-help">
+  <p><strong>API symbol:</strong> <a href="/docs/ls/api/symbols/ls-util-copy.html"><code>LS.Util.copy</code></a></p>
+  <p>Copies text to the clipboard on any browser.</p>
+  <pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">copy</span>()</code></pre>
+<ul>
+<li><code>text</code> <span>(<code>*</code>)</span></li>
+</ul>
+<p><strong>Returns:</strong> <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise" target="_blank">Promise</a></code></p>
+</div>
+
 A very simple utility for copying text to the clipboard.
-```js
-LS.Util.copy("Text to copy");
-```
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Util</span>.<span class="hljs-title function_">copy</span>(<span class="hljs-string">&quot;Text to copy&quot;</span>);</code></pre>
 
-### Normalizing text
+<h3 id="normalizing-text">Normalizing text</h3>
+
+<div markdown="off" class="api-symbol-help">
+  <p><strong>API symbol:</strong> <a href="/docs/ls/api/symbols/ls-util-normalize.html"><code>LS.Util.normalize</code></a></p>
+  <p>Normalize a string</p>
+  <pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">normalize</span>()</code></pre>
+<ul>
+<li><code>string</code> <span>(<code>*</code>)</span>: String to normalize</li>
+</ul>
+<p><strong>Returns:</strong> value: Normalized string</p>
+</div>
+
 A function that normalizes text by performing the following operations:
 - Converting to lowercase
 - NFD Unicode normalization (eg. converts "é" to "e")
@@ -285,10 +333,8 @@ A function that normalizes text by performing the following operations:
 - Normalizing whitespace
 - Trimming whitespace
 
-```js
-// Second argument is an optional space character to use for replacing whitespace.
-LS.Util.normalize("  Héllo   Wórld!  "); // -> "hello world"
-```
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-comment">// Second argument is an optional space character to use for replacing whitespace.</span>
+<span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Util</span>.<span class="hljs-title function_">normalize</span>(<span class="hljs-string">&quot;  Héllo   Wórld!  &quot;</span>); <span class="hljs-comment">// -&gt; &quot;hello world&quot;</span></code></pre>
 
 ### 
 </markdown>

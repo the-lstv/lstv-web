@@ -1,0 +1,294 @@
+#template /templates/docs.html
+<head>
+@page { title: "LS.Reactive API Reference", description: "LS.Reactive API reference.", keywords: "reactive" }
+</head>
+@import("/docs/ls/sidebar.json");
+<div .docs-content>
+<markdown>
+<h1 id="ls-reactive">LS.Reactive</h1>
+
+<div class="api-reference" data-symbol="LS.Reactive">
+<article class="api-symbol api-symbol-component/class" id="api-ls-reactive" data-symbol="LS.Reactive">
+<h3 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Reactive.html"><code>LS.Reactive</code></a></h3>
+<div class="api-source">Defined in <code>js/reactive.js:512</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-keyword">new</span> <span class="hljs-variable constant_">LS</span>.<span class="hljs-title class_">Reactive</span>()</code></pre>
+</article>
+<section class="api-members">
+<h3 id="api-ls-reactive-members">Members</h3>
+<article class="api-symbol api-symbol-method" id="api-ls-reactive-bindelement" data-symbol="LS.Reactive.bindElement">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Reactive.bindElement.html"><code>LS.Reactive.bindElement</code></a></h4>
+<p class="api-summary">Binds an element to the reactive system</p>
+<div class="api-source">Defined in <code>js/reactive.js:919</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Reactive</span>.<span class="hljs-title function_">bindElement</span>(target, override)</code></pre>
+<div class="api-params">
+<h4>Parameters</h4>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>target</code></td><td><a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement">HTMLElement</a></td><td>Yes</td><td>The target element to bind</td></tr>
+<tr><td><code>override</code></td><td>string</td><td>No</td><td>Optional override for the binding string</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<h4>Returns</h4>
+<p><span class="api-type">void</span></p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-reactive-createbinding" data-symbol="LS.Reactive.createBinding">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Reactive.createBinding.html"><code>LS.Reactive.createBinding</code></a></h4>
+<div class="api-source">Defined in <code>js/reactive.js:570</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Reactive</span>.<span class="hljs-title function_">createBinding</span>(object, prefix, options = {})</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-reactive-destroyall" data-symbol="LS.Reactive.destroyAll">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Reactive.destroyAll.html"><code>LS.Reactive.destroyAll</code></a></h4>
+<p class="api-summary">Destroys all bindings.</p>
+<div class="api-source">Defined in <code>js/reactive.js:653</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Reactive</span>.<span class="hljs-title function_">destroyAll</span>()</code></pre>
+<div class="api-returns">
+<h4>Returns</h4>
+<p><span class="api-type">void</span></p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-reactive-destroybinding" data-symbol="LS.Reactive.destroyBinding">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Reactive.destroyBinding.html"><code>LS.Reactive.destroyBinding</code></a></h4>
+<p class="api-summary">Destroys <a class="api-symbol-ref" href="LS.Color.a.html">a</a> binding by its prefix.</p>
+<div class="api-source">Defined in <code>js/reactive.js:640</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Reactive</span>.<span class="hljs-title function_">destroyBinding</span>(prefix)</code></pre>
+<div class="api-params">
+<h4>Parameters</h4>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>prefix</code></td><td>*</td><td>The prefix of the binding to <a class="api-symbol-ref" href="LS.Animation.Context.destroy.html">destroy</a></td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<h4>Returns</h4>
+<p><span class="api-type">boolean</span> — True if the binding was found and destroyed</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-field" id="api-ls-reactive-empty-path" data-symbol="LS.Reactive.EMPTY_PATH">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Reactive.EMPTY_PATH.html"><code>LS.Reactive.EMPTY_PATH</code></a></h4>
+<div class="api-source">Defined in <code>js/reactive.js:513</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Reactive</span>.<span class="hljs-property">EMPTY_PATH</span></code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-reactive-fork" data-symbol="LS.Reactive.fork">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Reactive.fork.html"><code>LS.Reactive.fork</code></a></h4>
+<p class="api-summary">Forks an object into <a class="api-symbol-ref" href="LS.Color.a.html">a</a> new reactive proxy without mutating the original object.<br>Mutating this proxy will affect only the new object.</p>
+<div class="api-source">Defined in <code>js/reactive.js:611</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Reactive</span>.<span class="hljs-title function_">fork</span>(prefix, object, data, options = {})</code></pre>
+<div class="api-params">
+<h4>Parameters</h4>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>prefix</code></td><td>*</td><td>The prefix to bind to</td></tr>
+<tr><td><code>object</code></td><td>*</td><td>The object to <a class="api-symbol-ref" href="LS.Reactive.fork.html">fork</a></td></tr>
+<tr><td><code>data</code></td><td>*</td><td>New object to patch new values to, <a class="api-symbol-ref" href="LS.Knob.defaults.html">defaults</a> to an empty object</td></tr>
+<tr><td><code>options</code></td><td>*</td><td>Options for the binding (same as <a class="api-symbol-ref" href="LS.Reactive.wrap.html">wrap</a>())</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<h4>Returns</h4>
+<p><span class="api-type">Proxy</span> — The reactive proxy object</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-reactive-parsebindingstring" data-symbol="LS.Reactive.parseBindingString">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Reactive.parseBindingString.html"><code>LS.Reactive.parseBindingString</code></a></h4>
+<div class="api-source">Defined in <code>js/reactive.js:865</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Reactive</span>.<span class="hljs-title function_">parseBindingString</span>(bindingString, expression = {})</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-reactive-parseexpression" data-symbol="LS.Reactive.parseExpression">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Reactive.parseExpression.html"><code>LS.Reactive.parseExpression</code></a></h4>
+<p class="api-summary">A light parser to <a class="api-symbol-ref" href="LS.Color.parse.html">parse</a> extra properties, eg. "username || anonymous".</p>
+<div class="api-source">Defined in <code>js/reactive.js:719</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Reactive</span>.<span class="hljs-title function_">parseExpression</span>(expr, result = {})</code></pre>
+<div class="api-params">
+<h4>Parameters</h4>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>expr</code></td><td>string</td><td>The expression to <a class="api-symbol-ref" href="LS.Color.parse.html">parse</a></td></tr>
+<tr><td><code>result</code></td><td><a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></td><td>An optional object to <a class="api-symbol-ref" href="LS.Color.fill.html">fill</a> with results</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<h4>Returns</h4>
+<p><span class="api-type"><a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span> — An object with parsed properties</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-reactive-registertype" data-symbol="LS.Reactive.registerType">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Reactive.registerType.html"><code>LS.Reactive.registerType</code></a></h4>
+<div class="api-source">Defined in <code>js/reactive.js:543</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Reactive</span>.<span class="hljs-title function_">registerType</span>(name, func)</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-reactive-render" data-symbol="LS.Reactive.render">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Reactive.render.html"><code>LS.Reactive.render</code></a></h4>
+<p class="api-summary">Renders <a class="api-symbol-ref" href="LS.Color.a.html">a</a> binding object</p>
+<div class="api-source">Defined in <code>js/reactive.js:997</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Reactive</span>.<span class="hljs-title function_">render</span>(binding)</code></pre>
+<div class="api-params">
+<h4>Parameters</h4>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>binding</code></td><td>object</td><td>The binding object to <a class="api-symbol-ref" href="LS.Animation.render.html">render</a></td></tr>
+</tbody>
+</table>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-reactive-renderall" data-symbol="LS.Reactive.renderAll">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Reactive.renderAll.html"><code>LS.Reactive.renderAll</code></a></h4>
+<p class="api-summary">Renders all bindings in the cache (everything from any bound element)</p>
+<div class="api-source">Defined in <code>js/reactive.js:987</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Reactive</span>.<span class="hljs-title function_">renderAll</span>(bindings)</code></pre>
+<div class="api-params">
+<h4>Parameters</h4>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>bindings</code></td><td><a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&lt;ReactiveBinding&gt;</td><td>An array of bindings to <a class="api-symbol-ref" href="LS.Animation.render.html">render</a>, <a class="api-symbol-ref" href="LS.Knob.defaults.html">defaults</a> to all bindings in the cache</td></tr>
+</tbody>
+</table>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-reactive-scan" data-symbol="LS.Reactive.scan">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Reactive.scan.html"><code>LS.Reactive.scan</code></a></h4>
+<p class="api-summary">Scans the document or specific element for elements with the data-reactive attribute and caches them</p>
+<div class="api-source">Defined in <code>js/reactive.js:907</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Reactive</span>.<span class="hljs-title function_">scan</span>(scanTarget = <span class="hljs-variable language_">document</span>.<span class="hljs-property">body</span>)</code></pre>
+<div class="api-params">
+<h4>Parameters</h4>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>scanTarget</code></td><td><a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement">HTMLElement</a></td><td>The target element to <a class="api-symbol-ref" href="LS.Reactive.scan.html">scan</a></td></tr>
+</tbody>
+</table>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-reactive-splitpath" data-symbol="LS.Reactive.splitPath">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Reactive.splitPath.html"><code>LS.Reactive.splitPath</code></a></h4>
+<p class="api-summary">Splits <a class="api-symbol-ref" href="LS.Color.a.html">a</a> path into prefix, key name and extras<br>Eg. "user.name extra stuff" =&gt; [ "user.", "name", " extra stuff" ]<br>Note that leading whitespace is trimmed so joining won't produce the exact original string</p>
+<div class="api-source">Defined in <code>js/reactive.js:668</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Reactive</span>.<span class="hljs-title function_">splitPath</span>(path)</code></pre>
+<div class="api-params">
+<h4>Parameters</h4>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>path</code></td><td>*</td><td>The path to split</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<h4>Returns</h4>
+<p><span class="api-type"><a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></span> — An array like [prefix, name, extra]</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-field" id="api-ls-reactive-types" data-symbol="LS.Reactive.types">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Reactive.types.html"><code>LS.Reactive.types</code></a></h4>
+<div class="api-source">Defined in <code>js/reactive.js:515</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Reactive</span>.<span class="hljs-property">types</span></code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-reactive-unbindelement" data-symbol="LS.Reactive.unbindElement">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Reactive.unbindElement.html"><code>LS.Reactive.unbindElement</code></a></h4>
+<p class="api-summary">Unbinds an element from the reactive system</p>
+<div class="api-source">Defined in <code>js/reactive.js:949</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Reactive</span>.<span class="hljs-title function_">unbindElement</span>(target, keepAttribute = <span class="hljs-literal">false</span>)</code></pre>
+<div class="api-params">
+<h4>Parameters</h4>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>target</code></td><td><a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement">HTMLElement</a></td><td>The target element to <a class="api-symbol-ref" href="LS.Tooltips.unbind.html">unbind</a></td></tr>
+<tr><td><code>keepAttribute</code></td><td>boolean</td><td>Whether to keep the data-reactive attribute</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<h4>Returns</h4>
+<p><span class="api-type">void</span></p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-reactive-valueat" data-symbol="LS.Reactive.valueAt">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Reactive.valueAt.html"><code>LS.Reactive.valueAt</code></a></h4>
+<p class="api-summary">Gets the <a class="api-symbol-ref" href="LS.Knob.value.html">value</a> <a class="api-symbol-ref" href="LS.Color.at.html">at</a> <a class="api-symbol-ref" href="LS.Color.a.html">a</a> specific path in the reactive system</p>
+<div class="api-source">Defined in <code>js/reactive.js:976</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Reactive</span>.<span class="hljs-title function_">valueAt</span>(fullPath)</code></pre>
+<div class="api-params">
+<h4>Parameters</h4>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>fullPath</code></td><td>string</td><td>The full path to get the <a class="api-symbol-ref" href="LS.Knob.value.html">value</a> from</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<h4>Returns</h4>
+<p><span class="api-type">*</span> — The <a class="api-symbol-ref" href="LS.Knob.value.html">value</a> <a class="api-symbol-ref" href="LS.Color.at.html">at</a> the specified path, or undefined if not found</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-reactive-valueref" data-symbol="LS.Reactive.valueRef">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Reactive.valueRef.html"><code>LS.Reactive.valueRef</code></a></h4>
+<p class="api-summary">Creates <a class="api-symbol-ref" href="LS.Color.a.html">a</a> shallow reactive reference object with <a class="api-symbol-ref" href="LS.Color.a.html">a</a> <a class="api-symbol-ref" href="LS.Multipane.PRESETS.single.html">single</a> "<a class="api-symbol-ref" href="LS.Knob.value.html">value</a>" property.</p>
+<div class="api-source">Defined in <code>js/reactive.js:628</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Reactive</span>.<span class="hljs-title function_">valueRef</span>(prefix, value)</code></pre>
+<div class="api-params">
+<h4>Parameters</h4>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>prefix</code></td><td>string</td><td>The prefix to bind to</td></tr>
+<tr><td><code>value</code></td><td>*</td><td>The initial <a class="api-symbol-ref" href="LS.Knob.value.html">value</a> of the reference</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<h4>Returns</h4>
+<p><span class="api-type">object</span> — The reference object with <a class="api-symbol-ref" href="LS.Color.a.html">a</a> "<a class="api-symbol-ref" href="LS.Knob.value.html">value</a>" property</p>
+</div>
+<div class="api-examples">
+<h4>Examples</h4>
+<pre class="api-example"><code class="language-js hljs"><span class="hljs-keyword">const</span> countRef = reactive.<span class="hljs-title function_">valueRef</span>(<span class="hljs-string">&quot;count&quot;</span>, <span class="hljs-number">0</span>);
+countRef.<span class="hljs-property">value</span> = <span class="hljs-number">5</span>;
+
+<span class="hljs-comment">// In HTML: {{ countRef }} &lt;!-- This will update to 5 --&gt;</span></code></pre>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-reactive-wrap" data-symbol="LS.Reactive.wrap">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Reactive.wrap.html"><code>LS.Reactive.wrap</code></a></h4>
+<p class="api-summary">Wraps an object with <a class="api-symbol-ref" href="LS.Color.a.html">a</a> reactive proxy.<br>The proxy will get the following extra properties:<br>* `__isProxy` - A boolean indicating that this is <a class="api-symbol-ref" href="LS.Color.a.html">a</a> reactive proxy<br>* `__binding` - The binding instance</p>
+<div class="api-source">Defined in <code>js/reactive.js:597</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Reactive</span>.<span class="hljs-title function_">wrap</span>(prefix, object, options = {})</code></pre>
+<div class="api-params">
+<h4>Parameters</h4>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>prefix</code></td><td>string</td><td>The prefix to bind to</td></tr>
+<tr><td><code>object</code></td><td>object</td><td>The object to <a class="api-symbol-ref" href="LS.Reactive.wrap.html">wrap</a></td></tr>
+<tr><td><code>options</code></td><td>object</td><td>Options for the binding</td></tr>
+<tr><td><code>options.shallow</code></td><td>boolean</td><td>Whether to only <a class="api-symbol-ref" href="LS.Reactive.wrap.html">wrap</a> the <a class="api-symbol-ref" href="LS.Modal.top.html">top</a>-level object</td></tr>
+<tr><td><code>options.render</code></td><td>boolean|function</td><td>Disables rendering if <a class="api-symbol-ref" href="LS.Color.set.html">set</a> to false, or replaces with <a class="api-symbol-ref" href="LS.Color.a.html">a</a> custom <a class="api-symbol-ref" href="LS.Animation.render.html">render</a> function</td></tr>
+<tr><td><code>options.propagate</code></td><td>boolean</td><td>Whether to propagate changes to parent bindings (eg. if user.data.name changes, user.data and user also <a class="api-symbol-ref" href="LS.Color.update.html">update</a>)</td></tr>
+<tr><td><code>options.extends</code></td><td>boolean</td><td>Fallback object to use when the key is not found</td></tr>
+<tr><td><code>options.collapseValue</code></td><td>boolean</td><td>Whether to collapse references to the object itself to its _value property (eg. if "test" is {_value: 5} and we bind {{ test }}, 5 will be used instead of the object)</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<h4>Returns</h4>
+<p><span class="api-type">Proxy</span> — The reactive proxy object</p>
+</div>
+</article>
+</section>
+</div>
+
+</markdown>
+</div>

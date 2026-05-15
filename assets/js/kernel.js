@@ -1224,6 +1224,21 @@ class Viewport extends LS.EventEmitter {
     async navigate(pathOrPage, options = {}) {
         let path = typeof pathOrPage === 'string' ? pathOrPage : pathOrPage.path;
         let page = pathOrPage instanceof ContentContext ? pathOrPage : null;
+        let hash = typeof options.hash === "string" ? options.hash : "";
+
+        if(typeof hash === "string" && hash.length > 0) {
+            if(!hash.startsWith("#")) hash = "#" + hash;
+            if(hash === "#") hash = "";
+        }
+
+        if (typeof path === "string") {
+            const hashIndex = path.indexOf("#");
+            if (hashIndex !== -1) {
+                hash = path.slice(hashIndex);
+                if(hash === "#") hash = "";
+                path = path.slice(0, hashIndex) || "/";
+            }
+        }
 
         if(this.options.disableRemotePages && (!page || page.src)) {
             kernel.error("Remote pages are disabled for this viewport (" + this.name + ").");
@@ -1257,8 +1272,9 @@ class Viewport extends LS.EventEmitter {
 
                 const manifest = kernel.appManifests.get(appId);
                 if (this.name === 'main') {
-                    if (!options.browserTriggered && options.pushState !== false && location.pathname !== path) {
-                        history.pushState({ path }, document.title, path);
+                    const historyPath = path + (hash || "");
+                    if (!options.browserTriggered && options.pushState !== false && (location.pathname + location.hash) !== historyPath) {
+                        history.pushState({ path: historyPath }, document.title, historyPath);
                     }
                     document.title = `LSTV | ${manifest?.name || appId}`;
                     website.closeToolbar();
@@ -1281,10 +1297,16 @@ class Viewport extends LS.EventEmitter {
                 await this.navigate(SPAExtension[2], { browserTriggered: true });
             }
 
-            if(location.pathname !== path && !options.browserTriggered && options.pushState !== false && this.name === 'main') {
-                history.pushState({ path }, document.title, path);
+            const historyPath = path + (hash || "");
+            if((location.pathname + location.hash) !== historyPath && !options.browserTriggered && options.pushState !== false && this.name === 'main') {
+                history.pushState({ path: historyPath }, document.title, historyPath);
             }
             kernel.handleSPAExtension(path, SPAExtension, options.targetElement || null);
+            if(hash) {
+                requestAnimationFrame(() => {
+                    this.navigateToHash(hash);
+                });
+            }
             return true;
         }
 
@@ -1310,6 +1332,18 @@ class Viewport extends LS.EventEmitter {
         const old = this.current;
 
         if (old === page && !options.reload && !page.requiresReload) {
+            if(hash) {
+                if(this.name === "main" && !options.browserTriggered && !options.initial) {
+                    const historyPath = page.path + hash;
+                    if((location.pathname + location.hash) !== historyPath) {
+                        history.pushState({ path: historyPath }, document.title, historyPath);
+                    }
+                }
+
+                requestAnimationFrame(() => {
+                    this.navigateToHash(hash);
+                });
+            }
             return true;
         }
 
@@ -1333,23 +1367,28 @@ class Viewport extends LS.EventEmitter {
             } else {
                 this.emit("rendered", page);
 
-                if(this.name === "main" && !firstPage) LS.Animation.fadeIn(page.content, {
-                    duration: 300,
-                    direction: 'forward',
-                    easing: 'ease-out'
-                });
+                if(this.name === "main" && !firstPage) page.content.animate([{ opacity: .5, transform: "scale(102%)" }, { opacity: 1, transform: "scale(100%)" }], { duration: 300, easing: "ease" });
                 firstPage = false;
             }
 
             this.current = page;
 
             if (this.name === 'main') {
-                document.title = (page.title && page.title.startsWith("LSTV | "))? page.title: `LSTV | ${page.title || 'Untitled'}`;
+                document.title = page.title || "LSTV | Untitled";//(page.title && page.title.startsWith("LSTV | "))? page.title: `LSTV | ${page.title || 'Untitled'}`;
                 
                 if (!options.browserTriggered && !options.initial) {
-                    history.pushState({ path }, document.title, page.path);
+                    const historyPath = page.path + (hash || "");
+                    if((location.pathname + location.hash) !== historyPath) {
+                        history.pushState({ path: historyPath }, document.title, historyPath);
+                    }
                 }
                 website.closeToolbar();
+            }
+
+            if(hash) {
+                requestAnimationFrame(() => {
+                    this.navigateToHash(hash);
+                });
             }
 
             kernel.log(`Navigated to ${path} in ${this.name}`);
@@ -1408,6 +1447,23 @@ class Viewport extends LS.EventEmitter {
         this.errorPageMessage1.textContent = website.errorMessages[status] || 'Unexpected error.';
         this.errorPageMessage2.textContent = this.errorPageMessage1.textContent;
         this.target.replaceChildren(this.errorPageElement);
+    }
+
+    navigateToHash(hash) {
+        if(typeof hash !== "string" || !hash || hash === "#") return false;
+
+        let id = hash.startsWith("#") ? hash.slice(1) : hash;
+        if(!id) return false;
+
+        try {
+            id = decodeURIComponent(id);
+        } catch (e) {}
+
+        const element = document.getElementById(id) || document.getElementsByName(id)?.[0] || null;
+        if(!element) return false;
+
+        element.scrollIntoView({ block: "start" });
+        return true;
     }
 
     destroy(destroyContent = false) {
@@ -2670,7 +2726,7 @@ const website = {
         //     website.openToolbar("assistant", true);
         // } }],
 
-        ["themeButton", { buttonLabel: LS.Create('i', { class: "bi-palette-fill" }), label: "Customize", description: "Customize the site appearance", icon: "bi-palette-fill", onclick() {
+        ["themeButton", { buttonLabel: LS.Create('i.bi-palette-fill'), label: "Customize", description: "Customize the site appearance", icon: "bi-palette-fill", onclick() {
             website.openToolbar("theme", true);
         }}],
 
@@ -2768,9 +2824,14 @@ const website = {
             });
         }
 
+        create(d){'use strict';var e0=document.createElement("div");e0.setAttribute("class","music-player toolbar-styled");var e1=document.createElement("img");e1.setAttribute("alt","Music cover background");e1.setAttribute("crossorigin","anonymous");e1.setAttribute("class","music-player-cover");e0.appendChild(e1);var e2=document.createElement("img");e2.setAttribute("alt","Music cover art");e2.setAttribute("crossorigin","anonymous");e2.setAttribute("class","music-player-art");e0.appendChild(e2);var e3=document.createElement("div");e3.setAttribute("class","music-player-container");var e4=document.createElement("div");e4.setAttribute("class","music-player-info");var e5=document.createElement("span");e5.setAttribute("class","text-overflow-nowrap music-player-title");var t6=document.createTextNode("Lorem Ipsum");e5.appendChild(t6);e4.appendChild(e5);var e7=document.createElement("span");e7.setAttribute("class","text-overflow-nowrap music-player-artist");var t8=document.createTextNode("Dolor Sit Amet");e7.appendChild(t8);e4.appendChild(e7);e3.appendChild(e4);var e9=document.createElement("div");e9.setAttribute("class","music-player-progress");var e10=document.createElement("div");e10.setAttribute("class","music-player-progress-bar");var e11=document.createElement("div");e11.setAttribute("class","music-player-progress-filled");e10.appendChild(e11);e9.appendChild(e10);e3.appendChild(e9);var e12=document.createElement("div");e12.setAttribute("class","music-player-controls");var e13=document.createElement("button");e13.setAttribute("ls-tooltip","");e13.setAttribute("aria-label","Like");e13.setAttribute("class","circle clear music-player-like");var e14=document.createElement("i");e14.setAttribute("class","bi-hand-thumbs-up");e13.appendChild(e14);e12.appendChild(e13);var e15=document.createElement("button");e15.setAttribute("ls-tooltip","");e15.setAttribute("aria-label","Previous");e15.setAttribute("class","circle clear music-player-prev");var e16=document.createElement("i");e16.setAttribute("class","bi-skip-start-fill");e15.appendChild(e16);e12.appendChild(e15);var e17=document.createElement("button");e17.setAttribute("ls-tooltip","");e17.setAttribute("aria-label","Play/Pause");e17.setAttribute("class","circle clear music-player-play-pause");var e18=document.createElement("i");e18.setAttribute("class","bi-play-fill");e17.appendChild(e18);e12.appendChild(e17);var e19=document.createElement("button");e19.setAttribute("ls-tooltip","");e19.setAttribute("aria-label","Next");e19.setAttribute("class","circle clear music-player-next");var e20=document.createElement("i");e20.setAttribute("class","bi-skip-end-fill");e19.appendChild(e20);e12.appendChild(e19);var e21=document.createElement("button");e21.setAttribute("ls-tooltip","Repeat Off");e21.setAttribute("aria-label","Toggle repeat modes");e21.setAttribute("class","circle clear music-player-repeat");var e22=document.createElement("i");e22.setAttribute("class","bi-arrow-repeat");e21.appendChild(e22);e12.appendChild(e21);e3.appendChild(e12);e0.appendChild(e3);var __rootValue=e0;return{root:__rootValue};}
+
         init(){
             if(this.initialized) return;
             this.initialized = true;
+
+            this.toolbarElement.appendChild(this.create().root);
+
             this.audio = new Audio();
             this.titleElement = this.toolbarElement.querySelector(".music-player-title");
             this.artistElement = this.toolbarElement.querySelector(".music-player-artist");
@@ -3670,7 +3731,7 @@ const kernel = new class Kernel extends LoggerContext {
         const originalState = location.pathname;
         window.addEventListener('popstate', (event) => {
             if(isDebug) this.log("Popstate event:", event);
-            const href = event.state?.path ?? location.pathname;
+            const href = event.state?.path ?? (location.pathname + location.hash);
             kernel.viewport.navigate(href, { pushState: false });
         });
 
@@ -3691,13 +3752,26 @@ const kernel = new class Kernel extends LoggerContext {
 
             if (targetElement) {
                 if(targetElement.hasAttribute("target")) return;
-                if(targetElement.href.endsWith("#")) return event.preventDefault();
+
+                const rawHref = targetElement.getAttribute('href');
+                if(!rawHref) return;
+                if(rawHref === "#") return event.preventDefault();
 
                 const link = targetElement.href;
-                let href = targetElement.getAttribute('href');
+                let href = rawHref;
 
                 if(link.startsWith(location.origin) && !link.endsWith("?") && !link.startsWith(location.origin + ":")){
-                    if(href.startsWith(location.origin)) href = href.substring(location.origin.length);
+                    try {
+                        const parsed = new URL(link, location.href);
+                        href = parsed.pathname + parsed.search + parsed.hash;
+                    } catch (e) {
+                        if(href.startsWith(location.origin)) href = href.substring(location.origin.length);
+                    }
+
+                    if(href.startsWith("#")) {
+                        href = location.pathname + href;
+                    }
+
                     const viewportElement = targetElement.closest(".viewport") || kernel.viewport.target;
                     if (viewportElement) {
                         const viewport = viewportElement.viewportInstance || [...kernel.viewports.values()].find(v => v.target === viewportElement);
@@ -4075,388 +4149,10 @@ const kernel = new class Kernel extends LoggerContext {
 
     async _initializeCommandPalette() {
         if (this._initializingPalette || website.palette) return;
-        const CommandPalette = (await import("/~/assets/js/pallete.mjs?0")).default;
-        const topBar = LS.SelectOne("#topOverlay");
-        const paletteBar = LS.SelectOne("#commandPaletteBar");
-        const paletteContainer = LS.SelectOne("#commandPalette");
-        const terminalContainer = LS.SelectOne("#commandTerminal");
-        const terminalOutput = terminalContainer.querySelector(".terminal-output");
-
-        const paletteLogger = new LoggerContext("Command Palette");
-        website.palette = new CommandPalette({
-            wrapperElement: paletteContainer,
-            menuElement: paletteContainer.querySelector(".completion-menu"),
-            iconElement: paletteContainer.querySelector(".command-icon"),
-            textDisplayElement: paletteContainer.querySelector(".command-text"),
-            hintElement: paletteContainer.querySelector(".command-hint"),
-            inputElement: paletteContainer.querySelector(".command-input"),
-            terminalOutput: terminalOutput,
-
-            fontWidth: 9.6 * 1.2,
-
-            onClose(){
-                LS.Animation.fadeOut(topBar, 300, "down");
-            },
-
-            onOpen(){
-                LS.Animation.fadeIn(topBar, 300, "up");
-            },
-
-            logger: paletteLogger
-        });
-
-        let terminalHidden = true;
-        const terminalObserver = new MutationObserver(() => {
-            const hasContent = terminalOutput.children.length > 0;
-            if (hasContent) {
-                if (terminalHidden) {
-                    LS.Animation.fadeIn(terminalContainer, 200, "up");
-                    terminalHidden = false;
-                }
-            } else {
-                if (!terminalHidden) {
-                    LS.Animation.fadeOut(terminalContainer, 200, "down");
-                    terminalHidden = true;
-                }
-            }
-        });
-
-        terminalObserver.observe(terminalOutput, { childList: true });
-
-        const terminalWriter = {
-            log: website.palette.log.bind(website.palette)
-        }
-
-        this.terminalWriter = terminalWriter;
-        paletteLogger.writer = terminalWriter;
-
-        paletteBar.querySelector("button").onclick = () => {
-            website.palette.close();
-        };
-
-        /**
-         * This should later be inline, so we don't waste client memory & work. 
-         * That's when we use Glitter
-         */
-
-        /*comptime*/ const kVersionMeta = {
-            1: {
-                codename: "Zen",
-                color: "#B5FFEE"
-            },
-            2: {
-                codename: "Aether",
-                color: "#FFA680"
-            },
-            3: {
-                codename: "Forge",
-                color: "#8C80FF"
-            }
-        }
-
-        /*comptime*/ const ckMeta = kVersionMeta[kernel.version.split(".")[0]] || { codename: "Unknown", color: "var(--accent)" };
-
-        website.palette.register([
-            {
-                name: "kernel-info",
-                alias: ["kernel-version", "version"],
-                icon: 'bi-cpu-fill',
-                description: "Show kernel information",
-                async onCalled() {
-                    terminalOutput.appendChild(LS.Create({
-                        innerHTML: `<img src="/~/assets/image/kernel-icons/${kernel.version.split(".")[0]}x.png" width="180" style="position:absolute;top:20px"><svg xmlns="http://www.w3.org/2000/svg" width="200" height="180" viewBox="0 0 200 180" fill="none">
-<rect x="59" y="63" width="82" height="28.9828" fill="black"/>
-<rect x="59" y="91.9828" width="82" height="24.7414" fill="${ckMeta.color}"/>
-<text fill="black" style="white-space: pre" xml:space="preserve" font-family="JetBrains Mono" font-size="16.9655" font-weight="300" letter-spacing="0em"><tspan x="70.0855" y="110.504">v${kernel.version.split("-")[0]}</tspan></text>
-<text fill="${ckMeta.color}" style="white-space: pre" xml:space="preserve" font-family="JetBrains Mono" font-size="22.6207" font-weight="500" letter-spacing="0em"><tspan x="66.0693" y="86.1434">[${ckMeta.codename}]</tspan></text>
-</svg>`,
-                        style: 'margin:auto;display:flex;justify-content:center;position:relative'
-                    }));
-
-                    terminalWriter.log(
-                        `%clstv.space%c kernel`,
-                        "color:var(--accent);font-weight:bold;font-size:1.2em",
-                        "color:inherit;font-weight:bold;font-size:1.2em"
-                    );
-                    terminalWriter.log(
-                        `%cVersion:%c ${kernel.version} (${ckMeta.codename})`,
-                        "color:var(--accent);font-weight:bold", "color:inherit"
-                    );
-                    terminalWriter.log(
-                        `%cLS version:%c ${LS.version}`,
-                        "color:var(--accent);font-weight:bold", "color:inherit"
-                    );
-                    terminalWriter.log(
-                        `%cViewports:%c ${kernel.viewports.size}`,
-                        "color:var(--accent);font-weight:bold", "color:inherit"
-                    );
-                    terminalWriter.log(
-                        `%cPages:%c ${kernel.pageCache.size} / 20`,
-                        "color:var(--accent);font-weight:bold", "color:inherit"
-                    );
-                    terminalWriter.log(
-                        `%cThreads:%c ${kernel.threads.size} / ${kernel.MAX_THREADS}`,
-                        "color:var(--accent);font-weight:bold", "color:inherit"
-                    );
-                    terminalWriter.log(
-                        `%cWindows:%c ${kernel.windows.size}`,
-                        "color:var(--accent);font-weight:bold", "color:inherit"
-                    );
-                    terminalWriter.log(
-                        `%cSigned in:%c ${await kernel.auth.isLoggedIn() ? "Yes" : "No"}`,
-                        "color:var(--accent);font-weight:bold", "color:inherit"
-                    );
-                    terminalWriter.log(
-                        `%cLoadtime:%c ${Math.round(kernel.ttl)}ms (${Math.round(kernel.ttl_scripting)}ms without network)`,
-                        "color:var(--accent);font-weight:bold", "color:inherit"
-                    );
-                    const uptimeMs = Date.now() - window.__loadTime;
-                    const uptimeSec = Math.floor(uptimeMs / 1000);
-                    const hours = Math.floor(uptimeSec / 3600);
-                    const minutes = Math.floor((uptimeSec % 3600) / 60);
-                    const seconds = uptimeSec % 60;
-                    const prettyUptime =
-                        (hours > 0 ? hours + "h " : "") +
-                        (minutes > 0 ? minutes + "m " : "") +
-                        seconds + "s";
-                    terminalWriter.log(
-                        `%cUptime:%c ${prettyUptime}`,
-                        "color:var(--accent);font-weight:bold", "color:inherit"
-                    );
-                }
-            },
-
-            {
-                name: "settings",
-                icon: "bi-gear",
-                description: "More settings",
-                children: [
-                    // {
-                    //     name: "notifications",
-                    //     icon: "bi-bell",
-                    //     description: "Enable or disable notifications",
-                    //     children: [
-                    //         {
-                    //             name: "enable",
-                    //             icon: "bi-bell-fill",
-                    //             description: "Enable notifications",
-                    //         },
-                    //         {
-                    //             name: "disable",
-                    //             icon: "bi-bell-slash",
-                    //             description: "Disable notifications",
-                    //         }
-                    //     ]
-                    // },
-
-                    {
-                        name: "privacy",
-                        icon: "bi-shield-lock",
-                        description: "Privacy settings",
-                        children: [
-                            {
-                                name: "statistics",
-                                icon: "bi-bar-chart",
-                                description: "Toggle anonymous statistics sharing",
-                                onCalled(enabled) {
-                                    localStorage.setItem("DISABLE_STATS", !enabled);
-                                    terminalWriter.log("Statistics sharing " + (enabled ? "enabled - Thank you!" : "disabled - No statistics data will be sent from this browser from now on."));
-
-                                    if(!enabled) {
-                                        terminalWriter.log("Warning: This setting is not saved to your account and is specific to this browser. Make sure to update this setting on other devices.");
-                                    }
-                                },
-                                inputs: [
-                                    {
-                                        name: "enabled",
-                                        type: "boolean",
-                                        default: true
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-
-                    {
-                        name: "performance-mode",
-                        icon: "bi-speedometer",
-                        description: "Set performance mode",
-
-                        onCalled(value) {
-                            window.LOW_PERFORMANCE_MODE = value === "low";
-                            localStorage.setItem("LOW_PERFORMANCE_MODE", window.LOW_PERFORMANCE_MODE);
-                            terminalWriter.log("Warning: It is recommended to reload the page for this setting to take effect");
-                        },
-
-                        inputs: [ {
-                            name: "mode",
-                            type: "list",
-                            list: [
-                                { name: "Normal", description: "Recommended", value: "normal" },
-                                { name: "Low", description: "Disables some visual effects", value: "low" },
-                            ]
-                        } ]
-                    },
-                ]
-            },
-
-            {
-                name: "set-accent",
-                icon: "bi-palette2",
-                description: "Set an accent color",
-
-                onCalled(color) {
-                    LS.Color.setAccent(color);
-                },
-
-                inputs: [
-                    { name: "preset", type: "list", list: [ { name: "custom", icon: "bi-palette2", type: "color" }, ...website.ACCENT_COLORS.map(accent => ({
-                        name: accent,
-                        icon: `bi-circle-fill`,
-                        accentColor: accent,
-                        value: accent
-                    }))] }
-                ]
-            },
-
-            {
-                name: "set-theme",
-                icon: "bi-palette",
-                description: "Set user theme",
-                onCalled(theme) {
-                    if (theme === "system") {
-                        localStorage.removeItem("ls-theme"); LS.Color.setAdaptiveTheme();
-                    } else {
-                        website.theme = theme;
-                    }
-                },
-                inputs: [
-                    {
-                        name: "theme",
-                        type: "list",
-                        list: [
-                            { name: "Light", value: "light", icon: "bi-brightness-high" },
-                            { name: "Dark", value: "dark", icon: "bi-moon" },
-                            { name: "System", value: "system", icon: "bi-laptop" }
-                        ]
-                    }
-                ]
-            },
-
-            {
-                name: "toolbar",
-                icon: "bi-tools",
-                description: "Toolbars",
-                onCalled(toolbar) {
-                    website.openToolbar(toolbar);
-                    website.palette.close();
-                },
-
-                inputs: [
-                    {
-                        name: "toolbar",
-                        type: "list",
-                        list: [
-                            { name: "Accounts", value: "login", icon: "bi-person-circle" },
-                            { name: "Apps", value: "apps", icon: "bi-app" },
-                            { name: "Music Player", value: "musicPlayer", icon: "bi-music-note" },
-                            { name: "Customize website", value: "theme", icon: "bi-brush" },
-                            { name: "Assistant", value: "assistant", icon: "bi-robot" }
-                        ]
-                    }
-                ]
-            },
-
-            {
-                name: "apps",
-                icon: "bi-window",
-                description: "Applications",
-
-                children: [
-                    {
-                        name: "open",
-                        icon: "bi-box-arrow-up-right",
-                        description: "Open an app",
-                        children() {
-                            return [...kernel.appManifests.values()].map(app => ({ name: app.name.replace(/\s+/g, '_'), value: app.id, icon: app.icon, onCalled() {
-                                kernel.openApplication(app, { source: "palette" })
-                                    // .loading(() => {}) // TODO: loading mark for the palette
-                                    .done((instance) => {
-                                        instance.open?.();
-                                        website.palette.close();
-                                    })
-                                    .catch(error => {
-                                        terminalWriter.log("Failed to open app: " + (error.message || error.error || "Unknown error"));
-                                    });
-                            }}));
-                        }
-                    },
-
-                    {
-                        name: "uninstall",
-                        icon: "bi-trash",
-                        description: "Uninstall an app",
-                    },
-
-                    {
-                        name: "install",
-                        icon: "bi-download",
-                        description: "Install an app",
-                    },
-
-                    {
-                        name: "sync",
-                        icon: "bi-arrow-repeat",
-                        description: "Enable sync for an app",
-                    },
-
-                    {
-                        name: "unsync",
-                        icon: "bi-x-lg",
-                        description: "Disable sync for an app",
-                    },
-
-                    {
-                        name: "auth",
-                        icon: "bi-shield-lock",
-                        description: "Authenticate"
-                    },
-
-                    {
-                        name: "manage-permissions",
-                        icon: "bi-shield-lock",
-                        description: "Manage app permissions",
-                    }
-                ]
-            },
-
-            {
-                name: "echo",
-                alias: ["print"],
-                icon: "bi-chat",
-                description: "Echo input",
-                onCalled(text) { terminalWriter.log(text) },
-                inputs: [
-                    { name: "text", type: "string", description: "Text to echo" }
-                ]
-            },
-
-            {
-                name: "clear",
-                icon: "bi-trash",
-                alias: ["clear-terminal", "cls"],
-                description: "Clear the terminal output",
-                onCalled() { terminalOutput.innerHTML = "" }
-            },
-
-            {
-                name: "close",
-                alias: ["exit"],
-                icon: "bi-x-circle",
-                description: "Close the command palette",
-                onCalled() { website.palette.close() }
-            }
-        ]);
+        const CommandPaletteExports = (await import("/~/assets/js/pallete.mjs?1.2"));
+        CommandPaletteExports.init(this, website, LoggerContext);
+        console.log("Command palette initialized");
+        
     }
 
     #initializeToolbars() {
@@ -4472,7 +4168,7 @@ const kernel = new class Kernel extends LoggerContext {
 
         const navPadding = 28 + 5;
         const gap = 10;
-        
+
         for (const item of website.panelItems.values()) {
             if(item.shortcuts) {
                 this.shortcutManager.register(item.shortcuts, () => {
@@ -4482,17 +4178,29 @@ const kernel = new class Kernel extends LoggerContext {
         }
 
         const collapseItems = new LS.Util.FrameScheduler(() => {
-            const availableSpace = nav.clientWidth - navPadding - gap - moreButton.clientWidth - (nav.firstElementChild?.clientWidth || 0);
+            // Read widths first to prevent relayouts
+            const isTooSmall = window.innerWidth < 100 || window.innerHeight < 200; // Precalc
+            if(resizeMessageSwitch.set(isTooSmall)) {
+                return;
+            }
 
-            let takenSpace = 0, hasCollapsedItems = false;
-            for (const item of website.panelItems.values()) {
+            const availableSpace = nav.clientWidth - navPadding - gap - moreButton.clientWidth - (nav.firstElementChild?.clientWidth || 0);
+            const moreButtonClientWidth = moreButton.clientWidth;
+
+            // Try to batch appends (god i hate the dom api so much)
+            let frag, menuFrag;
+
+            let takenSpace = 0;
+            for(const item of website.panelItems.values()) {
                 if(!item.element) {
+                    let assumedWidth = 40 + gap;
                     const icon = item.showIcon === false ? null : { tag: "i", class: item.icon };
                     const buttonLabel = item.buttonLabel || item.label;
 
-                    item.element = LS.Create("button", {
-                        class: "toolbar-button pill elevated",
-                        attributes: { "aria-label": item.description },
+                    if(icon) assumedWidth += 16;
+                    if(item.showLabel) assumedWidth += (buttonLabel ? (typeof buttonLabel === "string" ? 8 * buttonLabel.length : 16) : 16);
+
+                    item.element = LS.Create("button.toolbar-button.pill.elevated[aria-label='"+item.description+"']", {
                         tooltip: item.tooltip || item.label,
                         inner: item.showLabel !== false? [icon, { tag: "span", inner: buttonLabel, class: typeof buttonLabel === "string" ? "label" : "" }]: icon,
                         onclick: () => {
@@ -4500,12 +4208,34 @@ const kernel = new class Kernel extends LoggerContext {
                         }
                     });
 
-                    container.appendChild(item.element);
+                    if(!frag) frag = document.createDocumentFragment();
+                    frag.appendChild(item.element);
+
+                    // Browser layout rendering is an absolutely incompetent piece of crap
+                    // so we need to guess the width to avoid the render>wait>read>render hell
+                    // Of course this opens up a whole bunch of other possible problems
+                    item.cachedWidth = assumedWidth;
                 }
 
+                // if(!item.bs) {
+                //     item.element.append(LS.Create({ style: "width:"+item.cachedWidth+"px;position:absolute;height:10px;background:red;z-index:10000;bottom:0;left:0" }));
+                //     item.bs = true;
+                // }
+
+                // item.cachedWidth = (item.element ? item.element.clientWidth : item.cachedWidth || 0) + gap;
+            }
+
+            const accountButtonText = website.panelItems.get("accountsButton")?.element?.textContent;
+            if(accountButtonText) {
+                takenSpace += 46 + (accountButtonText.length * 8);
+                // console.log(takenSpace);
+            }
+
+            let hasCollapsedItems = false;
+            for (const item of website.panelItems.values()) {
                 const detached = item.element.classList.contains("detached");
-                const w = item.element.clientWidth + gap;
-                takenSpace += w;
+
+                takenSpace += item.cachedWidth;
 
                 if(takenSpace > availableSpace) {
                     hasCollapsedItems = true;
@@ -4523,7 +4253,8 @@ const kernel = new class Kernel extends LoggerContext {
                         })
                     }
 
-                    menu.appendChild(item.menuElement);
+                    if(!menuFrag) menuFrag = document.createDocumentFragment();
+                    menuFrag.appendChild(item.menuElement);
                 } else {
                     if(!detached) continue;
                     item.element.classList.remove("detached");
@@ -4533,13 +4264,15 @@ const kernel = new class Kernel extends LoggerContext {
                 }
             }
 
+            // Write operations
+            if(frag) container.appendChild(frag);
+            if(menuFrag) menu.appendChild(menuFrag);
+            moreButton.style.display = (availableSpace + moreButtonClientWidth) < takenSpace ? "inline-flex" : "none";
+
             // Close the toolbar if no items are collapsed and it's currently open
             if (!hasCollapsedItems && website.isToolbarOpen && website.currentToolbar === "more") {
                 website.closeToolbar();
             }
-
-            moreButton.style.display = (availableSpace + moreButton.clientWidth) < takenSpace ? "inline-flex" : "none";
-            resizeMessageSwitch.set(window.innerHeight < 100 || window.innerWidth < 200);
         });
 
         const resizeMessageContainer = document.getElementById("resizeMessage");
@@ -4553,8 +4286,8 @@ const kernel = new class Kernel extends LoggerContext {
             }
         });
 
-        collapseItems.callback();
         collapseItems.schedule();
+
         window.addEventListener("resize", () => {
             collapseItems.schedule();
         });

@@ -2,18 +2,65 @@
 
 <head>
     @page {
-        title: "LSTV | LS Docs > Network";
+        title: "Network · LS Docs";
         description: "Documentation for the network component.";
-        keywords: "LSTV, LS Docs, LS, Network";
+        keywords: "LSTV, LS Docs, LS, Network, network, API Reference, Root API, Members";
     }
 </head>
-@import("/docs/ls/sidebar.html");
+@use(/docs/ls/sidebar.json["docs-sidebar"]);
 
 <div .docs-content>
 <markdown>
-# network
+<h1 id="network">network</h1>
 
 Documentation for the network component.
+
+<h2 id="api-reference">API Reference</h2>
+
+Component symbol: [`LS.WebSocket`](/docs/ls/components/network.html)
+
+<h3 id="root-api">Root API</h3>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">class</span> <span class="hljs-title class_">WebSocket</span></code></pre>
+
+<h3 id="members">Members</h3>
+
+<h4 id="defaults">defaults</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">static</span> defaults</code></pre>
+
+<h4 id="constructor">constructor</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">constructor</span>(<span class="hljs-params"></span>)</code></pre>
+
+<h4 id="readystate">readyState</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">get</span> <span class="hljs-title function_">readyState</span>()</code></pre>
+
+<h4 id="bufferedamount">bufferedAmount</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">get</span> <span class="hljs-title function_">bufferedAmount</span>()</code></pre>
+
+<h4 id="protocol">protocol</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">get</span> <span class="hljs-title function_">protocol</span>()</code></pre>
+
+<h4 id="connect">connect</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">connect</span>()</code></pre>
+
+<h4 id="send">send</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">send</span>()</code></pre>
+
+<h4 id="close">close</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">close</span>()</code></pre>
+
+<h4 id="destroy">destroy</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">destroy</span>()</code></pre>
+
 
 </markdown>
 </div>

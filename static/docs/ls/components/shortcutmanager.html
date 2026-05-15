@@ -2,18 +2,154 @@
 
 <head>
     @page {
-        title: "LSTV | LS Docs > Shortcutmanager";
+        title: "Shortcutmanager · LS Docs";
         description: "Documentation for the shortcutmanager component.";
-        keywords: "LSTV, LS Docs, LS, Shortcutmanager";
+        keywords: "LSTV, LS Docs, LS, Shortcutmanager, shortcutmanager, API Reference, Root API, Members";
     }
 </head>
-@import("/docs/ls/sidebar.html");
+@use(/docs/ls/sidebar.json["docs-sidebar"]);
 
 <div .docs-content>
 <markdown>
-# shortcutmanager
+<h1 id="shortcutmanager">shortcutmanager</h1>
 
 Documentation for the shortcutmanager component.
+
+<h2 id="api-reference">API Reference</h2>
+
+Component symbol: [`LS.ShortcutManager`](/docs/ls/components/shortcutmanager.html)
+
+<h3 id="root-api">Root API</h3>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-keyword">class</span> <span class="hljs-title class_">ShortcutManager</span></code></pre>
+
+Global shortcut manager API (not finalized)
+
+<h3 id="members">Members</h3>
+
+<h4 id="constructor">constructor</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">constructor</span>(<span class="hljs-params"></span>)</code></pre>
+
+<h4 id="register">register</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">register</span>()</code></pre>
+
+Registers a keyboard shortcut.
+
+<h5 id="parameters">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>shortcut</code></td>
+<td><code>string|array&<a href="/docs/ls/api/symbols/lt.html">lt</a>;string&gt;</code></td>
+<td>Shortcut (eg. &quot;Ctrl+S&quot; or [&quot;Ctrl+S&quot;, &quot;Cmd+S&quot;])</td>
+</tr>
+<tr>
+<td><code>handler</code></td>
+<td><code>*</code></td>
+<td>Callback</td>
+</tr>
+</tbody>
+</table>
+
+<h4 id="unregister">unregister</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">unregister</span>()</code></pre>
+
+<h4 id="map">map</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">map</span>()</code></pre>
+
+Applies a map of keys to shortcuts.
+
+<h5 id="parameters-2">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mapping</code></td>
+<td><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object" target="_blank">Object</a></code></td>
+<td>Mapping of shortcut to handler OR<br><br>FIXME: Complexity is O(n^2)</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5 id="examples">Examples</h5>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes">shortcutManager.<span class="hljs-title function_">map</span>({
+   <span class="hljs-string">&quot;SAVE&quot;</span>: <span class="hljs-string">&quot;Ctrl+S&quot;</span>
+});
+
+shortcutManager.<span class="hljs-title function_">assign</span>(<span class="hljs-string">&quot;SAVE&quot;</span>, <span class="hljs-function">() =&gt;</span> { ... });
+
+<span class="hljs-comment">// Later, you may want to customize the mapping:</span>
+shortcutManager.<span class="hljs-title function_">map</span>({
+   <span class="hljs-string">&quot;SAVE&quot;</span>: <span class="hljs-string">&quot;Shift+S&quot;</span> <span class="hljs-comment">// &lt;= updates the previous mapping</span>
+});</code></pre>
+
+<h4 id="assign">assign</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">assign</span>()</code></pre>
+
+Assigns a handler for a key to later be mapped.<br>This is different from register() as it maps to a key instead of a hard-coded shortcut.
+
+<h5 id="parameters-3">Parameters</h5>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>key</code></td>
+<td><code>string</code></td>
+<td>Key</td>
+</tr>
+<tr>
+<td><code>handler</code></td>
+<td><code>*</code></td>
+<td>Callback</td>
+</tr>
+</tbody>
+</table>
+
+<h4 id="unassign">unassign</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">unassign</span>()</code></pre>
+
+<h4 id="reset">reset</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">reset</span>()</code></pre>
+
+<h4 id="destroy">destroy</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">destroy</span>()</code></pre>
+
+<h4 id="triggermapping">triggerMapping</h4>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">triggerMapping</span>()</code></pre>
+
 
 </markdown>
 </div>
