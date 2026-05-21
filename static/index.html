@@ -84,7 +84,7 @@
                             <!-- <a target="_blank" .poppable-link .underline-link href="https://www.youtube.com/channel/UCxrFC1kZSD6l4FMg3xpy9cQ" style="--accent: #782d10">RoughSketch</a>, -->
                             <!-- <a target="_blank" .poppable-link .underline-link href="https://www.youtube.com/channel/UCxrFC1kZSD6l4FMg3xpy9cQ" style="--accent: #141414">DJ Myosuke</a>, -->
                             <!-- <a target="_blank" .poppable-link .underline-link .has-icon href="https://www.youtube.com/c/ninajirachi" style="--accent: #ffbc70"><i .bi-pc-display-horizontal /> Ninajirachi<span .pops>I Too Love My Computer</span></a>, -->
-                            <!-- <a target="_blank" .poppable-link .underline-link href="https://www.youtube.com/channel/UCRq2L_KpWvMRBzbNc6OFpXw" style="--accent: #3ee319">Frutiger Dillion</a>, -->
+                            <a target="_blank" .poppable-link .underline-link href="https://www.youtube.com/channel/UCRq2L_KpWvMRBzbNc6OFpXw" style="--accent: #3ee319">Frutiger Dillion</a>,
                             <a target="_blank" .poppable-link .underline-link style="--accent: #FF6F61" href="https://www.youtube.com/channel/UCiMeKrcMsRPLu8E55W2sr7g">Dustvoxx</a>,
                             <a target="_blank" .poppable-link .underline-link style="--accent: #5b9220" href="https://www.youtube.com/@ARPWIRE">ArpWire</a>, and many more!
                         </ls-div>
@@ -93,7 +93,7 @@
                             <div style="text-align: center">
                                 <a href="https://discord.gg/jQm9yGKCEC" target="_blank" .ls-button .pill style="padding: 12px 45px; display: inline-flex; align-items: center">
                                     <i .bi-discord style="font-size: xx-large; margin-right: 20px"></i>
-                                    Join our Discord server!
+                                    Join my Discord server!
                                 </a>
                             </div>
                         </ls-div>
@@ -173,31 +173,32 @@ const data = {
     projects: [
         { title: "Akeno", icon: "f2eeab33bc9b7873.svg", description: "Akeno is a very fast, modular, and full-featured webserver / backend framework. It handles everything a server should and supports various protocols. It's what I use as a webserver and backend.", link: "/tech/akeno", source: "https://github.com/the-lstv/akeno" },
         { title: "LS", icon: "884695036cdc8c27.webp", description: "A lightweight and modern framework for web applications. Used by all of our projects.", link: "/tech/ls", source: "https://github.com/the-lstv/LS" },
-        { title: "lstv.space", icon: "a71878679a110d4a.webp", description: "My website and hub for everything. It runs on a custom full-featured kernel.", link: "https://lstv.space", source: "https://github.com/the-lstv/lstv-web" },
-        { title: "Video Editor", icon: "32c0975799f31fc3.svg", description: "A modern, simple but powerful programmable video editor. Has an intuitive patcher interface, advanced rendering effects, audio mixing, automation clips, animations, and more.", link: "https://lstv.localhost/editor", source: "https://github.com/the-lstv/videoeditor" },
+        { title: "lstv.space", icon: "a71878679a110d4a.webp", description: "My website and hub for everything. It runs on a custom built full-featured kernel.", link: "https://lstv.space", source: "https://github.com/the-lstv/lstv-web" },
+        { title: "Video Editor", icon: "32c0975799f31fc3.svg", description: "A (work in progress) modern, simple but powerful programmable video editor. Has an intuitive interface, advanced visual effects, audio mixing/processing features, automation clips, animation system, 3D/VR support, and more to come.", source: "https://github.com/the-lstv/videoeditor" },
         // { title: "Video Editor", icon: "29d18bcf2593fa3e.svg", description: "A modern, simple but powerful programmable video editor. Has an intuitive patcher interface, advanced rendering effects, audio mixing, automation clips, animations, and more.", link: "https://github.com/the-lstv/video-editor" },
-        { title: "Townhall", icon: "cd18c88051bcdc92.svg", description: "A social community platform with servers, text & voice channels, threads, and more. It has lots of customization and new features are added frequently. It is also faster and easier on your CPU than *some* competing platforms. Come check it out!", link: "/chat", source: "https://github.com/the-lstv/townhall" },
+        { title: "Townhall", icon: "cd18c88051bcdc92.svg", tags: ["paused"], description: "A social community platform with servers, text & voice channels, threads, and more. It has lots of customization and new features are added frequently. It is also faster and easier on your CPU than *some* competing platforms. Come check it out!", link: "/chat", source: "https://github.com/the-lstv/townhall" },
         { title: "Glitter", icon: "724244a87db227c8.svg", description: "A powerful & fast programming language with an extensive syntax made for the modern age. Upcomming project.", link: "/tech/glitter", source: "https://github.com/the-lstv/glitterlang" },
         { title: "ExtraGon", icon: "83ab407476b84f97.webp", description: "ExtraGon is our cloud services and hosting platform, offering features from managed storage, accelerated webhosting, VPS, DNS management, APIs, and more.", link: "https://extragon.cloud" },
         { title: "PowerDesk", icon: "fa1eef9e0cec2e2.svg", description: "A set of small Linux desktop utilities.", source: "https://github.com/the-lstv/powerdesk" },
         { title: "LSXDash", icon: "ebac7eda26e02baf.webp", description: "A dashboard for the original Xbox using modern tech!", source: "https://github.com/the-lstv/xbox-dash" },
         { title: "Atrium", icon: "78320d16cbc51b33.svg", description: "A fast and very flexible parser written in JavaScript used to parse configs, scripts, etc.", source: "https://github.com/the-lstv/Atrium" },
-        { title: "Enantiomorphs", icon: "111e50e4a19cd161.webp", description: "A RPG / MMORPG centred around the heat death of the universe.", whiteIcon: true },
-        { title: "Fantale", icon: "8f3389ce442eef1d.webp", description: "A fangame of the game Undertale, taking place after the world reset." },
-        { title: "Froggie", icon: "4eab18a5b0d45d99.webp", description: "A very simple game where you merge bubbles to get different animals." },
+        { title: "Enantiomorphs", icon: "111e50e4a19cd161.webp", description: "A RPG / MMORPG centred around the last moments of the universe.", whiteIcon: true },
+        { title: "Fantale", icon: "8f3389ce442eef1d.webp", description: "A fangame of the game Undertale, taking place after the world has been reset." },
         { title: "Slides", icon: "https://slides.lstv.space/~/assets/icon.svg", description: "A simple presentation tool for creating and sharing slides with code. (No interactive UI yet, just a presentation API.)", link: "https://slides.lstv.space", source: "https://github.com/the-lstv/slides" },
-
-        { title: "MetaDaw", icon: "1e13f96a16b37c33.svg", description: "An experimental VST3 plugin controlled from a web interface." },
-        { title: "Quicksand", icon: "7eb4acc292c766b5.svg", tags: ["paused"], description: "A fast and friendly powerful game engine, for various types of games, made for anyone from beginners to proffesionals. Incomplete :(" },
+        
+        { title: "MetaDaw", icon: "1e13f96a16b37c33.svg", description: "An experimental DAW & modular synthesizer, also with a VST3 plugin for cross-integration." },
+        { title: "Quicksand", icon: "7eb4acc292c766b5.svg", tags: ["paused"], description: "A fast and friendly powerful game engine, for various types of games, made for anyone from beginners to proffesionals. Based on the same editor engine as my video editor." },
+        { title: "LS Creative suite", icon: "e3ffa9300faf6748.svg", description: "A suite of creative tools built on the LS framework that all work nicely together." },
         { title: "MotionCast", icon: "2dbab853ce2cc04c.svg", tags: ["discontinued"], description: "A light remote desktop application with an easy web-based client with multi-stream support." },
         { title: "Edookit2", icon: "796af24c7a0f23c0.svg", tags: ["paused"], description: "A modern school frontend with a sleek interface as an alternative to the awful official one." , link: "" },
+        { title: "Froggie", icon: "4eab18a5b0d45d99.webp", description: "A very simple game where you merge bubbles to get different animals." },
+        { title: "PurblePlace (port)", icon: "fac005c8888b4de0.webp", tags: ["paused"], description: "A frame-perfect port of the classic \"PurblePlace\" game, with web and mobile support. So far the main menu and Purble Pairs is complete. Sadly not actively developed :(" },
+        { title: "LS.Icons", icon: "2bfcbbefce4cfa1b.webp", description: "An open-source symbolic icon library designed by Lukas, with hand-crafted vector icons in 6 styles each. Currently in beta.", link: "https://github.com/the-lstv/ls-icons" },
         
         { type: "separator" },
         
-        { title: "PurblePlace (port)", icon: "fac005c8888b4de0.webp", tags: ["paused"], description: "A frame-perfect port of the classic \"PurblePlace\" game, with web and mobile support. So far the main menu and Purble Pairs is complete. Sadly not actively developed :(" },
-        { title: "PStudio", icon: "b14d9c9894917876.svg", tags: ["discontinued"], description: "An old attempt at making a DAW, but it didn't get too far, only the synth plugin was reused. Sadly the complexity of a DAW is quite large and don't have that much time :(" },
-        { title: "Getrox", icon: "d11562ce585e205b.svg", tags: ["paused"], description: "Currency/finance platform, used as a token across our services.", link: "" },
-        { title: "LS Icons v2", icon: "b909f2638b3b085b.svg", tags: ["paused"], description: "A symbolic icon library, with each icon being in at least 8 styles. Currently 200 icons exist, but it's a paused project because the effort is not paying off, and they need a refactoration anyways.", link: "" },
+        { title: "PStudio", icon: "b14d9c9894917876.svg", tags: ["discontinued"], description: "An old attempt at making a DAW, but it didn't get too far, only the synth plugin was reused. Revived by MetaDaw" },
+        { title: "Getrox", icon: "d11562ce585e205b.svg", tags: ["discontinued"], description: "Currency/finance platform, used as a token across our services.", link: "" },
         { title: "Unifya", icon: "ff153edceb4394d1.webp", description: "An universal data flow library used across my creative software (video editors, game engines, audio tools etc.) to ensure seamless integration by streamlining data flow.", link: "" },
         { title: "Arisen", icon: "65887818849cc412.webp", description: "Former machine learning division. There was an interface (both for users and developers) for interacting with our/any ML/LLM models such as Arisen-NLP/GPM 1.5/GPM-8Bv2/GPM-11B/GPM-6B/GPM Nano/Pico, with privacy & fun in mind, and many cool features. Last project was an interactive assistant here at lstv.space, but that was while the tech was still ethical... At this point, I think we are all tired of AI, so I cancelled it.", link: "" },
         { title: "pixelplace", icon: "", tags: ["paused"], description: "In the same day that r/Place 2023 ended, I've made a clone that features an exact copy of how the place has been when it was ending, and is also compatible with previous r/Place events and has some extra fancy features.\n\nIt also allows anyone to create their own new places, share them, or just revisit past events & make copies." },
@@ -241,7 +242,7 @@ const data = {
     ],
 
     libraries: [
-        { title: "LS Icons", description: "A growing icon library!", link: "https://github.com/the-lstv/ls-icons" },
+        { title: "LS.Icons", description: "A growing icon library!", link: "https://github.com/the-lstv/ls-icons" },
         { title: "LS.EventEmitter", description: "Really fast and full featured event emitter library.", link: "https://github.com/the-lstv/LS" },
         { title: "LS.Color", description: "Extensive color manipulation library.", link: "https://github.com/the-lstv/LS/blob/main/js/color.js" },
         { title: "LS.Knob", description: "A responsive, customizable beautiful knob/dial UI component.", link: "https://github.com/the-lstv/LS/blob/main/js/knob.js" },
