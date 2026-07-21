@@ -13,7 +13,7 @@
 
     <ls-div>
         LS Version:
-        <ls-select .elevated.pill #loader-lsVersion ls-options-values="latest,6.0.0-alpha.0,5.2.9,4.0.2"></ls-select>
+        <ls-select .elevated.pill #loader-lsVersion ls-options-values="latest,6.0.0-alpha.2,5.2.9,4.0.2"></ls-select>
     </ls-div>
 
     <label .ls-checkbox>
@@ -197,7 +197,7 @@
 
     <script>
         const EXTRAGON_CDN = "https://cdn.extragon.cloud";
-        const LATEST = "6.0.0-alpha.0";
+        const LATEST = "6.0.0-alpha.2";
 
         const components = {
             "js": [
@@ -225,7 +225,9 @@
                 "toast",
                 "tooltips",
                 "tree",
-                "range"
+                "range",
+                "spa",
+                "list"
             ],
             "css": [
                 "flat",
