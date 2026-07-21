@@ -111,7 +111,7 @@ if(globalThis === this) {
 
 window.__kernelInitialized = true;
 
-const KERNEL_VERSION = (typeof __buildVersion !== "undefined")? __buildVersion: "1.2.5-beta";
+const KERNEL_VERSION = (typeof __buildVersion !== "undefined")? __buildVersion: "1.2.6-beta";
 
 window.cacheKey = "?mtime=" + (LS.Util.parseURLParams(document.currentScript?.src, "mtime") || Date.now()); // Mtime mapped to kernel.js (This should never fallback)
 
@@ -3939,6 +3939,7 @@ const kernel = new class Kernel extends LS.Context {
                     const buttonLabel = item.buttonLabel || item.label;
 
                     if(icon) assumedWidth += 16;
+                    if(item.label === "Account") assumedWidth += 46;
                     if(item.showLabel) assumedWidth += (buttonLabel ? (typeof buttonLabel === "string" ? 8 * buttonLabel.length : 16) : 16);
 
                     item.element = LS.Create("button.toolbar-button.pill.elevated[aria-label='"+item.description+"']", {
@@ -3966,11 +3967,11 @@ const kernel = new class Kernel extends LS.Context {
                 // item.cachedWidth = (item.element ? item.element.clientWidth : item.cachedWidth || 0) + gap;
             }
 
-            const accountButtonText = website.panelItems.get("accountsButton")?.element?.textContent;
-            if(accountButtonText) {
-                takenSpace += 46 + (accountButtonText.length * 8);
-                // console.log(takenSpace);
-            }
+            // const accountButtonText = website.panelItems.get("accountsButton")?.element?.textContent;
+            // if(accountButtonText) {
+            //     takenSpace += 46 + (accountButtonText.length * 8);
+            //     // console.log(takenSpace);
+            // }
 
             let hasCollapsedItems = false;
             for (const item of website.panelItems.values()) {
