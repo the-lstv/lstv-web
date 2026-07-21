@@ -1780,34 +1780,15 @@ ls-text-input.has-textarea {
     justify-content: space-between;
     height: 100%;
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    td {
-        padding: 2px 8px;
-    }
-
-    td > :is(i, img) {
-        margin-right: 8px !important;
-    }
-
-    tbody tr:hover {
-        background: var(--accent-mix-40) !important;
-    }
-
-    tr.selected {
-        background: var(--accent-mix-60) !important;
-    }
-
-    th {
-        text-align: left;
-        padding: 5px 8px;
-    }
-
     > :first-child {
         overflow: auto;
+    }
+
+    .resource-node {
+        display: flex;
+        justify-content: space-between;
+        justify-items: center;
+        padding: 0 10px 0 4px;
     }
 
     > :last-child {

@@ -56,7 +56,7 @@
     <!-- <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdn.extragon.cloud https://cdn.extragon.localhost https://fonts.googleapis.com https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.extragon.cloud https://cdn.extragon.localhost https://fonts.googleapis.com; font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net; connect-src 'self' wss://*.lstv.space wss://*.extragon.cloud wss://*.extragon.localhost https://api.extragon.cloud https://api.extragon.localhost;"> -->
 
     <!-- LS, icons, fonts -->
-    @use (ls[flat, color, tooltips, toast, range, menu, reactive, tabs, animation, resize, modal, ShortcutManager, CompileTemplate], bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800"]);
+    @use (ls[flat, color, tooltips, toast, range, tree, menu, reactive, tabs, animation, resize, modal, ShortcutManager, CompileTemplate], bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800"]);
 
     <!-- @use (bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800"]); -->
 
@@ -161,35 +161,6 @@
                     </button>
                 </ls-div>
             </div>
-
-            <!-- <div .toolbar .toolbar-styled .level-n1 #toolbarAssistant style="display: none">
-                <div .loading>
-                    <div .loader></div>
-                </div>
-
-                <div .content style="display: none">
-                    <div .title>
-                        <h1>Assistant</h1>
-                        <span>Powered by <a href="https://ai.lstv.space">Arisen</a></span>
-                    </div>
-
-                    <div .generated-content></div>
-
-                    <ls-div .assistant-intro .margin-h-small>
-                        <i .bi-info-circle />
-                        Assistant can help with answering questions or just chat with you. It has access to a part of your profile and data & memories you have on Arisen chat. Chats you start here will also appear in Arisen chat. More features and integrations will be added over time! You can opt out from it in settings.
-                    </ls-div>
-
-                    <ls-div .assistant-examples />
-
-                    <form .input-container name="assistantForm" onsubmit="return false">
-                        <div .input-wrapper>
-                            <textarea rows="1" .clear name="Assistant input" id="assistant-input" placeholder="Type a message..." aria-label="Assistant input" required></textarea>
-                        </div>
-                        <button type="submit" ls-tooltip aria-label="Send message" .send .circle><i .bi-arrow-up-short></i></button>
-                    </form>
-                </div>
-            </div> -->
 
             <div .toolbar .toolbar-styled #toolbarLogin .level-1 style="display: none">
                 <div .login-toolbar-page tab-id="default" #loginPopup>

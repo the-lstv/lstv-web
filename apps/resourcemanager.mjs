@@ -2,8 +2,8 @@ class ResourceMonitor extends website.ContentContext {
     static #suspendWarningShown = false;
 
     #kernel = null;
+    #kernelPromise = null;
     #selectedContextId = null;
-    #rowCache = new Map();
     #suspendResumeButton = null;
     #loadingPollPending = false;
     #destroying = false;
@@ -17,36 +17,81 @@ class ResourceMonitor extends website.ContentContext {
         });
 
         // This will throw and self destruct if not available
-        this.#kernel = this.requestKernelAccess();
+        this.#kernelPromise = this.requestKernelAccess("Kernel access is required to list and manage apps & resources.");
+
+        // Virtualized process list
+        this.treeView = new LS.Tree({
+            rowHeight: 32,
+
+            createNode(){
+                return LS.Create({
+                    tag: "div",
+                    class: "resource-node",
+                    inner: [
+                        { tag: "div", class: "name" },
+                        // { tag: "div", class: "type" },
+                        { tag: "div", class: "status" }
+                    ]
+                });
+            },
+
+            updateNode(node, element){
+                if (node.isSelected) element.classList.add("selected");
+                else element.classList.remove("selected");
+
+                const cells = element.querySelectorAll("div");
+
+                if (element._lastIcon !== node.icon || element._lastName !== node.label) {
+                    cells[0].replaceChildren();
+                    cells[0].append(website.views.getAppIconView(node), LS.Create({ tag: "span", text: node.label }));
+                    element._lastIcon = node.icon;
+                    element._lastName = node.label;
+                }
+
+                // if (cells[1].textContent !== node.type)
+                //     cells[1].textContent = node.type;
+
+                if (cells[1].textContent !== node.resourceState) {
+                    cells[1].textContent = node.resourceState;
+                    element.style.opacity = node.resourceState === "suspended"? "0.5": "";
+                }
+            }
+        });
+
+        this.treeView.on("click", (node) => {
+            this.#selectedContextId = node.id;
+            this.#updateActionButtons();
+        });
 
         // Setup content
         this.fromElement(LS.Create({
             tag: "div",
             class: "resource-monitor",
+            attributes: { "data-ls-state": "loading" },
             inner: [
-                { tag: "div", class: "resource-list", style: "flex-grow: 1; overflow-y: auto;", inner: {
-                    tag: "table",
+                { tag: "div", class: "resource-list", style: "flex-grow: 1; height: 100%;", inner: {
+                    // tag: "table",
                     class: "clear",
                     inner: [
-                        {
-                            tag: "thead", inner: [
-                                {
-                                    tag: "tr", inner: [
-                                        { tag: "th", text: "Name" },
-                                        { tag: "th", text: "Type" },
-                                        { tag: "th", text: "Status" }
-                                    ]
-                                }
-                            ]
-                        },
-                        (this.tbody = LS.Create({ tag: "tbody" }))
+                        // {
+                        //     tag: "thead", inner: [
+                        //         {
+                        //             tag: "tr", inner: [
+                        //                 { tag: "th", text: "Name" },
+                        //                 { tag: "th", text: "Type" },
+                        //                 { tag: "th", text: "Status" }
+                        //             ]
+                        //         }
+                        //     ]
+                        // },
+                        this.treeView.container
                     ]
                 } },
                 {
                     tag: "div", inner: [
                         [
                             { tag: "button", text: "Refresh", onclick: () => this.#scheduleRefresh() },
-                            { tag: "button", inner: [{ tag: "i", class: "bi-trash-fill" }, "Clear all suspended"], class: "elevated", onclick: () => this.#kernel.clearAllOtherPages() },
+                            { tag: "button", inner: [{ tag: "i", class: "bi-trash-fill" }, "Clear suspended"], class: "elevated", onclick: () => this.#kernel.clearAllOtherPages() },
                         ],
 
                         [
@@ -83,8 +128,17 @@ class ResourceMonitor extends website.ContentContext {
             minHeight: 200
         });
 
-        this.updateList();
-        this.#updateActionButtons();
+        this.#kernelPromise.then(kernel => {
+            if (this.destroyed) return;
+            this.#kernel = kernel;
+            this.updateList();
+            this.#updateActionButtons();
+            this.content.setAttribute("data-ls-state", "ready");
+        }).catch(() => {
+            if (this.destroyed) return;
+            LS.Toast.show("Failed to access kernel. The Resource Monitor cannot function without it.", { accent: "red" });
+            this.window.close();
+        });
     }
 
     async action(type) {
@@ -123,68 +177,35 @@ class ResourceMonitor extends website.ContentContext {
     }
 
     updateList() {
-        if (this.destroyed || !this.#kernel || !this.tbody) return;
+        if (this.destroyed || !this.#kernel || !this.treeView) return;
 
         // Ensure we don't keep any references to the context itself, just collect and display its information
         const resources = this.listResources();
         const activeIds = new Set();
         let hasLoadingResource = false;
-
-        for (const resource of resources) {
+        const newNodes = [...resources.map(resource => {
             activeIds.add(resource.id);
-            let row = this.#rowCache.get(resource.id);
+
             const isSelected = resource.id === this.#selectedContextId;
-            const iconParam = resource.icon;
-            const nameParam = resource.visibleName || resource.id;
             const type = resource.constructor.name === "ContentContext" && resource.path ? "Page" : resource.constructor.name;
-
-            if (!row) {
-                row = LS.Create({
-                    tag: "tr",
-                    onclick: () => {
-                        this.#selectedContextId = resource.id;
-                        this.tbody.querySelectorAll(".selected").forEach(r => r.classList.remove("selected"));
-                        row.classList.add("selected");
-                        this.#updateActionButtons();
-                    },
-                    inner: [{ tag: "td" }, { tag: "td" }, { tag: "td" }]
-                });
-                this.#rowCache.set(resource.id, row);
-            }
-
-            this.tbody.appendChild(row);
-
-            if (isSelected) row.classList.add("selected");
-            else row.classList.remove("selected");
-
-            if (row._lastIcon !== iconParam || row._lastName !== nameParam) {
-                row.cells[0].innerHTML = "";
-                row.cells[0].append(website.views.getAppIconView(resource), LS.Create({ tag: "span", text: nameParam }));
-                row._lastIcon = iconParam;
-                row._lastName = nameParam;
-            }
-
-            if (row.cells[1].textContent !== type)
-                row.cells[1].textContent = type;
-
-            if (row.cells[2].textContent !== resource.state)
-                row.cells[2].textContent = resource.state;
 
             if (resource.state === "loading") {
                 hasLoadingResource = true;
             }
-        }
 
-        for (const [id, row] of this.#rowCache) {
-            if (!activeIds.has(id)) {
-                row.remove();
-                this.#rowCache.delete(id);
-
-                if (this.#selectedContextId === id) {
-                    this.#selectedContextId = null;
-                }
+            return {
+                id: resource.id,
+                icon: resource.icon,
+                label: resource.visibleName || resource.id,
+                type,
+                depth: 0,
+                resourceState: resource.state,
+                isSelected
             }
-        }
+        })];
+
+        // TODO: should be possible to just update changes
+        this.treeView.loadData(newNodes);
 
         this.#updateActionButtons();
 
@@ -201,7 +222,7 @@ class ResourceMonitor extends website.ContentContext {
 
     listResources() {
         if (!this.#kernel) return [];
-        return this.#kernel.contexts.values();
+        return this.#kernel.listResources();
     }
 
     #onFrameTick() {
@@ -277,8 +298,13 @@ class ResourceMonitor extends website.ContentContext {
 
         this.frameScheduler = null;
         this.#loadingPollPending = false;
-        this.#rowCache.clear();
         this.window.destroy();
+
+        if(this.treeView) {
+            this.treeView.destroy();
+            this.treeView = null;
+        }
+
         this.#kernel = null;
         super.destroy();
     }
