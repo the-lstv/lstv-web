@@ -33,7 +33,7 @@ const BUILTIN_APPS = [
         "icon": "4cf4213e702a21fe.svg",
         "description": "Monitor loaded pages and applications.",
         "version": "1.0.0",
-        "main": "resourcemanager.mjs?0"
+        "main": "resourcemanager.mjs?1"
     },
     {
         "name": "Clock",
@@ -74,6 +74,14 @@ const BUILTIN_APPS = [
         "description": "Reads your mind.",
         "version": "1.0.0",
         "main": "mind-reader.mjs"
+    },
+    {
+        "name": "Media Center",
+        "id": "media-center",
+        "icon": "5fe6243a90ae967a.webp",
+        "description": "Your media hub.",
+        "version": "1.0.0",
+        "main": "media-center.mjs"
     },
     localStorage.getItem("enableExperimentalApps") === "true" && {
         "name": "monitors",
@@ -738,7 +746,7 @@ class ContentContext extends LS.Context {
                 return;
             }
 
-            console.log("Waiting for assets", this.styles, this.scripts);
+            // console.log("Waiting for assets", this.styles, this.scripts);
             // Unsure whether to load JS and CSS in parallel (before render) or load JS separately after render, since some scripts may expect DOM to exist.
             // Loading early allows for quicker execution though (eg. if JS is responsible for rendering something, it will be available before actually displaying).
             await Promise.all([
@@ -1075,13 +1083,45 @@ class ContentContext extends LS.Context {
         return kernel.registerModule(this, runtimeContext, this);
     }
 
-    requestKernelAccess() {
-        // TODO: Verify access
-        return kernel;
+    async requestKernelAccess(reason = "unspecified") {
+        // TODO: Verify access and integrity.
 
-        LS.Toast.show("Kernel access request denied.", { accent: "red" });
-        this.destroy();
-        throw new Error("Kernel access request denied.");
+        return new Promise((resolve, reject) => {
+            let allowed = false;
+            const modal = LS.Modal.buildEphemeral({
+                class: "white-space: pre",
+
+                content: [
+                    { emmet: "h1.bi-exclamation-triangle-fill", style: "text-align: center; margin-top: 0; margin-bottom: 10px; font-size: xxx-large" },
+                    { style: "white-space: pre-wrap", inner: ["An external app or process (\"" + (this.visibleName || this.title || this.name) + "\") wants full access over this system.\n\nReason given by the app: ", { tag: "code", text: reason } ,"\n\nIMPORTANT: Unlike other permissions, this grants full control, and could allow 3rd parties to access your private data. Make sure you trust the source before allowing.\nIf someone instructed you to allow this, they are most likely trying to scam you.\nIf you didn't prompt this dialog, please deny this request."] }
+                ],
+
+                buttons: [
+                    { label: "Deny", class: "elevated" },
+
+                    // TODO: captcha/better button
+                    { label: "Allow", onclick: (e) => {
+                        if(!e.isTrusted) {
+                            return;
+                        }
+
+                        allowed = true;
+                        resolve(kernel);
+                        console.log("Context got access to the kernel: ", this);
+                        LS.Toast.show("Kernel access request was granted to " + (this.visibleName || this.title || this.name), { accent: "green", timeout: 2000 });
+                        LS.Modal.closeFromElement(e.target);
+                    } }
+                ]
+            });
+            
+            modal.once("destroy", () => {
+                if(allowed) return;
+                LS.Toast.show("Kernel access request denied.", { accent: "red", timeout: 2000 });
+                // this.destroy();
+                // throw new Error("Kernel access request denied.");
+                reject(new Error("User denied kernel access"));
+            });
+        });
     }
 
     /**
@@ -2705,7 +2745,7 @@ const website = {
         //     website.openToolbar("assistant", true);
         // } }],
 
-        ["themeButton", { buttonLabel: LS.Create('i.bi-palette-fill'), label: "Customize", description: "Customize the site appearance", icon: "bi-palette-fill", onclick() {
+        ["themeButton", { buttonLabel: { tag: "i", class: "bi-palette-fill" }, label: "Customize", description: "Customize the site appearance", icon: 'bi-' + (LS.Color.theme === "dark" ? "moon-stars" : "sun") + "-fill", onclick() {
             website.openToolbar("theme", true);
         }}],
 
@@ -2716,6 +2756,20 @@ const website = {
     ]),
 
     toolbars: new Map([
+        ["statusbar", {
+            element: LS.Create({
+                id: "statusbar",
+                class: "toolbar toolbar-styled",
+                inner: LS.Create({
+                    inner: [
+                        LS.Create()
+                    ]
+                })
+            }),
+            name: "Status Bar",
+            description: "Status and notifications"
+        }],
+
         ["login", {
             element: LS.SelectOne("#toolbarLogin"),
             name: "Account",
@@ -3010,7 +3064,7 @@ window.website = website;
  * Kernel class
  * Main application kernel, handles global state, navigation, authentication, and content contexts.
  */
-const kernel = new class Kernel extends LoggerContext {
+const kernel = new class Kernel extends LS.Context {
     version = KERNEL_VERSION;
 
     contexts = new Map();
@@ -3277,7 +3331,7 @@ const kernel = new class Kernel extends LoggerContext {
      */
     constructor() {
         super('kernel');
-        this.events = new LS.EventEmitter(this);
+        this.logger = new LoggerContext("kernel");
 
         website.viewport = this.viewport = new Viewport('main', document.getElementById('viewport'), {
             kernel: this
@@ -3290,6 +3344,7 @@ const kernel = new class Kernel extends LoggerContext {
         this.ttl = Date.now() - window.__loadTime;
         this.log('Kernel initialized, version %c' + this.version + '%c, time since first load: ' + this.ttl + 'ms', 'font-weight:bold', 'font-weight:normal');
 
+        // Register reactive types
         LS.Reactive.registerType("ProfilePicture", website.views.getProfilePictureView);
         LS.Reactive.registerType("ProfileBadges", website.views.getProfileBadgesView);
         LS.Reactive.registerType("ProfileBanner", website.views.getBannerView);
@@ -3347,7 +3402,7 @@ const kernel = new class Kernel extends LoggerContext {
 
         LS.Color.on("theme-changed", () => {
             const themeButton = website.panelItems.get("themeButton").element;
-            if (themeButton) themeButton.querySelector("i").className = "bi-" + (website.theme == "light"? "moon-stars-fill": "sun-fill");
+            if (themeButton) themeButton.querySelector("i").className = 'bi-' + (website.theme === "dark" ? "moon-stars" : "sun") + "-fill";
         });
 
         this.auth.on("user-updated", (patch) => {
@@ -3360,7 +3415,7 @@ const kernel = new class Kernel extends LoggerContext {
 
         });
 
-        document.addEventListener('DOMContentLoaded', () => {
+        this.addExternalEventListener(document, 'DOMContentLoaded', () => {
             website.container = this.container = document.getElementById('app');
             website.viewportElement = this.viewportElement = this.viewport.target;
 
@@ -3712,6 +3767,11 @@ const kernel = new class Kernel extends LoggerContext {
             this.warn("Warning: registerModule runtimeContext should be a class extending LS.Context or an instance of LS.Context. Otherwise memory leaks are more likely. Violating context: ", context);
         }
 
+        if(!context) {
+            this.error("Failed to determine context for module", script);
+            return null;
+        }
+
         if (runtimeContext) {
             let moduleInstance = null;
 
@@ -3731,7 +3791,7 @@ const kernel = new class Kernel extends LoggerContext {
     
                 context.modules.add(moduleInstance);
             } catch (e) {
-                this.error("Error initializing module for context", context.path || context.id, e);
+                this.error("Error initializing module for context", context?.path || context?.id, e);
                 return null;
             }
 
@@ -4139,7 +4199,7 @@ const kernel = new class Kernel extends LoggerContext {
             });
         }
 
-        document.addEventListener("pointerdown", (event) => {
+        this.addExternalEventListener(document, "pointerdown", (event) => {
             if (website.isToolbarOpen && !event.target.closest("#toolbars,.toolbar-button")) website.closeToolbar();
             if (kernel.windows.size > 0 && !event.target.closest(".window-container") ) {
                 for (const windowInstance of kernel.windows.values()) {
@@ -4265,7 +4325,7 @@ const kernel = new class Kernel extends LoggerContext {
             const container = website.toolbars.get("apps").element;
             this.appListElement = container.querySelector(".app-list");
 
-            kernel.events.on("application-installed", (manifest) => {
+            kernel.on("application-installed", (manifest) => {
                 this.addApplicationEntry(manifest);
             });
 
@@ -4387,6 +4447,16 @@ const kernel = new class Kernel extends LoggerContext {
         AppClass.manifest = manifest;
     }
 
+    *listResources() {
+        for(const context of this.contexts.values()) {
+            yield context;
+        }
+
+        for(const thread of this.threads.values()) {
+            yield thread;
+        }
+    }
+
     /**
      * Instantiate an application by its ID.
      * @param {string} appId 
@@ -4398,6 +4468,7 @@ const kernel = new class Kernel extends LoggerContext {
         if (!AppClass) throw new Error("Application not found: " + appId);
         this.log("Instantiating application:", appId);
 
+        // ! fix (this is not the right way to link)
         this._appInstantiationContext = {
             appId,
             manifest: this.appManifests.get(appId) || AppClass.manifest || null,
@@ -4452,6 +4523,22 @@ const kernel = new class Kernel extends LoggerContext {
         });
 
         return p;
+    }
+
+    log() { this.logger.log(...arguments); }
+    warn() { this.logger.warn(...arguments); }
+    error() { this.logger.error(...arguments); }
+
+    destroy() {
+        if(this.destroyed) return;
+        for(const context of this.contexts.values()) {
+            context.destroy();
+        }
+
+        for(const thread of this.threads.values()) {
+            thread.destroy();
+        }
+        super.destroy();
     }
 }
 

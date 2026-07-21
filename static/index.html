@@ -84,7 +84,7 @@
                             <!-- <a target="_blank" .poppable-link .underline-link href="https://www.youtube.com/channel/UCxrFC1kZSD6l4FMg3xpy9cQ" style="--accent: #782d10">RoughSketch</a>, -->
                             <!-- <a target="_blank" .poppable-link .underline-link href="https://www.youtube.com/channel/UCxrFC1kZSD6l4FMg3xpy9cQ" style="--accent: #141414">DJ Myosuke</a>, -->
                             <!-- <a target="_blank" .poppable-link .underline-link .has-icon href="https://www.youtube.com/c/ninajirachi" style="--accent: #ffbc70"><i .bi-pc-display-horizontal /> Ninajirachi<span .pops>I Too Love My Computer</span></a>, -->
-                            <a target="_blank" .poppable-link .underline-link href="https://www.youtube.com/channel/UCRq2L_KpWvMRBzbNc6OFpXw" style="--accent: #3ee319">Frutiger Dillion</a>,
+                            <!-- <a target="_blank" .poppable-link .underline-link href="https://www.youtube.com/channel/UCRq2L_KpWvMRBzbNc6OFpXw" style="--accent: #3ee319">Frutiger Dillion</a>, -->
                             <a target="_blank" .poppable-link .underline-link style="--accent: #FF6F61" href="https://www.youtube.com/channel/UCiMeKrcMsRPLu8E55W2sr7g">Dustvoxx</a>,
                             <a target="_blank" .poppable-link .underline-link style="--accent: #5b9220" href="https://www.youtube.com/@ARPWIRE">ArpWire</a>, and many more!
                         </ls-div>
@@ -171,74 +171,73 @@
  */
 const data = {
     projects: [
-        { title: "Akeno", icon: "f2eeab33bc9b7873.svg", description: "Akeno is a very fast, modular, and full-featured webserver / backend framework. It handles everything a server should and supports various protocols. It's what I use as a webserver and backend.", link: "/tech/akeno", source: "https://github.com/the-lstv/akeno" },
-        { title: "LS", icon: "884695036cdc8c27.webp", description: "A lightweight and modern framework for web applications. Used by all of our projects.", link: "/tech/ls", source: "https://github.com/the-lstv/LS" },
-        { title: "lstv.space", icon: "a71878679a110d4a.webp", description: "My website and hub for everything. It runs on a custom built full-featured kernel.", link: "https://lstv.space", source: "https://github.com/the-lstv/lstv-web" },
-        { title: "Video Editor", icon: "32c0975799f31fc3.svg", description: "A (work in progress) modern, simple but powerful programmable video editor. Has an intuitive interface, advanced visual effects, audio mixing/processing features, automation clips, animation system, 3D/VR support, and more to come.", source: "https://github.com/the-lstv/videoeditor" },
-        // { title: "Video Editor", icon: "29d18bcf2593fa3e.svg", description: "A modern, simple but powerful programmable video editor. Has an intuitive patcher interface, advanced rendering effects, audio mixing, automation clips, animations, and more.", link: "https://github.com/the-lstv/video-editor" },
-        { title: "Townhall", icon: "cd18c88051bcdc92.svg", tags: ["paused"], description: "A social community platform with servers, text & voice channels, threads, and more. It has lots of customization and new features are added frequently. It is also faster and easier on your CPU than *some* competing platforms. Come check it out!", link: "/chat", source: "https://github.com/the-lstv/townhall" },
-        { title: "Glitter", icon: "724244a87db227c8.svg", description: "A powerful & fast programming language with an extensive syntax made for the modern age. Upcomming project.", link: "/tech/glitter", source: "https://github.com/the-lstv/glitterlang" },
-        { title: "ExtraGon", icon: "83ab407476b84f97.webp", description: "ExtraGon is our cloud services and hosting platform, offering features from managed storage, accelerated webhosting, VPS, DNS management, APIs, and more.", link: "https://extragon.cloud" },
-        { title: "PowerDesk", icon: "fa1eef9e0cec2e2.svg", description: "A set of small Linux desktop utilities.", source: "https://github.com/the-lstv/powerdesk" },
-        { title: "LSXDash", icon: "ebac7eda26e02baf.webp", description: "A dashboard for the original Xbox using modern tech!", source: "https://github.com/the-lstv/xbox-dash" },
-        { title: "Atrium", icon: "78320d16cbc51b33.svg", description: "A fast and very flexible parser written in JavaScript used to parse configs, scripts, etc.", source: "https://github.com/the-lstv/Atrium" },
-        { title: "Enantiomorphs", icon: "111e50e4a19cd161.webp", description: "A RPG / MMORPG centred around the last moments of the universe.", whiteIcon: true },
-        { title: "Fantale", icon: "8f3389ce442eef1d.webp", description: "A fangame of the game Undertale, taking place after the world has been reset." },
-        { title: "Slides", icon: "https://slides.lstv.space/~/assets/icon.svg", description: "A simple presentation tool for creating and sharing slides with code. (No interactive UI yet, just a presentation API.)", link: "https://slides.lstv.space", source: "https://github.com/the-lstv/slides" },
+        { title: "Akeno", icon: "f2eeab33bc9b7873.svg", description: "Akeno is a very fast, modular, and full-featured webserver / backend framework. It handles everything a server should and supports various protocols. It's what I use as a webserver and backend.", link: "/tech/akeno", source: "https://github.com/the-lstv/akeno", color: "#43101e", colorAutoGenerated: true },
+        { title: "LS", icon: "884695036cdc8c27.webp", description: "A lightweight and modern framework for web applications. Used by all of our projects.", link: "/tech/ls", source: "https://github.com/the-lstv/LS", color: "#ddd0c7", colorAutoGenerated: true },
+        { title: "lstv.space", icon: "a71878679a110d4a.webp", description: "My website and hub for everything. It runs on a custom built full-featured kernel.", link: "https://lstv.space", source: "https://github.com/the-lstv/lstv-web", color: "#504f4b", colorAutoGenerated: true },
+        { title: "Video Editor", icon: "32c0975799f31fc3.svg", description: "A (work in progress) modern, simple but powerful programmable video editor. Has an intuitive interface, advanced visual effects, audio mixing/processing features, automation clips, animation system, 3D/VR support, and more to come.", source: "https://github.com/the-lstv/videoeditor", color: "#4d6785", colorAutoGenerated: true },
+        { title: "Townhall", icon: "cd18c88051bcdc92.svg", tags: ["paused"], description: "A social community platform with servers, text & voice channels, threads, and more. It has lots of customization and new features are added frequently. It is also faster and easier on your CPU than *some* competing platforms. Come check it out!", link: "/chat", source: "https://github.com/the-lstv/townhall", color: "#4c5f6b", colorAutoGenerated: true },
+        { title: "Glitter", icon: "724244a87db227c8.svg", description: "A powerful & fast programming language with an extensive syntax made for the modern age. Upcomming project.", link: "/tech/glitter", source: "https://github.com/the-lstv/glitterlang", color: "#4c275e", colorAutoGenerated: true },
+        { title: "ExtraGon", icon: "83ab407476b84f97.webp", description: "ExtraGon is our cloud services and hosting platform, offering features from managed storage, accelerated webhosting, VPS, DNS management, APIs, and more.", link: "https://extragon.cloud", color: "#667c8b", colorAutoGenerated: true },
+        { title: "PowerDesk", icon: "fa1eef9e0cec2e2.svg", description: "A set of small Linux desktop utilities.", source: "https://github.com/the-lstv/powerdesk", color: "#454545", colorAutoGenerated: true },
+        { title: "LSXDash", icon: "ebac7eda26e02baf.webp", description: "A dashboard for the original Xbox using modern tech!", source: "https://github.com/the-lstv/xbox-dash", color: "#21450d", colorAutoGenerated: true },
+        { title: "Atrium", icon: "78320d16cbc51b33.svg", description: "A fast and very flexible parser written in JavaScript used to parse configs, scripts, etc.", source: "https://github.com/the-lstv/Atrium", color: "#080203", colorAutoGenerated: true },
+        { title: "Enantiomorphs", icon: "111e50e4a19cd161.webp", description: "A RPG / MMORPG centred around the last moments of the universe.", whiteIcon: true, color: "#303030", colorAutoGenerated: true },
+        { title: "Fantale", icon: "8f3389ce442eef1d.webp", description: "A fangame of the game Undertale, taking place after the world has been reset.", color: "#4f2b35", colorAutoGenerated: true },
+        { title: "Slides", icon: "https://slides.lstv.space/~/assets/icon.svg", description: "A simple presentation tool for creating and sharing slides with code. (No interactive UI yet, just a presentation API.)", link: "https://slides.lstv.space", source: "https://github.com/the-lstv/slides", color: "#44695f", colorAutoGenerated: true },
         
-        { title: "MetaDaw", icon: "1e13f96a16b37c33.svg", description: "An experimental fully modular synthesizer, with a VST3 plugin for cross-integration." },
-        { title: "Quicksand", icon: "7eb4acc292c766b5.svg", tags: ["paused"], description: "A fast and friendly powerful game engine, for various types of games, made for anyone from beginners to proffesionals. Based on the same editor engine as my video editor." },
-        { title: "LS Creative suite", icon: "e3ffa9300faf6748.svg", description: "A suite of creative tools built on the LS framework that all work nicely together." },
-        { title: "MotionCast", icon: "2dbab853ce2cc04c.svg", tags: ["discontinued"], description: "A light remote desktop application with an easy web-based client with multi-stream support." },
-        { title: "Edookit2", icon: "796af24c7a0f23c0.svg", tags: ["paused"], description: "A modern school frontend with a sleek interface as an alternative to the awful official one." , link: "" },
-        { title: "Froggie", icon: "4eab18a5b0d45d99.webp", description: "A very simple game where you merge bubbles to get different animals." },
-        { title: "PurblePlace (port)", icon: "fac005c8888b4de0.webp", tags: ["paused"], description: "A frame-perfect port of the classic \"PurblePlace\" game, with web and mobile support. So far the main menu and Purble Pairs is complete. Sadly not actively developed :(" },
-        { title: "LS.Icons", icon: "2bfcbbefce4cfa1b.webp", description: "An open-source symbolic icon library designed by Lukas, with hand-crafted vector icons in 6 styles each. Currently in beta.", link: "https://github.com/the-lstv/ls-icons" },
-        
+        { title: "MetaDaw", icon: "1e13f96a16b37c33.svg", description: "An experimental fully modular synthesizer, also with a VST3 plugin for cross-integration.", color: "#3e242c", colorAutoGenerated: true },
+        { title: "Quicksand", icon: "7eb4acc292c766b5.svg", tags: ["paused"], description: "A fast and friendly powerful game engine, for various types of games, made for anyone from beginners to proffesionals. Based on the same editor engine as my video editor.", color: "#696678", colorAutoGenerated: true },
+        { title: "LS Creative suite", icon: "e3ffa9300faf6748.svg", description: "A suite of creative tools built on the LS framework that all work nicely together.", color: "#4c3333", colorAutoGenerated: true },
+        { title: "MotionCast", icon: "2dbab853ce2cc04c.svg", tags: ["discontinued"], description: "A light remote desktop application with an easy web-based client with multi-stream support.", color: "#486a61", colorAutoGenerated: true },
+        { title: "Edookit2", icon: "796af24c7a0f23c0.svg", tags: ["paused"], description: "A modern school frontend with a sleek interface as an alternative to the awful official one.", link: "", color: "#689374", colorAutoGenerated: true },
+        { title: "Froggie", icon: "4eab18a5b0d45d99.webp", description: "A very simple game where you merge bubbles to get different animals.", color: "#7b7b7b", colorAutoGenerated: true },
+        { title: "PurblePlace (port)", icon: "fac005c8888b4de0.webp", tags: ["paused"], description: "A frame-perfect port of the classic \"PurblePlace\" game, with web and mobile support. So far the main menu and Purble Pairs is complete. Sadly not actively developed :(", color: "#5f9fe1", colorAutoGenerated: true },
+        { title: "LS.Icons", icon: "2bfcbbefce4cfa1b.webp", description: "An open-source symbolic icon library designed by Lukas, with hand-crafted vector icons in 6 styles each. Currently in beta.", link: "https://github.com/the-lstv/ls-icons", color: "#adcdd7", colorAutoGenerated: true },
+
         { type: "separator" },
-        
-        { title: "PStudio", icon: "b14d9c9894917876.svg", tags: ["discontinued"], description: "An old attempt at making a DAW, but it didn't get too far, only the synth plugin was reused. Revived by MetaDaw" },
-        { title: "Getrox", icon: "d11562ce585e205b.svg", tags: ["discontinued"], description: "Currency/finance platform, used as a token across our services.", link: "" },
-        { title: "Unifya", icon: "ff153edceb4394d1.webp", description: "An universal data flow library used across my creative software (video editors, game engines, audio tools etc.) to ensure seamless integration by streamlining data flow.", link: "" },
-        { title: "Arisen", icon: "65887818849cc412.webp", description: "Former machine learning division. There was an interface (both for users and developers) for interacting with our/any ML/LLM models such as Arisen-NLP/GPM 1.5/GPM-8Bv2/GPM-11B/GPM-6B/GPM Nano/Pico, with privacy & fun in mind, and many cool features. Last project was an interactive assistant here at lstv.space, but that was while the tech was still ethical... At this point, I think we are all tired of AI, so I cancelled it.", link: "" },
+
+        { title: "PStudio", icon: "b14d9c9894917876.svg", tags: ["discontinued"], description: "An old attempt at making a DAW, but it didn't get too far, only the synth plugin was reused. Revived by MetaDaw", color: "#514b4b", colorAutoGenerated: true },
+        { title: "Getrox", icon: "d11562ce585e205b.svg", tags: ["discontinued"], description: "Currency/finance platform, used as a token across our services.", link: "", color: "#0b1803", colorAutoGenerated: true },
+        { title: "Unifya", icon: "ff153edceb4394d1.webp", description: "An universal data flow library used across my creative software (video editors, game engines, audio tools etc.) to ensure seamless integration by streamlining data flow.", link: "", color: "#465f84", colorAutoGenerated: true },
+        { title: "Arisen", icon: "65887818849cc412.webp", description: "Former machine learning division. There was an interface (both for users and developers) for interacting with our/any ML/LLM models such as Arisen-NLP/GPM 1.5/GPM-8Bv2/GPM-11B/GPM-6B/GPM Nano/Pico, with privacy & fun in mind, and many cool features. Last project was an interactive assistant here at lstv.space, but that was while the tech was still ethical... At this point, I think we are all tired of AI, so I cancelled it.", link: "", color: "#3c2a56", colorAutoGenerated: true },
         { title: "pixelplace", icon: "", tags: ["paused"], description: "In the same day that r/Place 2023 ended, I've made a clone that features an exact copy of how the place has been when it was ending, and is also compatible with previous r/Place events and has some extra fancy features.\n\nIt also allows anyone to create their own new places, share them, or just revisit past events & make copies." },
 
-        { title: "Arc", icon: "22c5f89454f62ffc.svg", tags: ["discontinued"], description: "An application and game runtime/launcher. All of my early apps were made in this, but no stable build has been completed." },
-        { title: "Gear Calc", icon: "38ace2148cd1e376.webp", tags: ["discontinued"], description: "A calculator app for Tizen (Galaxy Watch 3 and older) with advanced features, units conversion, and a currency converter." },
-        { title: "LiOS", icon: "8ed93db6d2be144d.svg", tags: ["discontinued"], description: "" },
-        { title: "LocalStream", icon: "a41b7512d4d3a874.svg", tags: ["discontinued"], description: "App that allows you to instantly stream or sync your music playlists, gallery, or text data via a local connection with minimal latency." },
-        { title: "FOSSHome", icon: "8a61a157e6c85819.webp", tags: ["discontinued"], description: "FOSSHome was a cloud-synced \"WebOS\" launchpad environment with a Linux-like shell and a sleek interface and a window/widget framework, to make you feel right at home. It's code is in an unusable state, but a lot of it's ideas are a part of lstv.space now!", link: "https://github.com/the-lstv/fosshome" },
-        { title: "LSVM", icon: "3c1871e0ee6780c4.svg", tags: ["discontinued"], description: "A virtual machine manager for 'lsvm' format VMs. It primarily ran the LiOS 11 build. Only archived builds survived (not the original source)" },
+        { title: "Arc", icon: "22c5f89454f62ffc.svg", tags: ["discontinued"], description: "An application and game runtime/launcher. All of my early apps were made in this, but no stable build has been completed.", color: "#395f65", colorAutoGenerated: true },
+        { title: "Gear Calc", icon: "38ace2148cd1e376.webp", tags: ["discontinued"], description: "A calculator app for Tizen (Galaxy Watch 3 and older) with advanced features, units conversion, and a currency converter.", color: "#101413", colorAutoGenerated: true },
+        { title: "LiOS", icon: "8ed93db6d2be144d.svg", tags: ["discontinued"], description: "", color: "#001f47", colorAutoGenerated: true },
+        { title: "LocalStream", icon: "a41b7512d4d3a874.svg", tags: ["discontinued"], description: "App that allows you to instantly stream or sync your music playlists, gallery, or text data via a local connection with minimal latency.", color: "#c05e6e", colorAutoGenerated: true },
+        { title: "FOSSHome", icon: "8a61a157e6c85819.webp", tags: ["discontinued"], description: "FOSSHome was a cloud-synced \"WebOS\" launchpad environment with a Linux-like shell and a sleek interface and a window/widget framework, to make you feel right at home. It's code is in an unusable state, but a lot of it's ideas are a part of lstv.space now!", link: "https://github.com/the-lstv/fosshome", color: "#3e514d", colorAutoGenerated: true },
+        { title: "LSVM", icon: "3c1871e0ee6780c4.svg", tags: ["discontinued"], description: "A virtual machine manager for 'lsvm' format VMs. It primarily ran the LiOS 11 build. Only archived builds survived (not the original source)", color: "#91a0b6", colorAutoGenerated: true },
         { title: "WSDK", icon: "", tags: ["discontinued"], description: "My dream IDE for automated project management I started working on when I was 14 and later made many re-iterations.\nIts now been abandoned for a long time and is no longer functional at this moment due to a missing LS archive. It was never put to use 😢.\nThere is a GitHub page with a bit more information, screnshots and the changelog." },
-        { title: "MazeChat", icon: "753bf30abc37cacd.svg", tags: ["discontinued"], description: "Old open chat platform, replaced by Townhall.", source: "https://github.com/the-lstv/maze-chat" },
-        { title: "osu!bot", icon: "2e9f590799ed2127.webp", tags: ["discontinued"], description: "Made for fun, a bot to play or live-preview osu! classic maps." },
+        { title: "MazeChat", icon: "753bf30abc37cacd.svg", tags: ["discontinued"], description: "Old open chat platform, replaced by Townhall.", source: "https://github.com/the-lstv/maze-chat", color: "#3d50d5", colorAutoGenerated: true },
+        { title: "osu!bot", icon: "2e9f590799ed2127.webp", tags: ["discontinued"], description: "Made for fun, a bot to play or live-preview osu! classic maps.", color: "#7b2493", colorAutoGenerated: true },
         { title: "ovsu", icon: "", tags: ["discontinued"], description: "An osu! inspired open-source rythm game." },
         { title: "Syntherium", tags: ["discontinued"], description: "A simple aditive synthetizer plugin with envelopes and basic shapes. I want to make a better one someday." },
-        { title: "ATF New", icon: "b9f7600fca3ac0a0.svg", tags: ["discontinued"], description: "A modernized remake of the ancient school program 'ATF' from 1992 we... still somehow use in schools today. Features a dark theme, modern features, and a clean, unobtrusive UI, free from the early Windows UI clunk." },
-        { title: "FNAF 2 web port", icon: "8cb36521f777e5f.webp", tags: ["discontinued"], description: "A web port of Five Nights at Freddy's 2." },
+        { title: "ATF New", icon: "b9f7600fca3ac0a0.svg", tags: ["discontinued"], description: "A modernized remake of the ancient school program 'ATF' from 1992 we... still somehow use in schools today. Features a dark theme, modern features, and a clean, unobtrusive UI, free from the early Windows UI clunk.", color: "#898998", colorAutoGenerated: true },
+        { title: "FNAF 2 web port", icon: "8cb36521f777e5f.webp", tags: ["discontinued"], description: "A web port of Five Nights at Freddy's 2.", color: "#511809", colorAutoGenerated: true },
         { title: "Tsirc", icon: "", tags: ["discontinued"], description: "A way too secure chat platform. Tripple-encrypted, 100% anonymous, no login, rendering sandbox & lockout, and segmented distribution, it's one of the most secure ways to share information over the internet." },
-        { title: "My Loy", icon: "65755e7053b3050.webp", tags: ["discontinued"], description: "A tamagotchi game where you take care of a virtual pet, inspired by one of my favorite childhood classics, Moy from Frojo Apps, that I made a (very) long time ago in TurboWarp." },
+        { title: "My Loy", icon: "65755e7053b3050.webp", tags: ["discontinued"], description: "A tamagotchi game where you take care of a virtual pet, inspired by one of my favorite childhood classics, Moy from Frojo Apps, that I made a (very) long time ago in TurboWarp.", color: "#acd2db", colorAutoGenerated: true },
         { title: "Frutiger desktop", tags: ["discontinued"], description: "Make your device feel fresh and full of life again with this Frutiger-Aero inspired launcher / user interface kit." },
         { title: "iS6", tags: ["discontinued"], description: "A mobile IDE for making Symbian apps." },
         { title: "Baldi's foot", icon: "", tags: ["discontinued"], description: "Recreation of Baldi's basics in a custom 3D engine for fanmade content (my school, specifically)." },
-        { title: "Among Us Walmart edition", icon: "7ae4525a1d19aa95.webp", tags: ["discontinued"], description: "An Among Us clone made in Scratch" },
+        { title: "Among Us Walmart edition", icon: "7ae4525a1d19aa95.webp", tags: ["discontinued"], description: "An Among Us clone made in Scratch", color: "#2a4042", colorAutoGenerated: true },
         { title: "RPG Engine", icon: "", tags: ["discontinued"], description: "A Scratch-based RPG engine." },
         { title: "Firefox Gaming (legacy)", tags: ["discontinued"], description: "A discontinued unofficial modification of Firefox for those OperaGX fans, just in case they dont want malware on their machines." },
         { title: "ScratchAtom", icon: "", tags: ["discontinued"], description: "A fast code editor in Scratch." },
-        { title: "XiWatch", tags: ["discontinued", "lost-media"], description: "A smartwatch GUI interface with apps." },
+        { title: "XiWatch", tags: ["discontinued","lost-media"], description: "A smartwatch GUI interface with apps." },
         { title: "Temňačka", tags: ["discontinued"], description: "A mildly spooky semi-3D puzzle game set in a subterranean world." },
-        { title: "(name unknown)", tags: ["discontinued", "lost-media"], description: "A web-based OS with a fake kernel and everything. Sadly lost." },
-        { title: "(name unknown)", tags: ["discontinued", "lost-media"], description: "A detailed Windows 10 simulator with apps & touchpad emulation. Sadly lost." },
-        { title: "(name unknown)", tags: ["discontinued", "lost-media"], description: "Code editor/project manager for Android." },
-        { title: "htedit", tags: ["discontinued", "lost-media"], description: "HTML editor on Android." },
-        { title: "(name unknown)", tags: ["discontinued", "lost-media"], description: "Website builder for Android." },
-        { title: "(name unknown)", tags: ["discontinued", "lost-media"], description: "Web based FTP client with a text editor" },
+        { title: "(name unknown)", tags: ["discontinued","lost-media"], description: "A web-based OS with a fake kernel and everything. Sadly lost." },
+        { title: "(name unknown)", tags: ["discontinued","lost-media"], description: "A detailed Windows 10 simulator with apps & touchpad emulation. Sadly lost." },
+        { title: "(name unknown)", tags: ["discontinued","lost-media"], description: "Code editor/project manager for Android." },
+        { title: "htedit", tags: ["discontinued","lost-media"], description: "HTML editor on Android." },
+        { title: "(name unknown)", tags: ["discontinued","lost-media"], description: "Website builder for Android." },
+        { title: "(name unknown)", tags: ["discontinued","lost-media"], description: "Web based FTP client with a text editor" },
         { title: "Mineworld", tags: ["discontinued"], description: "An utility app for managing and organizing your Minecraft worlds." },
         { title: "HackersOnline", tags: ["lost-media"], description: "A multiplayer hacking simulation game. At least the website is preserved", link: "/archives/hackers" },
-        { title: "LSTV Gaming launcher", tags: ["discontinued", "lost-media"], icon: "5543e9b14a8296a4.webp", description: "A visual heavy gaming launcher, later replaced by Arc." },
-        { title: "JumpAndRun, LSParty 2, XaryTycoon 2, Rope thing, Gallaxy Wars 2, Rocket", tags: ["discontinued", "lost-media"], description: "Some of my early lost games." },
-        { title: "LukasWiki", tags: ["discontinued", "lost-media"], description: "A wiki site, made in HTML & LibreOffice. My first project ever!" },
-        { title: "Old archives", tags: ["lost-media"], description: "There is a project library from 2022..", link: "/archives/lib" },
+        { title: "LSTV Gaming launcher", tags: ["discontinued","lost-media"], icon: "5543e9b14a8296a4.webp", description: "A visual heavy gaming launcher, later replaced by Arc.", color: "#1d1211", colorAutoGenerated: true },
+        { title: "JumpAndRun, LSParty 2, XaryTycoon 2, Rope thing, Gallaxy Wars 2, Rocket", tags: ["discontinued","lost-media"], description: "Some of my early lost games." },
+        { title: "LukasWiki", tags: ["discontinued","lost-media"], description: "A wiki site, made in HTML & LibreOffice. My first project ever!" },
+        { title: "Old archives", tags: ["lost-media"], description: "There is a project library from 2022..", link: "/archives/lib" }
     ],
 
     libraries: [
@@ -264,7 +263,7 @@ const data = {
         { title: "LS.Util.parseEmmet", description: "A lightweight Emmet abbreviation to DOM parser." },
         { title: "LSXb", description: "An (experimental) interface rendering and utility library for the original Xbox using NXDK & OpenGL." },
         { title: "Undertale Engine", description: "A PIXI.js powered, pixel-perfect Undertale engine - unfinished and currently outdated, but a revision is planned eventually.", link: "https://github.com/the-lstv/undertale" },
-        { title: "Quickly", description: "A faster, hardware-accelerated and enhanced alternative to Google Blockly, capable of rendering huge projects even on old hardware with stable performance. Sadly unfinished due to lack of time and me no longer being a part of TurboWarp community.", link: "https://github.com/the-lstv/quickly" },
+        { title: "Quickly", description: "A faster and enhanced alternative to Google Blockly, capable of rendering huge projects even on old hardware. Sadly unfinished due to lack of time and me no longer being a part of TurboWarp community.", link: "https://github.com/the-lstv/quickly" },
         { title: "Linux.js", description: "UNIX-like shell emulator in JavaScript.", link: "https://github.com/the-lstv/LinuxJS" },
         { title: "lsdb", description: "A high-performance memory-mapped database (unfinished).", link: "https://github.com/the-lstv/lsdb" },
         { title: "Atrium", description: "Flexible config parser.", link: "https://github.com/the-lstv/Atrium" },
@@ -602,7 +601,7 @@ website.register(document.currentScript, class extends LS.Context {
         this.introCanvas = container.querySelector("#raysBga");
         this.blurRenderer = null;
         this.cloudsVideoLoaded = false;
-        
+
         // Scroll tracking
         this.scrollHandler = null;
         this.onScroll = null;
@@ -772,17 +771,18 @@ website.register(document.currentScript, class extends LS.Context {
                             style: "display: flex; gap: 8px; flex-wrap: wrap;"
                         });
 
-                        controls.append(
-                            LS.Create("h3", { text: "Browse libraries by category" }),
-                            countIndicator,
-                            categoryFilterContainer
-                        );
+                        // controls.append(
+                        //     LS.Create("h3", { text: "Browse libraries by category" }),
+                        //     countIndicator,
+                        //     categoryFilterContainer
+                        // );
 
                         const listContainer = LS.Create("div", {
                             style: "display: flex; flex-direction: column; gap: 12px;"
                         });
 
-                        librariesContainer.append(controls, listContainer);
+                        // librariesContainer.append(controls, listContainer);
+                        librariesContainer.append(listContainer);
 
                         let activeCategory = "all";
                         const categoryButtons = new Map();
@@ -877,8 +877,9 @@ website.register(document.currentScript, class extends LS.Context {
                         this.gallery_loaded = true;
 
                         website.fetch("/showcase/list?type=1&limit=100", { auth: website.isLoggedIn }).then(data => {
-                            container.querySelector("#showcase-gallery").appendChild(LS.Create("h3", { text: "This is a rough collection of some of my designs and illustrations that I may update over time." }));
+                            container.querySelector("#showcase-gallery").appendChild(LS.Create("h3", { text: "This is a rough collection of some of my designs and illustrations that I may update over time (sometimes)." }));
 
+                            data = data.filter(art => !art.hidden && art.media);
                             data.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
                             data.forEach((art, index) => {
@@ -894,6 +895,8 @@ website.register(document.currentScript, class extends LS.Context {
                 case "showcase-music":
                     if(!this.music_loaded) {
                         this.music_loaded = true;
+
+                        container.querySelector("#showcase-music").appendChild(LS.Create("h3", { html: "This page is comming soon; I will be releasing my first album on the sumnmer of 2026, which will be released here. In the meantime I sometimes post my tracks and sound design in various places. Contact me if you're interested in collaborating!<br><br>Thank you for your interest!", style: "max-width: 600px;" }));
 
                         website.fetch("/showcase/list?type=2&limit=100", { auth: website.isLoggedIn }).then(data => {
 
@@ -1060,28 +1063,35 @@ website.register(document.currentScript, class extends LS.Context {
         this.playCloudsVideo();
     }
 
-    ensureCloudsVideoSource() {
-        if(!this.cloudsVideo || this.cloudsVideoLoaded) return;
-
-        const source = this.cloudsVideo.dataset.src;
-        if(!source) return;
-
-        this.cloudsVideo.src = source;
-        this.cloudsVideo.load();
-        this.cloudsVideoLoaded = true;
-    }
-
     playCloudsVideo() {
         if(!this.cloudsVideo) return;
 
-        this.ensureCloudsVideoSource();
+        if(!this.cloudsVideoLoaded) {
+            const source = this.cloudsVideo.dataset.src;
+            if(source) {
+                this.cloudsVideo.muted = true; // Once again since firefox is blind apparently
+                this.cloudsVideo.playsInline = true;
+                this.cloudsVideo.autoplay = true;
+                this.cloudsVideo.src = source;
+                this.cloudsVideo.load();
+                this.cloudsVideoLoaded = true;
+            }
+        }
 
         this.cloudsVideo.loop = true;
         this.cloudsVideo.playbackRate = 1;
 
         const playPromise = this.cloudsVideo.play();
-        if(playPromise && typeof playPromise.catch === "function") {
-            playPromise.catch(() => {});
+        if(playPromise) {
+            playPromise.catch((error) => {
+                LS.Toast.show("Unable to play background video. It may be blocked by your browser.", { timeout: 3000 });
+                this.context.logContext.error("Error playing clouds video:", error);
+
+                // Try again
+                window.addEventListener("pointerdown", () => {
+                    this.playCloudsVideo();
+                }, { once: true });
+            });
         }
     }
 
@@ -1098,6 +1108,13 @@ website.register(document.currentScript, class extends LS.Context {
         this.context.log("Setting up rendering");
         if(!window.LOW_PERFORMANCE_MODE) {
             this.blurRenderer = this.addDestroyable(new CombinedShaderRenderer(this.introCanvas, { width: 1024, height: 1024 }));
+
+            if(!this.blurRenderer.gl || !this.blurRenderer.supported) {
+                this.context.logContext.error("WebGL not supported or blocked by client.");
+                LS.Toast.show("WebGL is not supported or blocked by your browser.\nWon't display animated background.", { timeout: 3000 });
+                this.blurRenderer = null;
+                return;
+            }
 
             const FRAMERATE = 30;
 
