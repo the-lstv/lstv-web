@@ -2610,6 +2610,7 @@ const website = {
     toolbarsContainer: document.getElementById("toolbars"),
 
     openToolbar(name, toggle = false) {
+        console.log("Opening toolbar:", name, "Toggle:", toggle);
         if(website.currentToolbar == name && website.isToolbarOpen) {
             if(toggle) website.closeToolbar();
             return;
@@ -2637,7 +2638,7 @@ const website = {
         }
 
         if (website.isToolbarOpen) LS.Animation.slideInToggle(toolbar.element, previousToolbar?.element || null);
-        if (!website.isToolbarOpen) LS.Animation.fadeIn(toolbar.element, null, "up");
+        if (!website.isToolbarOpen) LS.Animation.fadeIn(toolbar.element, "up");
 
         website.isToolbarOpen = true;
         website.currentToolbar = name;
@@ -2652,10 +2653,11 @@ const website = {
     },
 
     closeToolbar() {
+        console.log("Closing toolbar");
         if(!website.isToolbarOpen) return;
 
         const toolbar = website.toolbars.get(website.currentToolbar);
-        LS.Animation.fadeOut(toolbar.element, null, "down");
+        LS.Animation.fadeOut(toolbar.element, "down");
 
         if(toolbar) {
             if(typeof toolbar.onClose === "function") toolbar.onClose();

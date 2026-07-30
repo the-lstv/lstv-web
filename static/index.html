@@ -797,7 +797,7 @@ website.register(document.currentScript, class extends LS.Context {
 
                             visibleLibraries.forEach(library => {
                                 const metadataChips = LS.Create("div", {
-                                    style: "margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap;"
+                                    style: "margin: 10px 0; display: flex; gap: 6px; flex-wrap: wrap;"
                                 });
 
                                 library.categories.forEach(category => {
@@ -810,7 +810,8 @@ website.register(document.currentScript, class extends LS.Context {
                                 library.tags.forEach(tag => {
                                     metadataChips.appendChild(LS.Create("ls-box", {
                                         class: "inline pill",
-                                        text: `#${tag}`
+                                        text: `#${tag}`,
+                                        style: "display: inline-flex; align-items: center; justify-content: center"
                                     }));
                                 });
 
@@ -1027,7 +1028,7 @@ website.register(document.currentScript, class extends LS.Context {
         if(scroll > innerHeight - 300) {
             if(!this.showcaseLoaded) {
                 this.showcaseLoaded = true;
-                this.showcaseTabs.set(0);
+                this.showcaseTabs.set(0, true);
             }
 
             if(this.wordStopped) { this.animateWord(); this.wordStopped = false }
