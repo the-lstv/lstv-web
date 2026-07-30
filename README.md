@@ -9,12 +9,12 @@ The website utilizes an one of a kind hybrid single-page application design with
 
 <br>
 
-<img src="etc/screenshot.png" alt="Screenshot" style="width: 100%; max-width: 500px;">
+<img src="etc/screenshot.png?c=1" alt="Screenshot" style="width: 100%; max-width: 500px;">
 
 ## Do things more quickly with the command palette
 You can now do almost anything blazingly fast with the site-wide command palette, which features clever auto-completion. You can now reach many things quickly with just a few keystrokes.<br>
 
-<img src="etc/terminal.png" alt="Screenshot" style="width: 100%; max-width: 500px;">
+<img src="etc/terminal.png?c=1" alt="Screenshot" style="width: 100%; max-width: 500px;">
 
 ## 📦 Kernel
 <img src="assets/image/kernel-icons/1x.png" alt="Kernel Logo" style="height: 200px"><br>
@@ -38,9 +38,8 @@ This does not mean that the site is 100% bulletproof - if you are able to find a
 
 ## 🚀 How do we make the site so efficient?
 LSTV.space is unique in that it is built from the ground up with the idea that the software should only perform what is necesarry for it's task.
-I implement subtle but noticeable optimizations anywhere I can and avoid any heavy libraries.
-
-This is why it is so fast.
+I implement subtle but noticeable optimizations anywhere I can and avoid any heavy libraries - or, almost any libraries at all!
+Almost everything you see is custom built by me.
 
 ## 🖥️ How to run locally
 1. Clone the repository.
@@ -81,3 +80,7 @@ Please consider contributing to the project by reporting issues or suggesting im
 
 
 ### This project is a result of many, many hours of hard work and is ridiculously overengineered. If you like it, any support would be greatly appreciated!<br>
+
+---
+
+<img src=https://cdn.extragon.cloud/file/a771e02dfb37f618.svg>

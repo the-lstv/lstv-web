@@ -1,0 +1,292 @@
+#template /templates/docs.html
+<head>
+@page { title: "LS.Timeline API Reference", description: "Timeline component options configuration", keywords: "timeline, configuration, options" }
+</head>
+@import("/docs/ls/sidebar.json");
+<div .docs-content>
+<markdown>
+<h1 id="ls-timeline">LS.Timeline</h1>
+
+<div class="api-reference" data-symbol="LS.Timeline">
+<article class="api-symbol api-symbol-component/class" id="api-ls-timeline" data-symbol="LS.Timeline">
+<h3 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.html"><code>LS.Timeline</code></a></h3>
+<p class="api-summary"><a class="api-symbol-ref" href="LS.Animation.Timeline.html">Timeline</a> component options configuration</p>
+<div class="api-source">Defined in <code>js/timeline.js:103</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-keyword">new</span> <span class="hljs-variable constant_">LS</span>.<span class="hljs-title class_">Timeline</span>(options = {})</code></pre>
+</article>
+<section class="api-members">
+<h3 id="api-ls-timeline-members">Members</h3>
+<article class="api-symbol api-symbol-method" id="api-ls-timeline-add" data-symbol="LS.Timeline.add">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.add.html"><code>LS.Timeline.add</code></a></h4>
+<p class="api-summary"><a class="api-symbol-ref" href="LS.Animation.Timeline.html">Timeline</a> item data structure</p>
+<div class="api-source">Defined in <code>js/timeline.js:1356</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">add</span>(item)</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-timeline-addtrack" data-symbol="LS.Timeline.addTrack">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.addTrack.html"><code>LS.Timeline.addTrack</code></a></h4>
+<div class="api-source">Defined in <code>js/timeline.js:1039</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">addTrack</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-timeline-applyredo" data-symbol="LS.Timeline.applyRedo">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.applyRedo.html"><code>LS.Timeline.applyRedo</code></a></h4>
+<p class="api-summary">Apply <a class="api-symbol-ref" href="LS.Color.a.html">a</a> redo operation with the given action state.<br>Called by external history manager with the action to redo.</p>
+<div class="api-source">Defined in <code>js/timeline.js:1870</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">applyRedo</span>(action)</code></pre>
+<div class="api-params">
+<h4>Parameters</h4>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>action</code></td><td><a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></td><td>- The action state to redo</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<h4>Returns</h4>
+<p><span class="api-type">boolean</span> — Whether the redo was applied successfully</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-timeline-applyundo" data-symbol="LS.Timeline.applyUndo">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.applyUndo.html"><code>LS.Timeline.applyUndo</code></a></h4>
+<p class="api-summary">Apply an undo operation with the given action state.<br>Called by external history manager with the action to undo.</p>
+<div class="api-source">Defined in <code>js/timeline.js:1793</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">applyUndo</span>(action)</code></pre>
+<div class="api-params">
+<h4>Parameters</h4>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>action</code></td><td><a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></td><td>- The action state to undo</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<h4>Returns</h4>
+<p><span class="api-type">boolean</span> — Whether the undo was applied successfully</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-timeline-binarysearch" data-symbol="LS.Timeline.binarySearch">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.binarySearch.html"><code>LS.Timeline.binarySearch</code></a></h4>
+<div class="api-source">Defined in <code>js/timeline.js:982</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">binarySearch</span>(time)</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-timeline-clearunusedrows" data-symbol="LS.Timeline.clearUnusedRows">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.clearUnusedRows.html"><code>LS.Timeline.clearUnusedRows</code></a></h4>
+<div class="api-source">Defined in <code>js/timeline.js:1043</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">clearUnusedRows</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-timeline-cloneitem" data-symbol="LS.Timeline.cloneItem">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.cloneItem.html"><code>LS.Timeline.cloneItem</code></a></h4>
+<div class="api-source">Defined in <code>js/timeline.js:1364</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">cloneItem</span>(item, keepId = <span class="hljs-literal">false</span>)</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-timeline-createtimelineelement" data-symbol="LS.Timeline.createTimelineElement">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.createTimelineElement.html"><code>LS.Timeline.createTimelineElement</code></a></h4>
+<div class="api-source">Defined in <code>js/timeline.js:1526</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">createTimelineElement</span>(item)</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-timeline-cut" data-symbol="LS.Timeline.cut">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.cut.html"><code>LS.Timeline.cut</code></a></h4>
+<div class="api-source">Defined in <code>js/timeline.js:1403</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">cut</span>(itemOrTime, offset)</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-timeline-deleteselected" data-symbol="LS.Timeline.deleteSelected">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.deleteSelected.html"><code>LS.Timeline.deleteSelected</code></a></h4>
+<div class="api-source">Defined in <code>js/timeline.js:1677</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">deleteSelected</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-timeline-deselectall" data-symbol="LS.Timeline.deselectAll">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.deselectAll.html"><code>LS.Timeline.deselectAll</code></a></h4>
+<div class="api-source">Defined in <code>js/timeline.js:1332</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">deselectAll</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-timeline-destroy" data-symbol="LS.Timeline.destroy">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.destroy.html"><code>LS.Timeline.destroy</code></a></h4>
+<div class="api-source">Defined in <code>js/timeline.js:1941</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">destroy</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-timeline-destroyitem" data-symbol="LS.Timeline.destroyItem">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.destroyItem.html"><code>LS.Timeline.destroyItem</code></a></h4>
+<p class="api-summary">Destroy an item and <a class="api-symbol-ref" href="LS.AutomationGraph.remove.html">remove</a> it from the timeline. Clears any associated resources.<br>Use if you want to permanently delete an item.</p>
+<div class="api-source">Defined in <code>js/timeline.js:1661</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">destroyItem</span>(item)</code></pre>
+<div class="api-params">
+<h4>Parameters</h4>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>item</code></td><td>*</td><td>Item to <a class="api-symbol-ref" href="LS.Animation.Context.destroy.html">destroy</a></td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<h4>Returns</h4>
+<p><span class="api-type">void</span></p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-timeline-destroytimelineelement" data-symbol="LS.Timeline.destroyTimelineElement">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.destroyTimelineElement.html"><code>LS.Timeline.destroyTimelineElement</code></a></h4>
+<p class="api-summary">Clears and removes the timeline element associated with an item.</p>
+<div class="api-source">Defined in <code>js/timeline.js:1669</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">destroyTimelineElement</span>(item)</code></pre>
+<div class="api-params">
+<h4>Parameters</h4>
+<table>
+<thead><tr><th>Name</th><th>Type</th></tr></thead>
+<tbody>
+<tr><td><code>item</code></td><td>*</td></tr>
+</tbody>
+</table>
+</div>
+</article>
+<article class="api-symbol api-symbol-get" id="api-ls-timeline-duration" data-symbol="LS.Timeline.duration">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.duration.html"><code>LS.Timeline.duration</code></a></h4>
+<div class="api-source">Defined in <code>js/timeline.js:974</code></div>
+<pre class="api-signature"><code class="language-js hljs">get <span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">duration</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-timeline-emitaction" data-symbol="LS.Timeline.emitAction">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.emitAction.html"><code>LS.Timeline.emitAction</code></a></h4>
+<p class="api-summary">Emit an action event for external history management.<br>External code should listen to the "action" event and store the action for undo/redo.</p>
+<div class="api-source">Defined in <code>js/timeline.js:1782</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">emitAction</span>(action)</code></pre>
+<div class="api-params">
+<h4>Parameters</h4>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>action</code></td><td><a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></td><td>- The action data to emit</td></tr>
+</tbody>
+</table>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-timeline-export" data-symbol="LS.Timeline.export">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.export.html"><code>LS.Timeline.export</code></a></h4>
+<div class="api-source">Defined in <code>js/timeline.js:1769</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">export</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-timeline-formatmarker" data-symbol="LS.Timeline.formatMarker">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.formatMarker.html"><code>LS.Timeline.formatMarker</code></a></h4>
+<div class="api-source">Defined in <code>js/timeline.js:1301</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">formatMarker</span>(time, step)</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-timeline-getintersectingat" data-symbol="LS.Timeline.getIntersectingAt">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.getIntersectingAt.html"><code>LS.Timeline.getIntersectingAt</code></a></h4>
+<div class="api-source">Defined in <code>js/timeline.js:1459</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">getIntersectingAt</span>(time)</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-timeline-getitembyid" data-symbol="LS.Timeline.getItemById">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.getItemById.html"><code>LS.Timeline.getItemById</code></a></h4>
+<div class="api-source">Defined in <code>js/timeline.js:978</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">getItemById</span>(id)</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-timeline-getrange" data-symbol="LS.Timeline.getRange">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.getRange.html"><code>LS.Timeline.getRange</code></a></h4>
+<div class="api-source">Defined in <code>js/timeline.js:1490</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">getRange</span>(start, end, containedOnly = <span class="hljs-literal">false</span>)</code></pre>
+</article>
+<article class="api-symbol api-symbol-get" id="api-ls-timeline-offset" data-symbol="LS.Timeline.offset">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.offset.html"><code>LS.Timeline.offset</code></a></h4>
+<div class="api-source">Defined in <code>js/timeline.js:940</code></div>
+<pre class="api-signature"><code class="language-js hljs">get <span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">offset</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-timeline-remapautomationtargets" data-symbol="LS.Timeline.remapAutomationTargets">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.remapAutomationTargets.html"><code>LS.Timeline.remapAutomationTargets</code></a></h4>
+<p class="api-summary">Remaps automation target nodeIds in cloned/pasted items.<br>If an automation clip's target was also cloned, <a class="api-symbol-ref" href="LS.Color.update.html">update</a> the target reference to point to the new <a class="api-symbol-ref" href="LS.Color.clone.html">clone</a>.</p>
+<div class="api-source">Defined in <code>js/timeline.js:1390</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">remapAutomationTargets</span>(items, idMap)</code></pre>
+<div class="api-params">
+<h4>Parameters</h4>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>items</code></td><td><a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></td><td>- The cloned/pasted items to process</td></tr>
+<tr><td><code>idMap</code></td><td><a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map">Map</a></td><td>- <a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map">Map</a> from original item IDs to new item IDs</td></tr>
+</tbody>
+</table>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-timeline-remove" data-symbol="LS.Timeline.remove">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.remove.html"><code>LS.Timeline.remove</code></a></h4>
+<p class="api-summary">Remove an item from the timeline, but keeps it alive to be added later.<br>Use if you think you might want to re-<a class="api-symbol-ref" href="LS.AutomationGraph.add.html">add</a> the item later (eg. multiple timelines).<br>Optionally destroys it.</p>
+<div class="api-source">Defined in <code>js/timeline.js:1625</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">remove</span>(item, destroy = <span class="hljs-literal">false</span>)</code></pre>
+<div class="api-params">
+<h4>Parameters</h4>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>item</code></td><td>*</td><td>Item to <a class="api-symbol-ref" href="LS.AutomationGraph.remove.html">remove</a></td></tr>
+<tr><td><code>destroy</code></td><td>*</td><td>Whether to <a class="api-symbol-ref" href="LS.Animation.Context.destroy.html">destroy</a> the item</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<h4>Returns</h4>
+<p><span class="api-type">void</span></p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-timeline-render" data-symbol="LS.Timeline.render">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.render.html"><code>LS.Timeline.render</code></a></h4>
+<div class="api-source">Defined in <code>js/timeline.js:1317</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">render</span>(updateItems = <span class="hljs-literal">false</span>)</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-timeline-reserverows" data-symbol="LS.Timeline.reserveRows">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.reserveRows.html"><code>LS.Timeline.reserveRows</code></a></h4>
+<div class="api-source">Defined in <code>js/timeline.js:1028</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">reserveRows</span>(number)</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-timeline-reset" data-symbol="LS.Timeline.reset">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.reset.html"><code>LS.Timeline.reset</code></a></h4>
+<div class="api-source">Defined in <code>js/timeline.js:1708</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">reset</span>(destroyItems = <span class="hljs-literal">true</span>, replacingItems = <span class="hljs-literal">null</span>)</code></pre>
+</article>
+<article class="api-symbol api-symbol-get" id="api-ls-timeline-rowheight" data-symbol="LS.Timeline.rowHeight">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.rowHeight.html"><code>LS.Timeline.rowHeight</code></a></h4>
+<div class="api-source">Defined in <code>js/timeline.js:907</code></div>
+<pre class="api-signature"><code class="language-js hljs">get <span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">rowHeight</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-get" id="api-ls-timeline-seek" data-symbol="LS.Timeline.seek">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.seek.html"><code>LS.Timeline.seek</code></a></h4>
+<div class="api-source">Defined in <code>js/timeline.js:956</code></div>
+<pre class="api-signature"><code class="language-js hljs">get <span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">seek</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-timeline-select" data-symbol="LS.Timeline.select">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.select.html"><code>LS.Timeline.select</code></a></h4>
+<div class="api-source">Defined in <code>js/timeline.js:1324</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">select</span>(item)</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-timeline-selectall" data-symbol="LS.Timeline.selectAll">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.selectAll.html"><code>LS.Timeline.selectAll</code></a></h4>
+<div class="api-source">Defined in <code>js/timeline.js:1341</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">selectAll</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-timeline-setseek" data-symbol="LS.Timeline.setSeek">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.setSeek.html"><code>LS.Timeline.setSeek</code></a></h4>
+<div class="api-source">Defined in <code>js/timeline.js:966</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">setSeek</span>(value)</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-timeline-sortitems" data-symbol="LS.Timeline.sortItems">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.sortItems.html"><code>LS.Timeline.sortItems</code></a></h4>
+<div class="api-source">Defined in <code>js/timeline.js:998</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">sortItems</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-timeline-transformcoords" data-symbol="LS.Timeline.transformCoords">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.transformCoords.html"><code>LS.Timeline.transformCoords</code></a></h4>
+<div class="api-source">Defined in <code>js/timeline.js:1739</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">transformCoords</span>(x, y)</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-timeline-updateheadposition" data-symbol="LS.Timeline.updateHeadPosition">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.updateHeadPosition.html"><code>LS.Timeline.updateHeadPosition</code></a></h4>
+<div class="api-source">Defined in <code>js/timeline.js:1295</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">updateHeadPosition</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-get" id="api-ls-timeline-zoom" data-symbol="LS.Timeline.zoom">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Timeline.zoom.html"><code>LS.Timeline.zoom</code></a></h4>
+<div class="api-source">Defined in <code>js/timeline.js:919</code></div>
+<pre class="api-signature"><code class="language-js hljs">get <span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Timeline</span>.<span class="hljs-title function_">zoom</span>()</code></pre>
+</article>
+</section>
+</div>
+
+</markdown>
+</div>

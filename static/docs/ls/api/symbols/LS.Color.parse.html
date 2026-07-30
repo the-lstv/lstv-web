@@ -1,0 +1,28 @@
+#template /templates/docs.html
+<head>
+@page { title: "LS.Color.parse", description: "Parses a color from various input formats and writes it into the target array at the given offset. Strings are case insensitive and trimmed. Supports: Hex strings ( RGB, RGBA, RRGG", keywords: "parse, color" }
+</head>
+@import("/docs/ls/sidebar.json");
+<div .docs-content>
+<markdown>
+<h1 id="ls-color-parse">LS.Color.parse</h1>
+
+<div class="api-doc">
+<p class="api-signature"><code>static parse(r, g, b, a, target, offset = 0)</code></p>
+<p>Parses a color from various input formats and writes it into the target array at the given offset. Strings are case-insensitive and trimmed.<br>Supports:<br>- Hex strings (#RGB, #RGBA, #RRGGBB, #RRGGBBAA)<br>- Integer RGB/RGBA (0xRRGGBB, 0xRRGGBBAA)<br>- RGB/RGBA strings (rgb(255, 0, 0), rgba(255, 0, 0, 0.5))<br>- HSL/HSLA strings (hsl(120, 100%, 50%), hsla(120, 100%, 50%, 0.5))<br>- HSB/HSBA strings (hsb(120, 100%, 100%), hsba(120, 100%, 100%, 0.5))<br>- Named <a href="https://developer.mozilla.org/en-US/docs/Web/API/CSS">CSS</a> colors<br>- Arrays [r, g, b], [r, g, b, a]<br>- Objects { r, g, b }, { r, g, b, a }<br>- Another <a href="../../components/color.html">Color</a> instance<br>- Integer values for r, g, b, a (0-255 for r, g, b and 0-1 for a)<br>- Any valid <a href="https://developer.mozilla.org/en-US/docs/Web/API/CSS">CSS</a> color string (as a fallback, using the browser's parser)</p>
+<table class="api-params"><thead><tr><th>Name</th><th>Type</th></tr></thead><tbody><tr><td><code>r</code></td><td>*</td></tr><tr><td><code>g</code></td><td>number</td></tr><tr><td><code>b</code></td><td>number</td></tr><tr><td><code>a</code></td><td>number</td></tr><tr><td><code>target</code></td><td><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></td></tr><tr><td><code>offset</code></td><td>number</td></tr></tbody></table>
+<p class="api-returns"><strong>Returns:</strong> <span class="api-return-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></span> — Target array with parsed color</p>
+<div class="api-example"><p><strong>Example:</strong></p><pre><code class="hljs language-js"><span class="hljs-comment">// Note: if you only parse hex colors, use Color&#46;parseHex for better performance</span>
+<span class="hljs-title class_">Color</span>&#46;<span class="hljs-title function_">parse</span>&#40;<span class="hljs-string">&quot;&#35;ff0000&quot;</span>&#41;;
+<span class="hljs-title class_">Color</span>&#46;<span class="hljs-title function_">parse</span>&#40;<span class="hljs-string">&quot;rgba&#40;255, 0, 0, 0&#46;5&#41;&quot;</span>&#41;;
+<span class="hljs-title class_">Color</span>&#46;<span class="hljs-title function_">parse</span>&#40;<span class="hljs-string">&quot;hsl&#40;120, 100%, 50%&#41;&quot;</span>&#41;;
+<span class="hljs-title class_">Color</span>&#46;<span class="hljs-title function_">parse</span>&#40;<span class="hljs-string">&quot;hsb&#40;120, 100%, 100%&#41;&quot;</span>&#41;;
+<span class="hljs-title class_">Color</span>&#46;<span class="hljs-title function_">parse</span>&#40;<span class="hljs-string">&quot;red&quot;</span>&#41;;
+<span class="hljs-title class_">Color</span>&#46;<span class="hljs-title function_">parse</span>&#40;&#91;<span class="hljs-number">255</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>&#93;&#41;;
+<span class="hljs-title class_">Color</span>&#46;<span class="hljs-title function_">parse</span>&#40;&#123; <span class="hljs-attr">r</span>: <span class="hljs-number">255</span>, <span class="hljs-attr">g</span>: <span class="hljs-number">0</span>, <span class="hljs-attr">b</span>: <span class="hljs-number">0</span> &#125;&#41;;
+<span class="hljs-title class_">Color</span>&#46;<span class="hljs-title function_">parse</span>&#40;<span class="hljs-keyword">new</span> <span class="hljs-title class_">Color</span>&#40;&#41;&#41;;
+<span class="hljs-title class_">Color</span>&#46;<span class="hljs-title function_">parse</span>&#40;<span class="hljs-number">255</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0&#46;5</span>&#41;;
+<span class="hljs-title class_">Color</span>&#46;<span class="hljs-title function_">parse</span>&#40;<span class="hljs-number">0xff0000</span>&#41;;</code></pre></div>
+</div>
+</markdown>
+</div>

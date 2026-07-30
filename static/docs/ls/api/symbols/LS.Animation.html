@@ -1,0 +1,156 @@
+#template /templates/docs.html
+<head>
+@page { title: "LS.Animation API Reference", description: "LS.Animation API reference.", keywords: "animation" }
+</head>
+@import("/docs/ls/sidebar.json");
+<div .docs-content>
+<markdown>
+<h1 id="ls-animation">LS.Animation</h1>
+
+<div class="api-reference" data-symbol="LS.Animation">
+<article class="api-symbol api-symbol-component/object" id="api-ls-animation" data-symbol="LS.Animation">
+<h3 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Animation.html"><code>LS.Animation</code></a></h3>
+<div class="api-source">Defined in <code>js/animation.js:31</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Animation</span>: object</code></pre>
+</article>
+<section class="api-members">
+<h3 id="api-ls-animation-members">Members</h3>
+<article class="api-symbol api-symbol-method" id="api-ls-animation-animate" data-symbol="LS.Animation.animate">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Animation.animate.html"><code>LS.Animation.animate</code></a></h4>
+<p class="api-summary">Creates <a class="api-symbol-ref" href="LS.Color.a.html">a</a> new <a class="api-symbol-ref" href="LS.Gl.animation.html">animation</a> for the target object.<br>Note: Animations are short-lived and removed <a class="api-symbol-ref" href="LS.Color.once.html">once</a> completed.</p>
+<div class="api-source">Defined in <code>js/animation2.js:325</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Animation</span>.<span class="hljs-title function_">animate</span>(target, properties = {}, options = {}, group = <span class="hljs-literal">null</span>)</code></pre>
+<div class="api-params">
+<h4>Parameters</h4>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>target</code></td><td>object|<a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>|<a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/API/NodeList">NodeList</a>|string|function</td><td>Yes</td><td>The target object to <a class="api-symbol-ref" href="LS.Animation.Context.animate.html">animate</a>. Optionally <a class="api-symbol-ref" href="LS.Color.a.html">a</a> selector, function or array.</td></tr>
+<tr><td><code>properties</code></td><td>object|<a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></td><td>Yes</td><td>The properties to <a class="api-symbol-ref" href="LS.Animation.Context.animate.html">animate</a>, either as an object or entries ([[property, [from, to]]]).</td></tr>
+<tr><td><code>properties.property</code></td><td>object</td><td>No</td><td>The property to <a class="api-symbol-ref" href="LS.Animation.Context.animate.html">animate</a>. Value can be <a class="api-symbol-ref" href="LS.Color.a.html">a</a> number or instance of <a class="api-symbol-ref" href="LS.Color.html">LS.Color</a>. Optionally you can <a class="api-symbol-ref" href="LS.Color.set.html">set</a> an initial <a class="api-symbol-ref" href="LS.Knob.value.html">value</a> as [from, to].</td></tr>
+<tr><td><code>options</code></td><td>object</td><td>Yes</td><td>The <a class="api-symbol-ref" href="LS.Gl.animation.html">animation</a> options</td></tr>
+<tr><td><code>options.easing</code></td><td>string</td><td>Yes</td><td>The easing function to use (<a class="api-symbol-ref" href="LS.Animation.EASING.linear.html">linear</a>, <a class="api-symbol-ref" href="LS.Animation.EASING.ease.html">ease</a>-in, <a class="api-symbol-ref" href="LS.Animation.EASING.ease.html">ease</a>-out, <a class="api-symbol-ref" href="LS.Animation.EASING.ease.html">ease</a>-in-out)</td></tr>
+<tr><td><code>options.duration</code></td><td>number</td><td>Yes</td><td>The <a class="api-symbol-ref" href="LS.Timeline.duration.html">duration</a> of the <a class="api-symbol-ref" href="LS.Gl.animation.html">animation</a> in milliseconds</td></tr>
+<tr><td><code>options.cutGroup</code></td><td>number</td><td>Yes</td><td>The <a class="api-symbol-ref" href="LS.Timeline.cut.html">cut</a> <a class="api-symbol-ref" href="LS.Menu.DEFAULTS.group.html">group</a> ID. Animating with this ID stops any other animations with the same ID.</td></tr>
+<tr><td><code>group</code></td><td>string</td><td>Yes</td><td>The <a class="api-symbol-ref" href="LS.Gl.animation.html">animation</a> <a class="api-symbol-ref" href="LS.Menu.DEFAULTS.group.html">group</a></td></tr>
+</tbody>
+</table>
+</div>
+</article>
+<article class="api-symbol api-symbol-class" id="api-ls-animation-context" data-symbol="LS.Animation.Context">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Animation.Context.html"><code>LS.Animation.Context</code></a></h4>
+<div class="api-source">Defined in <code>js/animation2.js:206</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-keyword">new</span> <span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Animation</span>.<span class="hljs-title class_">Context</span>(animationInstance)</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-animation-createanimation" data-symbol="LS.Animation.createAnimation">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Animation.createAnimation.html"><code>LS.Animation.createAnimation</code></a></h4>
+<div class="api-source">Defined in <code>js/animation2.js:252</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Animation</span>.<span class="hljs-title function_">createAnimation</span>(properties = {}, options = {}, group = <span class="hljs-literal">null</span>)</code></pre>
+</article>
+<article class="api-symbol api-symbol-field" id="api-ls-animation-default-duration" data-symbol="LS.Animation.DEFAULT_DURATION">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Animation.DEFAULT_DURATION.html"><code>LS.Animation.DEFAULT_DURATION</code></a></h4>
+<div class="api-source">Defined in <code>js/animation.js:32</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Animation</span>.<span class="hljs-property">DEFAULT_DURATION</span></code></pre>
+</article>
+<article class="api-symbol api-symbol-field" id="api-ls-animation-default-easing" data-symbol="LS.Animation.DEFAULT_EASING">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Animation.DEFAULT_EASING.html"><code>LS.Animation.DEFAULT_EASING</code></a></h4>
+<div class="api-source">Defined in <code>js/animation.js:33</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Animation</span>.<span class="hljs-property">DEFAULT_EASING</span></code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-animation-destroy" data-symbol="LS.Animation.destroy">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Animation.destroy.html"><code>LS.Animation.destroy</code></a></h4>
+<div class="api-source">Defined in <code>js/animation2.js:651</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Animation</span>.<span class="hljs-title function_">destroy</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-object" id="api-ls-animation-easing" data-symbol="LS.Animation.EASING">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Animation.EASING.html"><code>LS.Animation.EASING</code></a></h4>
+<div class="api-source">Defined in <code>js/animation2.js:164</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Animation</span>.<span class="hljs-property">EASING</span>: object</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-animation-fadein" data-symbol="LS.Animation.fadeIn">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Animation.fadeIn.html"><code>LS.Animation.fadeIn</code></a></h4>
+<p class="api-summary">Helper method for quick fade in, backwards compatibile with <a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/API/Animation">Animation</a> 1.x; animates opacity to 1 and moves in <a class="api-symbol-ref" href="LS.Color.a.html">a</a> <a class="api-symbol-ref" href="LS.Multipane.PRESETS.default.direction.html">direction</a>.</p>
+<div class="api-source">Defined in <code>js/animation.js:109</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-keyword">async</span> <span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Animation</span>.<span class="hljs-title function_">fadeIn</span>(element, duration = <span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Animation</span>.<span class="hljs-property">DEFAULT_DURATION</span>, direction = <span class="hljs-literal">null</span>, preserveTransform = <span class="hljs-literal">false</span>)</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-animation-fadeout" data-symbol="LS.Animation.fadeOut">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Animation.fadeOut.html"><code>LS.Animation.fadeOut</code></a></h4>
+<p class="api-summary">Helper method for quick fade out, backwards compatibile with <a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/API/Animation">Animation</a> 1.x; animates opacity to 0 and moves in <a class="api-symbol-ref" href="LS.Color.a.html">a</a> <a class="api-symbol-ref" href="LS.Multipane.PRESETS.default.direction.html">direction</a>.</p>
+<div class="api-source">Defined in <code>js/animation.js:65</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-keyword">async</span> <span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Animation</span>.<span class="hljs-title function_">fadeOut</span>(element, duration = <span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Animation</span>.<span class="hljs-property">DEFAULT_DURATION</span>, direction = <span class="hljs-literal">null</span>, preserveTransform = <span class="hljs-literal">false</span>)</code></pre>
+<div class="api-examples">
+<h4>Examples</h4>
+<pre class="api-example"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Animation</span>.<span class="hljs-title function_">fadeOut</span>(element, { <span class="hljs-attr">duration</span>: <span class="hljs-number">500</span>, <span class="hljs-attr">direction</span>: <span class="hljs-string">&#x27;down&#x27;</span> }).<span class="hljs-title function_">then</span>(<span class="hljs-function">() =&gt;</span> { <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&quot;Faded out!&quot;</span>); });
+<span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Animation</span>.<span class="hljs-title function_">fadeOut</span>(element, <span class="hljs-number">500</span>, <span class="hljs-string">&#x27;down&#x27;</span>).<span class="hljs-title function_">then</span>(<span class="hljs-function">() =&gt;</span> { <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&quot;Faded out!&quot;</span>); });</code></pre>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-animation-getinitialvalue" data-symbol="LS.Animation.getInitialValue">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Animation.getInitialValue.html"><code>LS.Animation.getInitialValue</code></a></h4>
+<div class="api-source">Defined in <code>js/animation2.js:408</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Animation</span>.<span class="hljs-title function_">getInitialValue</span>(target, property, isTransform)</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-animation-isrendered" data-symbol="LS.Animation.isRendered">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Animation.isRendered.html"><code>LS.Animation.isRendered</code></a></h4>
+<div class="api-source">Defined in <code>js/animation.js:41</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Animation</span>.<span class="hljs-title function_">isRendered</span>(element)</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-animation-pause" data-symbol="LS.Animation.pause">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Animation.pause.html"><code>LS.Animation.pause</code></a></h4>
+<div class="api-source">Defined in <code>js/animation2.js:369</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Animation</span>.<span class="hljs-title function_">pause</span>(id)</code></pre>
+</article>
+<article class="api-symbol api-symbol-get" id="api-ls-animation-prefersreducedmotion" data-symbol="LS.Animation.prefersReducedMotion">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Animation.prefersReducedMotion.html"><code>LS.Animation.prefersReducedMotion</code></a></h4>
+<div class="api-source">Defined in <code>js/animation.js:36</code></div>
+<pre class="api-signature"><code class="language-js hljs">get <span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Animation</span>.<span class="hljs-title function_">prefersReducedMotion</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-animation-render" data-symbol="LS.Animation.render">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Animation.render.html"><code>LS.Animation.render</code></a></h4>
+<div class="api-source">Defined in <code>js/animation2.js:475</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Animation</span>.<span class="hljs-title function_">render</span>(deltaTime)</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-animation-resolvevalue" data-symbol="LS.Animation.resolveValue">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Animation.resolveValue.html"><code>LS.Animation.resolveValue</code></a></h4>
+<div class="api-source">Defined in <code>js/animation2.js:377</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Animation</span>.<span class="hljs-title function_">resolveValue</span>(key, value)</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-animation-resume" data-symbol="LS.Animation.resume">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Animation.resume.html"><code>LS.Animation.resume</code></a></h4>
+<div class="api-source">Defined in <code>js/animation2.js:373</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Animation</span>.<span class="hljs-title function_">resume</span>(id)</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-animation-run" data-symbol="LS.Animation.run">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Animation.run.html"><code>LS.Animation.run</code></a></h4>
+<div class="api-source">Defined in <code>js/animation2.js:343</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Animation</span>.<span class="hljs-title function_">run</span>(animation)</code></pre>
+</article>
+<article class="api-symbol api-symbol-field" id="api-ls-animation-scheduled" data-symbol="LS.Animation.scheduled">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Animation.scheduled.html"><code>LS.Animation.scheduled</code></a></h4>
+<div class="api-source">Defined in <code>js/animation2.js:250</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Animation</span>.<span class="hljs-property">scheduled</span></code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-animation-slideintoggle" data-symbol="LS.Animation.slideInToggle">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Animation.slideInToggle.html"><code>LS.Animation.slideInToggle</code></a></h4>
+<div class="api-source">Defined in <code>js/animation.js:149</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-keyword">async</span> <span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Animation</span>.<span class="hljs-title function_">slideInToggle</span>(newElement, oldElement = <span class="hljs-literal">null</span>, duration = <span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Animation</span>.<span class="hljs-property">DEFAULT_DURATION</span>)</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-animation-stop" data-symbol="LS.Animation.stop">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Animation.stop.html"><code>LS.Animation.stop</code></a></h4>
+<div class="api-source">Defined in <code>js/animation2.js:353</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Animation</span>.<span class="hljs-title function_">stop</span>(id, resolvePromise = <span class="hljs-literal">false</span>)</code></pre>
+</article>
+<article class="api-symbol api-symbol-field" id="api-ls-animation-timeline" data-symbol="LS.Animation.Timeline">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Animation.Timeline.html"><code>LS.Animation.Timeline</code></a></h4>
+<div class="api-source">Defined in <code>js/animation2.js:248</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Animation</span>.<span class="hljs-property">Timeline</span></code></pre>
+</article>
+<article class="api-symbol api-symbol-field" id="api-ls-animation-transforms" data-symbol="LS.Animation.transforms">
+<h4 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Animation.transforms.html"><code>LS.Animation.transforms</code></a></h4>
+<div class="api-source">Defined in <code>js/animation.js:249</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Animation</span>.<span class="hljs-property">transforms</span></code></pre>
+</article>
+</section>
+</div>
+
+</markdown>
+</div>

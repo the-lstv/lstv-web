@@ -1,0 +1,42 @@
+#template /templates/docs.html
+<head>
+@page { title: "LS.ShortcutManager.map API Reference", description: "Applies a map of keys to shortcuts.", keywords: "map, applies, keys, shortcuts, shortcutmanager" }
+</head>
+@import("/docs/ls/sidebar.json");
+<div .docs-content>
+<markdown>
+<h1 id="ls-shortcutmanager-map">LS.ShortcutManager.map</h1>
+
+<div class="api-reference" data-symbol="LS.ShortcutManager.map">
+<article class="api-symbol api-symbol-method" id="api-ls-shortcutmanager-map" data-symbol="LS.ShortcutManager.map">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.ShortcutManager.map.html"><code>LS.ShortcutManager.map</code></a></div>
+<p class="api-summary">Applies <a class="api-symbol-ref" href="LS.Color.a.html">a</a> <a class="api-symbol-ref" href="LS.ShortcutManager.map.html">map</a> of keys to shortcuts.</p>
+<div class="api-source">Defined in <code>js/shortcutmanager.js:76</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">ShortcutManager</span>.<span class="hljs-title function_">map</span>(mapping)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>mapping</code></td><td><a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></td><td>Mapping of shortcut to handler OR <br><br>FIXME: Complexity is <a class="api-symbol-ref" href="LS.Tiny.O.html">O</a>(n^2)</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-examples">
+<div class="api-section-title">Examples</div>
+<pre class="api-example"><code class="language-js hljs">shortcutManager.<span class="hljs-title function_">map</span>({
+   <span class="hljs-string">&quot;SAVE&quot;</span>: <span class="hljs-string">&quot;Ctrl+S&quot;</span>
+});
+
+shortcutManager.<span class="hljs-title function_">assign</span>(<span class="hljs-string">&quot;SAVE&quot;</span>, <span class="hljs-function">() =&gt;</span> { ... });
+
+<span class="hljs-comment">// Later, you may want to customize the mapping:</span>
+shortcutManager.<span class="hljs-title function_">map</span>({
+   <span class="hljs-string">&quot;SAVE&quot;</span>: <span class="hljs-string">&quot;Shift+S&quot;</span> <span class="hljs-comment">// &lt;= updates the previous mapping</span>
+});</code></pre>
+</div>
+</article>
+</div>
+
+</markdown>
+</div>

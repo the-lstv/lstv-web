@@ -1,0 +1,40 @@
+#template /templates/docs.html
+<head>
+@page { title: "LS.Reactive.wrap API Reference", description: "Wraps an object with a reactive proxy. The proxy will get the following extra properties: * `__isProxy` - A boolean indicating that this is a reactive proxy * `__binding` - The binding instance", keywords: "proxy, reactive, binding, boolean, extra, following, get, indicating, instance, isproxy, properties, wraps" }
+</head>
+@import("/docs/ls/sidebar.json");
+<div .docs-content>
+<markdown>
+<h1 id="ls-reactive-wrap">LS.Reactive.wrap</h1>
+
+<div class="api-reference" data-symbol="LS.Reactive.wrap">
+<article class="api-symbol api-symbol-method" id="api-ls-reactive-wrap" data-symbol="LS.Reactive.wrap">
+<h3 class="api-symbol-title"><a class="api-symbol-ref" href="LS.Reactive.wrap.html"><code>LS.Reactive.wrap</code></a></h3>
+<p class="api-summary">Wraps an object with <a class="api-symbol-ref" href="LS.Color.a.html">a</a> reactive proxy.<br>The proxy will get the following extra properties:<br>* `__isProxy` - A boolean indicating that this is <a class="api-symbol-ref" href="LS.Color.a.html">a</a> reactive proxy<br>* `__binding` - The binding instance</p>
+<div class="api-source">Defined in <code>js/reactive.js:597</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Reactive</span>.<span class="hljs-title function_">wrap</span>(prefix, object, options = {})</code></pre>
+<div class="api-params">
+<h4>Parameters</h4>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>prefix</code></td><td>string</td><td>The prefix to bind to</td></tr>
+<tr><td><code>object</code></td><td>object</td><td>The object to <a class="api-symbol-ref" href="LS.Reactive.wrap.html">wrap</a></td></tr>
+<tr><td><code>options</code></td><td>object</td><td>Options for the binding</td></tr>
+<tr><td><code>options.shallow</code></td><td>boolean</td><td>Whether to only <a class="api-symbol-ref" href="LS.Reactive.wrap.html">wrap</a> the <a class="api-symbol-ref" href="LS.Modal.top.html">top</a>-level object</td></tr>
+<tr><td><code>options.render</code></td><td>boolean|function</td><td>Disables rendering if <a class="api-symbol-ref" href="LS.Color.set.html">set</a> to false, or replaces with <a class="api-symbol-ref" href="LS.Color.a.html">a</a> custom <a class="api-symbol-ref" href="LS.Animation.render.html">render</a> function</td></tr>
+<tr><td><code>options.propagate</code></td><td>boolean</td><td>Whether to propagate changes to parent bindings (eg. if user.data.name changes, user.data and user also <a class="api-symbol-ref" href="LS.Color.update.html">update</a>)</td></tr>
+<tr><td><code>options.extends</code></td><td>boolean</td><td>Fallback object to use when the key is not found</td></tr>
+<tr><td><code>options.collapseValue</code></td><td>boolean</td><td>Whether to collapse references to the object itself to its _value property (eg. if "test" is {_value: 5} and we bind {{ test }}, 5 will be used instead of the object)</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<h4>Returns</h4>
+<p><span class="api-type">Proxy</span> — The reactive proxy object</p>
+</div>
+</article>
+</div>
+
+</markdown>
+</div>

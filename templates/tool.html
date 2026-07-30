@@ -1,0 +1,64 @@
+#template /templates/main.html
+
+<!-- Sadly a wrapper is required since we cannot select the parent -->
+<div .tool-page-wrapper>
+    <div .tool-container .level-0>
+        <!-- <div .tool-header>
+            <div .tool-back-link>
+                <i class="bi-arrow-left"></i> Back to tools
+            </div>
+        </div>
+
+        <hr> -->
+
+        <div .tool-content>
+            <template::content />
+        </div>
+    </div>
+</div>
+
+<style>
+    .tool-container {
+        width: 100%;
+        max-width: 1000px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        padding: 10px;
+
+        hr {
+            margin: 8px 0;
+        }
+    }
+
+    .tool-page-wrapper {
+        width: 100%;
+        height: 100%;
+        background-color: var(--elevate-n1);
+    }
+/* 
+    .tool-back-link {
+        gap: 5px;
+        display: flex;
+        align-items: center;
+        color: var(--surface-8);
+        cursor: pointer;
+        font-size: 14px;
+        margin-left: 10px;
+        width: 100%;
+    } */
+
+    .tool-content {
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+        flex: 1;
+        height: 100%;
+        overflow-y: auto;
+    }
+
+    .tool-content h1:first-child {
+        margin-top: 0;
+    }
+</style>

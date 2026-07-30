@@ -1916,4 +1916,415 @@ class CommandPalette {
     }
 }
 
-export default CommandPalette;
+
+// --- lstv.space specific
+
+function init(kernel, website, LoggerContext) {
+    const topBar = LS.SelectOne("#topOverlay");
+
+    topBar.innerHTML = `<div id="commandTerminal" class="level-n3" style="display: none">
+    <div class="terminal-output"></div>
+</div>
+
+<div id="commandPaletteBar" class="level-n3">
+    <div id="commandPalette" onclick="this.querySelector('.command-input').focus()">
+        <div class="completion-menu"></div>
+
+        <i class="bi-terminal command-icon"></i>
+
+        <div class="textContainer">
+            <span class="command-selection"></span>
+            <span class="command-caret"></span>
+            <span class="command-text"></span><span class="command-hint"></span>
+            <input type="text" class="command-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Command palette input">
+        </div>
+    </div>
+
+    <div class="command-palette-buttons">
+        <button ls-tooltip="Close" class="square clear" aria-label="Close command palette"><i class="bi-x-lg"></i></button>
+    </div>
+</div>`;
+
+    const paletteBar = LS.SelectOne("#commandPaletteBar");
+    const paletteContainer = LS.SelectOne("#commandPalette");
+    const terminalContainer = LS.SelectOne("#commandTerminal");
+    const terminalOutput = terminalContainer.querySelector(".terminal-output");
+
+    const paletteLogger = new LoggerContext("Command Palette");
+    website.palette = new CommandPalette({
+        wrapperElement: paletteContainer,
+        menuElement: paletteContainer.querySelector(".completion-menu"),
+        iconElement: paletteContainer.querySelector(".command-icon"),
+        textDisplayElement: paletteContainer.querySelector(".command-text"),
+        hintElement: paletteContainer.querySelector(".command-hint"),
+        inputElement: paletteContainer.querySelector(".command-input"),
+        terminalOutput: terminalOutput,
+
+        fontWidth: 9.6 * 1.2,
+
+        onClose(){
+            LS.Animation.fadeOut(topBar, 300, "down");
+        },
+
+        onOpen(){
+            LS.Animation.fadeIn(topBar, 300, "up");
+        },
+
+        logger: paletteLogger
+    });
+
+    let terminalHidden = true;
+    const terminalObserver = new MutationObserver(() => {
+        const hasContent = terminalOutput.children.length > 0;
+        if (hasContent) {
+            if (terminalHidden) {
+                LS.Animation.fadeIn(terminalContainer, 200, "up");
+                terminalHidden = false;
+            }
+        } else {
+            if (!terminalHidden) {
+                LS.Animation.fadeOut(terminalContainer, 200, "down");
+                terminalHidden = true;
+            }
+        }
+    });
+
+    terminalObserver.observe(terminalOutput, { childList: true });
+
+    const terminalWriter = {
+        log: website.palette.log.bind(website.palette)
+    }
+
+    kernel.terminalWriter = terminalWriter;
+    paletteLogger.writer = terminalWriter;
+
+    paletteBar.querySelector("button").onclick = () => {
+        website.palette.close();
+    };
+
+    /**
+     * This should later be inline, so we don't waste client memory & work. 
+     * That's when we use Glitter
+     */
+
+    /*comptime*/ const kVersionMeta = {
+        1: {
+            codename: "Zen",
+            color: "#B5FFEE"
+        },
+        2: {
+            codename: "Aether",
+            color: "#FFA680"
+        },
+        3: {
+            codename: "Forge",
+            color: "#8C80FF"
+        }
+    }
+
+    /*comptime*/ const ckMeta = kVersionMeta[kernel.version.split(".")[0]] || { codename: "Unknown", color: "var(--accent)" };
+
+    website.palette.register([
+        {
+            name: "kernel-info",
+            alias: ["kernel-version", "version"],
+            icon: 'bi-cpu-fill',
+            description: "Show kernel information",
+            async onCalled() {
+                terminalOutput.appendChild(LS.Create({
+                    innerHTML: `<img src="/~/assets/image/kernel-icons/${kernel.version.split(".")[0]}x.png" width="180" style="position:absolute;top:20px"><svg xmlns="http://www.w3.org/2000/svg" width="200" height="180" viewBox="0 0 200 180" fill="none">
+<rect x="59" y="63" width="82" height="28.9828" fill="black"/>
+<rect x="59" y="91.9828" width="82" height="24.7414" fill="${ckMeta.color}"/>
+<text fill="black" style="white-space: pre" xml:space="preserve" font-family="JetBrains Mono" font-size="16.9655" font-weight="300" letter-spacing="0em"><tspan x="70.0855" y="110.504">v${kernel.version.split("-")[0]}</tspan></text>
+<text fill="${ckMeta.color}" style="white-space: pre" xml:space="preserve" font-family="JetBrains Mono" font-size="22.6207" font-weight="500" letter-spacing="0em"><tspan x="66.0693" y="86.1434">[${ckMeta.codename}]</tspan></text>
+</svg>`,
+                    style: 'margin:auto;display:flex;justify-content:center;position:relative'
+                }));
+
+                terminalWriter.log(
+                    `%clstv.space%c kernel`,
+                    "color:var(--accent);font-weight:bold;font-size:1.2em",
+                    "color:inherit;font-weight:bold;font-size:1.2em"
+                );
+                terminalWriter.log(
+                    `%cVersion:%c ${kernel.version} (${ckMeta.codename})`,
+                    "color:var(--accent);font-weight:bold", "color:inherit"
+                );
+                terminalWriter.log(
+                    `%cLS version:%c ${LS.version}`,
+                    "color:var(--accent);font-weight:bold", "color:inherit"
+                );
+                terminalWriter.log(
+                    `%cViewports:%c ${kernel.viewports.size}`,
+                    "color:var(--accent);font-weight:bold", "color:inherit"
+                );
+                terminalWriter.log(
+                    `%cPages:%c ${kernel.pageCache.size} / 20`,
+                    "color:var(--accent);font-weight:bold", "color:inherit"
+                );
+                terminalWriter.log(
+                    `%cThreads:%c ${kernel.threads.size} / ${kernel.MAX_THREADS}`,
+                    "color:var(--accent);font-weight:bold", "color:inherit"
+                );
+                terminalWriter.log(
+                    `%cWindows:%c ${kernel.windows.size}`,
+                    "color:var(--accent);font-weight:bold", "color:inherit"
+                );
+                terminalWriter.log(
+                    `%cSigned in:%c ${await kernel.auth.isLoggedIn() ? "Yes" : "No"}`,
+                    "color:var(--accent);font-weight:bold", "color:inherit"
+                );
+                terminalWriter.log(
+                    `%cLoadtime:%c ${Math.round(kernel.ttl)}ms (${Math.round(kernel.ttl_scripting)}ms without network)`,
+                    "color:var(--accent);font-weight:bold", "color:inherit"
+                );
+                const uptimeMs = Date.now() - window.__loadTime;
+                const uptimeSec = Math.floor(uptimeMs / 1000);
+                const hours = Math.floor(uptimeSec / 3600);
+                const minutes = Math.floor((uptimeSec % 3600) / 60);
+                const seconds = uptimeSec % 60;
+                const prettyUptime =
+                    (hours > 0 ? hours + "h " : "") +
+                    (minutes > 0 ? minutes + "m " : "") +
+                    seconds + "s";
+                terminalWriter.log(
+                    `%cUptime:%c ${prettyUptime}`,
+                    "color:var(--accent);font-weight:bold", "color:inherit"
+                );
+            }
+        },
+
+        {
+            name: "settings",
+            icon: "bi-gear",
+            description: "More settings",
+            children: [
+                // {
+                //     name: "notifications",
+                //     icon: "bi-bell",
+                //     description: "Enable or disable notifications",
+                //     children: [
+                //         {
+                //             name: "enable",
+                //             icon: "bi-bell-fill",
+                //             description: "Enable notifications",
+                //         },
+                //         {
+                //             name: "disable",
+                //             icon: "bi-bell-slash",
+                //             description: "Disable notifications",
+                //         }
+                //     ]
+                // },
+
+                {
+                    name: "privacy",
+                    icon: "bi-shield-lock",
+                    description: "Privacy settings",
+                    children: [
+                        {
+                            name: "statistics",
+                            icon: "bi-bar-chart",
+                            description: "Toggle anonymous statistics sharing",
+                            onCalled(enabled) {
+                                localStorage.setItem("DISABLE_STATS", !enabled);
+                                terminalWriter.log("Statistics sharing " + (enabled ? "enabled - Thank you!" : "disabled - No statistics data will be sent from this browser from now on."));
+
+                                if(!enabled) {
+                                    terminalWriter.log("Warning: This setting is not saved to your account and is specific to this browser. Make sure to update this setting on other devices.");
+                                }
+                            },
+                            inputs: [
+                                {
+                                    name: "enabled",
+                                    type: "boolean",
+                                    default: true
+                                }
+                            ]
+                        }
+                    ]
+                },
+
+                {
+                    name: "performance-mode",
+                    icon: "bi-speedometer",
+                    description: "Set performance mode",
+
+                    onCalled(value) {
+                        window.LOW_PERFORMANCE_MODE = value === "low";
+                        localStorage.setItem("LOW_PERFORMANCE_MODE", window.LOW_PERFORMANCE_MODE);
+                        terminalWriter.log("Warning: It is recommended to reload the page for this setting to take effect");
+                    },
+
+                    inputs: [ {
+                        name: "mode",
+                        type: "list",
+                        list: [
+                            { name: "Normal", description: "Recommended", value: "normal" },
+                            { name: "Low", description: "Disables some visual effects", value: "low" },
+                        ]
+                    } ]
+                },
+            ]
+        },
+
+        {
+            name: "set-accent",
+            icon: "bi-palette2",
+            description: "Set an accent color",
+
+            onCalled(color) {
+                LS.Color.setAccent(color);
+            },
+
+            inputs: [
+                { name: "preset", type: "list", list: [ { name: "custom", icon: "bi-palette2", type: "color" }, ...website.ACCENT_COLORS.map(accent => ({
+                    name: accent,
+                    icon: `bi-circle-fill`,
+                    accentColor: accent,
+                    value: accent
+                }))] }
+            ]
+        },
+
+        {
+            name: "set-theme",
+            icon: "bi-palette",
+            description: "Set user theme",
+            onCalled(theme) {
+                if (theme === "system") {
+                    localStorage.removeItem("ls-theme"); LS.Color.setAdaptiveTheme();
+                } else {
+                    website.theme = theme;
+                }
+            },
+            inputs: [
+                {
+                    name: "theme",
+                    type: "list",
+                    list: [
+                        { name: "Light", value: "light", icon: "bi-brightness-high" },
+                        { name: "Dark", value: "dark", icon: "bi-moon" },
+                        { name: "System", value: "system", icon: "bi-laptop" }
+                    ]
+                }
+            ]
+        },
+
+        {
+            name: "toolbar",
+            icon: "bi-tools",
+            description: "Toolbars",
+            onCalled(toolbar) {
+                website.openToolbar(toolbar);
+                website.palette.close();
+            },
+
+            inputs: [
+                {
+                    name: "toolbar",
+                    type: "list",
+                    list: [
+                        { name: "Accounts", value: "login", icon: "bi-person-circle" },
+                        { name: "Apps", value: "apps", icon: "bi-app" },
+                        { name: "Music Player", value: "musicPlayer", icon: "bi-music-note" },
+                        { name: "Customize website", value: "theme", icon: "bi-brush" },
+                        { name: "Assistant", value: "assistant", icon: "bi-robot" }
+                    ]
+                }
+            ]
+        },
+
+        {
+            name: "apps",
+            icon: "bi-window",
+            description: "Applications",
+
+            children: [
+                {
+                    name: "open",
+                    icon: "bi-box-arrow-up-right",
+                    description: "Open an app",
+                    children() {
+                        return [...kernel.appManifests.values()].map(app => ({ name: app.name.replace(/\s+/g, '_'), value: app.id, icon: app.icon, onCalled() {
+                            kernel.openApplication(app, { source: "palette" })
+                                // .loading(() => {}) // TODO: loading mark for the palette
+                                .done((instance) => {
+                                    instance.open?.();
+                                    website.palette.close();
+                                })
+                                .catch(error => {
+                                    terminalWriter.log("Failed to open app: " + (error.message || error.error || "Unknown error"));
+                                });
+                        }}));
+                    }
+                },
+
+                {
+                    name: "uninstall",
+                    icon: "bi-trash",
+                    description: "Uninstall an app",
+                },
+
+                {
+                    name: "install",
+                    icon: "bi-download",
+                    description: "Install an app",
+                },
+
+                {
+                    name: "sync",
+                    icon: "bi-arrow-repeat",
+                    description: "Enable sync for an app",
+                },
+
+                {
+                    name: "unsync",
+                    icon: "bi-x-lg",
+                    description: "Disable sync for an app",
+                },
+
+                {
+                    name: "auth",
+                    icon: "bi-shield-lock",
+                    description: "Authenticate"
+                },
+
+                {
+                    name: "manage-permissions",
+                    icon: "bi-shield-lock",
+                    description: "Manage app permissions",
+                }
+            ]
+        },
+
+        {
+            name: "echo",
+            alias: ["print"],
+            icon: "bi-chat",
+            description: "Echo input",
+            onCalled(text) { terminalWriter.log(text) },
+            inputs: [
+                { name: "text", type: "string", description: "Text to echo" }
+            ]
+        },
+
+        {
+            name: "clear",
+            icon: "bi-trash",
+            alias: ["clear-terminal", "cls"],
+            description: "Clear the terminal output",
+            onCalled() { terminalOutput.innerHTML = "" }
+        },
+
+        {
+            name: "close",
+            alias: ["exit"],
+            icon: "bi-x-circle",
+            description: "Close the command palette",
+            onCalled() { website.palette.close() }
+        }
+    ]);
+}
+
+export { CommandPalette, init };

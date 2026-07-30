@@ -1,0 +1,154 @@
+                IMMORTAL SOURCE-AVAILABLE LICENSE (IMMSAL)
+                           Version 0.2 - Draft
+
+Copyright (C) lstv.space
+Everyone is permitted to copy and distribute verbatim copies of this license
+document, but changing it is not allowed.
+
+  0. Preamble
+This License is a source-available, anti-AI, anti-appropriation license.
+It grants broad rights for human use, study, and modification while
+explicitly withholding rights related to artificial intelligence training,
+inference, code laundering, and competitive commercial exploitation.
+
+  1. Definitions
+"The Work" - the software, source code, documentation, assets, and any
+associated files distributed under this License.
+
+"You" - any natural person or legal entity exercising rights under this License.
+
+"AI System" - any machine-learning model, statistical inference system,
+neural network, large language model, transformer, diffusion model, or
+comparable automated system that ingests data to produce derived outputs,
+including but not limited to systems used for code generation, code completion,
+code summarization, code translation, code search, code embedding, or code analysis.
+
+"AI-Adjacent Entity" - any natural person or legal entity that (a) develops,
+trains, fine-tunes, hosts, sells, licenses, or operates an AI System as a primary
+or material product or service; (b) is a parent, subsidiary, affiliate, contractor,
+or substantial commercial partner of such an entity; or (c) acts on behalf of such
+an entity.
+
+"Automated Processing" - any non-human reading, parsing, summarization,
+embedding, indexing, analysis, transformation, translation, or reproduction of the
+Work, excluding ordinary compilation, execution, version control, file transfer,
+and integrity verification by tools that do not retain or transmit semantic content
+of the Work.
+
+"Derivative Work" - has the meaning given by applicable copyright law,
+and additionally for the purposes of contractual obligation under this License
+includes any work whose creation was materially informed by Automated Processing
+of the Work, regardless of literal code similarity (a "Laundered Derivative").
+
+"Commercial Use" - use primarily intended for or directed toward commercial
+advantage or monetary compensation.
+
+  2. Grant of Rights
+Subject to Your acceptance of and compliance with every term of this License,
+the Licensor grants You a worldwide, royalty-free, non-exclusive,
+non-sublicensable, revocable license to:
+(a) use, run, and execute the Work for non-commercial purposes;
+(b) study, read, and inspect the source code as a human being using ordinary
+human-readable tools;
+(c) modify the Work and create Derivative Works for non-commercial purposes;
+(d) distribute verbatim or modified copies of the Work, provided all conditions of
+Section 4 are met.
+All rights not expressly granted are reserved.
+
+  3. Prohibited Uses
+You may not, and may not permit, instruct, or enable any third party or system to:
+3.1 AI Training and Dataset Inclusion. Include the Work, in whole or in part,
+in any dataset, corpus, embedding store, vector database, retrieval index, or
+any other collection used to train, fine-tune, pre-train, post-train, distill,
+align, evaluate, benchmark, or otherwise develop any AI System.
+3.2 AI Inference and Context Injection. Provide the Work, in whole or in part,
+as input, prompt, system prompt, tool output, retrieval result,
+context window content, or attachment to any AI System, whether for code generation,
+completion, suggestion, refactoring, translation, explanation, summarization,
+review, search, or any other purpose.
+3.3 Automated Processing. Subject the Work to Automated Processing, including by
+any tool that transmits the Work to a remote AI System or that runs an AI System locally.
+3.4 Code Laundering. Use the Work, or any Automated Processing output derived
+from the Work, as a basis - direct or indirect - for producing a functionally
+equivalent, structurally similar, or behaviorally imitative work, whether or not
+literal code is copied.
+This includes the practice of generating natural-language descriptions,
+specifications, pseudocode, or intermediate representations of the Work and
+using those to reconstruct, reimplement, or regenerate equivalent software.
+3.5 AI-Adjacent Entities. If You are an AI-Adjacent Entity, You are not granted
+any rights under this License whatsoever and may not use, copy, distribute, modify,
+or even retain the Work.
+Receipt of the Work by an AI-Adjacent Entity constitutes infringement.
+3.6 Commercial Use. Use the Work for Commercial Use without prior explicit written
+permission from the Licensor.
+3.7 Moral Rights. Misrepresent the origin or authorship of the Work; use the Work in
+any manner that is reasonably damaging to the reputation, honor, or moral rights of
+the original author; or remove or obscure attribution.
+
+  4. Conditions on Distribution
+If You distribute the Work or a permitted Derivative Work:
+(a) You must include a verbatim copy of this License;
+(b) You must retain all copyright, attribution, and license notices;
+(c) You must clearly indicate any modifications and the date of modification;
+(d) You must provide a working link to the original source;
+(e) You must impose this same License, unmodified, on all recipients;
+(f) You must not place the Work on any platform whose terms of service grant the
+platform operator or third parties rights to perform Automated Processing on the
+Work (this includes, without limitation, platforms whose terms permit training AI
+models on hosted content), unless that platform offers a verifiable opt-out that
+You have engaged.
+
+  5. Acceptance
+You accept this License and become bound by it by performing any act with
+respect to the Work that requires permission under copyright law, by retaining
+the Work for more than seventy-two (72) hours, or by performing any Automated
+Processing on the Work. If You do not accept this License,
+You must delete all copies of the Work in Your possession.
+
+  6. Anti-Circumvention and Laundered Derivatives
+6.1 You agree, as a contractual matter independent of copyright, that
+any Laundered Derivative created by You or on Your behalf is itself bound
+by this License and that all economic rights in such Laundered Derivative
+are assigned to the Licensor to the maximum extent permitted by law, or,
+where assignment is not permitted, are exclusively and irrevocably
+licensed to the Licensor.
+6.2 You agree not to challenge the enforceability of Section 6.1 on the
+grounds that the resulting work lacks literal copyright similarity to the Work.
+6.3 Evidence sufficient to establish a Laundered Derivative includes, but
+is not limited to: server logs, AI System logs, chat transcripts,
+dataset manifests, internal communications, version-control history, commit
+timing correlations, and statistical or stylistic forensic analysis.
+
+  7. Termination
+7.1 Any violation of Sections 3, 4, or 6 immediately and automatically
+terminates all rights granted to You under this License, without notice.
+7.2 Upon termination You must destroy all copies of the Work and all
+Derivative Works and Laundered Derivatives in Your possession or control.
+7.3 Sections 1, 6, 7, 8, 9, and 10 survive termination.
+
+  8. Remedies
+8.1 You acknowledge that violation of Section 3 or 6 causes irreparable
+harm for which monetary damages are inadequate, and You consent to
+injunctive relief in addition to all other remedies available at law or equity.
+8.2 Liquidated damages for violation of Section 3.1, 3.2, 3.3, 3.4, or
+3.5 are agreed to be the greater of (a) USD $50,000 per violation, or
+(b) the violator's gross revenue attributable to products or services
+that incorporated, were trained on, or were derived from the Work, for
+the entire period of violation.
+
+  9. Warranty Disclaimer and Limitation of Liability
+THE WORK IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED. IN NO EVENT SHALL THE LICENSOR BE LIABLE FOR ANY CLAIM, DAMAGES,
+OR OTHER LIABILITY ARISING FROM, OUT OF, OR IN CONNECTION WITH THE WORK
+OR THE USE OR OTHER DEALINGS IN THE WORK.
+
+  10. Severability and Governing Law
+If any provision of this License is held unenforceable, the remainder
+shall remain in full force. The Licensor may specify governing law and
+venue in the distribution; absent such specification, the courts of the
+Licensor's principal place of business shall have jurisdiction.
+
+  11. Granting Exceptions
+The Licensor may grant individual written exceptions to any provision of
+this License. Such exceptions must be explicit, written, signed by the
+Licensor, and are non-transferable unless they say otherwise.

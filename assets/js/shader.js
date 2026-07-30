@@ -55,8 +55,13 @@ class CombinedShaderRenderer extends LS.Util.FrameScheduler {
 
         if (!this.gl) {
             console.error('WebGL2 not supported');
+            super.destroy();
+            this.supported = false;
+            this.gl = null;
             return;
         }
+
+        this.supported = true;
 
         this.canvas = canvas;
         this.shaders = [];
@@ -101,6 +106,8 @@ class CombinedShaderRenderer extends LS.Util.FrameScheduler {
     }
 
     render(time) {
+        if(!this.gl) return;
+
         // FPS tracking
         if (this.fpsEnabled) {
             this.fpsFrameTimes.push(time);

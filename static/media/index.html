@@ -1,0 +1,74 @@
+#template /templates/main.html
+
+<span hidden #scope-key>@file-scope-key();</span>
+
+<head>
+    @use (~/assets/js/shader.js[defer], ./index.css);
+
+    @page {
+        title: "LSTV | Media Center";
+        description: "Welcome to the LSTV Media Center.";
+        keywords: "LSTV, media, center, player, movies, projects, services, community";
+    }
+</head>
+
+<body>
+    <h1>Media Center</h1>
+</body>
+
+<style>
+
+</style>
+
+<script>
+    let gc = 0;
+    function g() {
+        // Probably does absolutely nothing but why not
+        return (crypto.getRandomValues(new Uint16Array(1))[0] * (gc++)) % 512;
+    }
+
+    const layout = [
+        { title: "Pictures + Videos" },
+        { title: "Movies" },
+        { title: "Music" },
+        { title: "TV" },
+        { title: "Settings" },
+    ];
+
+    /** @ls-main */(() => {
+        // Define addressing constants for the context's memory layout
+        const /* enum<addressing> */ CX                   =g();
+        const /* enum<addressing> */ CY                   =g();
+        const /* enum<addressing> */ PLAYBACK_STATE       =g();
+        const /* enum<addressing> */ PLAYBACK_DIRECTION   =g();
+
+        let privateMemory = new Uint16Array(512);
+
+        // Register the script with the kernel
+        website.register(document.currentScript, class MediaCenterContext extends LS.Context {
+            constructor(context, container) {
+                super();
+
+                context.setOptions({
+                    contextName: "MediaCenterContext",
+                    destroyOnUnload: true
+                });
+
+                // Reference to this document's container
+                this.container = container;
+                this.context = context;
+
+                privateMemory[CX] = 0;
+            }
+    
+            destroy() {
+                if(this.destroyed) return;
+                this.container = null;
+                this.context = null;
+                privateMemory.fill(0);
+                privateMemory = null;
+                super.destroy();
+            }
+        });
+    })();
+</script>

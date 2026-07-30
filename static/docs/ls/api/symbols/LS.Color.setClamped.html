@@ -1,0 +1,36 @@
+#template /templates/docs.html
+<head>
+@page { title: "LS.Color.setClamped API Reference", description: "Sets the color channels and clamps them to valid ranges Provide null or NaN to skip a channel", keywords: "color, channel, channels, clamps, nan, provide, ranges, sets, skip, them, valid, setclamped" }
+</head>
+@import("/docs/ls/sidebar.json");
+<div .docs-content>
+<markdown>
+<h1 id="ls-color-setclamped">LS.Color.setClamped</h1>
+
+<div class="api-reference" data-symbol="LS.Color.setClamped">
+<article class="api-symbol api-symbol-method" id="api-ls-color-setclamped" data-symbol="LS.Color.setClamped">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.setClamped.html"><code>LS.Color.setClamped</code></a></div>
+<p class="api-summary">Sets the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> channels and clamps them to valid ranges<br>Provide null or NaN to skip <a class="api-symbol-ref" href="LS.Color.a.html">a</a> channel</p>
+<div class="api-source">Defined in <code>js/color.js:618</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">setClamped</span>(r, g, b, a)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>r</code></td><td>number|null</td><td>Red <a class="api-symbol-ref api-symbol-ref-component" href="../../components/knob.html#api-ls-knob-value">value</a> to <a class="api-symbol-ref" href="LS.Color.set.html">set</a> (0-255)</td></tr>
+<tr><td><code>g</code></td><td>number|null</td><td>Green <a class="api-symbol-ref api-symbol-ref-component" href="../../components/knob.html#api-ls-knob-value">value</a> to <a class="api-symbol-ref" href="LS.Color.set.html">set</a> (0-255)</td></tr>
+<tr><td><code>b</code></td><td>number|null</td><td>Blue <a class="api-symbol-ref api-symbol-ref-component" href="../../components/knob.html#api-ls-knob-value">value</a> to <a class="api-symbol-ref" href="LS.Color.set.html">set</a> (0-255)</td></tr>
+<tr><td><code>a</code></td><td>number|null</td><td>Alpha <a class="api-symbol-ref api-symbol-ref-component" href="../../components/knob.html#api-ls-knob-value">value</a> to <a class="api-symbol-ref" href="LS.Color.set.html">set</a> (0-1)</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — Self</p>
+</div>
+</article>
+</div>
+
+</markdown>
+</div>

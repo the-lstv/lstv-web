@@ -1,0 +1,1276 @@
+#template /templates/docs.html
+<head>
+@page { title: "LS.Color API Reference", description: "LS.Color API reference.", keywords: "color" }
+</head>
+@import("/docs/ls/sidebar.json");
+<div .docs-content>
+<markdown>
+<h1 id="ls-color">LS.Color</h1>
+
+<div class="api-reference" data-symbol="LS.Color">
+<article class="api-symbol api-symbol-class" id="api-ls-color" data-symbol="LS.Color">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.html"><code>LS.Color</code></a></div>
+<div class="api-source">Defined in <code>js/color.js:20</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-keyword">new</span> <span class="hljs-variable constant_">LS</span>.<span class="hljs-title class_">Color</span>(r, g, b, a)</code></pre>
+</article>
+<section class="api-members">
+<div class="api-section-title" id="api-ls-color-members">Members</div>
+<article class="api-symbol api-symbol-get" id="api-ls-color-a" data-symbol="LS.Color.a">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.a.html"><code>LS.Color.a</code></a></div>
+<p class="api-summary">Get or <a class="api-symbol-ref" href="LS.Color.set.html">set</a> <a class="api-symbol-ref" href="LS.Color.alpha.html">alpha</a> channel <a class="api-symbol-ref api-symbol-ref-component" href="../../components/knob.html#api-ls-knob-value">value</a> (0-1)</p>
+<div class="api-source">Defined in <code>js/color.js:69</code></div>
+<pre class="api-signature"><code class="language-js hljs">get <span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">a</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-get" id="api-ls-color-accent" data-symbol="LS.Color.accent">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.accent.html"><code>LS.Color.accent</code></a></div>
+<div class="api-source">Defined in <code>js/color.js:1366</code></div>
+<pre class="api-signature"><code class="language-js hljs">get <span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">accent</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-add" data-symbol="LS.Color.add">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.add.html"><code>LS.Color.add</code></a></div>
+<p class="api-summary">Adds the given <a class="api-symbol-ref" href="LS.Color.color.html">color</a> values to the current <a class="api-symbol-ref" href="LS.Color.color.html">color</a></p>
+<div class="api-source">Defined in <code>js/color.js:451</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">add</span>(r2, g2, b2, a2)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>r2</code></td><td>number</td><td>Red <a class="api-symbol-ref api-symbol-ref-component" href="../../components/knob.html#api-ls-knob-value">value</a> to <a class="api-symbol-ref api-symbol-ref-component" href="../../components/automationgraph.html#api-ls-automationgraph-add">add</a> (0-255)</td></tr>
+<tr><td><code>g2</code></td><td>number</td><td>Green <a class="api-symbol-ref api-symbol-ref-component" href="../../components/knob.html#api-ls-knob-value">value</a> to <a class="api-symbol-ref api-symbol-ref-component" href="../../components/automationgraph.html#api-ls-automationgraph-add">add</a> (0-255)</td></tr>
+<tr><td><code>b2</code></td><td>number</td><td>Blue <a class="api-symbol-ref api-symbol-ref-component" href="../../components/knob.html#api-ls-knob-value">value</a> to <a class="api-symbol-ref api-symbol-ref-component" href="../../components/automationgraph.html#api-ls-automationgraph-add">add</a> (0-255)</td></tr>
+<tr><td><code>a2</code></td><td>number</td><td>Alpha <a class="api-symbol-ref api-symbol-ref-component" href="../../components/knob.html#api-ls-knob-value">value</a> to <a class="api-symbol-ref api-symbol-ref-component" href="../../components/automationgraph.html#api-ls-automationgraph-add">add</a> (0-1)</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — Self</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-alpha" data-symbol="LS.Color.alpha">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.alpha.html"><code>LS.Color.alpha</code></a></div>
+<p class="api-summary">Sets the <a class="api-symbol-ref" href="LS.Color.alpha.html">alpha</a> channel to <a class="api-symbol-ref" href="LS.Color.a.html">a</a> <a class="api-symbol-ref api-symbol-ref-component" href="../../components/knob.html#api-ls-knob-value">value</a></p>
+<div class="api-source">Defined in <code>js/color.js:515</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">alpha</span>(v)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>v</code></td><td>number</td><td>Alpha <a class="api-symbol-ref api-symbol-ref-component" href="../../components/knob.html#api-ls-knob-value">value</a> to <a class="api-symbol-ref" href="LS.Color.set.html">set</a> (0-1)</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — Self</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-apply" data-symbol="LS.Color.apply">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.apply.html"><code>LS.Color.apply</code></a></div>
+<div class="api-source">Defined in <code>js/color.js:1459</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">apply</span>(element, r, g, b)</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-applyasaccent" data-symbol="LS.Color.applyAsAccent">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.applyAsAccent.html"><code>LS.Color.applyAsAccent</code></a></div>
+<p class="api-summary">Sets the sitewide <a class="api-symbol-ref" href="LS.Color.accent.html">accent</a> from this <a class="api-symbol-ref" href="LS.Color.color.html">color</a></p>
+<div class="api-source">Defined in <code>js/color.js:772</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">applyAsAccent</span>()</code></pre>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — Self</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-at" data-symbol="LS.Color.at">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.at.html"><code>LS.Color.at</code></a></div>
+<p class="api-summary"><a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set">Set</a> <a class="api-symbol-ref api-symbol-ref-component" href="../../components/timeline.html#api-ls-timeline-offset">offset</a> by <a class="api-symbol-ref" href="LS.Color.pixel.html">pixel</a> <a class="api-symbol-ref api-symbol-ref-component" href="../../components/menu.html#api-ls-menu-index">index</a></p>
+<div class="api-source">Defined in <code>js/color.js:804</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">at</span>(index)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>index</code></td><td>number</td><td>Pixel <a class="api-symbol-ref api-symbol-ref-component" href="../../components/menu.html#api-ls-menu-index">index</a> to <a class="api-symbol-ref" href="LS.Color.set.html">set</a> the <a class="api-symbol-ref api-symbol-ref-component" href="../../components/timeline.html#api-ls-timeline-offset">offset</a> to (0-based)</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — Self</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-get" id="api-ls-color-atend" data-symbol="LS.Color.atEnd">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.atEnd.html"><code>LS.Color.atEnd</code></a></div>
+<p class="api-summary">Returns whether the current <a class="api-symbol-ref api-symbol-ref-component" href="../../components/timeline.html#api-ls-timeline-offset">offset</a> is <a class="api-symbol-ref" href="LS.Color.at.html">at</a> or beyond the <a class="api-symbol-ref api-symbol-ref-component" href="../../components/tabs.html#api-ls-tabs-last">last</a> <a class="api-symbol-ref" href="LS.Color.pixel.html">pixel</a></p>
+<div class="api-source">Defined in <code>js/color.js:839</code></div>
+<pre class="api-signature"><code class="language-js hljs">get <span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">atEnd</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-autoaccent" data-symbol="LS.Color.autoAccent">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.autoAccent.html"><code>LS.Color.autoAccent</code></a></div>
+<div class="api-source">Defined in <code>js/color.js:1611</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">autoAccent</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-autoscheme" data-symbol="LS.Color.autoScheme">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.autoScheme.html"><s><code>LS.Color.autoScheme</code></s></a></div>
+<div class="api-source">Defined in <code>js/color.js:1605</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">autoScheme</span>()</code></pre>
+<p class="api-deprecated"><strong>Deprecated.</strong></p>
+</article>
+<article class="api-symbol api-symbol-field" id="api-ls-color-autoschemeenabled" data-symbol="LS.Color.autoSchemeEnabled">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.autoSchemeEnabled.html"><code>LS.Color.autoSchemeEnabled</code></a></div>
+<div class="api-source">Defined in <code>js/color.js:875</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-property">autoSchemeEnabled</span></code></pre>
+</article>
+<article class="api-symbol api-symbol-get" id="api-ls-color-b" data-symbol="LS.Color.b">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.b.html"><code>LS.Color.b</code></a></div>
+<p class="api-summary">Get or <a class="api-symbol-ref" href="LS.Color.set.html">set</a> blue channel <a class="api-symbol-ref api-symbol-ref-component" href="../../components/knob.html#api-ls-knob-value">value</a> (0-255)</p>
+<div class="api-source">Defined in <code>js/color.js:62</code></div>
+<pre class="api-signature"><code class="language-js hljs">get <span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">b</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-get" id="api-ls-color-bit" data-symbol="LS.Color.bit">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.bit.html"><code>LS.Color.bit</code></a></div>
+<p class="api-summary">Get <a class="api-symbol-ref" href="LS.Color.a.html">a</a> binary <a class="api-symbol-ref api-symbol-ref-component" href="../../components/knob.html#api-ls-knob-value">value</a> representing whether the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> is closer to black (0) or white (1) based <a class="api-symbol-ref" href="LS.Color.on.html">on</a> its <a class="api-symbol-ref" href="LS.Color.brightness.html">brightness</a>, using <a class="api-symbol-ref" href="LS.Color.a.html">a</a> threshold of 127.5</p>
+<div class="api-source">Defined in <code>js/color.js:255</code></div>
+<pre class="api-signature"><code class="language-js hljs">get <span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">bit</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-get" id="api-ls-color-brightness" data-symbol="LS.Color.brightness">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.brightness.html"><code>LS.Color.brightness</code></a></div>
+<p class="api-summary">Get the perceived <a class="api-symbol-ref" href="LS.Color.brightness.html">brightness</a> of the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> using the HSP <a class="api-symbol-ref" href="LS.Color.color.html">color</a> model</p>
+<div class="api-source">Defined in <code>js/color.js:244</code></div>
+<pre class="api-signature"><code class="language-js hljs">get <span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">brightness</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-browse" data-symbol="LS.Color.browse">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.browse.html"><code>LS.Color.browse</code></a></div>
+<p class="api-summary">Get the <a class="api-symbol-ref api-symbol-ref-component" href="../../components/knob.html#api-ls-knob-value">value</a> of <a class="api-symbol-ref" href="LS.Color.a.html">a</a> specific channel (0 = red, 1 = green, 2 = blue, 3 = <a class="api-symbol-ref" href="LS.Color.alpha.html">alpha</a>)</p>
+<div class="api-source">Defined in <code>js/color.js:209</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">browse</span>(channel = <span class="hljs-number">0</span>)</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-clamp" data-symbol="LS.Color.clamp">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.clamp.html"><code>LS.Color.clamp</code></a></div>
+<div class="api-source">Defined in <code>js/color.js:1083</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">clamp</span>(target)</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-clone" data-symbol="LS.Color.clone">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.clone.html"><code>LS.Color.clone</code></a></div>
+<p class="api-summary">Creates <a class="api-symbol-ref" href="LS.Color.a.html">a</a> copy of this <a class="api-symbol-ref" href="LS.Color.color.html">color</a>, optionally into <a class="api-symbol-ref" href="LS.Color.a.html">a</a> provided target and <a class="api-symbol-ref api-symbol-ref-component" href="../../components/timeline.html#api-ls-timeline-offset">offset</a></p>
+<div class="api-source">Defined in <code>js/color.js:660</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">clone</span>(target = <span class="hljs-literal">undefined</span>, offset = <span class="hljs-number">0</span>)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>target</code></td><td><a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a>|<a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></td><td>Optional target array to copy the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> into (if not provided, <a class="api-symbol-ref" href="LS.Color.a.html">a</a> new array will be created)</td></tr>
+<tr><td><code>offset</code></td><td>number</td><td>Optional <a class="api-symbol-ref api-symbol-ref-component" href="../../components/timeline.html#api-ls-timeline-offset">offset</a> in the target array (<a class="api-symbol-ref api-symbol-ref-component" href="../../components/multipane.html#api-ls-multipane-presets-default">default</a> is 0)</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — New <a class="api-symbol-ref" href="LS.Color.html">Color</a> instance with copied values</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-get" id="api-ls-color-color" data-symbol="LS.Color.color">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.color.html"><code>LS.Color.color</code></a></div>
+<p class="api-summary">Get the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> as an RGBA array with <a class="api-symbol-ref" href="LS.Color.alpha.html">alpha</a> normalized to 0-1</p>
+<div class="api-source">Defined in <code>js/color.js:195</code></div>
+<pre class="api-signature"><code class="language-js hljs">get <span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">color</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-copyto" data-symbol="LS.Color.copyTo">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.copyTo.html"><code>LS.Color.copyTo</code></a></div>
+<p class="api-summary">Copy the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> values to <a class="api-symbol-ref" href="LS.Color.a.html">a</a> target array <a class="api-symbol-ref" href="LS.Color.at.html">at</a> the given <a class="api-symbol-ref api-symbol-ref-component" href="../../components/timeline.html#api-ls-timeline-offset">offset</a></p>
+<div class="api-source">Defined in <code>js/color.js:219</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">copyTo</span>(target, offset = <span class="hljs-number">0</span>)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>target</code></td><td>*</td><td>Target array to copy the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> into</td></tr>
+<tr><td><code>offset</code></td><td>*</td><td>Optional <a class="api-symbol-ref api-symbol-ref-component" href="../../components/timeline.html#api-ls-timeline-offset">offset</a> in the target array</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p>Target array with copied <a class="api-symbol-ref" href="LS.Color.color.html">color</a> values</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-darken" data-symbol="LS.Color.darken">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.darken.html"><code>LS.Color.darken</code></a></div>
+<p class="api-summary">Darkens the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> by decreasing its <a class="api-symbol-ref" href="LS.Color.lightness.html">lightness</a> by the given percentage (0-100)</p>
+<div class="api-source">Defined in <code>js/color.js:386</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">darken</span>(percent)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>percent</code></td><td>*</td><td>Percentage to <a class="api-symbol-ref" href="LS.Color.darken.html">darken</a> the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> by</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — Self</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-divide" data-symbol="LS.Color.divide">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.divide.html"><code>LS.Color.divide</code></a></div>
+<p class="api-summary">Divides each channel by the given factor<br>Provide null to skip <a class="api-symbol-ref" href="LS.Color.a.html">a</a> channel</p>
+<div class="api-source">Defined in <code>js/color.js:433</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">divide</span>(factorR, factorG, factorB, factorA)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>factorR</code></td><td>number|null</td><td>Factor to <a class="api-symbol-ref" href="LS.Color.divide.html">divide</a> the red channel by (or null to skip)</td></tr>
+<tr><td><code>factorG</code></td><td>number|null</td><td>Factor to <a class="api-symbol-ref" href="LS.Color.divide.html">divide</a> the green channel by (or null to skip)</td></tr>
+<tr><td><code>factorB</code></td><td>number|null</td><td>Factor to <a class="api-symbol-ref" href="LS.Color.divide.html">divide</a> the blue channel by (or null to skip)</td></tr>
+<tr><td><code>factorA</code></td><td>number|null</td><td>Factor to <a class="api-symbol-ref" href="LS.Color.divide.html">divide</a> the <a class="api-symbol-ref" href="LS.Color.alpha.html">alpha</a> channel by (or null to skip)</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — Self</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-ensurerule" data-symbol="LS.Color.ensureRule">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.ensureRule.html"><code>LS.Color.ensureRule</code></a></div>
+<div class="api-source">Defined in <code>js/color.js:1424</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">ensureRule</span>(name)</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-fill" data-symbol="LS.Color.fill">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.fill.html"><code>LS.Color.fill</code></a></div>
+<p class="api-summary">Fills the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> data with the given <a class="api-symbol-ref" href="LS.Color.color.html">color</a> starting from the current <a class="api-symbol-ref api-symbol-ref-component" href="../../components/timeline.html#api-ls-timeline-offset">offset</a>. If limit is provided, fills up to that many pixels, otherwise fills to the end of the array.</p>
+<div class="api-source">Defined in <code>js/color.js:852</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">fill</span>(r, g, b, a, offset = <span class="hljs-number">0</span>, limit = -<span class="hljs-number">1</span>)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>r</code></td><td>*</td><td></td></tr>
+<tr><td><code>g</code></td><td>number</td><td></td></tr>
+<tr><td><code>b</code></td><td>number</td><td></td></tr>
+<tr><td><code>a</code></td><td>number</td><td></td></tr>
+<tr><td><code>offset</code></td><td>number</td><td>Optional <a class="api-symbol-ref api-symbol-ref-component" href="../../components/timeline.html#api-ls-timeline-offset">offset</a> in pixels</td></tr>
+<tr><td><code>limit</code></td><td>number</td><td>Optional maximum number of pixels to <a class="api-symbol-ref" href="LS.Color.fill.html">fill</a></td></tr>
+</tbody>
+</table>
+</div>
+</article>
+<article class="api-symbol api-symbol-get" id="api-ls-color-floatpixel" data-symbol="LS.Color.floatPixel">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.floatPixel.html"><code>LS.Color.floatPixel</code></a></div>
+<p class="api-summary">Get the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> as an RGBA array with values normalized to 0-1 and rounded to the nearest float32 representation (useful for WebGL shaders)</p>
+<div class="api-source">Defined in <code>js/color.js:230</code></div>
+<pre class="api-signature"><code class="language-js hljs">get <span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">floatPixel</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-fromarray" data-symbol="LS.Color.fromArray">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.fromArray.html"><code>LS.Color.fromArray</code></a></div>
+<p class="api-summary">Creates <a class="api-symbol-ref" href="LS.Color.a.html">a</a> <a class="api-symbol-ref" href="LS.Color.color.html">color</a> from an array of <a class="api-symbol-ref" href="LS.Color.color.html">color</a> values.</p>
+<div class="api-source">Defined in <code>js/color.js:1299</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">fromArray</span>(arr)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>arr</code></td><td><a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></td><td>- The array containing <a class="api-symbol-ref" href="LS.Color.color.html">color</a> values in the format [<a class="api-symbol-ref" href="LS.Color.r.html">r</a>, <a class="api-symbol-ref" href="LS.Color.g.html">g</a>, <a class="api-symbol-ref" href="LS.Color.b.html">b</a>, <a class="api-symbol-ref" href="LS.Color.a.html">a</a>]</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — The created <a class="api-symbol-ref" href="LS.Color.color.html">color</a></p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-frombuffer" data-symbol="LS.Color.fromBuffer">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.fromBuffer.html"><code>LS.Color.fromBuffer</code></a></div>
+<p class="api-summary">Creates <a class="api-symbol-ref" href="LS.Color.a.html">a</a> colorview from <a class="api-symbol-ref" href="LS.Color.a.html">a</a> buffer. This does not copy and reflects changes to the buffer.</p>
+<div class="api-source">Defined in <code>js/color.js:1210</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">fromBuffer</span>(buffer, offset = <span class="hljs-number">0</span>)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>buffer</code></td><td>*</td><td>Buffer containing <a class="api-symbol-ref" href="LS.Color.color.html">color</a> data</td></tr>
+<tr><td><code>offset</code></td><td>*</td><td>Offset into the buffer</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — The created <a class="api-symbol-ref" href="LS.Color.color.html">color</a> instance</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-fromcss" data-symbol="LS.Color.fromCSS">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.fromCSS.html"><code>LS.Color.fromCSS</code></a> <span class="api-badge api-badge-experimental">experimental</span></div>
+<p class="api-summary">Creates <a class="api-symbol-ref" href="LS.Color.a.html">a</a> <a class="api-symbol-ref" href="LS.Color.color.html">color</a> from <a class="api-symbol-ref" href="LS.Color.a.html">a</a> <a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/API/CSS">CSS</a> <a class="api-symbol-ref" href="LS.Color.color.html">color</a> string.</p>
+<div class="api-source">Defined in <code>js/color.js:1322</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">fromCSS</span>(colorString)</code></pre>
+<p class="api-experimental"><strong>Experimental.</strong></p>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>colorString</code></td><td>string</td><td>- The <a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/API/CSS">CSS</a> <a class="api-symbol-ref" href="LS.Color.color.html">color</a> string</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — The created <a class="api-symbol-ref" href="LS.Color.color.html">color</a></p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-fromhex" data-symbol="LS.Color.fromHex">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.fromHex.html"><code>LS.Color.fromHex</code></a></div>
+<p class="api-summary">Creates <a class="api-symbol-ref" href="LS.Color.a.html">a</a> <a class="api-symbol-ref" href="LS.Color.color.html">color</a> from <a class="api-symbol-ref" href="LS.Color.a.html">a</a> <a class="api-symbol-ref" href="LS.Color.hex.html">hex</a> string.</p>
+<div class="api-source">Defined in <code>js/color.js:1179</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">fromHex</span>(hex)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>hex</code></td><td>string</td><td>- The <a class="api-symbol-ref" href="LS.Color.hex.html">hex</a> string in the format #RGB, #RGBA, #RRGGBB or #RRGGBBAA</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — The created <a class="api-symbol-ref" href="LS.Color.color.html">color</a></p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-fromhsb" data-symbol="LS.Color.fromHSB">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.fromHSB.html"><code>LS.Color.fromHSB</code></a></div>
+<p class="api-summary">Creates <a class="api-symbol-ref" href="LS.Color.a.html">a</a> <a class="api-symbol-ref" href="LS.Color.color.html">color</a> from HSB/HSV values.</p>
+<div class="api-source">Defined in <code>js/color.js:1170</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">fromHSB</span>(h, s, b)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>h</code></td><td>number</td><td>- Hue (0-360)</td></tr>
+<tr><td><code>s</code></td><td>number</td><td>- Saturation (0-1)</td></tr>
+<tr><td><code>b</code></td><td>number</td><td>- Brightness/Value (0-1)</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — The created <a class="api-symbol-ref" href="LS.Color.color.html">color</a></p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-fromhsl" data-symbol="LS.Color.fromHSL">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.fromHSL.html"><code>LS.Color.fromHSL</code></a></div>
+<p class="api-summary">Creates <a class="api-symbol-ref" href="LS.Color.a.html">a</a> <a class="api-symbol-ref" href="LS.Color.color.html">color</a> from HSL values.</p>
+<div class="api-source">Defined in <code>js/color.js:1159</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">fromHSL</span>(h, s, l)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>h</code></td><td>number</td><td>- Hue (0-360)</td></tr>
+<tr><td><code>s</code></td><td>number</td><td>- Saturation (0-1)</td></tr>
+<tr><td><code>l</code></td><td>number</td><td>- Lightness (0-1)</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — The created <a class="api-symbol-ref" href="LS.Color.color.html">color</a></p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-fromimage" data-symbol="LS.Color.fromImage">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.fromImage.html"><code>LS.Color.fromImage</code></a></div>
+<p class="api-summary">Creates <a class="api-symbol-ref" href="LS.Color.a.html">a</a> <a class="api-symbol-ref" href="LS.Color.color.html">color</a> from an image by sampling pixels to obtain <a class="api-symbol-ref" href="LS.Color.a.html">a</a> representative <a class="api-symbol-ref" href="LS.Color.color.html">color</a>.</p>
+<div class="api-source">Defined in <code>js/color.js:1221</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">fromImage</span>(image, sampleGap = <span class="hljs-number">16</span>, maxResolution = <span class="hljs-number">200</span>)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>image</code></td><td>*</td><td>Image element to sample</td></tr>
+<tr><td><code>sampleGap</code></td><td>*</td><td>Gap between sampled pixels</td></tr>
+<tr><td><code>maxResolution</code></td><td>*</td><td>Maximum resolution of the processed image</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — The created <a class="api-symbol-ref" href="LS.Color.color.html">color</a> instance</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-fromint" data-symbol="LS.Color.fromInt">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.fromInt.html"><code>LS.Color.fromInt</code></a></div>
+<p class="api-summary">Creates <a class="api-symbol-ref" href="LS.Color.a.html">a</a> <a class="api-symbol-ref" href="LS.Color.color.html">color</a> from <a class="api-symbol-ref" href="LS.Color.a.html">a</a> 32-<a class="api-symbol-ref" href="LS.Color.bit.html">bit</a> integer.</p>
+<div class="api-source">Defined in <code>js/color.js:1188</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">fromInt</span>(int)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>int</code></td><td>number</td><td>- The integer in the format 0xRRGGBB</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — The created <a class="api-symbol-ref" href="LS.Color.color.html">color</a></p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-fromnamed" data-symbol="LS.Color.fromNamed">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.fromNamed.html"><code>LS.Color.fromNamed</code></a></div>
+<p class="api-summary">Creates <a class="api-symbol-ref" href="LS.Color.a.html">a</a> <a class="api-symbol-ref" href="LS.Color.color.html">color</a> from <a class="api-symbol-ref" href="LS.Color.a.html">a</a> named <a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/API/CSS">CSS</a> <a class="api-symbol-ref" href="LS.Color.color.html">color</a>.</p>
+<div class="api-source">Defined in <code>js/color.js:1308</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">fromNamed</span>(name)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>name</code></td><td>string</td><td>- The name of the <a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/API/CSS">CSS</a> <a class="api-symbol-ref" href="LS.Color.color.html">color</a> (case-insensitive)</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — The created <a class="api-symbol-ref" href="LS.Color.color.html">color</a></p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-fromobject" data-symbol="LS.Color.fromObject">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.fromObject.html"><code>LS.Color.fromObject</code></a></div>
+<p class="api-summary">Creates <a class="api-symbol-ref" href="LS.Color.a.html">a</a> <a class="api-symbol-ref" href="LS.Color.color.html">color</a> from an object with <a class="api-symbol-ref" href="LS.Color.r.html">r</a>, <a class="api-symbol-ref" href="LS.Color.g.html">g</a>, <a class="api-symbol-ref" href="LS.Color.b.html">b</a>, and <a class="api-symbol-ref" href="LS.Color.a.html">a</a> properties.</p>
+<div class="api-source">Defined in <code>js/color.js:1290</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">fromObject</span>(obj)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>obj</code></td><td><a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></td><td>- The object containing <a class="api-symbol-ref" href="LS.Color.color.html">color</a> properties</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — The created <a class="api-symbol-ref" href="LS.Color.color.html">color</a></p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-frompixel" data-symbol="LS.Color.fromPixel">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.fromPixel.html"><code>LS.Color.fromPixel</code></a></div>
+<p class="api-summary">Creates <a class="api-symbol-ref" href="LS.Color.a.html">a</a> <a class="api-symbol-ref" href="LS.Color.color.html">color</a> from <a class="api-symbol-ref" href="LS.Color.a.html">a</a> <a class="api-symbol-ref" href="LS.Color.pixel.html">pixel</a> array.</p>
+<div class="api-source">Defined in <code>js/color.js:1200</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">fromPixel</span>(pixel)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>pixel</code></td><td><a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></td><td>- The <a class="api-symbol-ref" href="LS.Color.pixel.html">pixel</a> array in the format [<a class="api-symbol-ref" href="LS.Color.r.html">r</a>, <a class="api-symbol-ref" href="LS.Color.g.html">g</a>, <a class="api-symbol-ref" href="LS.Color.b.html">b</a>, <a class="api-symbol-ref" href="LS.Color.a.html">a</a>]</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — The created <a class="api-symbol-ref" href="LS.Color.color.html">color</a></p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-fromuint8" data-symbol="LS.Color.fromUint8">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.fromUint8.html"><code>LS.Color.fromUint8</code></a></div>
+<p class="api-summary">Creates <a class="api-symbol-ref" href="LS.Color.a.html">a</a> <a class="api-symbol-ref" href="LS.Color.color.html">color</a> (not <a class="api-symbol-ref" href="LS.Color.a.html">a</a> ColorView) from <a class="api-symbol-ref" href="LS.Color.a.html">a</a> <a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a>.</p>
+<div class="api-source">Defined in <code>js/color.js:1281</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">fromUint8</span>(data, offset = <span class="hljs-number">0</span>, alpha = <span class="hljs-literal">true</span>)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>data</code></td><td><a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a></td><td>- The array containing <a class="api-symbol-ref" href="LS.Color.color.html">color</a> data</td></tr>
+<tr><td><code>offset</code></td><td>number</td><td>- The starting <a class="api-symbol-ref api-symbol-ref-component" href="../../components/menu.html#api-ls-menu-index">index</a> in the array</td></tr>
+<tr><td><code>alpha</code></td><td>boolean</td><td>- Whether to include <a class="api-symbol-ref" href="LS.Color.alpha.html">alpha</a> channel</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — The created <a class="api-symbol-ref" href="LS.Color.color.html">color</a></p>
+</div>
+</article>
+<article class="api-symbol api-symbol-get" id="api-ls-color-g" data-symbol="LS.Color.g">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.g.html"><code>LS.Color.g</code></a></div>
+<p class="api-summary">Get or <a class="api-symbol-ref" href="LS.Color.set.html">set</a> green channel <a class="api-symbol-ref api-symbol-ref-component" href="../../components/knob.html#api-ls-knob-value">value</a> (0-255)</p>
+<div class="api-source">Defined in <code>js/color.js:56</code></div>
+<pre class="api-signature"><code class="language-js hljs">get <span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">g</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-generate" data-symbol="LS.Color.generate">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.generate.html"><code>LS.Color.generate</code></a></div>
+<div class="api-source">Defined in <code>js/color.js:1374</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">generate</span>(r, g, b)</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-gethsl" data-symbol="LS.Color.getHSL">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.getHSL.html"><code>LS.Color.getHSL</code></a></div>
+<p class="api-summary">Get the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> as an HSL array [<a class="api-symbol-ref" href="LS.Color.hue.html">hue</a> (0-360), <a class="api-symbol-ref" href="LS.Color.saturation.html">saturation</a> (0-100), <a class="api-symbol-ref" href="LS.Color.lightness.html">lightness</a> (0-100)]</p>
+<div class="api-source">Defined in <code>js/color.js:112</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">getHSL</span>(out = [<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>])</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>out</code></td><td>array</td><td>Optional array to store the result in</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type">array</span> — HSL array</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-get" id="api-ls-color-hex" data-symbol="LS.Color.hex">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.hex.html"><code>LS.Color.hex</code></a></div>
+<p class="api-summary">Get the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> as <a class="api-symbol-ref" href="LS.Color.a.html">a</a> <a class="api-symbol-ref" href="LS.Color.hex.html">hex</a> string in #RRGGBB format</p>
+<div class="api-source">Defined in <code>js/color.js:89</code></div>
+<pre class="api-signature"><code class="language-js hljs">get <span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">hex</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-get" id="api-ls-color-hexint" data-symbol="LS.Color.hexInt">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.hexInt.html"><code>LS.Color.hexInt</code></a></div>
+<p class="api-summary">Get the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> as an integer in 0xAARRGGBB format</p>
+<div class="api-source">Defined in <code>js/color.js:82</code></div>
+<pre class="api-signature"><code class="language-js hljs">get <span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">hexInt</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-get" id="api-ls-color-hsb" data-symbol="LS.Color.hsb">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.hsb.html"><code>LS.Color.hsb</code></a></div>
+<p class="api-summary">Get the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> as an HSB array</p>
+<div class="api-source">Defined in <code>js/color.js:154</code></div>
+<pre class="api-signature"><code class="language-js hljs">get <span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">hsb</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-get" id="api-ls-color-hsl" data-symbol="LS.Color.hsl">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.hsl.html"><code>LS.Color.hsl</code></a></div>
+<p class="api-summary">Get the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> as an HSL array</p>
+<div class="api-source">Defined in <code>js/color.js:147</code></div>
+<pre class="api-signature"><code class="language-js hljs">get <span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">hsl</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-hue" data-symbol="LS.Color.hue">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.hue.html"><code>LS.Color.hue</code></a></div>
+<p class="api-summary"><a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set">Set</a> the <a class="api-symbol-ref" href="LS.Color.hue.html">hue</a> of the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> while preserving <a class="api-symbol-ref" href="LS.Color.saturation.html">saturation</a> and <a class="api-symbol-ref" href="LS.Color.lightness.html">lightness</a></p>
+<div class="api-source">Defined in <code>js/color.js:271</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">hue</span>(hue)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>hue</code></td><td>*</td><td>New <a class="api-symbol-ref" href="LS.Color.hue.html">hue</a> <a class="api-symbol-ref api-symbol-ref-component" href="../../components/knob.html#api-ls-knob-value">value</a> (0-360)</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — Self</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-hueshift" data-symbol="LS.Color.hueShift">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.hueShift.html"><code>LS.Color.hueShift</code></a></div>
+<p class="api-summary">Shifts the <a class="api-symbol-ref" href="LS.Color.hue.html">hue</a> of the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> by the given degrees (positive or negative)</p>
+<div class="api-source">Defined in <code>js/color.js:398</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">hueShift</span>(deg)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>deg</code></td><td>*</td><td>Degrees to shift the <a class="api-symbol-ref" href="LS.Color.hue.html">hue</a> by</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — Self</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-initoptions" data-symbol="LS.Color.initOptions">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.initOptions.html"><code>LS.Color.initOptions</code></a></div>
+<div class="api-source">Defined in <code>js/color.js:905</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">initOptions</span>(options)</code></pre>
+</article>
+<article class="api-symbol api-symbol-get" id="api-ls-color-int" data-symbol="LS.Color.int">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.int.html"><code>LS.Color.int</code></a></div>
+<p class="api-summary">Get the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> as an integer in 0xRRGGBB format</p>
+<div class="api-source">Defined in <code>js/color.js:75</code></div>
+<pre class="api-signature"><code class="language-js hljs">get <span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">int</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-get" id="api-ls-color-isdark" data-symbol="LS.Color.isDark">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.isDark.html"><code>LS.Color.isDark</code></a></div>
+<p class="api-summary">Get <a class="api-symbol-ref" href="LS.Color.a.html">a</a> boolean <a class="api-symbol-ref api-symbol-ref-component" href="../../components/knob.html#api-ls-knob-value">value</a> indicating whether the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> is considered dark (true) or light (false) based <a class="api-symbol-ref" href="LS.Color.on.html">on</a> its <a class="api-symbol-ref" href="LS.Color.brightness.html">brightness</a>, using <a class="api-symbol-ref" href="LS.Color.a.html">a</a> threshold of 127.5</p>
+<div class="api-source">Defined in <code>js/color.js:262</code></div>
+<pre class="api-signature"><code class="language-js hljs">get <span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">isDark</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-lerp" data-symbol="LS.Color.lerp">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.lerp.html"><code>LS.Color.lerp</code></a></div>
+<p class="api-summary">Linear interpolation between current <a class="api-symbol-ref" href="LS.Color.color.html">color</a> and target <a class="api-symbol-ref" href="LS.Color.color.html">color</a> by <a class="api-symbol-ref" href="LS.Color.a.html">a</a> given ratio</p>
+<div class="api-source">Defined in <code>js/color.js:308</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">lerp</span>(target, progress = <span class="hljs-number">0.5</span>, source = <span class="hljs-literal">null</span>)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>target</code></td><td><a class="api-symbol-ref" href="LS.Color.html">Color</a>|array|number|string</td><td>Target <a class="api-symbol-ref" href="LS.Color.color.html">color</a></td></tr>
+<tr><td><code>progress</code></td><td>number</td><td>Interpolation factor (0-1)</td></tr>
+<tr><td><code>source</code></td><td><a class="api-symbol-ref" href="LS.Color.html">Color</a>|array</td><td>Optional source <a class="api-symbol-ref" href="LS.Color.color.html">color</a> (otherwise uses and mutates current <a class="api-symbol-ref" href="LS.Color.color.html">color</a>)</td></tr>
+</tbody>
+</table>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-lighten" data-symbol="LS.Color.lighten">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.lighten.html"><code>LS.Color.lighten</code></a></div>
+<p class="api-summary">Lightens the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> by increasing its <a class="api-symbol-ref" href="LS.Color.lightness.html">lightness</a> by the given percentage (0-100)</p>
+<div class="api-source">Defined in <code>js/color.js:362</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">lighten</span>(percent)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>percent</code></td><td>*</td><td>Percentage to <a class="api-symbol-ref" href="LS.Color.lighten.html">lighten</a> the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> by</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — Self</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-get" id="api-ls-color-lightmodepreffered" data-symbol="LS.Color.lightModePreffered">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.lightModePreffered.html"><code>LS.Color.lightModePreffered</code></a></div>
+<p class="api-summary">Checks if the user has <a class="api-symbol-ref" href="LS.Color.a.html">a</a> light <a class="api-symbol-ref" href="LS.Color.color.html">color</a> scheme preference.</p>
+<div class="api-source">Defined in <code>js/color.js:1354</code></div>
+<pre class="api-signature"><code class="language-js hljs">get <span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">lightModePreffered</span>()</code></pre>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type">boolean</span> — True if the user prefers <a class="api-symbol-ref" href="LS.Color.a.html">a</a> light <a class="api-symbol-ref" href="LS.Color.color.html">color</a> scheme, false otherwise</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-lightness" data-symbol="LS.Color.lightness">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.lightness.html"><code>LS.Color.lightness</code></a></div>
+<p class="api-summary"><a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set">Set</a> the <a class="api-symbol-ref" href="LS.Color.lightness.html">lightness</a> of the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> while preserving <a class="api-symbol-ref" href="LS.Color.hue.html">hue</a> and <a class="api-symbol-ref" href="LS.Color.saturation.html">saturation</a></p>
+<div class="api-source">Defined in <code>js/color.js:295</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">lightness</span>(percent)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>percent</code></td><td>*</td><td>New <a class="api-symbol-ref" href="LS.Color.lightness.html">lightness</a> <a class="api-symbol-ref api-symbol-ref-component" href="../../components/knob.html#api-ls-knob-value">value</a> (0-100)</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — Self</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-get" id="api-ls-color-luma" data-symbol="LS.Color.luma">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.luma.html"><code>LS.Color.luma</code></a></div>
+<p class="api-summary">Get the perceived <a class="api-symbol-ref" href="LS.Color.brightness.html">brightness</a> of the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> using the Rec. 709 formula</p>
+<div class="api-source">Defined in <code>js/color.js:237</code></div>
+<pre class="api-signature"><code class="language-js hljs">get <span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">luma</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-mix" data-symbol="LS.Color.mix">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.mix.html"><code>LS.Color.mix</code></a></div>
+<p class="api-summary">Mixes this <a class="api-symbol-ref" href="LS.Color.color.html">color</a> with another one by the given weight (0 to 1)</p>
+<div class="api-source">Defined in <code>js/color.js:487</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">mix</span>(val, weight = <span class="hljs-number">0.5</span>)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>val</code></td><td><a class="api-symbol-ref" href="LS.Color.html">Color</a>|array|number|string</td><td><a class="api-symbol-ref" href="LS.Color.html">Color</a> to <a class="api-symbol-ref" href="LS.Color.mix.html">mix</a> with (can be <a class="api-symbol-ref" href="LS.Color.a.html">a</a> <a class="api-symbol-ref" href="LS.Color.html">Color</a> instance, an array of RGBA values, or any valid <a class="api-symbol-ref" href="LS.Color.color.html">color</a> input)</td></tr>
+<tr><td><code>weight</code></td><td>number</td><td>Weight to <a class="api-symbol-ref" href="LS.Color.mix.html">mix</a> by (0 to 1)</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — Self</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-multiply" data-symbol="LS.Color.multiply">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.multiply.html"><code>LS.Color.multiply</code></a></div>
+<p class="api-summary">Multiplies each channel by the given factor<br>Provide null to skip <a class="api-symbol-ref" href="LS.Color.a.html">a</a> channel</p>
+<div class="api-source">Defined in <code>js/color.js:414</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">multiply</span>(factorR, factorG, factorB, factorA)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>factorR</code></td><td>number|null</td><td>Factor to <a class="api-symbol-ref" href="LS.Color.multiply.html">multiply</a> the red channel by (or null to skip)</td></tr>
+<tr><td><code>factorG</code></td><td>number|null</td><td>Factor to <a class="api-symbol-ref" href="LS.Color.multiply.html">multiply</a> the green channel by (or null to skip)</td></tr>
+<tr><td><code>factorB</code></td><td>number|null</td><td>Factor to <a class="api-symbol-ref" href="LS.Color.multiply.html">multiply</a> the blue channel by (or null to skip)</td></tr>
+<tr><td><code>factorA</code></td><td>number|null</td><td>Factor to <a class="api-symbol-ref" href="LS.Color.multiply.html">multiply</a> the <a class="api-symbol-ref" href="LS.Color.alpha.html">alpha</a> channel by (or null to skip)</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — Self</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-field" id="api-ls-color-namedcolors" data-symbol="LS.Color.namedColors">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.namedColors.html"><code>LS.Color.namedColors</code></a></div>
+<p class="api-summary">A <a class="api-symbol-ref" href="LS.ShortcutManager.map.html">map</a> of named <a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/API/CSS">CSS</a> colors to their RGB values.</p>
+<div class="api-source">Defined in <code>js/color.js:1631</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-property">namedColors</span></code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-next" data-symbol="LS.Color.next">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.next.html"><code>LS.Color.next</code></a></div>
+<p class="api-summary">Move to the <a class="api-symbol-ref" href="LS.Color.next.html">next</a> <a class="api-symbol-ref" href="LS.Color.pixel.html">pixel</a> by incrementing the <a class="api-symbol-ref api-symbol-ref-component" href="../../components/timeline.html#api-ls-timeline-offset">offset</a> by 4</p>
+<div class="api-source">Defined in <code>js/color.js:824</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">next</span>(by = <span class="hljs-number">1</span>)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>by</code></td><td>number</td><td><a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a> of pixels to move forward (<a class="api-symbol-ref api-symbol-ref-component" href="../../components/multipane.html#api-ls-multipane-presets-default">default</a> is 1)</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — Self</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-off" data-symbol="LS.Color.off">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.off.html"><code>LS.Color.off</code></a></div>
+<div class="api-source">Defined in <code>js/color.js:924</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">off</span>(event, listener)</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-on" data-symbol="LS.Color.on">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.on.html"><code>LS.Color.on</code></a></div>
+<div class="api-source">Defined in <code>js/color.js:916</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">on</span>(event, listener)</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-once" data-symbol="LS.Color.once">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.once.html"><code>LS.Color.once</code></a></div>
+<div class="api-source">Defined in <code>js/color.js:920</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">once</span>(event, listener)</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-parse" data-symbol="LS.Color.parse">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.parse.html"><code>LS.Color.parse</code></a></div>
+<p class="api-summary">Parses <a class="api-symbol-ref" href="LS.Color.a.html">a</a> <a class="api-symbol-ref" href="LS.Color.color.html">color</a> from various input formats and writes it into the target array <a class="api-symbol-ref" href="LS.Color.at.html">at</a> the given <a class="api-symbol-ref api-symbol-ref-component" href="../../components/timeline.html#api-ls-timeline-offset">offset</a>. Strings are case-insensitive and trimmed.<br>Supports:<br>- Hex strings (#RGB, #RGBA, #RRGGBB, #RRGGBBAA)<br>- Integer RGB/RGBA (0xRRGGBB, 0xRRGGBBAA)<br>- RGB/RGBA strings (<a class="api-symbol-ref" href="LS.Color.rgb.html">rgb</a>(255, 0, 0), <a class="api-symbol-ref" href="LS.Color.rgba.html">rgba</a>(255, 0, 0, 0.5))<br>- HSL/HSLA strings (<a class="api-symbol-ref" href="LS.Color.hsl.html">hsl</a>(120, 100%, 50%), hsla(120, 100%, 50%, 0.5))<br>- HSB/HSBA strings (<a class="api-symbol-ref" href="LS.Color.hsb.html">hsb</a>(120, 100%, 100%), hsba(120, 100%, 100%, 0.5))<br>- Named <a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/API/CSS">CSS</a> colors<br>- Arrays [<a class="api-symbol-ref" href="LS.Color.r.html">r</a>, <a class="api-symbol-ref" href="LS.Color.g.html">g</a>, <a class="api-symbol-ref" href="LS.Color.b.html">b</a>], [<a class="api-symbol-ref" href="LS.Color.r.html">r</a>, <a class="api-symbol-ref" href="LS.Color.g.html">g</a>, <a class="api-symbol-ref" href="LS.Color.b.html">b</a>, <a class="api-symbol-ref" href="LS.Color.a.html">a</a>]<br>- Objects { <a class="api-symbol-ref" href="LS.Color.r.html">r</a>, <a class="api-symbol-ref" href="LS.Color.g.html">g</a>, <a class="api-symbol-ref" href="LS.Color.b.html">b</a> }, { <a class="api-symbol-ref" href="LS.Color.r.html">r</a>, <a class="api-symbol-ref" href="LS.Color.g.html">g</a>, <a class="api-symbol-ref" href="LS.Color.b.html">b</a>, <a class="api-symbol-ref" href="LS.Color.a.html">a</a> }<br>- Another <a class="api-symbol-ref" href="LS.Color.html">Color</a> instance<br>- Integer values for <a class="api-symbol-ref" href="LS.Color.r.html">r</a>, <a class="api-symbol-ref" href="LS.Color.g.html">g</a>, <a class="api-symbol-ref" href="LS.Color.b.html">b</a>, <a class="api-symbol-ref" href="LS.Color.a.html">a</a> (0-255 for <a class="api-symbol-ref" href="LS.Color.r.html">r</a>, <a class="api-symbol-ref" href="LS.Color.g.html">g</a>, <a class="api-symbol-ref" href="LS.Color.b.html">b</a> and 0-1 for <a class="api-symbol-ref" href="LS.Color.a.html">a</a>)<br>- Any valid <a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/API/CSS">CSS</a> <a class="api-symbol-ref" href="LS.Color.color.html">color</a> string (as <a class="api-symbol-ref" href="LS.Color.a.html">a</a> fallback, using the browser's parser)</p>
+<div class="api-source">Defined in <code>js/color.js:965</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">parse</span>(r, g, b, a, target, offset = <span class="hljs-number">0</span>)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th></tr></thead>
+<tbody>
+<tr><td><code>r</code></td><td>*</td></tr>
+<tr><td><code>g</code></td><td>number</td></tr>
+<tr><td><code>b</code></td><td>number</td></tr>
+<tr><td><code>a</code></td><td>number</td></tr>
+<tr><td><code>target</code></td><td><a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></td></tr>
+<tr><td><code>offset</code></td><td>number</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></span> — Target array with parsed <a class="api-symbol-ref" href="LS.Color.color.html">color</a></p>
+</div>
+<div class="api-examples">
+<div class="api-section-title">Examples</div>
+<pre class="api-example"><code class="language-js hljs"><span class="hljs-title class_">Color</span>.<span class="hljs-title function_">parse</span>(<span class="hljs-string">&quot;#ff0000&quot;</span>); <span class="hljs-comment">// Note: if you only need to parse hex colors, use Color.parseHex for better performance</span>
+<span class="hljs-title class_">Color</span>.<span class="hljs-title function_">parse</span>(<span class="hljs-string">&quot;rgba(255, 0, 0, 0.5)&quot;</span>);
+<span class="hljs-title class_">Color</span>.<span class="hljs-title function_">parse</span>(<span class="hljs-string">&quot;hsl(120, 100%, 50%)&quot;</span>);
+<span class="hljs-title class_">Color</span>.<span class="hljs-title function_">parse</span>(<span class="hljs-string">&quot;hsb(120, 100%, 100%)&quot;</span>);
+<span class="hljs-title class_">Color</span>.<span class="hljs-title function_">parse</span>(<span class="hljs-string">&quot;red&quot;</span>);
+<span class="hljs-title class_">Color</span>.<span class="hljs-title function_">parse</span>([<span class="hljs-number">255</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>]);
+<span class="hljs-title class_">Color</span>.<span class="hljs-title function_">parse</span>({ <span class="hljs-attr">r</span>: <span class="hljs-number">255</span>, <span class="hljs-attr">g</span>: <span class="hljs-number">0</span>, <span class="hljs-attr">b</span>: <span class="hljs-number">0</span> });
+<span class="hljs-title class_">Color</span>.<span class="hljs-title function_">parse</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Color</span>());
+<span class="hljs-title class_">Color</span>.<span class="hljs-title function_">parse</span>(<span class="hljs-number">255</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0.5</span>);
+<span class="hljs-title class_">Color</span>.<span class="hljs-title function_">parse</span>(<span class="hljs-number">0xff0000</span>);</code></pre>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-parsehex" data-symbol="LS.Color.parseHex">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.parseHex.html"><code>LS.Color.parseHex</code></a></div>
+<p class="api-summary">Parses <a class="api-symbol-ref" href="LS.Color.a.html">a</a> <a class="api-symbol-ref" href="LS.Color.hex.html">hex</a> code string to <a class="api-symbol-ref" href="LS.Color.a.html">a</a> RGB array.<br>Pretty much as fast as JavaScript can realistically get.</p>
+<div class="api-description"><p>Parses <a class="api-symbol-ref" href="LS.Color.a.html">a</a> <a class="api-symbol-ref" href="LS.Color.hex.html">hex</a> code string to <a class="api-symbol-ref" href="LS.Color.a.html">a</a> RGB array.<br>Pretty much as fast as JavaScript can realistically get.</p>
+<p>Note: invalid <a class="api-symbol-ref" href="LS.Color.hex.html">hex</a> characters result in -1 rather than an error. To validate, check for -1 in any channel. Invalid string length will throw an error, however.<br>This library will automatically treat such as 0 after clamping; you may or may not want that behavior (eg. #ggg =&gt; #000, and the opposite for typed arrays as there -1 flips to 255!).<br>https://jsbm.dev/YUQagaiMDfxOv</p>
+<p>Note: This does not check the <a class="api-symbol-ref api-symbol-ref-component" href="../../components/tabs.html#api-ls-tabs-first">first</a> character for '#', it assumes it's already checked</p></div>
+<div class="api-source">Defined in <code>js/color.js:1111</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">parseHex</span>(hex, target, offset = <span class="hljs-number">0</span>)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>hex</code></td><td>string</td><td>Hex string in the format #RGB, #RGBA, #RRGGBB or #RRGGBBAA</td></tr>
+<tr><td><code>target</code></td><td><a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>|<a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a></td><td>Optional target array to write the result to (<a class="api-symbol-ref api-symbol-ref-component" href="../../components/multipane.html#api-ls-multipane-presets-default">default</a>: [0, 0, 0, 255])</td></tr>
+<tr><td><code>offset</code></td><td>number</td><td>Optional <a class="api-symbol-ref api-symbol-ref-component" href="../../components/timeline.html#api-ls-timeline-offset">offset</a> in the target array to write to (<a class="api-symbol-ref api-symbol-ref-component" href="../../components/multipane.html#api-ls-multipane-presets-default">default</a>: 0)</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></span> — [<a class="api-symbol-ref" href="LS.Color.r.html">r</a>, <a class="api-symbol-ref" href="LS.Color.g.html">g</a>, <a class="api-symbol-ref" href="LS.Color.b.html">b</a>, <a class="api-symbol-ref" href="LS.Color.a.html">a</a>] with <a class="api-symbol-ref" href="LS.Color.r.html">r</a>, <a class="api-symbol-ref" href="LS.Color.g.html">g</a>, <a class="api-symbol-ref" href="LS.Color.b.html">b</a> in 0-255 and <a class="api-symbol-ref" href="LS.Color.a.html">a</a> in 0-255</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-get" id="api-ls-color-pixel" data-symbol="LS.Color.pixel">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.pixel.html"><code>LS.Color.pixel</code></a></div>
+<p class="api-summary">Get the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> as an RGBA array with <a class="api-symbol-ref" href="LS.Color.alpha.html">alpha</a> in 0-255</p>
+<div class="api-source">Defined in <code>js/color.js:202</code></div>
+<pre class="api-signature"><code class="language-js hljs">get <span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">pixel</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-get" id="api-ls-color-pixelcount" data-symbol="LS.Color.pixelCount">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.pixelCount.html"><code>LS.Color.pixelCount</code></a></div>
+<p class="api-summary">Returns the <a class="api-symbol-ref" href="LS.Color.pixel.html">pixel</a> count</p>
+<div class="api-source">Defined in <code>js/color.js:832</code></div>
+<pre class="api-signature"><code class="language-js hljs">get <span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">pixelCount</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-get" id="api-ls-color-r" data-symbol="LS.Color.r">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.r.html"><code>LS.Color.r</code></a></div>
+<p class="api-summary">Get or <a class="api-symbol-ref" href="LS.Color.set.html">set</a> red channel <a class="api-symbol-ref api-symbol-ref-component" href="../../components/knob.html#api-ls-knob-value">value</a> (0-255)</p>
+<div class="api-source">Defined in <code>js/color.js:50</code></div>
+<pre class="api-signature"><code class="language-js hljs">get <span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">r</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-random" data-symbol="LS.Color.random">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.random.html"><code>LS.Color.random</code></a></div>
+<p class="api-summary">Creates <a class="api-symbol-ref" href="LS.Color.a.html">a</a> <a class="api-symbol-ref" href="LS.Color.random.html">random</a> <a class="api-symbol-ref" href="LS.Color.color.html">color</a> using <a class="api-symbol-ref" href="LS.Color.a.html">a</a> pseudorandom number generator.</p>
+<div class="api-source">Defined in <code>js/color.js:1338</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">random</span>()</code></pre>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — The created <a class="api-symbol-ref" href="LS.Color.random.html">random</a> <a class="api-symbol-ref" href="LS.Color.color.html">color</a></p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-remove" data-symbol="LS.Color.remove">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.remove.html"><code>LS.Color.remove</code></a></div>
+<div class="api-source">Defined in <code>js/color.js:1465</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">remove</span>(name)</code></pre>
+</article>
+<article class="api-symbol api-symbol-get" id="api-ls-color-rgb" data-symbol="LS.Color.rgb">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.rgb.html"><code>LS.Color.rgb</code></a></div>
+<p class="api-summary">Get the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> as <a class="api-symbol-ref" href="LS.Color.rgb.html">rgb</a>(<a class="api-symbol-ref" href="LS.Color.r.html">r</a>, <a class="api-symbol-ref" href="LS.Color.g.html">g</a>, <a class="api-symbol-ref" href="LS.Color.b.html">b</a>) string</p>
+<div class="api-source">Defined in <code>js/color.js:96</code></div>
+<pre class="api-signature"><code class="language-js hljs">get <span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">rgb</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-get" id="api-ls-color-rgba" data-symbol="LS.Color.rgba">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.rgba.html"><code>LS.Color.rgba</code></a></div>
+<p class="api-summary">Get the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> as <a class="api-symbol-ref" href="LS.Color.rgba.html">rgba</a>(<a class="api-symbol-ref" href="LS.Color.r.html">r</a>, <a class="api-symbol-ref" href="LS.Color.g.html">g</a>, <a class="api-symbol-ref" href="LS.Color.b.html">b</a>, <a class="api-symbol-ref" href="LS.Color.a.html">a</a>) string</p>
+<div class="api-source">Defined in <code>js/color.js:103</code></div>
+<pre class="api-signature"><code class="language-js hljs">get <span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">rgba</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-saturate" data-symbol="LS.Color.saturate">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.saturate.html"><code>LS.Color.saturate</code></a></div>
+<p class="api-summary">Saturates the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> by increasing its <a class="api-symbol-ref" href="LS.Color.saturation.html">saturation</a> by the given percentage (0-100)</p>
+<div class="api-source">Defined in <code>js/color.js:374</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">saturate</span>(percent)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>percent</code></td><td>*</td><td>Percentage to <a class="api-symbol-ref" href="LS.Color.saturate.html">saturate</a> the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> by</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — Self</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-saturation" data-symbol="LS.Color.saturation">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.saturation.html"><code>LS.Color.saturation</code></a></div>
+<p class="api-summary"><a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set">Set</a> the <a class="api-symbol-ref" href="LS.Color.saturation.html">saturation</a> of the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> while preserving <a class="api-symbol-ref" href="LS.Color.hue.html">hue</a> and <a class="api-symbol-ref" href="LS.Color.lightness.html">lightness</a></p>
+<div class="api-source">Defined in <code>js/color.js:283</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">saturation</span>(percent)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>percent</code></td><td>*</td><td>New <a class="api-symbol-ref" href="LS.Color.saturation.html">saturation</a> <a class="api-symbol-ref api-symbol-ref-component" href="../../components/knob.html#api-ls-knob-value">value</a> (0-100)</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — Self</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-set" data-symbol="LS.Color.set">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.set.html"><code>LS.Color.set</code></a></div>
+<p class="api-summary">Sets the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> from any valid input<br>Accepts the same inputs as the <a class="api-symbol-ref" href="LS.Color.parse.html">Color.parse</a>() method</p>
+<div class="api-source">Defined in <code>js/color.js:639</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">set</span>(r, g, b, a)</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-setaccent" data-symbol="LS.Color.setAccent">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.setAccent.html"><code>LS.Color.setAccent</code></a></div>
+<p class="api-summary">Sets the sitewide <a class="api-symbol-ref" href="LS.Color.accent.html">accent</a> <a class="api-symbol-ref" href="LS.Color.color.html">color</a>.</p>
+<div class="api-source">Defined in <code>js/color.js:1489</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">setAccent</span>(accent, store = <span class="hljs-literal">true</span>, doBatch = <span class="hljs-literal">true</span>)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>accent</code></td><td>*</td><td>Accent <a class="api-symbol-ref" href="LS.Color.color.html">color</a></td></tr>
+<tr><td><code>store</code></td><td>*</td><td>Whether to store the <a class="api-symbol-ref" href="LS.Color.accent.html">accent</a> in localStorage (<a class="api-symbol-ref api-symbol-ref-component" href="../../components/multipane.html#api-ls-multipane-presets-default">default</a>: true)</td></tr>
+<tr><td><code>doBatch</code></td><td>*</td><td>Whether to batch the change to the <a class="api-symbol-ref" href="LS.Color.next.html">next</a> <a class="api-symbol-ref api-symbol-ref-component" href="../../components/gl.html#api-ls-gl-animation">animation</a> frame (<a class="api-symbol-ref api-symbol-ref-component" href="../../components/multipane.html#api-ls-multipane-presets-default">default</a>: true)</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — Self</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-setadaptivetheme" data-symbol="LS.Color.setAdaptiveTheme">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.setAdaptiveTheme.html"><code>LS.Color.setAdaptiveTheme</code></a></div>
+<div class="api-source">Defined in <code>js/color.js:1597</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">setAdaptiveTheme</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-setclamped" data-symbol="LS.Color.setClamped">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.setClamped.html"><code>LS.Color.setClamped</code></a></div>
+<p class="api-summary">Sets the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> channels and clamps them to valid ranges<br>Provide null or NaN to skip <a class="api-symbol-ref" href="LS.Color.a.html">a</a> channel</p>
+<div class="api-source">Defined in <code>js/color.js:618</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">setClamped</span>(r, g, b, a)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>r</code></td><td>number|null</td><td>Red <a class="api-symbol-ref api-symbol-ref-component" href="../../components/knob.html#api-ls-knob-value">value</a> to <a class="api-symbol-ref" href="LS.Color.set.html">set</a> (0-255)</td></tr>
+<tr><td><code>g</code></td><td>number|null</td><td>Green <a class="api-symbol-ref api-symbol-ref-component" href="../../components/knob.html#api-ls-knob-value">value</a> to <a class="api-symbol-ref" href="LS.Color.set.html">set</a> (0-255)</td></tr>
+<tr><td><code>b</code></td><td>number|null</td><td>Blue <a class="api-symbol-ref api-symbol-ref-component" href="../../components/knob.html#api-ls-knob-value">value</a> to <a class="api-symbol-ref" href="LS.Color.set.html">set</a> (0-255)</td></tr>
+<tr><td><code>a</code></td><td>number|null</td><td>Alpha <a class="api-symbol-ref api-symbol-ref-component" href="../../components/knob.html#api-ls-knob-value">value</a> to <a class="api-symbol-ref" href="LS.Color.set.html">set</a> (0-1)</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — Self</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-sethex" data-symbol="LS.Color.setHex">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.setHex.html"><code>LS.Color.setHex</code></a></div>
+<p class="api-summary">Sets the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> from <a class="api-symbol-ref" href="LS.Color.a.html">a</a> <a class="api-symbol-ref" href="LS.Color.hex.html">hex</a> string, faster for <a class="api-symbol-ref" href="LS.Color.hex.html">hex</a> inputs than the generic <a class="api-symbol-ref" href="LS.Color.set.html">set</a>() method</p>
+<div class="api-source">Defined in <code>js/color.js:649</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">setHex</span>(hex)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>hex</code></td><td>string</td><td>Hex <a class="api-symbol-ref" href="LS.Color.color.html">color</a> string in #RRGGBB or #RGB format</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — Self</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-sethsb" data-symbol="LS.Color.setHSB">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.setHSB.html"><code>LS.Color.setHSB</code></a></div>
+<p class="api-summary">Sets the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> in HSB/HSV format</p>
+<div class="api-source">Defined in <code>js/color.js:567</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">setHSB</span>(h, s, b, alpha)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>h</code></td><td>number</td><td>Hue (0-360)</td></tr>
+<tr><td><code>s</code></td><td>number</td><td>Saturation (0-100)</td></tr>
+<tr><td><code>b</code></td><td>number</td><td>Brightness/Value (0-100)</td></tr>
+<tr><td><code>alpha</code></td><td>number</td><td>Alpha (0-1)</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — Self</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-sethsl" data-symbol="LS.Color.setHSL">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.setHSL.html"><code>LS.Color.setHSL</code></a></div>
+<p class="api-summary">Sets the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> in HSL format</p>
+<div class="api-source">Defined in <code>js/color.js:534</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">setHSL</span>(h, s, l, alpha)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>h</code></td><td>number</td><td>Hue (0-360)</td></tr>
+<tr><td><code>s</code></td><td>number</td><td>Saturation (0-100)</td></tr>
+<tr><td><code>l</code></td><td>number</td><td>Lightness (0-100)</td></tr>
+<tr><td><code>alpha</code></td><td>number</td><td>Alpha (0-1)</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — Self</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-setoffset" data-symbol="LS.Color.setOffset">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.setOffset.html"><code>LS.Color.setOffset</code></a></div>
+<p class="api-summary"><a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set">Set</a> <a class="api-symbol-ref api-symbol-ref-component" href="../../components/timeline.html#api-ls-timeline-offset">offset</a> by raw <a class="api-symbol-ref api-symbol-ref-component" href="../../components/menu.html#api-ls-menu-index">index</a> (snapped to <a class="api-symbol-ref" href="LS.Color.pixel.html">pixel</a> <a class="api-symbol-ref api-symbol-ref-component" href="../../components/menu.html#api-ls-menu-index">index</a>)</p>
+<div class="api-source">Defined in <code>js/color.js:814</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">setOffset</span>(index)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>index</code></td><td>number</td><td>Raw <a class="api-symbol-ref api-symbol-ref-component" href="../../components/menu.html#api-ls-menu-index">index</a> to <a class="api-symbol-ref" href="LS.Color.set.html">set</a> the <a class="api-symbol-ref api-symbol-ref-component" href="../../components/timeline.html#api-ls-timeline-offset">offset</a> to</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — Self</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-settheme" data-symbol="LS.Color.setTheme">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.setTheme.html"><code>LS.Color.setTheme</code></a></div>
+<p class="api-summary">Sets the sitewide <a class="api-symbol-ref" href="LS.Color.theme.html">theme</a>.</p>
+<div class="api-source">Defined in <code>js/color.js:1556</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">setTheme</span>(theme, store = <span class="hljs-literal">true</span>, doBatch = <span class="hljs-literal">true</span>)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>theme</code></td><td>string</td><td>Name of the <a class="api-symbol-ref" href="LS.Color.theme.html">theme</a> to <a class="api-symbol-ref" href="LS.Color.set.html">set</a></td></tr>
+<tr><td><code>store</code></td><td>boolean</td><td>Whether to store the <a class="api-symbol-ref" href="LS.Color.theme.html">theme</a> in localStorage (<a class="api-symbol-ref api-symbol-ref-component" href="../../components/multipane.html#api-ls-multipane-presets-default">default</a>: true)</td></tr>
+<tr><td><code>doBatch</code></td><td>boolean</td><td>Whether to batch the change to the <a class="api-symbol-ref" href="LS.Color.next.html">next</a> <a class="api-symbol-ref api-symbol-ref-component" href="../../components/gl.html#api-ls-gl-animation">animation</a> frame (<a class="api-symbol-ref api-symbol-ref-component" href="../../components/multipane.html#api-ls-multipane-presets-default">default</a>: true)</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — Self</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-subtract" data-symbol="LS.Color.subtract">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.subtract.html"><code>LS.Color.subtract</code></a></div>
+<p class="api-summary">Subtracts the given <a class="api-symbol-ref" href="LS.Color.color.html">color</a> values from the current <a class="api-symbol-ref" href="LS.Color.color.html">color</a></p>
+<div class="api-source">Defined in <code>js/color.js:470</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">subtract</span>(r2, g2, b2, a2)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>r2</code></td><td>number</td><td>Red <a class="api-symbol-ref api-symbol-ref-component" href="../../components/knob.html#api-ls-knob-value">value</a> to <a class="api-symbol-ref" href="LS.Color.subtract.html">subtract</a> (0-255)</td></tr>
+<tr><td><code>g2</code></td><td>number</td><td>Green <a class="api-symbol-ref api-symbol-ref-component" href="../../components/knob.html#api-ls-knob-value">value</a> to <a class="api-symbol-ref" href="LS.Color.subtract.html">subtract</a> (0-255)</td></tr>
+<tr><td><code>b2</code></td><td>number</td><td>Blue <a class="api-symbol-ref api-symbol-ref-component" href="../../components/knob.html#api-ls-knob-value">value</a> to <a class="api-symbol-ref" href="LS.Color.subtract.html">subtract</a> (0-255)</td></tr>
+<tr><td><code>a2</code></td><td>number</td><td>Alpha <a class="api-symbol-ref api-symbol-ref-component" href="../../components/knob.html#api-ls-knob-value">value</a> to <a class="api-symbol-ref" href="LS.Color.subtract.html">subtract</a> (0-1)</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — Self</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-object" id="api-ls-color-symbol" data-symbol="LS.Color.Symbol">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.Symbol.html"><code>LS.Color.Symbol</code></a></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-property">Symbol</span>: object</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-symbol-iterator" data-symbol="LS.Color.Symbol.iterator">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.Symbol.iterator.html"><code>LS.Color.Symbol.iterator</code></a></div>
+<div class="api-source">Defined in <code>js/color.js:686</code></div>
+<pre class="api-signature"><code class="language-js hljs">*<span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-property">Symbol</span>.<span class="hljs-title function_">iterator</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-symbol-toprimitive" data-symbol="LS.Color.Symbol.toPrimitive">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.Symbol.toPrimitive.html"><code>LS.Color.Symbol.toPrimitive</code></a></div>
+<div class="api-source">Defined in <code>js/color.js:693</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-property">Symbol</span>.<span class="hljs-title function_">toPrimitive</span>(hint)</code></pre>
+</article>
+<article class="api-symbol api-symbol-get" id="api-ls-color-symbol-tostringtag" data-symbol="LS.Color.Symbol.toStringTag">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.Symbol.toStringTag.html"><code>LS.Color.Symbol.toStringTag</code></a></div>
+<div class="api-source">Defined in <code>js/color.js:700</code></div>
+<pre class="api-signature"><code class="language-js hljs">get <span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-property">Symbol</span>.<span class="hljs-title function_">toStringTag</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-get" id="api-ls-color-theme" data-symbol="LS.Color.theme">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.theme.html"><code>LS.Color.theme</code></a></div>
+<div class="api-source">Defined in <code>js/color.js:1358</code></div>
+<pre class="api-signature"><code class="language-js hljs">get <span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">theme</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-toaccent" data-symbol="LS.Color.toAccent">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.toAccent.html"><code>LS.Color.toAccent</code></a></div>
+<p class="api-summary">Creates or updates <a class="api-symbol-ref" href="LS.Color.a.html">a</a> sitewide named <a class="api-symbol-ref" href="LS.Color.accent.html">accent</a></p>
+<div class="api-source">Defined in <code>js/color.js:783</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">toAccent</span>(name = <span class="hljs-string">&quot;default&quot;</span>)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>name</code></td><td>string</td><td>Name of the <a class="api-symbol-ref" href="LS.Color.accent.html">accent</a> to create or <a class="api-symbol-ref" href="LS.Color.update.html">update</a> (<a class="api-symbol-ref api-symbol-ref-component" href="../../components/multipane.html#api-ls-multipane-presets-default">default</a> is "<a class="api-symbol-ref api-symbol-ref-component" href="../../components/multipane.html#api-ls-multipane-presets-default">default</a>")</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — Self</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-toaccentcss" data-symbol="LS.Color.toAccentCSS">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.toAccentCSS.html"><code>LS.Color.toAccentCSS</code></a></div>
+<p class="api-summary">Generates <a class="api-symbol-ref" href="LS.Color.a.html">a</a> <a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/API/CSS">CSS</a> <a class="api-symbol-ref" href="LS.Color.accent.html">accent</a> from this <a class="api-symbol-ref" href="LS.Color.color.html">color</a></p>
+<div class="api-source">Defined in <code>js/color.js:793</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">toAccentCSS</span>()</code></pre>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type">string</span> — <a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/API/CSS">CSS</a> <a class="api-symbol-ref" href="LS.Color.color.html">color</a> string that can be used in <a class="api-symbol-ref" href="LS.Color.accent.html">accent</a>-<a class="api-symbol-ref" href="LS.Color.color.html">color</a> properties</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-toarray" data-symbol="LS.Color.toArray">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.toArray.html"><code>LS.Color.toArray</code></a></div>
+<p class="api-summary">Returns an array representation of the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> in [<a class="api-symbol-ref" href="LS.Color.r.html">r</a>, <a class="api-symbol-ref" href="LS.Color.g.html">g</a>, <a class="api-symbol-ref" href="LS.Color.b.html">b</a>, <a class="api-symbol-ref" href="LS.Color.a.html">a</a>] format with <a class="api-symbol-ref" href="LS.Color.alpha.html">alpha</a> in 0-255</p>
+<div class="api-source">Defined in <code>js/color.js:672</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">toArray</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-todiv" data-symbol="LS.Color.toDiv">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.toDiv.html"><code>LS.Color.toDiv</code></a></div>
+<p class="api-summary">Creates <a class="api-symbol-ref" href="LS.Color.a.html">a</a> div element with this <a class="api-symbol-ref" href="LS.Color.color.html">color</a> as background</p>
+<div class="api-source">Defined in <code>js/color.js:760</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">toDiv</span>(w, h)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>w</code></td><td>number|string</td><td>Optional width</td></tr>
+<tr><td><code>h</code></td><td>number|string</td><td>Optional height</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/API/Element">Element</a></span></p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-toimagedata" data-symbol="LS.Color.toImageData">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.toImageData.html"><code>LS.Color.toImageData</code></a></div>
+<p class="api-summary">Creates an <a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/API/ImageData">ImageData</a> object with this <a class="api-symbol-ref" href="LS.Color.color.html">color</a></p>
+<div class="api-source">Defined in <code>js/color.js:747</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">toImageData</span>()</code></pre>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/API/ImageData">ImageData</a></span></p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-tojson" data-symbol="LS.Color.toJSON">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.toJSON.html"><code>LS.Color.toJSON</code></a></div>
+<p class="api-summary">Returns <a class="api-symbol-ref" href="LS.Color.a.html">a</a> <a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON">JSON</a> representation of the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> with <a class="api-symbol-ref" href="LS.Color.r.html">r</a>, <a class="api-symbol-ref" href="LS.Color.g.html">g</a>, <a class="api-symbol-ref" href="LS.Color.b.html">b</a>, <a class="api-symbol-ref" href="LS.Color.a.html">a</a> properties (<a class="api-symbol-ref" href="LS.Color.alpha.html">alpha</a> in 0-1)</p>
+<div class="api-source">Defined in <code>js/color.js:677</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">toJSON</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-tone" data-symbol="LS.Color.tone">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.tone.html"><code>LS.Color.tone</code></a></div>
+<p class="api-summary">Sets the <a class="api-symbol-ref" href="LS.Color.tone.html">tone</a> of the <a class="api-symbol-ref" href="LS.Color.color.html">color</a> by adjusting its <a class="api-symbol-ref" href="LS.Color.hue.html">hue</a>, <a class="api-symbol-ref" href="LS.Color.saturation.html">saturation</a>, and <a class="api-symbol-ref" href="LS.Color.lightness.html">lightness</a></p>
+<div class="api-source">Defined in <code>js/color.js:351</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">tone</span>(hue, saturation, lightness)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>hue</code></td><td>*</td><td>New <a class="api-symbol-ref" href="LS.Color.hue.html">hue</a> <a class="api-symbol-ref api-symbol-ref-component" href="../../components/knob.html#api-ls-knob-value">value</a> (0-360)</td></tr>
+<tr><td><code>saturation</code></td><td>*</td><td>New <a class="api-symbol-ref" href="LS.Color.saturation.html">saturation</a> <a class="api-symbol-ref api-symbol-ref-component" href="../../components/knob.html#api-ls-knob-value">value</a> (0-100)</td></tr>
+<tr><td><code>lightness</code></td><td>*</td><td>New <a class="api-symbol-ref" href="LS.Color.lightness.html">lightness</a> <a class="api-symbol-ref api-symbol-ref-component" href="../../components/knob.html#api-ls-knob-value">value</a> (0-100)</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — Self</p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-tostring" data-symbol="LS.Color.toString">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.toString.html"><code>LS.Color.toString</code></a></div>
+<p class="api-summary">Returns <a class="api-symbol-ref" href="LS.Color.a.html">a</a> string representation of the <a class="api-symbol-ref" href="LS.Color.color.html">color</a>, which is the <a class="api-symbol-ref" href="LS.Color.rgba.html">rgba</a>() format</p>
+<div class="api-source">Defined in <code>js/color.js:667</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">toString</span>()</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-totexture" data-symbol="LS.Color.toTexture">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.toTexture.html"><code>LS.Color.toTexture</code></a></div>
+<p class="api-summary">Creates <a class="api-symbol-ref" href="LS.Color.a.html">a</a> WebGL texture with this <a class="api-symbol-ref" href="LS.Color.color.html">color</a></p>
+<div class="api-source">Defined in <code>js/color.js:721</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">toTexture</span>(gl)</code></pre>
+<div class="api-params">
+<div class="api-section-title">Parameters</div>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>gl</code></td><td><a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext">WebGLRenderingContext</a></td><td>WebGL context</td></tr>
+</tbody>
+</table>
+</div>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/API/WebGLTexture">WebGLTexture</a></span></p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-touint8array" data-symbol="LS.Color.toUint8Array">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.toUint8Array.html"><code>LS.Color.toUint8Array</code></a></div>
+<p class="api-summary">Creates <a class="api-symbol-ref" href="LS.Color.a.html">a</a> <a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a> <a class="api-symbol-ref" href="LS.Color.pixel.html">pixel</a> with RGBA values</p>
+<div class="api-source">Defined in <code>js/color.js:712</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">toUint8Array</span>()</code></pre>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref api-symbol-ref-mdn" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a></span></p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-truerandom" data-symbol="LS.Color.trueRandom">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.trueRandom.html"><code>LS.Color.trueRandom</code></a></div>
+<p class="api-summary">Creates <a class="api-symbol-ref" href="LS.Color.a.html">a</a> <a class="api-symbol-ref" href="LS.Color.random.html">random</a> <a class="api-symbol-ref" href="LS.Color.color.html">color</a> using <a class="api-symbol-ref" href="LS.Color.a.html">a</a> cryptographically secure <a class="api-symbol-ref" href="LS.Color.random.html">random</a> number generator. Requires crypto.</p>
+<div class="api-source">Defined in <code>js/color.js:1346</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">trueRandom</span>()</code></pre>
+<div class="api-returns">
+<div class="api-section-title">Returns</div>
+<p><span class="api-type"><a class="api-symbol-ref" href="LS.Color.html">Color</a></span> — The created <a class="api-symbol-ref" href="LS.Color.random.html">random</a> <a class="api-symbol-ref" href="LS.Color.color.html">color</a></p>
+</div>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-update" data-symbol="LS.Color.update">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.update.html"><code>LS.Color.update</code></a></div>
+<div class="api-source">Defined in <code>js/color.js:1443</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">update</span>(name, r, g, b)</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-validatehex" data-symbol="LS.Color.validateHex">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.validateHex.html"><code>LS.Color.validateHex</code></a></div>
+<div class="api-source">Defined in <code>js/color.js:1135</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">validateHex</span>(hex)</code></pre>
+</article>
+<article class="api-symbol api-symbol-method" id="api-ls-color-valueof" data-symbol="LS.Color.valueOf">
+<div class="api-symbol-title"><a class="api-symbol-ref" href="LS.Color.valueOf.html"><code>LS.Color.valueOf</code></a></div>
+<div class="api-source">Defined in <code>js/color.js:704</code></div>
+<pre class="api-signature"><code class="language-js hljs"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Color</span>.<span class="hljs-title function_">valueOf</span>()</code></pre>
+</article>
+</section>
+</div>
+
+</markdown>
+</div>

@@ -33,7 +33,7 @@ const BUILTIN_APPS = [
         "icon": "4cf4213e702a21fe.svg",
         "description": "Monitor loaded pages and applications.",
         "version": "1.0.0",
-        "main": "resourcemanager.mjs?0"
+        "main": "resourcemanager.mjs?1"
     },
     {
         "name": "Clock",
@@ -75,6 +75,14 @@ const BUILTIN_APPS = [
         "version": "1.0.0",
         "main": "mind-reader.mjs"
     },
+    {
+        "name": "Media Center",
+        "id": "media-center",
+        "icon": "5fe6243a90ae967a.webp",
+        "description": "Your media hub.",
+        "version": "1.0.0",
+        "main": "media-center.mjs"
+    },
     localStorage.getItem("enableExperimentalApps") === "true" && {
         "name": "monitors",
         "id": "monitors",
@@ -103,7 +111,7 @@ if(globalThis === this) {
 
 window.__kernelInitialized = true;
 
-const KERNEL_VERSION = (typeof __buildVersion !== "undefined")? __buildVersion: "1.2.5-beta";
+const KERNEL_VERSION = (typeof __buildVersion !== "undefined")? __buildVersion: "1.2.6-beta";
 
 window.cacheKey = "?mtime=" + (LS.Util.parseURLParams(document.currentScript?.src, "mtime") || Date.now()); // Mtime mapped to kernel.js (This should never fallback)
 
@@ -135,6 +143,11 @@ Document.prototype.write = Document.prototype.writeln = function() {
 
 // --- MEMORY SAFETY ---
 // We can use globals in the kernel, anywhere else should throw an error
+
+// This is to catch bad code usage before it leaks. Not needed in production, but can be useful during development. Will throw if any context-unsafe APIs are used outside of the kernel or a registered application context.
+// LS.Context.debugEnforceContextSafety();
+// LS.Context.debugWarnContextSafety();
+
 const setTimeout = LS.Context.setTimeout;
 const setInterval = LS.Context.setInterval;
 const clearTimeout = LS.Context.clearTimeout;
@@ -142,6 +155,7 @@ const clearInterval = LS.Context.clearInterval;
 const requestAnimationFrame = LS.Context.requestAnimationFrame;
 const queueMicrotask = LS.Context.queueMicrotask;
 const fetch = LS.Context.fetch;
+
 
 /**
  * Application model:
@@ -661,7 +675,7 @@ class ContentContext extends LS.Context {
 
         // Only for contexts with a path; all aliases, INCLUDING the canonical path should be set here to help with duplicate resolution.
         if(options.aliases && Array.isArray(options.aliases)) {
-            this.aliases = options.aliases.map(alias => website.utils.normalizePath(alias));
+            this.aliases = options.aliases.map(alias => LS.Util.normalizePath(alias));
             for(const alias of this.aliases) {
                 kernel.aliasMap.set(alias, this);
             }
@@ -669,7 +683,7 @@ class ContentContext extends LS.Context {
 
         // Unique path that clearly identifies this context, not required for non-page contexts.
         if (options.path) {
-            const newPath = website.utils.normalizePath(options.path);
+            const newPath = LS.Util.normalizePath(options.path);
             if (this.#path && this.#path !== newPath) {
                 // Remove old path from cache if changed
                 if (kernel.pageCache.get(this.#path) === this) {
@@ -732,7 +746,7 @@ class ContentContext extends LS.Context {
                 return;
             }
 
-            console.log("Waiting for assets", this.styles, this.scripts);
+            // console.log("Waiting for assets", this.styles, this.scripts);
             // Unsure whether to load JS and CSS in parallel (before render) or load JS separately after render, since some scripts may expect DOM to exist.
             // Loading early allows for quicker execution though (eg. if JS is responsible for rendering something, it will be available before actually displaying).
             await Promise.all([
@@ -788,7 +802,7 @@ class ContentContext extends LS.Context {
             return;
         }
 
-        pattern = website.utils.normalizePath(pattern || this.#path);
+        pattern = LS.Util.normalizePath(pattern || this.#path);
         kernel.SPAExtensions.add(pattern, [kernel.SPAExtensions.getBasePath(pattern), handler, this]);
         this.SPAPatterns.push(pattern);
     }
@@ -1069,13 +1083,45 @@ class ContentContext extends LS.Context {
         return kernel.registerModule(this, runtimeContext, this);
     }
 
-    requestKernelAccess() {
-        // TODO: Verify access
-        return kernel;
+    async requestKernelAccess(reason = "unspecified") {
+        // TODO: Verify access and integrity.
 
-        LS.Toast.show("Kernel access request denied.", { accent: "red" });
-        this.destroy();
-        throw new Error("Kernel access request denied.");
+        return new Promise((resolve, reject) => {
+            let allowed = false;
+            const modal = LS.Modal.buildEphemeral({
+                class: "white-space: pre",
+
+                content: [
+                    { emmet: "h1.bi-exclamation-triangle-fill", style: "text-align: center; margin-top: 0; margin-bottom: 10px; font-size: xxx-large" },
+                    { style: "white-space: pre-wrap", inner: ["An external app or process (\"" + (this.visibleName || this.title || this.name) + "\") wants full access over this system.\n\nReason given by the app: ", { tag: "code", text: reason } ,"\n\nIMPORTANT: Unlike other permissions, this grants full control, and could allow 3rd parties to access your private data. Make sure you trust the source before allowing.\nIf someone instructed you to allow this, they are most likely trying to scam you.\nIf you didn't prompt this dialog, please deny this request."] }
+                ],
+
+                buttons: [
+                    { label: "Deny", class: "elevated" },
+
+                    // TODO: captcha/better button
+                    { label: "Allow", onclick: (e) => {
+                        if(!e.isTrusted) {
+                            return;
+                        }
+
+                        allowed = true;
+                        resolve(kernel);
+                        console.log("Context got access to the kernel: ", this);
+                        LS.Toast.show("Kernel access request was granted to " + (this.visibleName || this.title || this.name), { accent: "green", timeout: 2000 });
+                        LS.Modal.closeFromElement(e.target);
+                    } }
+                ]
+            });
+            
+            modal.once("destroy", () => {
+                if(allowed) return;
+                LS.Toast.show("Kernel access request denied.", { accent: "red", timeout: 2000 });
+                // this.destroy();
+                // throw new Error("Kernel access request denied.");
+                reject(new Error("User denied kernel access"));
+            });
+        });
     }
 
     /**
@@ -1218,6 +1264,21 @@ class Viewport extends LS.EventEmitter {
     async navigate(pathOrPage, options = {}) {
         let path = typeof pathOrPage === 'string' ? pathOrPage : pathOrPage.path;
         let page = pathOrPage instanceof ContentContext ? pathOrPage : null;
+        let hash = typeof options.hash === "string" ? options.hash : "";
+
+        if(typeof hash === "string" && hash.length > 0) {
+            if(!hash.startsWith("#")) hash = "#" + hash;
+            if(hash === "#") hash = "";
+        }
+
+        if (typeof path === "string") {
+            const hashIndex = path.indexOf("#");
+            if (hashIndex !== -1) {
+                hash = path.slice(hashIndex);
+                if(hash === "#") hash = "";
+                path = path.slice(0, hashIndex) || "/";
+            }
+        }
 
         if(this.options.disableRemotePages && (!page || page.src)) {
             kernel.error("Remote pages are disabled for this viewport (" + this.name + ").");
@@ -1226,7 +1287,7 @@ class Viewport extends LS.EventEmitter {
 
         // Normalize path
         if (typeof path === "string") {
-            path = website.utils.normalizePath(path);
+            path = LS.Util.normalizePath(path);
         }
 
         // 0. Open app from route (/app/<app-id>)
@@ -1251,8 +1312,9 @@ class Viewport extends LS.EventEmitter {
 
                 const manifest = kernel.appManifests.get(appId);
                 if (this.name === 'main') {
-                    if (!options.browserTriggered && options.pushState !== false && location.pathname !== path) {
-                        history.pushState({ path }, document.title, path);
+                    const historyPath = path + (hash || "");
+                    if (!options.browserTriggered && options.pushState !== false && (location.pathname + location.hash) !== historyPath) {
+                        history.pushState({ path: historyPath }, document.title, historyPath);
                     }
                     document.title = `LSTV | ${manifest?.name || appId}`;
                     website.closeToolbar();
@@ -1275,10 +1337,16 @@ class Viewport extends LS.EventEmitter {
                 await this.navigate(SPAExtension[2], { browserTriggered: true });
             }
 
-            if(location.pathname !== path && !options.browserTriggered && options.pushState !== false && this.name === 'main') {
-                history.pushState({ path }, document.title, path);
+            const historyPath = path + (hash || "");
+            if((location.pathname + location.hash) !== historyPath && !options.browserTriggered && options.pushState !== false && this.name === 'main') {
+                history.pushState({ path: historyPath }, document.title, historyPath);
             }
             kernel.handleSPAExtension(path, SPAExtension, options.targetElement || null);
+            if(hash) {
+                requestAnimationFrame(() => {
+                    this.navigateToHash(hash);
+                });
+            }
             return true;
         }
 
@@ -1304,6 +1372,18 @@ class Viewport extends LS.EventEmitter {
         const old = this.current;
 
         if (old === page && !options.reload && !page.requiresReload) {
+            if(hash) {
+                if(this.name === "main" && !options.browserTriggered && !options.initial) {
+                    const historyPath = page.path + hash;
+                    if((location.pathname + location.hash) !== historyPath) {
+                        history.pushState({ path: historyPath }, document.title, historyPath);
+                    }
+                }
+
+                requestAnimationFrame(() => {
+                    this.navigateToHash(hash);
+                });
+            }
             return true;
         }
 
@@ -1327,23 +1407,28 @@ class Viewport extends LS.EventEmitter {
             } else {
                 this.emit("rendered", page);
 
-                if(this.name === "main" && !firstPage) LS.Animation.fadeIn(page.content, {
-                    duration: 300,
-                    direction: 'forward',
-                    easing: 'ease-out'
-                });
+                if(this.name === "main" && !firstPage) page.content.animate([{ opacity: .5, transform: "scale(102%)" }, { opacity: 1, transform: "scale(100%)" }], { duration: 300, easing: "ease" });
                 firstPage = false;
             }
 
             this.current = page;
 
             if (this.name === 'main') {
-                document.title = (page.title && page.title.startsWith("LSTV | "))? page.title: `LSTV | ${page.title || 'Untitled'}`;
+                document.title = page.title || "LSTV | Untitled";//(page.title && page.title.startsWith("LSTV | "))? page.title: `LSTV | ${page.title || 'Untitled'}`;
                 
                 if (!options.browserTriggered && !options.initial) {
-                    history.pushState({ path }, document.title, page.path);
+                    const historyPath = page.path + (hash || "");
+                    if((location.pathname + location.hash) !== historyPath) {
+                        history.pushState({ path: historyPath }, document.title, historyPath);
+                    }
                 }
                 website.closeToolbar();
+            }
+
+            if(hash) {
+                requestAnimationFrame(() => {
+                    this.navigateToHash(hash);
+                });
             }
 
             kernel.log(`Navigated to ${path} in ${this.name}`);
@@ -1402,6 +1487,23 @@ class Viewport extends LS.EventEmitter {
         this.errorPageMessage1.textContent = website.errorMessages[status] || 'Unexpected error.';
         this.errorPageMessage2.textContent = this.errorPageMessage1.textContent;
         this.target.replaceChildren(this.errorPageElement);
+    }
+
+    navigateToHash(hash) {
+        if(typeof hash !== "string" || !hash || hash === "#") return false;
+
+        let id = hash.startsWith("#") ? hash.slice(1) : hash;
+        if(!id) return false;
+
+        try {
+            id = decodeURIComponent(id);
+        } catch (e) {}
+
+        const element = document.getElementById(id) || document.getElementsByName(id)?.[0] || null;
+        if(!element) return false;
+
+        element.scrollIntoView({ block: "start" });
+        return true;
     }
 
     destroy(destroyContent = false) {
@@ -2266,7 +2368,7 @@ const website = {
                         class: "profile-badge",
                         tooltip: badgeInfo.label,
                         inner: LS.Create("img", {
-                            src: "~/assets/image/badges/" + badgeInfo.icon,
+                            src: "/~/assets/image/badges/" + badgeInfo.icon,
                             alt: badgeInfo.label
                         })
                     });
@@ -2341,27 +2443,6 @@ const website = {
     },
 
     utils: {
-        normalizePath(path, isAbsolute = null) {
-            // Replace backslashes with forward slashes
-            path = path.replace(/index\.html$|\.html$/i, "").replace(/\\/g, "/").trim();
-
-            const parts = path.split('/');
-            const normalizedParts = [];
-        
-            for (const part of parts) {
-                if (part === '..') {
-                    normalizedParts.pop();
-                } else if (part !== '.' && part !== '') {
-                    normalizedParts.push(part);
-                }
-            }
-
-            const normalizedPath = normalizedParts.join('/');
-
-            if(isAbsolute === null) isAbsolute = path.startsWith('/');
-            return (isAbsolute ? '/' : '') + normalizedPath;
-        },
-
         generateIdentifier(){
             return crypto.getRandomValues(new Uint32Array(1))[0].toString(36) + Date.now().toString(36);
         },
@@ -2529,6 +2610,7 @@ const website = {
     toolbarsContainer: document.getElementById("toolbars"),
 
     openToolbar(name, toggle = false) {
+        console.log("Opening toolbar:", name, "Toggle:", toggle);
         if(website.currentToolbar == name && website.isToolbarOpen) {
             if(toggle) website.closeToolbar();
             return;
@@ -2556,7 +2638,7 @@ const website = {
         }
 
         if (website.isToolbarOpen) LS.Animation.slideInToggle(toolbar.element, previousToolbar?.element || null);
-        if (!website.isToolbarOpen) LS.Animation.fadeIn(toolbar.element, null, "up");
+        if (!website.isToolbarOpen) LS.Animation.fadeIn(toolbar.element, "up");
 
         website.isToolbarOpen = true;
         website.currentToolbar = name;
@@ -2571,10 +2653,11 @@ const website = {
     },
 
     closeToolbar() {
+        console.log("Closing toolbar");
         if(!website.isToolbarOpen) return;
 
         const toolbar = website.toolbars.get(website.currentToolbar);
-        LS.Animation.fadeOut(toolbar.element, null, "down");
+        LS.Animation.fadeOut(toolbar.element, "down");
 
         if(toolbar) {
             if(typeof toolbar.onClose === "function") toolbar.onClose();
@@ -2664,7 +2747,7 @@ const website = {
         //     website.openToolbar("assistant", true);
         // } }],
 
-        ["themeButton", { buttonLabel: LS.Create('i', { class: "bi-palette-fill" }), label: "Customize", description: "Customize the site appearance", icon: "bi-palette-fill", onclick() {
+        ["themeButton", { buttonLabel: { tag: "i", class: "bi-palette-fill" }, label: "Customize", description: "Customize the site appearance", icon: 'bi-' + (LS.Color.theme === "dark" ? "moon-stars" : "sun") + "-fill", onclick() {
             website.openToolbar("theme", true);
         }}],
 
@@ -2675,6 +2758,20 @@ const website = {
     ]),
 
     toolbars: new Map([
+        ["statusbar", {
+            element: LS.Create({
+                id: "statusbar",
+                class: "toolbar toolbar-styled",
+                inner: LS.Create({
+                    inner: [
+                        LS.Create()
+                    ]
+                })
+            }),
+            name: "Status Bar",
+            description: "Status and notifications"
+        }],
+
         ["login", {
             element: LS.SelectOne("#toolbarLogin"),
             name: "Account",
@@ -2762,9 +2859,14 @@ const website = {
             });
         }
 
+        create(d){'use strict';var e0=document.createElement("div");e0.setAttribute("class","music-player toolbar-styled");var e1=document.createElement("img");e1.setAttribute("alt","Music cover background");e1.setAttribute("crossorigin","anonymous");e1.setAttribute("class","music-player-cover");e0.appendChild(e1);var e2=document.createElement("img");e2.setAttribute("alt","Music cover art");e2.setAttribute("crossorigin","anonymous");e2.setAttribute("class","music-player-art");e0.appendChild(e2);var e3=document.createElement("div");e3.setAttribute("class","music-player-container");var e4=document.createElement("div");e4.setAttribute("class","music-player-info");var e5=document.createElement("span");e5.setAttribute("class","text-overflow-nowrap music-player-title");var t6=document.createTextNode("Lorem Ipsum");e5.appendChild(t6);e4.appendChild(e5);var e7=document.createElement("span");e7.setAttribute("class","text-overflow-nowrap music-player-artist");var t8=document.createTextNode("Dolor Sit Amet");e7.appendChild(t8);e4.appendChild(e7);e3.appendChild(e4);var e9=document.createElement("div");e9.setAttribute("class","music-player-progress");var e10=document.createElement("div");e10.setAttribute("class","music-player-progress-bar");var e11=document.createElement("div");e11.setAttribute("class","music-player-progress-filled");e10.appendChild(e11);e9.appendChild(e10);e3.appendChild(e9);var e12=document.createElement("div");e12.setAttribute("class","music-player-controls");var e13=document.createElement("button");e13.setAttribute("ls-tooltip","");e13.setAttribute("aria-label","Like");e13.setAttribute("class","circle clear music-player-like");var e14=document.createElement("i");e14.setAttribute("class","bi-hand-thumbs-up");e13.appendChild(e14);e12.appendChild(e13);var e15=document.createElement("button");e15.setAttribute("ls-tooltip","");e15.setAttribute("aria-label","Previous");e15.setAttribute("class","circle clear music-player-prev");var e16=document.createElement("i");e16.setAttribute("class","bi-skip-start-fill");e15.appendChild(e16);e12.appendChild(e15);var e17=document.createElement("button");e17.setAttribute("ls-tooltip","");e17.setAttribute("aria-label","Play/Pause");e17.setAttribute("class","circle clear music-player-play-pause");var e18=document.createElement("i");e18.setAttribute("class","bi-play-fill");e17.appendChild(e18);e12.appendChild(e17);var e19=document.createElement("button");e19.setAttribute("ls-tooltip","");e19.setAttribute("aria-label","Next");e19.setAttribute("class","circle clear music-player-next");var e20=document.createElement("i");e20.setAttribute("class","bi-skip-end-fill");e19.appendChild(e20);e12.appendChild(e19);var e21=document.createElement("button");e21.setAttribute("ls-tooltip","Repeat Off");e21.setAttribute("aria-label","Toggle repeat modes");e21.setAttribute("class","circle clear music-player-repeat");var e22=document.createElement("i");e22.setAttribute("class","bi-arrow-repeat");e21.appendChild(e22);e12.appendChild(e21);e3.appendChild(e12);e0.appendChild(e3);var __rootValue=e0;return{root:__rootValue};}
+
         init(){
             if(this.initialized) return;
             this.initialized = true;
+
+            this.toolbarElement.appendChild(this.create().root);
+
             this.audio = new Audio();
             this.titleElement = this.toolbarElement.querySelector(".music-player-title");
             this.artistElement = this.toolbarElement.querySelector(".music-player-artist");
@@ -2961,306 +3063,10 @@ window.website = website;
 
 
 /**
- * Simple routing class to match groups and wildcards.
- * Taken from Akeno (https://github.com/the-lstv/akeno)
- */
-class Matcher {
-    constructor(options = {}, info = null) {
-        this.exactMatches = new Map();
-        this.wildcards = new WildcardMatcher(options.segmentChar || "/", []);
-        this.fallback = null;
-        this.options = options;
-    }
-
-    *expandPattern(pattern) {
-        if (typeof pattern !== 'string') {
-            throw new Error('Pattern must be a string');
-        }
-
-        // Expand only groups not preceded by '!'. Negated groups are preserved for the matcher.
-        let searchFrom = 0;
-        while (true) {
-            const group = pattern.indexOf('{', searchFrom);
-            if (group === -1) break;
-            const prevChar = group > 0 ? pattern[group - 1] : null;
-            if (prevChar !== '!') {
-                const endGroup = pattern.indexOf('}', group);
-                if (endGroup === -1) {
-                    throw new Error(`Unmatched group in pattern: ${pattern}`);
-                }
-
-                const groupValues = pattern.slice(group + 1, endGroup);
-                const patternStart = pattern.slice(0, group);
-                const patternEnd = pattern.slice(endGroup + 1);
-
-                for (let value of groupValues.split(',')) {
-                    value = value.trim();
-                    const next = patternStart + value + (value === "" && patternEnd.startsWith('.') ? patternEnd.slice(1) : patternEnd);
-                    yield* this.expandPattern(next);
-                }
-                return;
-            }
-            searchFrom = group + 1;
-        }
-
-        if(pattern[pattern.length - 1] === '/') {
-            pattern = pattern.slice(0, -1);
-        }
-        yield pattern;
-    }
-
-    add(pattern, handler) {
-        if(Array.isArray(pattern)) {
-            for(const p of pattern) {
-                this.add(p, handler);
-            }
-            return;
-        }
-
-        if (typeof pattern !== 'string' || !handler) {
-            throw new Error('Invalid route definition');
-        }
-
-        if (pattern.endsWith('.')) {
-            pattern = pattern.slice(0, -1);
-        }
-
-        if (pattern === '*' || pattern === '**') {
-            this.fallback = handler;
-            return;
-        }
-
-        if (!pattern) {
-            return;
-        }
-
-        // Expand pattern groups (non-negated only)
-        for (const expandedPattern of this.expandPattern(pattern)) {
-            // Route patterns with wildcards or negated groups to the wildcard matcher
-            if (expandedPattern.indexOf('*') !== -1 || expandedPattern.indexOf('!{') !== -1) {
-                this.wildcards.add(expandedPattern, handler);
-                continue;
-            }
-
-            const existingHandler = this.exactMatches.get(expandedPattern);
-            if (existingHandler && existingHandler !== handler) {
-                if(this.options.mergeObjects) {
-                    handler = Object.assign(existingHandler, handler);
-                    continue;
-                }
-
-                this.warn(`Warning: Route already exists for domain: ${expandedPattern}, it is being overwritten.`);
-            }
-
-            this.exactMatches.set(expandedPattern, handler);
-        }
-    }
-
-    clear() {
-        this.exactMatches.clear();
-        this.wildcards.patterns = [];
-        this.fallback = null;
-    }
-
-    remove(pattern) {
-        if (typeof pattern !== 'string') {
-            throw new Error('Invalid route pattern');
-        }
-
-        for (const expandedPattern of this.expandPattern(pattern)) {
-            this.exactMatches.delete(expandedPattern);
-            this.wildcards.filter(route => route.pattern !== expandedPattern);
-        }
-    }
-
-    getBasePath(pattern) {
-        const specialIndex = Math.min(
-            pattern.indexOf('{') !== -1 ? pattern.indexOf('{') : Infinity,
-            pattern.indexOf('*') !== -1 ? pattern.indexOf('*') : Infinity
-        );
-        
-        if (specialIndex !== Infinity) {
-            pattern = pattern.slice(0, specialIndex);
-        }
-
-        return pattern.replace(/[/!]+$/, '');
-    }
-
-    match(input) {
-        // Check exact matches first
-        const handler = this.exactMatches.get(input);
-        if (handler) {
-            return handler;
-        }
-
-        // Check wildcard matches
-        const wildcardHandler = this.wildcards.match(input);
-        if (wildcardHandler) {
-            return wildcardHandler;
-        }
-
-        // If no specific route found, return the fallback route
-        if (this.fallback) {
-            return this.fallback;
-        }
-
-        return false;
-    }
-}
-
-class WildcardMatcher {
-    constructor(segmentChar = "/", patterns = []) {
-        this.segmentChar = segmentChar || "/";
-        this.patterns = patterns || [];
-    }
-
-    add(pattern, handler = pattern) {
-        const rawParts = this.split(pattern);
-        const parts = rawParts.map(p => {
-            if (p.length > 3 && p.startsWith('!{') && p.endsWith('}')) {
-                const values = p.slice(2, -1).split(',').map(v => v.trim()).filter(v => v !== '');
-                return { type: 'negSet', set: new Set(values) };
-            }
-            return p;
-        });
-
-        // Try to merge with an existing pattern that differs by exactly one string segment
-        for (const existing of this.patterns) {
-            if (existing.handler !== handler || existing.parts.length !== parts.length) continue;
-
-            let diffIndex = -1;
-            let canMerge = true;
-
-            for (let i = 0; i < parts.length; i++) {
-                const existingPart = existing.parts[i];
-                const newPart = parts[i];
-
-                // Check if parts are equal
-                if (existingPart === newPart) continue;
-
-                // Check if existing is a set and new part is a string that can be added
-                if (typeof existingPart === 'object' && existingPart && existingPart.type === 'set' && typeof newPart === 'string') {
-                    if (diffIndex !== -1) { canMerge = false; break; }
-                    diffIndex = i;
-                    continue;
-                }
-
-                // Check if both are strings (can be converted to set)
-                if (typeof existingPart === 'string' && typeof newPart === 'string') {
-                    if (diffIndex !== -1) { canMerge = false; break; }
-                    diffIndex = i;
-                    continue;
-                }
-
-                // Parts are incompatible
-                canMerge = false;
-                break;
-            }
-
-            if (canMerge && diffIndex !== -1) {
-                const existingPart = existing.parts[diffIndex];
-                const newPart = parts[diffIndex];
-
-                if (typeof existingPart === 'object' && existingPart.type === 'set') {
-                    // Add to existing set
-                    existingPart.set.add(newPart);
-                } else {
-                    // Convert string to set
-                    existing.parts[diffIndex] = { type: 'set', set: new Set([existingPart, newPart]) };
-                }
-                return;
-            }
-        }
-
-        this.patterns.push({ parts, handler, pattern });
-        this.patterns.sort((a, b) => b.parts.length - a.parts.length);
-    }
-
-    filter(callback) {
-        this.patterns = this.patterns.filter(callback);
-        return this;
-    }
-
-    split(path) {
-        if (path === "" || !path) return [""];
-        if (path[0] !== this.segmentChar) path = this.segmentChar + path;
-        return path.split(this.segmentChar);
-    }
-
-    /**
-     * Fast wildcard matching with segment support.
-     * @param {string|array} input - The input string or array of segments to match against.
-     */
-    match(input) {
-        const path = Array.isArray(input) ? input : this.split(input);
-
-        for (const { parts, handler } of this.patterns) {
-            // Exact match
-            if (parts.length === 1) {
-                const only = parts[0];
-                if (only === "**" || (typeof only === 'string' && path.length === 1 && ((only === "*" && path[0] !== "") || only === path[0]))) {
-                    return handler;
-                }
-
-                if (typeof only === 'object' && only) {
-                    if (only.type === 'negSet' && path.length === 1 && path[0] !== "" && !only.set.has(path[0])) {
-                        return handler;
-                    }
-                    if (only.type === 'set' && path.length === 1 && only.set.has(path[0])) {
-                        return handler;
-                    }
-                }
-                continue;
-            }
-
-            let pi = 0, si = 0;
-            let starPi = -1, starSi = -1;
-
-            while (si < path.length) {
-                const part = parts[pi];
-                if (pi < parts.length && part === "**") {
-                    starPi = pi;
-                    starSi = si;
-                    pi++;
-                } else if (pi < parts.length && part === "*") {
-                    if (path[si] === "") break;
-                    pi++;
-                    si++;
-                } else if (pi < parts.length && typeof part === 'object' && part) {
-                    if (part.type === 'negSet') {
-                        if (path[si] === "" || part.set.has(path[si])) break;
-                    } else if (part.type === 'set') {
-                        if (path[si] === "" || !part.set.has(path[si])) break;
-                    }
-                    pi++;
-                    si++;
-                } else if (pi < parts.length && part === path[si]) {
-                    pi++;
-                    si++;
-                } else if (starPi !== -1) {
-                    pi = starPi + 1;
-                    starSi++;
-                    si = starSi;
-                } else {
-                    break;
-                }
-            }
-
-            while (pi < parts.length && parts[pi] === "**") pi++;
-            if (pi === parts.length && si === path.length) {
-                return handler;
-            }
-        }
-        return null;
-    }
-}
-
-
-/**
  * Kernel class
  * Main application kernel, handles global state, navigation, authentication, and content contexts.
  */
-const kernel = new class Kernel extends LoggerContext {
+const kernel = new class Kernel extends LS.Context {
     version = KERNEL_VERSION;
 
     contexts = new Map();
@@ -3281,15 +3087,13 @@ const kernel = new class Kernel extends LoggerContext {
     queryParams = LS.Util.parseURLParams();
     userFragment = LS.Reactive.wrap("user", {});
 
-    SPAExtensions = new Matcher();
+    SPAExtensions = new LS.SPA.Matcher();
 
     MAX_THREADS = (navigator.hardwareConcurrency || 4) * 2;
 
     scheduler = new class Scheduler {
         constructor() {
         }
-
-        
     }
 
     /**
@@ -3529,7 +3333,7 @@ const kernel = new class Kernel extends LoggerContext {
      */
     constructor() {
         super('kernel');
-        this.events = new LS.EventEmitter(this);
+        this.logger = new LoggerContext("kernel");
 
         website.viewport = this.viewport = new Viewport('main', document.getElementById('viewport'), {
             kernel: this
@@ -3542,6 +3346,7 @@ const kernel = new class Kernel extends LoggerContext {
         this.ttl = Date.now() - window.__loadTime;
         this.log('Kernel initialized, version %c' + this.version + '%c, time since first load: ' + this.ttl + 'ms', 'font-weight:bold', 'font-weight:normal');
 
+        // Register reactive types
         LS.Reactive.registerType("ProfilePicture", website.views.getProfilePictureView);
         LS.Reactive.registerType("ProfileBadges", website.views.getProfileBadgesView);
         LS.Reactive.registerType("ProfileBanner", website.views.getBannerView);
@@ -3599,7 +3404,7 @@ const kernel = new class Kernel extends LoggerContext {
 
         LS.Color.on("theme-changed", () => {
             const themeButton = website.panelItems.get("themeButton").element;
-            if (themeButton) themeButton.querySelector("i").className = "bi-" + (website.theme == "light"? "moon-stars-fill": "sun-fill");
+            if (themeButton) themeButton.querySelector("i").className = 'bi-' + (website.theme === "dark" ? "moon-stars" : "sun") + "-fill";
         });
 
         this.auth.on("user-updated", (patch) => {
@@ -3612,7 +3417,7 @@ const kernel = new class Kernel extends LoggerContext {
 
         });
 
-        document.addEventListener('DOMContentLoaded', () => {
+        this.addExternalEventListener(document, 'DOMContentLoaded', () => {
             website.container = this.container = document.getElementById('app');
             website.viewportElement = this.viewportElement = this.viewport.target;
 
@@ -3664,7 +3469,7 @@ const kernel = new class Kernel extends LoggerContext {
         const originalState = location.pathname;
         window.addEventListener('popstate', (event) => {
             if(isDebug) this.log("Popstate event:", event);
-            const href = event.state?.path ?? location.pathname;
+            const href = event.state?.path ?? (location.pathname + location.hash);
             kernel.viewport.navigate(href, { pushState: false });
         });
 
@@ -3685,13 +3490,26 @@ const kernel = new class Kernel extends LoggerContext {
 
             if (targetElement) {
                 if(targetElement.hasAttribute("target")) return;
-                if(targetElement.href.endsWith("#")) return event.preventDefault();
+
+                const rawHref = targetElement.getAttribute('href');
+                if(!rawHref) return;
+                if(rawHref === "#") return event.preventDefault();
 
                 const link = targetElement.href;
-                let href = targetElement.getAttribute('href');
+                let href = rawHref;
 
                 if(link.startsWith(location.origin) && !link.endsWith("?") && !link.startsWith(location.origin + ":")){
-                    if(href.startsWith(location.origin)) href = href.substring(location.origin.length);
+                    try {
+                        const parsed = new URL(link, location.href);
+                        href = parsed.pathname + parsed.search + parsed.hash;
+                    } catch (e) {
+                        if(href.startsWith(location.origin)) href = href.substring(location.origin.length);
+                    }
+
+                    if(href.startsWith("#")) {
+                        href = location.pathname + href;
+                    }
+
                     const viewportElement = targetElement.closest(".viewport") || kernel.viewport.target;
                     if (viewportElement) {
                         const viewport = viewportElement.viewportInstance || [...kernel.viewports.values()].find(v => v.target === viewportElement);
@@ -3853,7 +3671,7 @@ const kernel = new class Kernel extends LoggerContext {
      * @returns 
      */
     registerPage(path, options) {
-        path = website.utils.normalizePath(path);
+        path = LS.Util.normalizePath(path);
 
         if (this.pageCache.has(path)) {
             this.warn(`Page for path %c${path}%c is being registered twice. Overwriting existing page.`, 'font-weight: bold', '');
@@ -3873,7 +3691,7 @@ const kernel = new class Kernel extends LoggerContext {
      * @returns {ContentContext|null} The ContentContext object if found, otherwise null.
      */
     getPage(path) {
-        path = website.utils.normalizePath(path);
+        path = LS.Util.normalizePath(path);
         const page = this.pageCache.get(path) || this.aliasMap.get(path);
         if (page) return page;
 
@@ -3887,7 +3705,7 @@ const kernel = new class Kernel extends LoggerContext {
      * @returns {Array|null}
      */
     resolveSPAExtension(path) {
-        path = website.utils.normalizePath(path);
+        path = LS.Util.normalizePath(path);
         return this.SPAExtensions.match(path);
     }
 
@@ -3951,6 +3769,11 @@ const kernel = new class Kernel extends LoggerContext {
             this.warn("Warning: registerModule runtimeContext should be a class extending LS.Context or an instance of LS.Context. Otherwise memory leaks are more likely. Violating context: ", context);
         }
 
+        if(!context) {
+            this.error("Failed to determine context for module", script);
+            return null;
+        }
+
         if (runtimeContext) {
             let moduleInstance = null;
 
@@ -3970,7 +3793,7 @@ const kernel = new class Kernel extends LoggerContext {
     
                 context.modules.add(moduleInstance);
             } catch (e) {
-                this.error("Error initializing module for context", context.path || context.id, e);
+                this.error("Error initializing module for context", context?.path || context?.id, e);
                 return null;
             }
 
@@ -4057,7 +3880,7 @@ const kernel = new class Kernel extends LoggerContext {
             return;
         }
 
-        const extendedPath = website.utils.normalizePath(href.replace(path, ""), false);
+        const extendedPath = LS.Util.normalizePath(href.replace(path, ""), false);
         context.emit("spa-navigate", [ extendedPath, targetElement ]);
         handler(extendedPath, targetElement);
     }
@@ -4069,388 +3892,10 @@ const kernel = new class Kernel extends LoggerContext {
 
     async _initializeCommandPalette() {
         if (this._initializingPalette || website.palette) return;
-        const CommandPalette = (await import("/~/assets/js/pallete.mjs?0")).default;
-        const topBar = LS.SelectOne("#topOverlay");
-        const paletteBar = LS.SelectOne("#commandPaletteBar");
-        const paletteContainer = LS.SelectOne("#commandPalette");
-        const terminalContainer = LS.SelectOne("#commandTerminal");
-        const terminalOutput = terminalContainer.querySelector(".terminal-output");
-
-        const paletteLogger = new LoggerContext("Command Palette");
-        website.palette = new CommandPalette({
-            wrapperElement: paletteContainer,
-            menuElement: paletteContainer.querySelector(".completion-menu"),
-            iconElement: paletteContainer.querySelector(".command-icon"),
-            textDisplayElement: paletteContainer.querySelector(".command-text"),
-            hintElement: paletteContainer.querySelector(".command-hint"),
-            inputElement: paletteContainer.querySelector(".command-input"),
-            terminalOutput: terminalOutput,
-
-            fontWidth: 9.6 * 1.2,
-
-            onClose(){
-                LS.Animation.fadeOut(topBar, 300, "down");
-            },
-
-            onOpen(){
-                LS.Animation.fadeIn(topBar, 300, "up");
-            },
-
-            logger: paletteLogger
-        });
-
-        let terminalHidden = true;
-        const terminalObserver = new MutationObserver(() => {
-            const hasContent = terminalOutput.children.length > 0;
-            if (hasContent) {
-                if (terminalHidden) {
-                    LS.Animation.fadeIn(terminalContainer, 200, "up");
-                    terminalHidden = false;
-                }
-            } else {
-                if (!terminalHidden) {
-                    LS.Animation.fadeOut(terminalContainer, 200, "down");
-                    terminalHidden = true;
-                }
-            }
-        });
-
-        terminalObserver.observe(terminalOutput, { childList: true });
-
-        const terminalWriter = {
-            log: website.palette.log.bind(website.palette)
-        }
-
-        this.terminalWriter = terminalWriter;
-        paletteLogger.writer = terminalWriter;
-
-        paletteBar.querySelector("button").onclick = () => {
-            website.palette.close();
-        };
-
-        /**
-         * This should later be inline, so we don't waste client memory & work. 
-         * That's when we use Glitter
-         */
-
-        /*comptime*/ const kVersionMeta = {
-            1: {
-                codename: "Zen",
-                color: "#B5FFEE"
-            },
-            2: {
-                codename: "Aether",
-                color: "#FFA680"
-            },
-            3: {
-                codename: "Forge",
-                color: "#8C80FF"
-            }
-        }
-
-        /*comptime*/ const ckMeta = kVersionMeta[kernel.version.split(".")[0]] || { codename: "Unknown", color: "var(--accent)" };
-
-        website.palette.register([
-            {
-                name: "kernel-info",
-                alias: ["kernel-version", "version"],
-                icon: 'bi-cpu-fill',
-                description: "Show kernel information",
-                async onCalled() {
-                    terminalOutput.appendChild(LS.Create({
-                        innerHTML: `<img src="/~/assets/image/kernel-icons/${kernel.version.split(".")[0]}x.png" width="180" style="position:absolute;top:20px"><svg xmlns="http://www.w3.org/2000/svg" width="200" height="180" viewBox="0 0 200 180" fill="none">
-<rect x="59" y="63" width="82" height="28.9828" fill="black"/>
-<rect x="59" y="91.9828" width="82" height="24.7414" fill="${ckMeta.color}"/>
-<text fill="black" style="white-space: pre" xml:space="preserve" font-family="JetBrains Mono" font-size="16.9655" font-weight="300" letter-spacing="0em"><tspan x="70.0855" y="110.504">v${kernel.version.split("-")[0]}</tspan></text>
-<text fill="${ckMeta.color}" style="white-space: pre" xml:space="preserve" font-family="JetBrains Mono" font-size="22.6207" font-weight="500" letter-spacing="0em"><tspan x="66.0693" y="86.1434">[${ckMeta.codename}]</tspan></text>
-</svg>`,
-                        style: 'margin:auto;display:flex;justify-content:center;position:relative'
-                    }));
-
-                    terminalWriter.log(
-                        `%clstv.space%c kernel`,
-                        "color:var(--accent);font-weight:bold;font-size:1.2em",
-                        "color:inherit;font-weight:bold;font-size:1.2em"
-                    );
-                    terminalWriter.log(
-                        `%cVersion:%c ${kernel.version} (${ckMeta.codename})`,
-                        "color:var(--accent);font-weight:bold", "color:inherit"
-                    );
-                    terminalWriter.log(
-                        `%cLS version:%c ${LS.version}`,
-                        "color:var(--accent);font-weight:bold", "color:inherit"
-                    );
-                    terminalWriter.log(
-                        `%cViewports:%c ${kernel.viewports.size}`,
-                        "color:var(--accent);font-weight:bold", "color:inherit"
-                    );
-                    terminalWriter.log(
-                        `%cPages:%c ${kernel.pageCache.size} / 20`,
-                        "color:var(--accent);font-weight:bold", "color:inherit"
-                    );
-                    terminalWriter.log(
-                        `%cThreads:%c ${kernel.threads.size} / ${kernel.MAX_THREADS}`,
-                        "color:var(--accent);font-weight:bold", "color:inherit"
-                    );
-                    terminalWriter.log(
-                        `%cWindows:%c ${kernel.windows.size}`,
-                        "color:var(--accent);font-weight:bold", "color:inherit"
-                    );
-                    terminalWriter.log(
-                        `%cSigned in:%c ${await kernel.auth.isLoggedIn() ? "Yes" : "No"}`,
-                        "color:var(--accent);font-weight:bold", "color:inherit"
-                    );
-                    terminalWriter.log(
-                        `%cLoadtime:%c ${Math.round(kernel.ttl)}ms (${Math.round(kernel.ttl_scripting)}ms without network)`,
-                        "color:var(--accent);font-weight:bold", "color:inherit"
-                    );
-                    const uptimeMs = Date.now() - window.__loadTime;
-                    const uptimeSec = Math.floor(uptimeMs / 1000);
-                    const hours = Math.floor(uptimeSec / 3600);
-                    const minutes = Math.floor((uptimeSec % 3600) / 60);
-                    const seconds = uptimeSec % 60;
-                    const prettyUptime =
-                        (hours > 0 ? hours + "h " : "") +
-                        (minutes > 0 ? minutes + "m " : "") +
-                        seconds + "s";
-                    terminalWriter.log(
-                        `%cUptime:%c ${prettyUptime}`,
-                        "color:var(--accent);font-weight:bold", "color:inherit"
-                    );
-                }
-            },
-
-            {
-                name: "settings",
-                icon: "bi-gear",
-                description: "More settings",
-                children: [
-                    // {
-                    //     name: "notifications",
-                    //     icon: "bi-bell",
-                    //     description: "Enable or disable notifications",
-                    //     children: [
-                    //         {
-                    //             name: "enable",
-                    //             icon: "bi-bell-fill",
-                    //             description: "Enable notifications",
-                    //         },
-                    //         {
-                    //             name: "disable",
-                    //             icon: "bi-bell-slash",
-                    //             description: "Disable notifications",
-                    //         }
-                    //     ]
-                    // },
-
-                    {
-                        name: "privacy",
-                        icon: "bi-shield-lock",
-                        description: "Privacy settings",
-                        children: [
-                            {
-                                name: "statistics",
-                                icon: "bi-bar-chart",
-                                description: "Toggle anonymous statistics sharing",
-                                onCalled(enabled) {
-                                    localStorage.setItem("DISABLE_STATS", !enabled);
-                                    terminalWriter.log("Statistics sharing " + (enabled ? "enabled - Thank you!" : "disabled - No statistics data will be sent from this browser from now on."));
-
-                                    if(!enabled) {
-                                        terminalWriter.log("Warning: This setting is not saved to your account and is specific to this browser. Make sure to update this setting on other devices.");
-                                    }
-                                },
-                                inputs: [
-                                    {
-                                        name: "enabled",
-                                        type: "boolean",
-                                        default: true
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-
-                    {
-                        name: "performance-mode",
-                        icon: "bi-speedometer",
-                        description: "Set performance mode",
-
-                        onCalled(value) {
-                            window.LOW_PERFORMANCE_MODE = value === "low";
-                            localStorage.setItem("LOW_PERFORMANCE_MODE", window.LOW_PERFORMANCE_MODE);
-                            terminalWriter.log("Warning: It is recommended to reload the page for this setting to take effect");
-                        },
-
-                        inputs: [ {
-                            name: "mode",
-                            type: "list",
-                            list: [
-                                { name: "Normal", description: "Recommended", value: "normal" },
-                                { name: "Low", description: "Disables some visual effects", value: "low" },
-                            ]
-                        } ]
-                    },
-                ]
-            },
-
-            {
-                name: "set-accent",
-                icon: "bi-palette2",
-                description: "Set an accent color",
-
-                onCalled(color) {
-                    LS.Color.setAccent(color);
-                },
-
-                inputs: [
-                    { name: "preset", type: "list", list: [ { name: "custom", icon: "bi-palette2", type: "color" }, ...website.ACCENT_COLORS.map(accent => ({
-                        name: accent,
-                        icon: `bi-circle-fill`,
-                        accentColor: accent,
-                        value: accent
-                    }))] }
-                ]
-            },
-
-            {
-                name: "set-theme",
-                icon: "bi-palette",
-                description: "Set user theme",
-                onCalled(theme) {
-                    if (theme === "system") {
-                        localStorage.removeItem("ls-theme"); LS.Color.setAdaptiveTheme();
-                    } else {
-                        website.theme = theme;
-                    }
-                },
-                inputs: [
-                    {
-                        name: "theme",
-                        type: "list",
-                        list: [
-                            { name: "Light", value: "light", icon: "bi-brightness-high" },
-                            { name: "Dark", value: "dark", icon: "bi-moon" },
-                            { name: "System", value: "system", icon: "bi-laptop" }
-                        ]
-                    }
-                ]
-            },
-
-            {
-                name: "toolbar",
-                icon: "bi-tools",
-                description: "Toolbars",
-                onCalled(toolbar) {
-                    website.openToolbar(toolbar);
-                    website.palette.close();
-                },
-
-                inputs: [
-                    {
-                        name: "toolbar",
-                        type: "list",
-                        list: [
-                            { name: "Accounts", value: "login", icon: "bi-person-circle" },
-                            { name: "Apps", value: "apps", icon: "bi-app" },
-                            { name: "Music Player", value: "musicPlayer", icon: "bi-music-note" },
-                            { name: "Customize website", value: "theme", icon: "bi-brush" },
-                            { name: "Assistant", value: "assistant", icon: "bi-robot" }
-                        ]
-                    }
-                ]
-            },
-
-            {
-                name: "apps",
-                icon: "bi-window",
-                description: "Applications",
-
-                children: [
-                    {
-                        name: "open",
-                        icon: "bi-box-arrow-up-right",
-                        description: "Open an app",
-                        children() {
-                            return [...kernel.appManifests.values()].map(app => ({ name: app.name.replace(/\s+/g, '_'), value: app.id, icon: app.icon, onCalled() {
-                                kernel.openApplication(app, { source: "palette" })
-                                    // .loading(() => {}) // TODO: loading mark for the palette
-                                    .done((instance) => {
-                                        instance.open?.();
-                                        website.palette.close();
-                                    })
-                                    .catch(error => {
-                                        terminalWriter.log("Failed to open app: " + (error.message || error.error || "Unknown error"));
-                                    });
-                            }}));
-                        }
-                    },
-
-                    {
-                        name: "uninstall",
-                        icon: "bi-trash",
-                        description: "Uninstall an app",
-                    },
-
-                    {
-                        name: "install",
-                        icon: "bi-download",
-                        description: "Install an app",
-                    },
-
-                    {
-                        name: "sync",
-                        icon: "bi-arrow-repeat",
-                        description: "Enable sync for an app",
-                    },
-
-                    {
-                        name: "unsync",
-                        icon: "bi-x-lg",
-                        description: "Disable sync for an app",
-                    },
-
-                    {
-                        name: "auth",
-                        icon: "bi-shield-lock",
-                        description: "Authenticate"
-                    },
-
-                    {
-                        name: "manage-permissions",
-                        icon: "bi-shield-lock",
-                        description: "Manage app permissions",
-                    }
-                ]
-            },
-
-            {
-                name: "echo",
-                alias: ["print"],
-                icon: "bi-chat",
-                description: "Echo input",
-                onCalled(text) { terminalWriter.log(text) },
-                inputs: [
-                    { name: "text", type: "string", description: "Text to echo" }
-                ]
-            },
-
-            {
-                name: "clear",
-                icon: "bi-trash",
-                alias: ["clear-terminal", "cls"],
-                description: "Clear the terminal output",
-                onCalled() { terminalOutput.innerHTML = "" }
-            },
-
-            {
-                name: "close",
-                alias: ["exit"],
-                icon: "bi-x-circle",
-                description: "Close the command palette",
-                onCalled() { website.palette.close() }
-            }
-        ]);
+        const CommandPaletteExports = (await import("/~/assets/js/pallete.mjs?1.2"));
+        CommandPaletteExports.init(this, website, LoggerContext);
+        console.log("Command palette initialized");
+        
     }
 
     #initializeToolbars() {
@@ -4466,7 +3911,7 @@ const kernel = new class Kernel extends LoggerContext {
 
         const navPadding = 28 + 5;
         const gap = 10;
-        
+
         for (const item of website.panelItems.values()) {
             if(item.shortcuts) {
                 this.shortcutManager.register(item.shortcuts, () => {
@@ -4476,17 +3921,30 @@ const kernel = new class Kernel extends LoggerContext {
         }
 
         const collapseItems = new LS.Util.FrameScheduler(() => {
-            const availableSpace = nav.clientWidth - navPadding - gap - moreButton.clientWidth - (nav.firstElementChild?.clientWidth || 0);
+            // Read widths first to prevent relayouts
+            const isTooSmall = window.innerWidth < 100 || window.innerHeight < 200; // Precalc
+            if(resizeMessageSwitch.set(isTooSmall)) {
+                return;
+            }
 
-            let takenSpace = 0, hasCollapsedItems = false;
-            for (const item of website.panelItems.values()) {
+            const availableSpace = nav.clientWidth - navPadding - gap - moreButton.clientWidth - (nav.firstElementChild?.clientWidth || 0);
+            const moreButtonClientWidth = moreButton.clientWidth;
+
+            // Try to batch appends (god i hate the dom api so much)
+            let frag, menuFrag;
+
+            let takenSpace = 0;
+            for(const item of website.panelItems.values()) {
                 if(!item.element) {
+                    let assumedWidth = 40 + gap;
                     const icon = item.showIcon === false ? null : { tag: "i", class: item.icon };
                     const buttonLabel = item.buttonLabel || item.label;
 
-                    item.element = LS.Create("button", {
-                        class: "toolbar-button pill elevated",
-                        attributes: { "aria-label": item.description },
+                    if(icon) assumedWidth += 16;
+                    if(item.label === "Account") assumedWidth += 46;
+                    if(item.showLabel) assumedWidth += (buttonLabel ? (typeof buttonLabel === "string" ? 8 * buttonLabel.length : 16) : 16);
+
+                    item.element = LS.Create("button.toolbar-button.pill.elevated[aria-label='"+item.description+"']", {
                         tooltip: item.tooltip || item.label,
                         inner: item.showLabel !== false? [icon, { tag: "span", inner: buttonLabel, class: typeof buttonLabel === "string" ? "label" : "" }]: icon,
                         onclick: () => {
@@ -4494,12 +3952,34 @@ const kernel = new class Kernel extends LoggerContext {
                         }
                     });
 
-                    container.appendChild(item.element);
+                    if(!frag) frag = document.createDocumentFragment();
+                    frag.appendChild(item.element);
+
+                    // Browser layout rendering is an absolutely incompetent piece of crap
+                    // so we need to guess the width to avoid the render>wait>read>render hell
+                    // Of course this opens up a whole bunch of other possible problems
+                    item.cachedWidth = assumedWidth;
                 }
 
+                // if(!item.bs) {
+                //     item.element.append(LS.Create({ style: "width:"+item.cachedWidth+"px;position:absolute;height:10px;background:red;z-index:10000;bottom:0;left:0" }));
+                //     item.bs = true;
+                // }
+
+                // item.cachedWidth = (item.element ? item.element.clientWidth : item.cachedWidth || 0) + gap;
+            }
+
+            // const accountButtonText = website.panelItems.get("accountsButton")?.element?.textContent;
+            // if(accountButtonText) {
+            //     takenSpace += 46 + (accountButtonText.length * 8);
+            //     // console.log(takenSpace);
+            // }
+
+            let hasCollapsedItems = false;
+            for (const item of website.panelItems.values()) {
                 const detached = item.element.classList.contains("detached");
-                const w = item.element.clientWidth + gap;
-                takenSpace += w;
+
+                takenSpace += item.cachedWidth;
 
                 if(takenSpace > availableSpace) {
                     hasCollapsedItems = true;
@@ -4517,7 +3997,8 @@ const kernel = new class Kernel extends LoggerContext {
                         })
                     }
 
-                    menu.appendChild(item.menuElement);
+                    if(!menuFrag) menuFrag = document.createDocumentFragment();
+                    menuFrag.appendChild(item.menuElement);
                 } else {
                     if(!detached) continue;
                     item.element.classList.remove("detached");
@@ -4527,13 +4008,15 @@ const kernel = new class Kernel extends LoggerContext {
                 }
             }
 
+            // Write operations
+            if(frag) container.appendChild(frag);
+            if(menuFrag) menu.appendChild(menuFrag);
+            moreButton.style.display = (availableSpace + moreButtonClientWidth) < takenSpace ? "inline-flex" : "none";
+
             // Close the toolbar if no items are collapsed and it's currently open
             if (!hasCollapsedItems && website.isToolbarOpen && website.currentToolbar === "more") {
                 website.closeToolbar();
             }
-
-            moreButton.style.display = (availableSpace + moreButton.clientWidth) < takenSpace ? "inline-flex" : "none";
-            resizeMessageSwitch.set(window.innerHeight < 100 || window.innerWidth < 200);
         });
 
         const resizeMessageContainer = document.getElementById("resizeMessage");
@@ -4547,8 +4030,8 @@ const kernel = new class Kernel extends LoggerContext {
             }
         });
 
-        collapseItems.callback();
         collapseItems.schedule();
+
         window.addEventListener("resize", () => {
             collapseItems.schedule();
         });
@@ -4719,7 +4202,7 @@ const kernel = new class Kernel extends LoggerContext {
             });
         }
 
-        document.addEventListener("pointerdown", (event) => {
+        this.addExternalEventListener(document, "pointerdown", (event) => {
             if (website.isToolbarOpen && !event.target.closest("#toolbars,.toolbar-button")) website.closeToolbar();
             if (kernel.windows.size > 0 && !event.target.closest(".window-container") ) {
                 for (const windowInstance of kernel.windows.values()) {
@@ -4845,7 +4328,7 @@ const kernel = new class Kernel extends LoggerContext {
             const container = website.toolbars.get("apps").element;
             this.appListElement = container.querySelector(".app-list");
 
-            kernel.events.on("application-installed", (manifest) => {
+            kernel.on("application-installed", (manifest) => {
                 this.addApplicationEntry(manifest);
             });
 
@@ -4967,6 +4450,16 @@ const kernel = new class Kernel extends LoggerContext {
         AppClass.manifest = manifest;
     }
 
+    *listResources() {
+        for(const context of this.contexts.values()) {
+            yield context;
+        }
+
+        for(const thread of this.threads.values()) {
+            yield thread;
+        }
+    }
+
     /**
      * Instantiate an application by its ID.
      * @param {string} appId 
@@ -4978,6 +4471,7 @@ const kernel = new class Kernel extends LoggerContext {
         if (!AppClass) throw new Error("Application not found: " + appId);
         this.log("Instantiating application:", appId);
 
+        // ! fix (this is not the right way to link)
         this._appInstantiationContext = {
             appId,
             manifest: this.appManifests.get(appId) || AppClass.manifest || null,
@@ -5033,18 +4527,34 @@ const kernel = new class Kernel extends LoggerContext {
 
         return p;
     }
+
+    log() { this.logger.log(...arguments); }
+    warn() { this.logger.warn(...arguments); }
+    error() { this.logger.error(...arguments); }
+
+    destroy() {
+        if(this.destroyed) return;
+        for(const context of this.contexts.values()) {
+            context.destroy();
+        }
+
+        for(const thread of this.threads.values()) {
+            thread.destroy();
+        }
+        super.destroy();
+    }
 }
 
+/**
+ * Promise helpers
+ */
 class ApplicationOpenerPromise {
     loading(callback) { if (callback) this._l = callback; return this; }
     done(callback) { if (callback) this._d = callback; return this; }
     catch(callback) { if (callback) this._c = callback; return this; }
     finally(callback) { if (callback) this._f = callback; return this; }
 
-    loadingState(state) {
-        if (this._l) this._l(state);
-        return this;
-    }
+    loadingState(state) { if (this._l) this._l(state); return this; }
 
     throw(error) {
         if (this._c) this._c(error);

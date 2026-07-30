@@ -1,0 +1,51 @@
+#template /templates/docs.html
+
+<head>
+    @page {
+        title: "LS.Util.parseEmmet · API · LS Docs";
+        description: "Relatively fast & light Emmet abbreviation parser";
+        keywords: "LSTV, LS Docs, API, LS.Util.parseEmmet";
+    }
+</head>
+@use(/docs/ls/sidebar.json["docs-sidebar"]);
+
+<div .docs-content>
+<markdown>
+<h1 id="lsutilparseemmet">LS.Util.parseEmmet</h1>
+
+Source: ls.js:1428
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">parseEmmet</span>()</code></pre>
+
+Relatively fast & light Emmet abbreviation parser
+
+<h3 id="parameters">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>abbreviation</code></td>
+<td><code>string</code></td>
+<td>Emmet abbreviation to parse.</td>
+</tr>
+</tbody>
+</table>
+
+
+<h3 id="returns">Returns</h3>
+
+- <code><a href="/docs/ls/api/symbols/documentfragment.html">DocumentFragment</a></code>: Root element of the parsed structure.
+
+<h3 id="examples">Examples</h3>
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-variable constant_">LS</span>.<span class="hljs-property">Util</span>.<span class="hljs-title function_">parseEmmet</span>(<span class="hljs-string">&quot;div#main&gt;ul.list&gt;li.item{Item}*3&quot;</span>);</code></pre>
+
+</markdown>
+</div>

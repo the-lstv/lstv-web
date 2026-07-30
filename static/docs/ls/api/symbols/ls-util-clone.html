@@ -1,0 +1,47 @@
+#template /templates/docs.html
+
+<head>
+    @page {
+        title: "LS.Util.clone · API · LS Docs";
+        description: "Deep-clones an Object/Set/Map/Array with filtering support, faster than structuredClone and apparently even the klona library. Very experimental - may not always be reliable for complex objects and as of now ignores functions and prototypes (maybe I'll expand it later). I recommend to use only on relatively simple/predictable objects. https://jsbm.dev/wFkz6UCGJevxw";
+        keywords: "LSTV, LS Docs, API, LS.Util.clone";
+    }
+</head>
+@use(/docs/ls/sidebar.json["docs-sidebar"]);
+
+<div .docs-content>
+<markdown>
+<h1 id="lsutilclone">LS.Util.clone</h1>
+
+Source: ls.js:1685
+
+<pre markdown="off" class=" lang-javascript"><code class="hljs" data-highlighted="yes"><span class="hljs-title function_">clone</span>()</code></pre>
+
+Deep-clones an Object/Set/Map/Array with filtering support, faster than structuredClone and apparently even the klona library.<br>Very experimental - may not always be reliable for complex objects and as of now ignores functions and prototypes (maybe I'll expand it later).<br>I recommend to use only on relatively simple/predictable objects.<br>https://jsbm.dev/wFkz6UCGJevxw
+
+<h3 id="parameters">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>obj</code></td>
+<td><code>*</code></td>
+<td>Object to clone</td>
+</tr>
+</tbody>
+</table>
+
+
+<h3 id="returns">Returns</h3>
+
+- value: Cloned object
+
+</markdown>
+</div>

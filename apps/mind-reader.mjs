@@ -29,7 +29,7 @@ class MindReader extends website.ContentContext {
 
                         this.disabled = true;
                         self.progress.value = 0;
-                        self.progress.style.display = "block";
+                        self.progress.element.style.display = "block";
 
                         const texts = ["Analyzing...", "Reading Brainwaves...", "Decoding Thoughts...", "Hacking the Matrix...", "Consulting the Oracle...", "Summoning the Spirits...", "Aligning the Stars...", "Calculating Probability...", "Decoding thoughts..."];
                         const f = () => {
@@ -50,7 +50,7 @@ class MindReader extends website.ContentContext {
 
                             this.disabled = false;
                             self.progress.value = 0;
-                            self.progress.style.display = "none";
+                            self.progress.element.style.display = "none";
                         }
 
                         self.requestAnimationFrame(f);
@@ -60,8 +60,10 @@ class MindReader extends website.ContentContext {
             ]
         });
 
-        this.progress = LS.Create("progress", { max: 100, value: 0, style: "display: none; width: 100%; margin-top: 20px;" });
-        this.content.appendChild(this.progress);
+        this.progress = new LS.Range(LS.Range.PRESET_PROGRESS);
+        this.progress.element.style = "display: none; width: 100%; margin-top: 20px;";
+
+        this.content.appendChild(this.progress.element);
 
         this.fromElement(this.content);
         const win = this.createWindow({
@@ -75,6 +77,8 @@ class MindReader extends website.ContentContext {
     }
 
     destroy() {
+        this.progress.destroy();
+        this.progress = null;
         super.destroy();
     }
 }

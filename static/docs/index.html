@@ -1,4 +1,4 @@
-#template /templates/main.html
+#template /templates/docs.html
 
 <head>
     @page {
@@ -8,6 +8,13 @@
     }
 </head>
 
-<div>
-    Here you can find various docs pages for our software!
+<div .docs-content markdown>
+    ## Here you can find various docs pages for our software!
+    Some of our docs:
+    - [LS Framework Documentation](/docs/ls)
+    - [Akeno Server Documentation](/docs/akeno)
+
+    ## How these docs are made
+    Behind the scenes, it's quite simple; our backend ([Akeno](https://github.com/the-lstv/akeno)) supports markdown in HTML out of the box. So documentation pages are simply written in Markdown and extend the `docs.html` template. The rest is done automagically by the backend.<br>
+    It's all so seamless!
 </div>

@@ -1,0 +1,35 @@
+#template /templates/docs.html
+
+<head>
+    @page {
+        title: "LSTV | Versioning";
+        description: "Learn about our versioning strategy and how we manage releases.";
+        keywords: "versioning, releases, software versions, lstv versioning";
+    }
+</head>
+
+<div .docs-content markdown>
+    # Versioning Strategy
+    At LSTV, we follow a structured versioning strategy.<br>
+    It's inspired by Semantic Versioning (SemVer) principles and uses the classic three-part version number: `MAJOR.MINOR.PATCH-SUFFIX`, but is not quite the same in exact meaning, because Semantic Versioning isn't always ideal for human readability.
+
+    ### Examples:
+    - `1.0.0`
+    - `2.5.3`
+    - `3.0.0-beta`
+
+    ## MAJOR Version
+    <p>We increment our MAJOR version for huge updates that bring significant changes or breaking/restructuring changes, or mark the next evolution of our software. Unlike SemVer it doesn't always mean breaking changes. If you are using an older version of our software and we release a new MAJOR version, you may need to update your code, though we also often provide compatibility layers, and sometimes a major version can be more of a marker.</p>
+
+    ## MINOR Version
+    <p>A MINOR version is incremented when we add larger enhancements, fixes, or feature additions in a backward-compatible manner. These releases can include major functionality updates.</p>
+
+    ## PATCH Version
+    <p>A PATCH version is incremented when we make backward-compatible changes. Unlike SemVer, we also increment it for medium/pre-test updates as well in addition to optimizations or bug fixes that retain compatibility.</p>
+
+    ## Release Cycle
+    <p>We release updates regularly, but there's no fixed schedule. Major updates often come yearly, but not as a rule.</p>
+
+    ## Support Policy
+    <p>We provide support for the latest MAJOR version of our software, as well as the previous MAJOR version, for a limited time. In some cases we keep LTS releases for prior MAJOR versions.</p>
+</div>
