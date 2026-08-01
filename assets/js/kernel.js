@@ -3892,7 +3892,7 @@ const kernel = new class Kernel extends LS.Context {
 
     async _initializeCommandPalette() {
         if (this._initializingPalette || website.palette) return;
-        const CommandPaletteExports = (await import("/~/assets/js/pallete.mjs?1.2"));
+        const CommandPaletteExports = (await import("/~/assets/js/pallete.mjs?1.3"));
         CommandPaletteExports.init(this, website, LoggerContext);
         console.log("Command palette initialized");
         
