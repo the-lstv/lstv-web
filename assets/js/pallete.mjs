@@ -2157,7 +2157,7 @@ function init(kernel, website, LoggerContext) {
                     "color:var(--accent);font-weight:bold", "color:inherit"
                 );
                 terminalWriter.log(
-                    `%cWindows:%c ${kernel.windows.size}`,
+                    `%cWindows:%c ${LS.WindowManager.windows.size}`,
                     "color:var(--accent);font-weight:bold", "color:inherit"
                 );
                 terminalWriter.log(

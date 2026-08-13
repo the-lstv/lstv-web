@@ -1,0 +1,26 @@
+#template /templates/main.html
+
+<span hidden #scope-key>@file-scope-key();</span>
+
+<head>
+    @use (/tech/crystaline/index.css);
+
+    @page {
+        title: "LSTV | Crystaline";
+        description: "Homepage for Crystaline";
+        keywords: "programming, crystaline, language, tech";
+    }
+</head>
+
+<div ls-accent="blue">
+    <div .podium>
+        <img src="https://cdn.extragon.cloud/file/12c4454c90612f59.svg" alt="Icon">
+        <h1>Say hello to <span style="color: var(--accent-60)">Crystaline</span>.</h1>
+    </div>
+
+    <div .content markdown>
+        ## What is Crystaline?
+        Crystaline is a work in progress Vulkan based rendering engine written in C++, mainly serving as a replacement to Electron but could later be the rendering engine for QuickSand or Revie.<br>
+        There isn't much to show yet, but you can check out the [GitHub repository](https://github.com/the-lstv/crystaline) for more information.
+    </div>
+</div>

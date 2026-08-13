@@ -111,7 +111,7 @@ if(globalThis === this) {
 
 window.__kernelInitialized = true;
 
-const KERNEL_VERSION = (typeof __buildVersion !== "undefined")? __buildVersion: "1.2.6-beta";
+const KERNEL_VERSION = (typeof __buildVersion !== "undefined")? __buildVersion: "1.2.7-beta";
 
 window.cacheKey = "?mtime=" + (LS.Util.parseURLParams(document.currentScript?.src, "mtime") || Date.now()); // Mtime mapped to kernel.js (This should never fallback)
 
@@ -156,6 +156,7 @@ const requestAnimationFrame = LS.Context.requestAnimationFrame;
 const queueMicrotask = LS.Context.queueMicrotask;
 const fetch = LS.Context.fetch;
 
+LS.WindowManager.topOffset = 50;
 
 /**
  * Application model:
@@ -495,7 +496,7 @@ const AssetManager = new class {
  * Partly handles context management.
  * (This does not equal a whole application, and application may have multiple content contexts.)
  */
-class ContentContext extends LS.Context {
+class ContentContext extends LS.View {
     #path = null;
 
     // Only used for applications
@@ -610,14 +611,30 @@ class ContentContext extends LS.Context {
         const appOpenWindowOptions = appContext?.options?.windowOptions && typeof appContext.options.windowOptions === "object" ? appContext.options.windowOptions : null;
 
         const mergedOptions = {
+            // Wait for the context to finish rendering before showing the window
+            waitForRender: true,
+
+            // When the window is closed, the context will be destroyed with it.
+            ownsContent: true,
+
             ...(manifestWindowOptions || {}),
             ...(this.windowOptions || {}),
             ...(appOpenWindowOptions || {}),
             ...(options || {})
         };
 
-        const win = new website.Window(mergedOptions);
-        win.renderFrom(this);
+        const win = new LS.Window(mergedOptions);
+        win.set(this);
+
+        this.render(this.container).then(() => {
+            win.quickEmit("rendered");
+            return true;
+        }).catch((e) => {
+            kernel.error("Rendering from context failed:", e);
+            this.errorPage(500);
+            return false;
+        });
+
         this.addDestroyable(win);
         return win;
     }
@@ -1468,18 +1485,6 @@ class Viewport extends LS.EventEmitter {
         }
     }
 
-    renderFrom(context) {
-        return context.render(this.target).then(() => {
-            this.current = context;
-            this.emit("rendered", context);
-            return true;
-        }).catch((e) => {
-            kernel.error("Rendering from context failed:", e);
-            this.errorPage(500);
-            return false;
-        });
-    }
-
     errorPage(status) {
         this.errorPageElement; // Ensure it's created
 
@@ -1590,602 +1595,8 @@ class Thread extends LS.EventEmitter {
     }
 }
 
-
-let globalWindowZIndex = 1000;
-const WINDOW_EDGE_MARGIN = 12;
-const WINDOW_TOP_STACK_GAP = 10;
-const WINDOW_TOP_STACK = [];
-const WINDOW_MAXIMIZE_DRAG_RESTORE_BUFFER = 18;
-
-function relayoutWindowTopStack() {
-    for (let i = WINDOW_TOP_STACK.length - 1; i >= 0; i--) {
-        const win = WINDOW_TOP_STACK[i];
-        if (!win || win.destroyed || !win.isPinnedView) {
-            WINDOW_TOP_STACK.splice(i, 1);
-        }
-    }
-
-    let offsetY = 0;
-    for (const win of WINDOW_TOP_STACK) {
-        offsetY = win.applyPinnedLayout(offsetY);
-    }
-}
-
-function addToWindowTopStack(win) {
-    const index = WINDOW_TOP_STACK.indexOf(win);
-    if (index !== -1) {
-        WINDOW_TOP_STACK.splice(index, 1);
-    }
-    WINDOW_TOP_STACK.push(win);
-    relayoutWindowTopStack();
-}
-
-function removeFromWindowTopStack(win) {
-    const index = WINDOW_TOP_STACK.indexOf(win);
-    if (index !== -1) {
-        WINDOW_TOP_STACK.splice(index, 1);
-        relayoutWindowTopStack();
-    }
-}
-
-/**
- * Window class
- * Spawns a draggable & resizable memory-safe manageable floating window.
- */
-class Window extends Viewport {
-    // static TEMPLATE = LS.CompileTemplate((data, logic) => ({
-    //     class: 'window-container',
-    //     inner: [
-    //         logic.export("header", { class: 'level-1 window-header', inner: [
-    //             [
-    //                 logic.export("icon", { class: 'window-icon', src: data.icon, tag: 'img' }),
-    //                 logic.export("title", { class: 'window-title text-overflow-nowrap', textContent: data.name, tag: 'span' }),
-    //             ],
-
-    //             { class: 'window-header-buttons', inner: [
-    //                 {
-    //                     tag: 'button',
-    //                     class: 'window-maximize-button circle elevated',
-    //                     inner: { tag: 'i', class: 'bi-window' },
-    //                     tooltip: 'Toggle Window View',
-    //                     onclick: data.toggleView
-    //                 },
-    //                 {
-    //                     tag: 'button',
-    //                     class: 'window-minimize-button circle elevated',
-    //                     inner: { tag: 'i', class: 'bi-dash-lg' },
-    //                     onclick: data.minimize
-    //                 },
-    //                 {
-    //                     tag: 'button',
-    //                     class: 'window-maximize-button circle elevated',
-    //                     inner: { tag: 'i', class: 'bi-square' },
-    //                     onclick: data.maximize
-    //                 },
-    //                 {
-    //                     tag: 'button',
-    //                     class: 'window-close-button circle elevated',
-    //                     inner: { tag: 'i', class: 'bi-x-lg' },
-    //                     onclick: data.close
-    //                 },
-    //             ]}
-    //         ]}),
-
-    //         data.target
-    //     ],
-    // }));
-
-    // Precompiled
-    static TEMPLATE = function(d){'use strict';var e0=document.createElement("div");e0.className="window-container";var e1=document.createElement("div");e1.className="level-1 window-header";var e2=document.createElement("div");var e3=document.createElement("img");e3.src=d.icon;e3.className="window-icon";e2.appendChild(e3);var e4=document.createElement("span");e4.textContent=d.name;e4.className="window-title text-overflow-nowrap";e2.appendChild(e4);var e5=document.createElement("div");e5.className="window-header-buttons";var e6=document.createElement("button");e6.onclick=d.toggleView;e6.setAttribute("ls-tooltip","Toggle Window View");LS.Tooltips.updateElement(e6);e6.className="window-maximize-button circle elevated";var e7=document.createElement("i");e7.className="bi-window";e6.appendChild(e7);var e8=document.createElement("button");e8.onclick=d.minimize;e8.className="window-minimize-button circle elevated";var e9=document.createElement("i");e9.className="bi-dash-lg";e8.appendChild(e9);var e10=document.createElement("button");e10.onclick=d.maximize;e10.className="window-maximize-button circle elevated";var e11=document.createElement("i");e11.className="bi-square";e10.appendChild(e11);var e12=document.createElement("button");e12.onclick=d.close;e12.className="window-close-button circle elevated";var e13=document.createElement("i");e13.className="bi-x-lg";e12.appendChild(e13);e5.append(e6,e8,e10,e12);e1.append(e2,e5);var dyn14=LS.toNode(d.target);e0.append(e1,dyn14);var __rootValue=e0;return{"header":e1,"icon":e3,"title":e4,root:__rootValue};}
-
-    constructor(options = {}) {
-        super(`window-${options.id || "untitled"}-${LS.Misc.uid()}`, LS.Create({
-            class: 'window-content-container viewport-content',
-        }), options);
-
-        this.isWindow = true;
-        this.isPinnedView = false;
-        this.isMaximized = false;
-        this._restoreLayoutFromPinned = null;
-        this._restoreLayoutFromMaximized = null;
-        this._pendingRestoreFromMaximized = null;
-
-        const window = Window.TEMPLATE({
-            name: this.getTitle(),
-            icon: this.getIcon(),
-            target: this.target,
-            minimize: () => this.minimize(),
-            maximize: () => this.maximize(),
-            close: () => this.close(),
-            toggleView: () => this.toggleView(),
-        });
-
-        this.windowElement = window.root;
-        this.headerElement = window.header;
-        this.titleElement = window.title;
-        this.iconElement = window.icon;
-
-        const headerButtons = this.windowElement.querySelectorAll(".window-header-buttons > button");
-        this.toggleViewButton = headerButtons[0] || null;
-        this.maximizeButton = headerButtons[2] || null;
-
-        this.disableOpenAnimation = !!(options.disableOpenAnimation || options.openAnimation === false);
-        this.windowElement.style.opacity = this.disableOpenAnimation ? 1 : 0;
-
-        let startX, startY;
-        this.windowHandle = new LS.Util.TouchHandle(window.header, {
-            buttons: [0],
-            exclude: true,
-            frameTimed: true,
-            cursor: 'move',
-
-            onStart: (event) => {
-                if (this.isPinnedView) return;
-
-                if (this.isMaximized) {
-                    this._pendingRestoreFromMaximized = {
-                        x: event.x,
-                        y: event.y,
-                        pointerRatio: event.x / Math.max(window.innerWidth, 1)
-                    };
-                } else {
-                    this._pendingRestoreFromMaximized = null;
-                }
-
-                startX = event.x - this.x;
-                startY = event.y - this.y;
-                this.focus();
-            },
-
-            onMove: (event) => {
-                if (this.isPinnedView) return;
-
-                if (this.isMaximized) {
-                    const pending = this._pendingRestoreFromMaximized;
-                    if (!pending) return;
-
-                    const dx = event.x - pending.x;
-                    const dy = event.y - pending.y;
-                    if (Math.hypot(dx, dy) < WINDOW_MAXIMIZE_DRAG_RESTORE_BUFFER) return;
-
-                    this.maximize(false);
-                    this.setPosition(event.x - (this.width * pending.pointerRatio), event.y - 20, false);
-                    this._pendingRestoreFromMaximized = null;
-
-                    startX = event.x - this.x;
-                    startY = event.y - this.y;
-                }
-
-                if (this.isMaximized) return;
-                this.setPosition(event.x - startX, event.y - startY);
-            },
-
-            onEnd: () => {
-                this._pendingRestoreFromMaximized = null;
-            }
-        });
-
-        this.headerElement.addEventListener("dblclick", (event) => {
-            if (event.target.closest("button")) return;
-            this.maximize();
-        });
-
-        this.iconElement.addEventListener("dblclick", (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            this.minimize();
-        });
-
-        this.windowElement.addEventListener("mousedown", () => {
-            this.focus();
-        }, { passive: true });
-
-        this.resizeOptions = {
-            sides: true,
-            corners: true,
-            styled: false,
-            minWidth: 300,
-            minHeight: 100,
-            ...options.resizeOptions || {},
-            translate: true,
-        };
-        this.resize = null;
-        this.setResizeEnabled(true);
-
-        kernel.windows.add(this);
-
-        this.setSize(options.width || 600, options.height || 400, false);
-        this.setPosition(options.x || ((innerWidth / 2) - (this.width / 2)), options.y || ((innerHeight / 2) - (this.height / 2)), false);
-        this.normalizeWindowBounds();
-        this.updateControlButtons();
-
-        if (!this.disableOpenAnimation) {
-            requestAnimationFrame(() => {
-                if(this.destroyed) return;
-                LS.Animation.fadeIn(this.windowElement, {
-                    duration: 300,
-                    direction: "backward",
-                    preserveTransform: true
-                });
-            });
-        }
-
-        // To be worked on
-        document.body.appendChild(this.windowElement);
-
-        if (this.isSmallMobileViewport()) {
-            this.maximize(true);
-        }
-
-        this.on("rendered", () => {
-            // Update title and icon based on content
-            this.setTitle(this.getTitle());
-            this.setIcon(this.getIcon());
-
-            this.focus();
-            this.emit("ready");
-        });
-    }
-
-    isSmallMobileViewport() {
-        return window.innerWidth <= 820 || window.innerHeight <= 680;
-    }
-
-    setResizeEnabled(enabled) {
-        if (enabled) {
-            if (this.resize || !this.windowElement || this.destroyed) return;
-
-            this.resize = LS.Resize.set(this.windowElement, this.resizeOptions);
-            this.resize.handler.on("resize", (side, nW, nH, nX, nY) => {
-                if (this.isMaximized) {
-                    this.applyMaximizedLayout();
-                    return;
-                }
-
-                this.width = nW;
-                this.height = nH;
-                this.x = nX;
-                this.y = nY;
-
-                if (this.isPinnedView) {
-                    relayoutWindowTopStack();
-                } else {
-                    this.normalizeWindowBounds();
-                }
-
-                this.emit("resize", [this.width, this.height, side, this.x, this.y]);
-            });
-            return;
-        }
-
-        if (!this.resize) return;
-        this.resize.handler.destroy();
-        LS.Resize.remove(this.windowElement);
-        this.resize = null;
-    }
-
-    getViewportTopOffset() {
-        const appElement = document.getElementById("app");
-        const cssOffset = parseFloat(getComputedStyle(appElement || document.documentElement).getPropertyValue("--topOffset"));
-        if (Number.isFinite(cssOffset)) return cssOffset;
-
-        const panelHeight = document.getElementById("topPanel")?.offsetHeight || 50;
-        return panelHeight;
-    }
-
-    getViewportBounds() {
-        const top = Math.max(WINDOW_EDGE_MARGIN, this.getViewportTopOffset());
-        return {
-            top,
-            maxWidth: Math.max(180, window.innerWidth - (WINDOW_EDGE_MARGIN * 2)),
-            maxHeight: Math.max(120, window.innerHeight - top - WINDOW_EDGE_MARGIN),
-        };
-    }
-
-    captureLayout() {
-        return {
-            x: Number.isFinite(this.x) ? this.x : ((window.innerWidth - (this.width || 600)) / 2),
-            y: Number.isFinite(this.y) ? this.y : this.getViewportBounds().top,
-            width: Number.isFinite(this.width) ? this.width : (this.windowElement?.offsetWidth || 600),
-            height: Number.isFinite(this.height) ? this.height : (this.windowElement?.offsetHeight || 400),
-        };
-    }
-
-    updateControlButtons() {
-        if (this.toggleViewButton) {
-            this.toggleViewButton.setAttribute("ls-tooltip", this.isPinnedView ? "Unpin Window View" : "Pin Window View");
-            this.toggleViewButton.querySelector("i").className = this.isPinnedView ? "bi-pin-angle-fill" : "bi-window";
-            LS.Tooltips.updateElement(this.toggleViewButton);
-        }
-
-        if (this.maximizeButton) {
-            this.maximizeButton.setAttribute("ls-tooltip", this.isMaximized ? "Restore Window" : "Maximize Window");
-            this.maximizeButton.querySelector("i").className = this.isMaximized ? "bi-fullscreen-exit" : "bi-square";
-            LS.Tooltips.updateElement(this.maximizeButton);
-        }
-
-        this.windowElement.classList.toggle("window-pinned", this.isPinnedView);
-        this.windowElement.classList.toggle("window-maximized", this.isMaximized);
-    }
-
-    applyPinnedLayout(offsetY = 0) {
-        const bounds = this.getViewportBounds();
-        const compactViewport = window.innerWidth <= 820;
-
-        const pinnedWidth = compactViewport
-            ? bounds.maxWidth
-            : Math.min(this.width || 600, bounds.maxWidth);
-        const pinnedHeight = Math.min(this.height || 400, Math.max(120, bounds.maxHeight - offsetY));
-
-        this.setSize(pinnedWidth, pinnedHeight, false, true);
-
-        const top = Math.min(bounds.top + offsetY, Math.max(bounds.top, window.innerHeight - this.height - WINDOW_EDGE_MARGIN));
-        const left = Math.round((window.innerWidth - this.width) / 2);
-
-        this.setPosition(left, top, false, true);
-        return (top - bounds.top) + this.height + WINDOW_TOP_STACK_GAP;
-    }
-
-    applyMaximizedLayout() {
-        const topOffset = this.getViewportTopOffset();
-        this.setSize(window.innerWidth, Math.max(120, window.innerHeight - topOffset), false, true);
-        this.setPosition(0, topOffset, false, true);
-    }
-
-    normalizeWindowBounds() {
-        if (this.isPinnedView) {
-            relayoutWindowTopStack();
-            return;
-        }
-
-        if (this.isMaximized) {
-            this.applyMaximizedLayout();
-            return;
-        }
-
-        if (!this.isSmallMobileViewport()) return;
-
-        const bounds = this.getViewportBounds();
-        const right = (this.x || 0) + (this.width || 0);
-        const bottom = (this.y || 0) + (this.height || 0);
-
-        const overflows =
-            (this.width || 0) > bounds.maxWidth ||
-            (this.height || 0) > bounds.maxHeight ||
-            (this.x || 0) < WINDOW_EDGE_MARGIN ||
-            (this.y || 0) < bounds.top ||
-            right > (window.innerWidth - WINDOW_EDGE_MARGIN) ||
-            bottom > (window.innerHeight - WINDOW_EDGE_MARGIN);
-
-        if (!overflows) return;
-
-        const fitWidth = Math.min(this.width || 600, bounds.maxWidth);
-        const fitHeight = Math.min(this.height || 400, bounds.maxHeight);
-
-        this.setSize(fitWidth, fitHeight, false, true);
-
-        const centerX = Math.round((window.innerWidth - this.width) / 2);
-        const centerY = Math.round(bounds.top + Math.max(0, (bounds.maxHeight - this.height) / 2));
-        this.setPosition(centerX, centerY, false, true);
-    }
-
-    handleViewportResize() {
-        if (this.destroyed || !this.windowElement) return;
-
-        if (this.isPinnedView) {
-            relayoutWindowTopStack();
-            return;
-        }
-
-        if (this.isMaximized) {
-            this.applyMaximizedLayout();
-            return;
-        }
-
-        this.normalizeWindowBounds();
-    }
-
-    setPosition(x, y, evt = true, force = false) {
-        if ((this.isPinnedView || this.isMaximized) && !force) return;
-
-        const screenW = window.innerWidth;
-        const screenH = window.innerHeight;
-
-        let left = Number(x);
-        let top = Number(y);
-
-        if (!Number.isFinite(left)) left = Number.isFinite(this.x) ? this.x : 0;
-        if (!Number.isFinite(top)) top = Number.isFinite(this.y) ? this.y : 0;
-
-        const NET = 50;
-        left = Math.max(NET + 90 - this.width, Math.min(left, screenW - NET));
-        top = Math.max(NET, Math.min(top, screenH - NET));
-
-        this.x = left;
-        this.y = top;
-
-        this.windowElement.style.transform = `translate3d(${left}px, ${top}px, 0)`;
-        if(evt) this.emit("move", [left, top]);
-    }
-
-    setSize(width, height, evt = true, force = false) {
-        if (this.isMaximized && !force) return;
-
-        const bounds = this.getViewportBounds();
-        const minSize = {
-            width: Math.min(300, Math.max(180, bounds.maxWidth)),
-            height: Math.min(100, Math.max(80, bounds.maxHeight))
-        };
-
-        let nextWidth = Number(width);
-        let nextHeight = Number(height);
-
-        if (!Number.isFinite(nextWidth)) nextWidth = minSize.width;
-        if (!Number.isFinite(nextHeight)) nextHeight = minSize.height;
-
-        nextWidth = Math.max(minSize.width, nextWidth);
-        nextHeight = Math.max(minSize.height, nextHeight);
-
-        this.width = nextWidth;
-        this.height = nextHeight;
-        this.windowElement.style.width = this.width + "px";
-        this.windowElement.style.height = this.height + "px";
-        if(evt) this.emit("resize", [this.width, this.height, null, this.x, this.y]);
-    }
-
-    getTitle(context) {
-        context ??= this.current;
-        return this.title || this.id || (context && (context.title || context.constructor.manifest.title || context.constructor.manifest.name || context.id || context.constructor.manifest.id || context.constructor.name) || "Untitled Window");
-    }
-
-    getIcon(context) {
-        context ??= this.current;
-        return this.icon || (context && (context.icon || context.constructor.manifest.icon || null)) || null;
-    }
-
-    setTitle(title) {
-        this.title = title;
-        this.titleElement.textContent = title;
-    }
-
-    setIcon(icon) {
-        this.icon = icon;
-        if(icon) {
-            this.iconElement.src = website.cdn + "/file/" + icon;
-            this.iconElement.style.display = "";
-        } else {
-            this.iconElement.src = "";
-            this.iconElement.style.display = "none";
-        }
-    }
-
-    minimize() {
-        if(this.current) this.current.suspend();
-    }
-
-    maximize(forceState = null) {
-        const shouldMaximize = typeof forceState === "boolean" ? forceState : !this.isMaximized;
-
-        if (shouldMaximize) {
-            if (this.isPinnedView) this.toggleView(false);
-            if (!this._restoreLayoutFromMaximized) {
-                this._restoreLayoutFromMaximized = this.captureLayout();
-            }
-
-            this.isMaximized = true;
-            this.setResizeEnabled(false);
-            this.applyMaximizedLayout();
-            this.focus();
-        } else {
-            this.isMaximized = false;
-            this.setResizeEnabled(true);
-            const restore = this._restoreLayoutFromMaximized;
-            this._restoreLayoutFromMaximized = null;
-
-            if (restore) {
-                this.setSize(restore.width, restore.height, false, true);
-                this.setPosition(restore.x, restore.y, false, true);
-            }
-
-            this.normalizeWindowBounds();
-        }
-
-        this.updateControlButtons();
-    }
-
-    focus() {
-        globalWindowZIndex += 1;
-        this.windowElement.style.zIndex = globalWindowZIndex;
-
-        for (const win of kernel.windows) {
-            if (win !== this && win.windowElement) {
-                win.windowElement.classList.remove("top");
-            }
-        }
-
-        this.windowElement.classList.add("top");
-        this.quickEmit("focus");
-    }
-
-    blur() {
-        this.windowElement.classList.remove("top");
-        this.quickEmit("blur");
-    }
-
-    toggleView(forceState = null) {
-        const shouldPin = typeof forceState === "boolean" ? forceState : !this.isPinnedView;
-
-        if (shouldPin) {
-            if (this.isMaximized) this.maximize(false);
-            if (!this._restoreLayoutFromPinned) {
-                this._restoreLayoutFromPinned = this.captureLayout();
-            }
-
-            this.isPinnedView = true;
-            addToWindowTopStack(this);
-            this.focus();
-        } else {
-            this.isPinnedView = false;
-            removeFromWindowTopStack(this);
-
-            const restore = this._restoreLayoutFromPinned;
-            this._restoreLayoutFromPinned = null;
-
-            if (restore) {
-                this.setSize(restore.width, restore.height, false, true);
-                this.setPosition(restore.x, restore.y, false, true);
-            }
-
-            this.normalizeWindowBounds();
-        }
-
-        this.updateControlButtons();
-    }
-
-    // Closes the window with animation
-    close() {
-        LS.Animation.fadeOut(this.windowElement, {
-            duration: 300,
-            direction: "backward",
-            preserveTransform: true
-        }).then(() => {
-            if(this.destroyed) return;
-            this.destroy();
-        });
-    }
-
-    destroy(destroyContent = true) {
-        if(this.destroyed) return;
-        // Don't set destroyed to true yet; we will propagate to Viewport destroy
-
-        removeFromWindowTopStack(this);
-
-        if(this.windowHandle) this.windowHandle.destroy();
-        this.windowHandle = null;
-
-        this.setResizeEnabled(false);
-
-        if(this.windowElement) {
-            LS.Resize.remove(this.windowElement);
-            this.windowElement.remove();
-        }
-
-        this.windowElement = null;
-        this.headerElement = null;
-        this.titleElement = null;
-        this.iconElement = null;
-        this.toggleViewButton = null;
-        this.maximizeButton = null;
-        kernel.windows.delete(this);
-
-        // Propagates all the way down to destroying the content context
-        super.destroy(destroyContent);
-    }
-}
-
 // Enables closing the toolbar via esc
 const ToolbarStackRef = { close() { website.closeToolbar() } };
-
 
 /**
  * Website object
@@ -2198,7 +1609,7 @@ const website = {
     ContentContext,
     Viewport,
     Thread,
-    Window,
+    Window: LS.Window,
 
     // Constants
     loaded: true,
@@ -3078,8 +2489,6 @@ const kernel = new class Kernel extends LS.Context {
 
     threads = new Set();
 
-    windows = new Set();
-
     shortcutManager = shortcutManager;
 
     appManifests = new Map();
@@ -3472,18 +2881,6 @@ const kernel = new class Kernel extends LS.Context {
             const href = event.state?.path ?? (location.pathname + location.hash);
             kernel.viewport.navigate(href, { pushState: false });
         });
-
-        // Keep floating windows in view on resize
-        this.windowBoundsScheduler = new LS.Util.FrameScheduler(() => {
-            for (const win of this.windows) {
-                if (win.destroyed || !win.windowElement) continue;
-                win.handleViewportResize();
-            }
-        });
-
-        const scheduleWindowClamp = () => this.windowBoundsScheduler.schedule();
-        window.addEventListener('resize', scheduleWindowClamp);
-        if (window.visualViewport) window.visualViewport.addEventListener('resize', scheduleWindowClamp);
 
         window.addEventListener('click', (event) => {
             const targetElement = event.target.closest("a");
@@ -3892,10 +3289,9 @@ const kernel = new class Kernel extends LS.Context {
 
     async _initializeCommandPalette() {
         if (this._initializingPalette || website.palette) return;
-        const CommandPaletteExports = (await import("/~/assets/js/pallete.mjs?1.3"));
+        const CommandPaletteExports = (await import("/~/assets/js/pallete.mjs?1.4"));
         CommandPaletteExports.init(this, website, LoggerContext);
         console.log("Command palette initialized");
-        
     }
 
     #initializeToolbars() {
@@ -4204,11 +3600,6 @@ const kernel = new class Kernel extends LS.Context {
 
         this.addExternalEventListener(document, "pointerdown", (event) => {
             if (website.isToolbarOpen && !event.target.closest("#toolbars,.toolbar-button")) website.closeToolbar();
-            if (kernel.windows.size > 0 && !event.target.closest(".window-container") ) {
-                for (const windowInstance of kernel.windows.values()) {
-                    windowInstance.blur();
-                }
-            }
         }, { passive: true });
     }
 
