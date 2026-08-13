@@ -5,6 +5,14 @@ const clearTimeout = LS.Context.clearTimeout;
 const clearInterval = LS.Context.clearInterval;
 const requestAnimationFrame = LS.Context.requestAnimationFrame;
 
+/**
+ * Originally from lstv-web
+ * Currently only a part of this is by me, the rest is pure slop garbage
+ * I will rewrite this eventually!
+ * It's the only component I haven't fully made
+ * 
+ * @slop
+ */
 class CommandPalette {
     /**
      * @typedef {Object} InputDefinition
@@ -313,7 +321,7 @@ class CommandPalette {
         this.#clearInput();
         this.#clearAutoCompletion();
 
-        const parts = this.#parseCommand(trimmed);
+        const parts = this.splitCommand(trimmed);
         const { command, args, path } = await this.#resolveCommand(parts);
 
         if (!command) {
@@ -719,14 +727,14 @@ class CommandPalette {
         const caretLeft = Math.max(0, (selectionEnd * fontWidth) - scrollLeft);
 
         if (this.caretElement) {
-            this.caretElement.style.left = `${caretLeft}px`;
+            this.caretElement.style.transform = `translateX(${caretLeft}px)`;
         }
 
         if (this.selectionHighlight) {
             if (hasSelection) {
                 const selectionLeft = Math.max(0, (selectionStart * fontWidth) - scrollLeft);
                 const selectionWidth = Math.max(0, (selectionEnd - selectionStart) * fontWidth);
-                this.selectionHighlight.style.left = `${selectionLeft}px`;
+                this.selectionHighlight.style.transform = `translateX(${selectionLeft}px)`;
                 this.selectionHighlight.style.width = `${selectionWidth}px`;
             } else {
                 this.selectionHighlight.style.width = '0';
@@ -782,7 +790,7 @@ class CommandPalette {
 
         this.#clearAutoCompletion({ resetIndex: !preserveIndex, clearUI: false });
 
-        const analysis = this.#analyzeInput(value);
+        const analysis = this.analyzeInput(value);
         const context = await this.#buildCompletionContext(analysis, token);
         if (token !== this.#autoCompletionRequestToken || context?.cancelled) return;
 
@@ -834,7 +842,7 @@ class CommandPalette {
         this.#updateIcon(selected);
 
         // Update hint using the display name, not completion value
-        const currentPart = this.#analyzeInput(this.value).currentPart ?? '';
+        const currentPart = this.analyzeInput(this.value).currentPart ?? '';
         this.#updateHint(selectedName, currentPart);
 
         // Update selection classes without rebuilding DOM
@@ -887,6 +895,7 @@ class CommandPalette {
         }
 
         // Cache completions for fast selection updates
+        // (lmao what? slop code aah)
         this.#currentCompletions = completions;
         this.#currentCompletionLocation = options;
 
@@ -904,16 +913,63 @@ class CommandPalette {
         this.#updateCaretPosition();
     }
 
+    #search(candidates, query, location = null) {
+        query = LS.Util.normalize(query);
+
+        if(!query) {
+            return candidates.filter(candidate => {
+                if (candidate.startsWith('_')) return false;
+                if (location && location[candidate]?.hidden) return false;
+                return true;
+            });
+        }
+
+        const results = [];
+        for (const candidate of candidates) {
+            let text = LS.Util.normalize(candidate);
+
+            if (text.startsWith('_')) continue;
+
+            if (location && location[candidate]) {
+                const item = location[candidate];
+                if (item.hidden) {
+                    continue;
+                }
+
+                // if (item.description) {
+                //     text += ' ' + LS.Util.normalize(item.description);
+                // }
+            }
+
+            const idx = text.indexOf(query);
+            if (idx === -1) {
+                continue;
+            }
+
+            let score = 0;
+
+            // Starts with query
+            if (idx === 0) score += 100;
+
+            // Starts a word
+            if (idx === 0 || text[idx - 1] === ' ') score += 50;
+
+            // Earlier matches are better
+            score += Math.max(0, 30 - idx);
+
+            // Shorter strings are slightly preferred
+            score -= text.length * 0.01;
+
+            if (score > 0) {
+                results.push({ candidate, score });
+            }
+        }
+
+        return results.sort((a, b) => b.score - a.score).map(r => r.candidate);
+    }
+
     #findCompletions(location = {}, prefix = '') {
-        const matches = Object.keys(location).filter(key => {
-            if (key.startsWith('_')) return false;
-            if (prefix && !key.startsWith(prefix)) return false;
-
-            const item = location[key];
-            if (item?.hidden) return false;
-
-            return true;
-        });
+        const matches = this.#search(Object.keys(location), prefix, location);
 
         // Filter out aliases if the canonical command is also in the list
         const canonicalsInList = new Set();
@@ -958,7 +1014,7 @@ class CommandPalette {
         this.menuElement.style.maxWidth = `${menuWidth}px`;
 
         const items = completions
-            .filter(name => !currentPart || name.startsWith(currentPart))
+            // .filter(name => !currentPart || name.startsWith(currentPart))
             .map((name, index) => this.#createMenuItem(location, name, index));
 
         if (items.length > 0) {
@@ -1057,16 +1113,14 @@ class CommandPalette {
             return;
         }
 
-        // Clear hint immediately
+        // Clear hint immediately (ok why?)
         if (this.hintElement) {
             this.hintElement.textContent = '';
         }
 
-        const parts = this.inputElement.value.split(' ');
-        if (parts.length === 0) parts.push('');
+        const parts = this.splitCommand(this.inputElement.value, true);
         parts[parts.length - 1] = this.#autoCompletionValue;
-
-        const cleaned = parts.join(' ').replace(/\s+$/, '');
+        const cleaned = parts.join(' ').trimEnd();
 
         // Check if the selected command should be auto-executed
         // (has no inputs and no children)
@@ -1084,7 +1138,7 @@ class CommandPalette {
         }
 
         // Resolve the command to check inputs against definitions
-        const parsedParts = this.#parseCommand(cleaned);
+        const parsedParts = this.splitCommand(cleaned);
         const { command, args } = await this.#resolveCommand(parsedParts);
 
         // Check if the last argument provided corresponds to a list item with a nested type
@@ -1142,15 +1196,14 @@ class CommandPalette {
         const file = event.target.files?.[0];
         if (!file || !this.inputElement) return;
 
-        const parts = this.inputElement.value.split(' ');
-        if (parts.length === 0) parts.push('');
+        const parts = this.splitCommand(this.inputElement.value, true);
 
         // Replace the last part (which was the file picker placeholder) with the file name
         // Use quotes if the filename contains spaces
         const fileName = file.name.includes(' ') ? `"${file.name}"` : file.name;
         parts[parts.length - 1] = fileName;
 
-        const cleaned = parts.join(' ').replace(/\s+$/, '');
+        const cleaned = parts.join(' ').trimEnd();
         this.inputElement.value = cleaned ? `${cleaned} ` : '';
 
         // Store the file object for later retrieval
@@ -1173,13 +1226,12 @@ class CommandPalette {
         const color = event.target.value;
         if (!color || !this.inputElement) return;
 
-        const parts = this.inputElement.value.split(' ');
-        if (parts.length === 0) parts.push('');
+        const parts = this.splitCommand(this.inputElement.value, true);
 
         // Replace the last part with the selected color
-        parts[parts.length - 1] = color;
+        parts[parts.length - 1] = new LS.Color(color).hex;
 
-        const cleaned = parts.join(' ').replace(/\s+$/, '');
+        const cleaned = parts.join(' ').trimEnd();
         this.inputElement.value = cleaned ? `${cleaned} ` : '';
 
         this.#updateTextDisplay();
@@ -1188,12 +1240,61 @@ class CommandPalette {
         this.inputElement.focus();
     }
 
+    splitCommand(inputValue, expectsEmptySlot = false) {
+        let stringChar = null, start = 0;
+        inputValue = inputValue.trimStart();
 
-    // PRIVATE - Command Resolution & Execution
+        if(!inputValue) return [''];
+        let parts = [];
 
+        for (let i = 0; i < inputValue.length; i++) {
+            const char = inputValue.charCodeAt(i);
 
-    #parseCommand(commandString) {
-        return commandString.split(' ').filter(Boolean);
+            if(stringChar) {
+                if(char === stringChar) {
+                    stringChar = null;
+                    parts.push(inputValue.slice(start, i));
+                    start = i + 1;
+                }
+                continue;
+            }
+
+            if(char === 34 || char === 39) { // " or '
+                parts.push(inputValue.slice(start, i));
+                stringChar = char;
+                start = i + 1;
+                continue;
+            }
+
+            if(char === 32) { // space
+                if (start === i) {
+                    start = i + 1;
+                    parts.push('');
+                    continue;
+                }
+
+                parts.push(inputValue.slice(start, i));
+                start = i + 1;
+            }
+        }
+
+        parts.push(inputValue.slice(start));
+
+        if(expectsEmptySlot && inputValue.endsWith(' ')) {
+            parts = parts.filter(Boolean);
+            parts.push('');
+            return parts;
+        }
+
+        return parts.filter(Boolean);
+    }
+
+    analyzeInput(value = '') {
+        value = value ?? '';
+        const segments = this.splitCommand(value.trim());
+        const hasTrailingSpace = value.endsWith(' ');
+        const currentPart = (!hasTrailingSpace && segments.length > 0)? segments.pop() : '';
+        return { segments, currentPart, hasTrailingSpace };
     }
 
     async #resolveCommand(parts) {
@@ -1207,6 +1308,7 @@ class CommandPalette {
             const node = children?.[part];
 
             if (!node) {
+                console.log('resolveCommand: node not found for part', part, 'in', children);
                 // If we found a command and it has no children (or we're past them), treat as input
                 if (currentCommand && !this.#hasChildren(currentCommand)) {
                     break;
@@ -1526,19 +1628,6 @@ class CommandPalette {
         return {};
     }
 
-    #analyzeInput(value = '') {
-        const safeValue = value ?? '';
-        const hasTrailingSpace = /\s$/.test(safeValue);
-        let segments = safeValue.trim() ? safeValue.trim().split(/\s+/) : [];
-        let currentPart = '';
-
-        if (!hasTrailingSpace && segments.length > 0) {
-            currentPart = segments.pop() || '';
-        }
-
-        return { segments, currentPart, hasTrailingSpace };
-    }
-
     #wrapAutoCompletionIndex(length) {
         if (length === 0) {
             this.#autoCompletionIndex = 0;
@@ -1612,6 +1701,7 @@ class CommandPalette {
                 return match ? match.value : value;
             }
             case 'color':
+                return new LS.Color(value).hex || value;
             case 'file':
             case 'string':
             default:
@@ -2067,7 +2157,7 @@ function init(kernel, website, LoggerContext) {
                     "color:var(--accent);font-weight:bold", "color:inherit"
                 );
                 terminalWriter.log(
-                    `%cWindows:%c ${kernel.windows.size}`,
+                    `%cWindows:%c ${LS.WindowManager.windows.size}`,
                     "color:var(--accent);font-weight:bold", "color:inherit"
                 );
                 terminalWriter.log(
