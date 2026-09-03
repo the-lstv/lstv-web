@@ -1,4 +1,4 @@
-# 1.2.7-beta
+# 1.3.0-beta
 - Updated LS v6.0.0-alpha.2 -> v6.0.0-alpha.3
 - Moved window management from kernel to LS.WindowManager
 - Moved navigation from kernel to LS.SPA

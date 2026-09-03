@@ -111,7 +111,7 @@ if(globalThis === this) {
 
 window.__kernelInitialized = true;
 
-const KERNEL_VERSION = (typeof __buildVersion !== "undefined")? __buildVersion: "1.2.7-beta";
+const KERNEL_VERSION = (typeof __buildVersion !== "undefined")? __buildVersion: "1.3.0-beta";
 
 window.cacheKey = "?mtime=" + (LS.Util.parseURLParams(document.currentScript?.src, "mtime") || Date.now()); // Mtime mapped to kernel.js (This should never fallback)
 
@@ -155,8 +155,6 @@ const clearInterval = LS.Context.clearInterval;
 const requestAnimationFrame = LS.Context.requestAnimationFrame;
 const queueMicrotask = LS.Context.queueMicrotask;
 const fetch = LS.Context.fetch;
-
-LS.WindowManager.topOffset = 50;
 
 /**
  * Application model:
@@ -2012,6 +2010,30 @@ const website = {
         return kernel.userFragment;
     },
 
+    get DESKTOP_MODE() {
+        return localStorage.getItem("desktopMode") === "true";
+    },
+
+    set DESKTOP_MODE(value) {
+        value = !!value;
+        localStorage.setItem("desktopMode", value? "true": "false");
+        document.body.classList.toggle("lsweb-desktop-mode", value);
+
+        const switchEl = document.querySelector("#desktopModeSwitch");
+        if(switchEl) {
+            switchEl.querySelector("input").checked = value;
+            if(value) switchEl.querySelector("ls-box").remove();
+        }
+
+        if(value) {
+            LS.WindowManager.topOffset = 0;
+            LS.WindowManager.bottomOffset = 50;
+        } else {
+            LS.WindowManager.topOffset = 50;
+            LS.WindowManager.bottomOffset = 0;
+        }
+    },
+
     collapseItems: { schedule() {} },
 
     // NOTE: This is a cached result, and so may not be up to date. Wherever you can (async context), use await kernel.auth.isLoggedIn(); instead - it's more expensive but more accurate.
@@ -2829,6 +2851,8 @@ const kernel = new class Kernel extends LS.Context {
         this.addExternalEventListener(document, 'DOMContentLoaded', () => {
             website.container = this.container = document.getElementById('app');
             website.viewportElement = this.viewportElement = this.viewport.target;
+
+            website.DESKTOP_MODE = localStorage.getItem("desktopMode") === "true";
 
             const scopeKey = document.querySelector("#scope-key")?.textContent || null;
             const context = this.registerPage(location.pathname, {
