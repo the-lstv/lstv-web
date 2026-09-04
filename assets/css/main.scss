@@ -23,13 +23,17 @@ html, body {
         flex-direction: column-reverse;
     }
 
-    .headerLeftContainer {
-        display: none;
-    }
+    // .headerLeftContainer {
+    //     display: none;
+    // }
     
     #toolbars {
         top: unset;
         bottom: calc(var(--header-height, 50px) + 10px);
+    }
+
+    #topPanel {
+        flex-direction: row-reverse;
     }
 
     .toolbar {

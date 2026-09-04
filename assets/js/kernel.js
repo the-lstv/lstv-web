@@ -1332,7 +1332,7 @@ class Viewport extends LS.EventEmitter {
                         history.pushState({ path: historyPath }, document.title, historyPath);
                     }
                     document.title = `LSTV | ${manifest?.name || appId}`;
-                    website.closeToolbar();
+                    website.desktop.closeToolbar();
                 }
 
                 kernel.log(`Opened app ${appId} from route ${path}`);
@@ -1437,7 +1437,7 @@ class Viewport extends LS.EventEmitter {
                         history.pushState({ path: historyPath }, document.title, historyPath);
                     }
                 }
-                website.closeToolbar();
+                website.desktop.closeToolbar();
             }
 
             if(hash) {
@@ -1593,11 +1593,619 @@ class Thread extends LS.EventEmitter {
     }
 }
 
+class MusicPlayer {
+    constructor() {
+        this.toolbarElement = LS.SelectOne("#musicPlayer");
+        this.initialized = false;
+        if(!this.toolbarElement) {
+            console.warn("Music Player toolbar element not found.");
+            return;
+        }
+
+        shortcutManager.register('ctrl+m', () => {
+            website.desktop.openToolbar("musicPlayer", true);
+        });
+    }
+
+    create(d){'use strict';var e0=document.createElement("div");e0.setAttribute("class","music-player toolbar-styled");var e1=document.createElement("img");e1.setAttribute("alt","Music cover background");e1.setAttribute("crossorigin","anonymous");e1.setAttribute("class","music-player-cover");e0.appendChild(e1);var e2=document.createElement("img");e2.setAttribute("alt","Music cover art");e2.setAttribute("crossorigin","anonymous");e2.setAttribute("class","music-player-art");e0.appendChild(e2);var e3=document.createElement("div");e3.setAttribute("class","music-player-container");var e4=document.createElement("div");e4.setAttribute("class","music-player-info");var e5=document.createElement("span");e5.setAttribute("class","text-overflow-nowrap music-player-title");var t6=document.createTextNode("Lorem Ipsum");e5.appendChild(t6);e4.appendChild(e5);var e7=document.createElement("span");e7.setAttribute("class","text-overflow-nowrap music-player-artist");var t8=document.createTextNode("Dolor Sit Amet");e7.appendChild(t8);e4.appendChild(e7);e3.appendChild(e4);var e9=document.createElement("div");e9.setAttribute("class","music-player-progress");var e10=document.createElement("div");e10.setAttribute("class","music-player-progress-bar");var e11=document.createElement("div");e11.setAttribute("class","music-player-progress-filled");e10.appendChild(e11);e9.appendChild(e10);e3.appendChild(e9);var e12=document.createElement("div");e12.setAttribute("class","music-player-controls");var e13=document.createElement("button");e13.setAttribute("ls-tooltip","");e13.setAttribute("aria-label","Like");e13.setAttribute("class","circle clear music-player-like");var e14=document.createElement("i");e14.setAttribute("class","bi-hand-thumbs-up");e13.appendChild(e14);e12.appendChild(e13);var e15=document.createElement("button");e15.setAttribute("ls-tooltip","");e15.setAttribute("aria-label","Previous");e15.setAttribute("class","circle clear music-player-prev");var e16=document.createElement("i");e16.setAttribute("class","bi-skip-start-fill");e15.appendChild(e16);e12.appendChild(e15);var e17=document.createElement("button");e17.setAttribute("ls-tooltip","");e17.setAttribute("aria-label","Play/Pause");e17.setAttribute("class","circle clear music-player-play-pause");var e18=document.createElement("i");e18.setAttribute("class","bi-play-fill");e17.appendChild(e18);e12.appendChild(e17);var e19=document.createElement("button");e19.setAttribute("ls-tooltip","");e19.setAttribute("aria-label","Next");e19.setAttribute("class","circle clear music-player-next");var e20=document.createElement("i");e20.setAttribute("class","bi-skip-end-fill");e19.appendChild(e20);e12.appendChild(e19);var e21=document.createElement("button");e21.setAttribute("ls-tooltip","Repeat Off");e21.setAttribute("aria-label","Toggle repeat modes");e21.setAttribute("class","circle clear music-player-repeat");var e22=document.createElement("i");e22.setAttribute("class","bi-arrow-repeat");e21.appendChild(e22);e12.appendChild(e21);e3.appendChild(e12);e0.appendChild(e3);var __rootValue=e0;return{root:__rootValue};}
+
+    init(){
+        if(this.initialized) return;
+        this.initialized = true;
+
+        this.toolbarElement.appendChild(this.create().root);
+
+        this.audio = new Audio();
+        this.titleElement = this.toolbarElement.querySelector(".music-player-title");
+        this.artistElement = this.toolbarElement.querySelector(".music-player-artist");
+        this.coverElement = this.toolbarElement.querySelector(".music-player-cover");
+        this.coverArtElement = this.toolbarElement.querySelector(".music-player-art");
+
+        this.menuContainer = this.toolbarElement.querySelector(".music-menu");
+
+        if(this.menuContainer) {
+            let menuOpen = false;
+            this.toolbarElement.querySelector(".music-menu-toggle").onclick = () => {
+                menuOpen = !menuOpen;
+                if(!menuOpen) {
+                    LS.Animation.fadeOut(this.menuContainer, 300, "bottom");
+                    return;
+                }
+
+                LS.Animation.fadeIn(this.menuContainer, 300, "bottom");
+            }
+        }
+
+        // Panel
+        this.musicStatusElement = LS.Create("button", {
+            id: "musicButton",
+            class: "pill",
+            tooltip: "Music Player <kbd>Ctrl+M</kbd>",
+            attr: { "aria-label": "Open music player" },
+            inner: [
+                { tag: "i", class: "bi-vinyl-fill" },
+                { tag: "span", class: "music-player-status text-overflow-nowrap", inner: "Stopped" }
+            ]
+        });
+
+        this.musicStatusText = this.musicStatusElement.querySelector(".music-player-status");
+        
+        this.playButtonElement = this.toolbarElement.querySelector(".music-player-play-pause");
+        this.playButtonElement.onclick = () => {
+            this.playToggle();
+        };
+
+        this.repeatMode = "off";
+        this.repeatButtonElement = this.toolbarElement.querySelector(".music-player-repeat");
+        this.repeatButtonElement.onclick = () => {
+            this.toggleRepeatMode();
+        };
+
+        this.musicStatusElement.onclick = () => {
+            website.desktop.openToolbar("musicPlayer", true);
+        };
+
+        this.musicStatusElement.style.display = "none";
+        LS.SelectOne(".headerLeftContainer").appendChild(this.musicStatusElement);
+    }
+
+    setCover(imageURL = null, coverArtURL = null) {
+        if(!this.initialized) this.init();
+        this.toolbarElement.removeAttribute("ls-accent");
+        this.musicStatusElement.removeAttribute("ls-accent");
+        this.coverElement.style.display = "none";
+        this.toolbarElement.classList.remove("has-cover");
+
+        if(!imageURL) {
+            return;
+        }
+
+        this.coverElement.onload = () => {
+            this.coverElement.style.display = "block";
+            this.coverArtElement.style.display = "block";
+            this.toolbarElement.classList.add("has-cover");
+
+            LS.Color.fromImage(this.coverElement).toAccent("music-cover");
+
+            this.toolbarElement.setAttribute("ls-accent", "music-cover");
+            this.musicStatusElement.setAttribute("ls-accent", "music-cover");
+        }
+
+        this.coverElement.onerror = () => {
+            this.coverElement.style.display = "none";
+            this.coverArtElement.style.display = "none";
+        }
+
+        this.coverElement.src = imageURL;
+        this.coverArtElement.src = coverArtURL || imageURL;
+    }
+
+    setDetails(details, playImmediately = false) {
+        if(!this.initialized) this.init();
+        this.currentDetails = {
+            title: details.title || "Unknown Title",
+            artist: details.artist || "Unknown Artist",
+            album: details.album || "",
+            cover: details.cover || null,
+            source: details.source || null
+        }
+
+        this.musicStatusText.textContent = this.titleElement.textContent = this.currentDetails.title;
+        this.artistElement.textContent = this.currentDetails.artist;
+        this.setCover(this.currentDetails.cover);
+
+        LS.Animation.fadeIn(this.musicStatusElement, 300, "right");
+        this.audio.src = this.currentDetails.source;
+
+        website.collapseItems.schedule();
+        setTimeout(() => {
+            website.collapseItems.schedule();
+        }, 10);
+
+        if(playImmediately) {
+            this.play();
+        }
+
+        if ('mediaSession' in navigator) {
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: this.currentDetails.title,
+                artist: this.currentDetails.artist,
+                album: this.currentDetails.album,
+                artwork: this.currentDetails.artwork || this.currentDetails.cover ? [
+                    { src: this.currentDetails.cover, sizes: '96x96', type: 'image/png' },
+                    { src: this.currentDetails.cover, sizes: '128x128', type: 'image/png' },
+                    { src: this.currentDetails.cover, sizes: '192x192', type: 'image/png' },
+                    { src: this.currentDetails.cover, sizes: '256x256', type: 'image/png' },
+                    { src: this.currentDetails.cover, sizes: '384x384', type: 'image/png' },
+                    { src: this.currentDetails.cover, sizes: '512x512', type: 'image/png' }
+                ] : []
+            });
+
+            navigator.mediaSession.setActionHandler('play', () => this.play());
+            navigator.mediaSession.setActionHandler('pause', () => this.pause());
+            navigator.mediaSession.setActionHandler('stop', () => {
+                this.pause();
+                this.stopped();
+                this.audio.currentTime = 0;
+            });
+        }
+    }
+
+    stopped() {
+        if(!this.initialized) this.init();
+        this.musicStatusText.textContent = "Stopped";
+        this.titleElement.textContent = "No music playing";
+        this.artistElement.textContent = "";
+        this.setCover(null);
+        this.currentDetails = null;
+        LS.Animation.fadeOut(this.musicStatusElement, 300, "right");
+    }
+
+    playToggle() {
+        if(!this.initialized) this.init();
+        if(this.audio.paused) {
+            this.play();
+        } else {
+            this.pause();
+        }
+    }
+
+    play() {
+        if(!this.initialized) this.init();
+        this.audio.play();
+        this.playButtonElement.querySelector("i").className = "bi-pause-fill";
+    }
+
+    pause() {
+        if(!this.initialized) this.init();
+        this.audio.pause();
+        this.playButtonElement.querySelector("i").className = "bi-play-fill";
+    }
+
+    toggleRepeatMode() {
+        if(!this.initialized) this.init();
+        if(this.repeatMode === "off") {
+            this.repeatMode = "one";
+            this.repeatButtonElement.classList.add("active");
+            this.repeatButtonElement.querySelector("i").className = "bi-repeat-1";
+            this.repeatButtonElement.setAttribute("ls-tooltip", LS.Tooltips.set("Repeat One").position(this.repeatButtonElement).container.textContent);
+            this.audio.loop = true;
+        } else if(this.repeatMode === "one") {
+            this.repeatMode = "all";
+            this.repeatButtonElement.querySelector("i").className = "bi-arrow-right";
+            this.repeatButtonElement.setAttribute("ls-tooltip", LS.Tooltips.set("Repeat All").position(this.repeatButtonElement).container.textContent);
+            this.audio.loop = false;
+        } else {
+            this.repeatMode = "off";
+            this.repeatButtonElement.classList.remove("active");
+            this.repeatButtonElement.querySelector("i").className = "bi-repeat";
+            this.repeatButtonElement.setAttribute("ls-tooltip", LS.Tooltips.set("Repeat Off").position(this.repeatButtonElement).container.textContent);
+            this.audio.loop = false;
+        }
+    }
+}
+
+class Desktop {
+    constructor(options) {
+        this.musicPlayer = new MusicPlayer;
+        this.windowManager = LS.WindowManager;
+    }
+
+    // Todo: this is user data
+    panelState = [
+        { kind: "website-header" },
+        { kind: "spacer" },
+        { kind: "accountsButton" },
+        { kind: "appsButton" },
+        { kind: "themeButton" },
+        { kind: "commandPaletteButton" },
+    ]
+
+    setState(state) {
+
+    }
+
+    static panelComponents = new Map([
+        ["accountsButton", { label: "Account", showIcon: false, buttonLabel: { class: "accountsButton", inner: [{ reactive: "user.username ?? 'Log-In'" }, { class: "profile-picture-preview", inner: { tag: "i", class: "bi-person-fill" } }] }, description: "View and edit your profile or log-in", icon: "bi-person-fill", onclick: () => website.desktop.openToolbar("login") }],
+
+        ["appsButton", { label: "Apps", tooltip: "Applications", description: "View applications", icon: "bi-grid-fill", onclick() { website.desktop.openToolbar("apps", true) } }],
+
+        // ["assistantButton", { showLabel: false, label: "Assistant", description: "Open Assistant", icon: "bi-stars", onclick() {
+        //     website.desktop.openToolbar("assistant", true);
+        // } }],
+
+        ["themeButton", { buttonLabel: { tag: "i", class: "bi-palette-fill" }, label: "Customize", description: "Customize the site appearance", icon: 'bi-' + (LS.Color.theme === "dark" ? "moon-stars" : "sun") + "-fill", onclick() {
+            website.desktop.openToolbar("theme", true);
+        }}],
+
+        ["clock", {
+            getElement: () => LS.Create(".taskbar-clock{0:00}"),
+            name: "Clock",
+            description: "See the current time",
+            // panelItem: "clock"
+        }],
+
+        ["taskbar", {
+
+        }],
+
+        ["commandPaletteButton", { showLabel: false, label: "Command Palette", tooltip: "Command Palette", description: "Open Command Palette", icon: "bi-terminal", onclick() {
+            website.desktop.closeToolbar();
+            website.openPalette();
+        }}],
+    ]);
+
+    openToolbar(name, toggle = false) {
+        console.log("Opening toolbar:", name, "Toggle:", toggle);
+        if(website.currentToolbar == name && website.isToolbarOpen) {
+            if(toggle) website.desktop.closeToolbar();
+            return;
+        }
+
+        const toolbar = website.desktop.toolbars.get(name);
+        if(!toolbar) return;
+
+        const previousToolbar = website.currentToolbar && website.desktop.toolbars.get(website.currentToolbar);
+        if(previousToolbar) {
+            if(typeof previousToolbar.onClose === "function") previousToolbar.onClose();
+
+            if(previousToolbar.panelItem) {
+                toolbar.eachButtonOfKind(website.currentToolbar, button => button.classList.remove("open"));
+            }
+        }
+
+        if(typeof toolbar.onOpen === "function") toolbar.onOpen();
+
+        // TODO: this is incredibly ass
+        toolbar.element.classList.add("open");
+        for(const tb of website.desktop.toolbars.values()) {
+            if(tb !== toolbar) tb.element.classList.remove("open");
+        }
+
+        if (website.isToolbarOpen) LS.Animation.slideInToggle(toolbar.element, previousToolbar?.element || null);
+        if (!website.isToolbarOpen) LS.Animation.fadeIn(toolbar.element, "up");
+
+        website.isToolbarOpen = true;
+        website.currentToolbar = name;
+        website.quickEmit("toolbar-open", name);
+        kernel.viewport.target.classList.add("shade");
+        LS.Stack.push(ToolbarStackRef);
+
+        toolbar.eachButtonOfKind(website.currentToolbar, button => button.classList.add("open"));
+
+        return toolbar;
+    }
+
+    closeToolbar() {
+        console.log("Closing toolbar");
+        if(!website.isToolbarOpen) return;
+
+        const toolbar = website.desktop.toolbars.get(website.currentToolbar);
+        LS.Animation.fadeOut(toolbar.element, "down");
+
+        if(toolbar) {
+            if(typeof toolbar.onClose === "function") toolbar.onClose();
+            toolbar.panelItem instanceof HTMLElement? toolbar.panelItem: website.desktop.panelState.forEach(item => {
+                if(item.kind === website.currentToolbar) item.element.classList.remove("open");
+            });
+            website.currentToolbar = null;
+        }
+
+        website.isToolbarOpen = false;
+        website.quickEmit("toolbar-close");
+        kernel.viewport.target.classList.remove("shade");
+        LS.Stack.remove(ToolbarStackRef);
+    }
+
+    async openPalette() {
+        if (website.isEmbedded) return;
+
+        if (!website.palette) {
+            if(kernel._initializingPalette) {
+                await kernel._initializingPalette;
+            } else {
+                kernel._initializingPalette = kernel._initializeCommandPalette();
+                await kernel._initializingPalette;
+                kernel._initializingPalette = null;
+            }
+        }
+
+        website.palette.open();
+    }
+
+    showLoginToolbar(toggle = false) {
+        // const accountsButton = website.panelItems.get("accountsButton").element;
+        // accountsButton.focus();
+    
+        setTimeout(() => {
+            if(!toggle && website.isToolbarOpen && website.currentToolbar === "login") return;
+
+            website.desktop.openToolbar("login", toggle);
+
+            if(!website.isLoggedIn) setTimeout(() => {
+                LS.SelectOne("#loginPopup")?.querySelector("button,input")?.focus();
+            }, 0);
+        }, 0);
+    }
+
+    toolbars = new Map([
+        ["statusbar", {
+            element: LS.Create({
+                id: "statusbar",
+                class: "toolbar toolbar-styled",
+                inner: LS.Create({
+                    inner: [
+                        LS.Create()
+                    ]
+                })
+            }),
+            name: "Status Bar",
+            description: "Status and notifications"
+        }],
+
+        ["login", {
+            element: LS.SelectOne("#toolbarLogin"),
+            name: "Account",
+            description: "View and edit your profile or log-in",
+            panelItem: "accountsButton",
+            onOpen() {
+                website.loginTabs.set(website.isLoggedIn? "account": "default", true);
+            }
+        }],
+
+        ["apps", {
+            element: LS.SelectOne("#toolbarApps"),
+            name: "Apps",
+            description: "View applications",
+            panelItem: "appsButton",
+
+            onOpen() {
+                if(!kernel.applicationMenu.initialized) {
+                    kernel.applicationMenu.init();
+                }
+            }
+        }],
+
+        // ["assistant", {
+        //     element: LS.SelectOne("#toolbarAssistant"),
+        //     name: "Assistant",
+        //     description: "Open Assistant",
+        //     panelItem: "assistantButton",
+        //     onOpen() {
+        //         if(!window.__assistantLoading) {
+        //             window._assistantCallback = null;
+        //             window.__assistantLoading = true;
+
+        //             setTimeout(async () => {
+        //                 M.LoadScript("/~/assets/js/assistant.js" + window.cacheKey, (error) => {
+        //                     if(error || typeof window._assistantCallback !== "function") {
+        //                         LS.Toast.show("Sorry, assistant failed to load. Please try again later.");
+        //                         return;
+        //                     }
+
+        //                     window._assistantCallback(website, kernel.auth);
+        //                 })
+        //             }, 0);
+        //         }
+        //     }
+        // }],
+
+        ["more", {
+            element: LS.SelectOne("#toolbarMore"),
+            name: "More",
+            description: "More options",
+            panelItem: "moreButton"
+        }]
+    ])
+
+    initPanel() {
+        const nav =        LS.SelectOrCreate("#topPanel");
+        const moreButton = LS.SelectOrCreate("#moreButton");
+        const container =  LS.SelectOrCreate(".headerButtons");
+
+        const menu = LS.SelectOrCreate("#toolbarMore");
+
+        moreButton.addEventListener("click", () => {
+            website.desktop.openToolbar("more", true);
+        });
+
+        const navPadding = 28 + 5;
+        const gap = 10;
+
+        // TODO
+        // for (const [key, item] of this.panelComponents) {
+        //     if(item.shortcuts) {
+        //         shortcutManager.register(item.shortcuts, () => {
+        //             // if(item.onclick) item.onclick.call(item.element);
+        //             console.log("skjfklsfj")
+        //         });
+        //     }
+        // }
+
+        const collapseItems = new LS.Util.FrameScheduler(() => {
+            // Read widths first to prevent relayouts
+            const isTooSmall = window.innerWidth < 100 || window.innerHeight < 200; // Precalc
+            if(resizeMessageSwitch.set(isTooSmall)) {
+                return;
+            }
+
+            const availableSpace = nav.clientWidth - navPadding - gap - moreButton.clientWidth - (nav.firstElementChild?.clientWidth || 0);
+            const moreButtonClientWidth = moreButton.clientWidth;
+
+            // Try to batch appends (god i hate the dom api SO much)
+            let frag, menuFrag;
+
+            let takenSpace = 0;
+            for(const item of website.desktop.panelState) {
+                const component = Desktop.panelComponents.get(item.kind);
+                if(!component) continue;
+
+                if(!item.element) {
+                    if(component.getElement) {
+                        item.element = component.getElement();
+                        continue;
+                    }
+
+                    let assumedWidth = 40 + gap;
+                    const icon = component.showIcon === false ? null : { tag: "i", class: component.icon };
+                    const buttonLabel = component.buttonLabel || component.label;
+
+                    if(icon) assumedWidth += 16;
+                    if(component.label === "Account") assumedWidth += 46;
+                    if(component.showLabel) assumedWidth += (buttonLabel ? (typeof buttonLabel === "string" ? 8 * buttonLabel.length : 16) : 16);
+
+                    item.element = LS.Create("button.toolbar-button.pill.elevated[aria-label='" + component.description + "']", {
+                        tooltip: component.tooltip || component.label,
+                        inner: component.showLabel !== false? [icon, { tag: "span", inner: buttonLabel, class: typeof buttonLabel === "string" ? "label" : "" }]: icon,
+                        onclick: () => {
+                            if(component.onclick) component.onclick.call(item.element);
+                        }
+                    });
+
+                    if(!frag) frag = document.createDocumentFragment();
+                    frag.appendChild(item.element);
+
+                    // Browser layout rendering is an absolutely incompetent piece of crap
+                    // so we need to guess the width to avoid the render>wait>read>render hell
+                    // Of course this opens up a whole bunch of other possible problems
+                    item.cachedWidth = assumedWidth;
+                }
+
+                // if(!item.bs) {
+                //     item.element.append(LS.Create({ style: "width:"+item.cachedWidth+"px;position:absolute;height:10px;background:red;z-index:10000;bottom:0;left:0" }));
+                //     item.bs = true;
+                // }
+
+                // item.cachedWidth = (item.element ? item.element.clientWidth : item.cachedWidth || 0) + gap;
+            }
+
+            // const accountButtonText = website.panelItems.get("accountsButton")?.element?.textContent;
+            // if(accountButtonText) {
+            //     takenSpace += 46 + (accountButtonText.length * 8);
+            //     // console.log(takenSpace);
+            // }
+
+            let hasCollapsedItems = false;
+            for (const item of website.desktop.panelState) {
+                if(!item.element) continue;
+                const detached = item.element.classList.contains("detached");
+
+                takenSpace += item.cachedWidth;
+
+                if(takenSpace > availableSpace) {
+                    hasCollapsedItems = true;
+                    if(detached) continue;
+                    item.element.classList.add("detached");
+
+                    if(!item.menuElement) {
+                        item.menuElement = LS.Create({
+                            class: "toolbar-menu-item",
+                            attributes: { "aria-label": item.description },
+                            inner: [{ tag: "i", class: item.icon }, { tag: "span", innerText: item.label }],
+                            onclick: () => {
+                                if(item.onclick) item.onclick.call(item.element);
+                            }
+                        })
+                    }
+
+                    if(!menuFrag) menuFrag = document.createDocumentFragment();
+                    menuFrag.appendChild(item.menuElement);
+                } else {
+                    if(!detached) continue;
+                    item.element.classList.remove("detached");
+                    if(item.menuElement && item.menuElement.parentElement) {
+                        item.menuElement.parentElement.removeChild(item.menuElement);
+                    }
+                }
+            }
+
+            // Write operations
+            if(frag) container.appendChild(frag);
+            if(menuFrag) menu.appendChild(menuFrag);
+            moreButton.style.display = (availableSpace + moreButtonClientWidth) < takenSpace ? "inline-flex" : "none";
+
+            // Close the toolbar if no items are collapsed and it's currently open
+            if (!hasCollapsedItems && website.isToolbarOpen && website.currentToolbar === "more") {
+                website.desktop.closeToolbar();
+            }
+        });
+
+        const resizeMessageContainer = LS.SelectOrCreate("resizeMessage");
+        const resizeMessageSwitch = new LS.Util.Switch((on) => {
+            if(on) {
+                resizeMessageContainer.style.display = "flex";
+                website.container.style.display = "none";
+            } else {
+                resizeMessageContainer.style.display = "none";
+                website.container.style.display = "flex";
+            }
+        });
+
+        collapseItems.schedule();
+
+        window.addEventListener("resize", () => {
+            collapseItems.schedule();
+        });
+
+        if(window.visualViewport) {
+            window.visualViewport.addEventListener("resize", () => {
+                collapseItems.schedule();
+            });
+        }
+
+        website.collapseItems = collapseItems;
+
+        for(let accent of website.ACCENT_COLORS) {
+            LS.SelectOne("#accentButtons").add(LS.Create("button", {
+                class: "square",
+                inner: accent === "white" ? LS.Create("i", { class: "bi-x-circle-fill" }) : null,
+                accent,
+                tooltip: accent === "white" ? "Reset": (accent.charAt(0).toUpperCase() + accent.slice(1)),
+                onclick(){
+                    LS.Color.setAccent(accent);
+                }
+            }));
+
+            LS.SelectOne("#accentButtons").querySelector("input[type=color]").addEventListener("input", function (){
+                LS.Color.setAccent(this.value);
+            });
+        }
+
+        kernel.addExternalEventListener(document, "pointerdown", (event) => {
+            if (website.isToolbarOpen && !event.target.closest("#toolbars,.toolbar-button")) website.desktop.closeToolbar();
+        }, { passive: true });
+    }
+
+    destroy() {
+
+    }
+}
+
 // Enables closing the toolbar via esc
-const ToolbarStackRef = { close() { website.closeToolbar() } };
+const ToolbarStackRef = { close() { website.desktop.closeToolbar() } };
 
 /**
- * Website object
+ * Shared website object
  * Utilities and constants related to the website as a whole.
  * This is global, so nothing sensitive should be exposed.
  */
@@ -1608,6 +2216,11 @@ const website = {
     Viewport,
     Thread,
     Window: LS.Window,
+
+    // Create new instance of the desktop env
+    desktop: new Desktop({
+        limited: localStorage.getItem("desktopMode") !== "true"
+    }),
 
     // Constants
     loaded: true,
@@ -2042,104 +2655,6 @@ const website = {
 
     toolbarsContainer: document.getElementById("toolbars"),
 
-    openToolbar(name, toggle = false) {
-        console.log("Opening toolbar:", name, "Toggle:", toggle);
-        if(website.currentToolbar == name && website.isToolbarOpen) {
-            if(toggle) website.closeToolbar();
-            return;
-        }
-
-        const toolbar = website.toolbars.get(name);
-        if(!toolbar) return;
-
-        const previousToolbar = website.currentToolbar && website.toolbars.get(website.currentToolbar);
-        if(previousToolbar) {
-            if(typeof previousToolbar.onClose === "function") previousToolbar.onClose();
-
-            if(previousToolbar.panelItem) {
-                const element = previousToolbar.panelItem instanceof HTMLElement? previousToolbar.panelItem : website.panelItems.get(previousToolbar.panelItem)?.element;
-                if(element) element.classList.remove("open");
-            }
-        }
-
-        if(typeof toolbar.onOpen === "function") toolbar.onOpen();
-
-        // TODO: this is incredibly ass
-        toolbar.element.classList.add("open");
-        for(const tb of website.toolbars.values()) {
-            if(tb !== toolbar) tb.element.classList.remove("open");
-        }
-
-        if (website.isToolbarOpen) LS.Animation.slideInToggle(toolbar.element, previousToolbar?.element || null);
-        if (!website.isToolbarOpen) LS.Animation.fadeIn(toolbar.element, "up");
-
-        website.isToolbarOpen = true;
-        website.currentToolbar = name;
-        website.quickEmit("toolbar-open", name);
-        kernel.viewport.target.classList.add("shade");
-        LS.Stack.push(ToolbarStackRef);
-
-        const button = toolbar.panelItem instanceof HTMLElement? toolbar.panelItem : website.panelItems.get(toolbar.panelItem)?.element;
-        if(button) button.classList.add("open");
-
-        return toolbar;
-    },
-
-    closeToolbar() {
-        console.log("Closing toolbar");
-        if(!website.isToolbarOpen) return;
-
-        const toolbar = website.toolbars.get(website.currentToolbar);
-        LS.Animation.fadeOut(toolbar.element, "down");
-
-        if(toolbar) {
-            if(typeof toolbar.onClose === "function") toolbar.onClose();
-            const button = toolbar.panelItem instanceof HTMLElement? toolbar.panelItem : website.panelItems.get(toolbar.panelItem)?.element;
-            if(button) button.classList.remove("open");
-            website.currentToolbar = null;
-        }
-
-        for(const item of website.panelItems.values()) {
-            item.element.classList.remove("open");
-        }
-
-        website.isToolbarOpen = false;
-        website.quickEmit("toolbar-close");
-        kernel.viewport.target.classList.remove("shade");
-        LS.Stack.remove(ToolbarStackRef);
-    },
-
-    async openPalette() {
-        if (website.isEmbedded) return;
-
-        if (!website.palette) {
-            if(kernel._initializingPalette) {
-                await kernel._initializingPalette;
-            } else {
-                kernel._initializingPalette = kernel._initializeCommandPalette();
-                await kernel._initializingPalette;
-                kernel._initializingPalette = null;
-            }
-        }
-
-        website.palette.open();
-    },
-
-    showLoginToolbar(toggle = false) {
-        const accountsButton = website.panelItems.get("accountsButton").element;
-
-        accountsButton.focus();
-        setTimeout(() => {
-            if(!toggle && website.isToolbarOpen && website.currentToolbar === "login") return;
-
-            website.openToolbar("login", toggle);
-
-            if(!website.isLoggedIn) setTimeout(() => {
-                LS.SelectOne("#loginPopup")?.querySelector("button,input")?.focus();
-            }, 0);
-        }, 0);
-    },
-
     /**
      * Register a module/script scope. This scope can request permissions and access APIs.
      * @param {*} script Script tag or unique identifier of the context.
@@ -2171,324 +2686,10 @@ const website = {
         styled: false
     }),
 
-    panelItems: new Map([
-        ["accountsButton", { label: "Account", showIcon: false, buttonLabel: { class: "accountsButton", inner: [{ reactive: "user.username ?? 'Log-In'" }, { class: "profile-picture-preview", inner: { tag: "i", class: "bi-person-fill" } }] }, description: "View and edit your profile or log-in", icon: "bi-person-fill", onclick: () => website.openToolbar("login") }],
-
-        ["appsButton", { label: "Apps", tooltip: "Applications", description: "View applications", icon: "bi-grid-fill", onclick() { website.openToolbar("apps", true) } }],
-
-        // ["assistantButton", { showLabel: false, label: "Assistant", description: "Open Assistant", icon: "bi-stars", onclick() {
-        //     website.openToolbar("assistant", true);
-        // } }],
-
-        ["themeButton", { buttonLabel: { tag: "i", class: "bi-palette-fill" }, label: "Customize", description: "Customize the site appearance", icon: 'bi-' + (LS.Color.theme === "dark" ? "moon-stars" : "sun") + "-fill", onclick() {
-            website.openToolbar("theme", true);
-        }}],
-
-        ["commandPaletteButton", { showLabel: false, label: "Command Palette", tooltip: "Command Palette", description: "Open Command Palette", icon: "bi-terminal", onclick() {
-            website.closeToolbar();
-            website.openPalette();
-        }}],
-    ]),
-
-    toolbars: new Map([
-        ["statusbar", {
-            element: LS.Create({
-                id: "statusbar",
-                class: "toolbar toolbar-styled",
-                inner: LS.Create({
-                    inner: [
-                        LS.Create()
-                    ]
-                })
-            }),
-            name: "Status Bar",
-            description: "Status and notifications"
-        }],
-
-        ["login", {
-            element: LS.SelectOne("#toolbarLogin"),
-            name: "Account",
-            description: "View and edit your profile or log-in",
-            panelItem: "accountsButton",
-            onOpen() {
-                website.loginTabs.set(website.isLoggedIn? "account": "default", true);
-            }
-        }],
-
-        ["apps", {
-            element: LS.SelectOne("#toolbarApps"),
-            name: "Apps",
-            description: "View applications",
-            panelItem: "appsButton",
-
-            onOpen() {
-                if(!kernel.applicationMenu.initialized) {
-                    kernel.applicationMenu.init();
-                }
-            }
-        }],
-
-        // ["assistant", {
-        //     element: LS.SelectOne("#toolbarAssistant"),
-        //     name: "Assistant",
-        //     description: "Open Assistant",
-        //     panelItem: "assistantButton",
-        //     onOpen() {
-        //         if(!window.__assistantLoading) {
-        //             window._assistantCallback = null;
-        //             window.__assistantLoading = true;
-
-        //             setTimeout(async () => {
-        //                 M.LoadScript("/~/assets/js/assistant.js" + window.cacheKey, (error) => {
-        //                     if(error || typeof window._assistantCallback !== "function") {
-        //                         LS.Toast.show("Sorry, assistant failed to load. Please try again later.");
-        //                         return;
-        //                     }
-
-        //                     window._assistantCallback(website, kernel.auth);
-        //                 })
-        //             }, 0);
-        //         }
-        //     }
-        // }],
-
-        ["theme", {
-            element: LS.SelectOne("#toolbarTheme"),
-            name: "Theme",
-            description: "Customize the site appearance",
-            panelItem: "themeButton"
-        }],
-
-        ["musicPlayer", {
-            element: LS.SelectOne("#musicPlayer"),
-            name: "Music Player",
-            description: "Control music playback",
-            get panelItem() { return website.musicPlayer.musicStatusElement; },
-
-            onOpen() {
-                if(!website.musicPlayer.initialized) website.musicPlayer.init();
-            }
-        }],
-
-        ["more", {
-            element: LS.SelectOne("#toolbarMore"),
-            name: "More",
-            description: "More options",
-            panelItem: "moreButton"
-        }]
-    ]),
-
-    musicPlayer: new class MusicPlayer {
-        constructor() {
-            this.toolbarElement = LS.SelectOne("#musicPlayer");
-            this.initialized = false;
-            if(!this.toolbarElement) {
-                console.warn("Music Player toolbar element not found.");
-                return;
-            }
-
-            shortcutManager.register('ctrl+m', () => {
-                website.openToolbar("musicPlayer", true);
-            });
-        }
-
-        create(d){'use strict';var e0=document.createElement("div");e0.setAttribute("class","music-player toolbar-styled");var e1=document.createElement("img");e1.setAttribute("alt","Music cover background");e1.setAttribute("crossorigin","anonymous");e1.setAttribute("class","music-player-cover");e0.appendChild(e1);var e2=document.createElement("img");e2.setAttribute("alt","Music cover art");e2.setAttribute("crossorigin","anonymous");e2.setAttribute("class","music-player-art");e0.appendChild(e2);var e3=document.createElement("div");e3.setAttribute("class","music-player-container");var e4=document.createElement("div");e4.setAttribute("class","music-player-info");var e5=document.createElement("span");e5.setAttribute("class","text-overflow-nowrap music-player-title");var t6=document.createTextNode("Lorem Ipsum");e5.appendChild(t6);e4.appendChild(e5);var e7=document.createElement("span");e7.setAttribute("class","text-overflow-nowrap music-player-artist");var t8=document.createTextNode("Dolor Sit Amet");e7.appendChild(t8);e4.appendChild(e7);e3.appendChild(e4);var e9=document.createElement("div");e9.setAttribute("class","music-player-progress");var e10=document.createElement("div");e10.setAttribute("class","music-player-progress-bar");var e11=document.createElement("div");e11.setAttribute("class","music-player-progress-filled");e10.appendChild(e11);e9.appendChild(e10);e3.appendChild(e9);var e12=document.createElement("div");e12.setAttribute("class","music-player-controls");var e13=document.createElement("button");e13.setAttribute("ls-tooltip","");e13.setAttribute("aria-label","Like");e13.setAttribute("class","circle clear music-player-like");var e14=document.createElement("i");e14.setAttribute("class","bi-hand-thumbs-up");e13.appendChild(e14);e12.appendChild(e13);var e15=document.createElement("button");e15.setAttribute("ls-tooltip","");e15.setAttribute("aria-label","Previous");e15.setAttribute("class","circle clear music-player-prev");var e16=document.createElement("i");e16.setAttribute("class","bi-skip-start-fill");e15.appendChild(e16);e12.appendChild(e15);var e17=document.createElement("button");e17.setAttribute("ls-tooltip","");e17.setAttribute("aria-label","Play/Pause");e17.setAttribute("class","circle clear music-player-play-pause");var e18=document.createElement("i");e18.setAttribute("class","bi-play-fill");e17.appendChild(e18);e12.appendChild(e17);var e19=document.createElement("button");e19.setAttribute("ls-tooltip","");e19.setAttribute("aria-label","Next");e19.setAttribute("class","circle clear music-player-next");var e20=document.createElement("i");e20.setAttribute("class","bi-skip-end-fill");e19.appendChild(e20);e12.appendChild(e19);var e21=document.createElement("button");e21.setAttribute("ls-tooltip","Repeat Off");e21.setAttribute("aria-label","Toggle repeat modes");e21.setAttribute("class","circle clear music-player-repeat");var e22=document.createElement("i");e22.setAttribute("class","bi-arrow-repeat");e21.appendChild(e22);e12.appendChild(e21);e3.appendChild(e12);e0.appendChild(e3);var __rootValue=e0;return{root:__rootValue};}
-
-        init(){
-            if(this.initialized) return;
-            this.initialized = true;
-
-            this.toolbarElement.appendChild(this.create().root);
-
-            this.audio = new Audio();
-            this.titleElement = this.toolbarElement.querySelector(".music-player-title");
-            this.artistElement = this.toolbarElement.querySelector(".music-player-artist");
-            this.coverElement = this.toolbarElement.querySelector(".music-player-cover");
-            this.coverArtElement = this.toolbarElement.querySelector(".music-player-art");
-
-            this.menuContainer = this.toolbarElement.querySelector(".music-menu");
-
-            if(this.menuContainer) {
-                let menuOpen = false;
-                this.toolbarElement.querySelector(".music-menu-toggle").onclick = () => {
-                    menuOpen = !menuOpen;
-                    if(!menuOpen) {
-                        LS.Animation.fadeOut(this.menuContainer, 300, "bottom");
-                        return;
-                    }
-
-                    LS.Animation.fadeIn(this.menuContainer, 300, "bottom");
-                }
-            }
-
-            // Panel
-            this.musicStatusElement = LS.Create("button", {
-                id: "musicButton",
-                class: "pill",
-                tooltip: "Music Player <kbd>Ctrl+M</kbd>",
-                attr: { "aria-label": "Open music player" },
-                inner: [
-                    { tag: "i", class: "bi-vinyl-fill" },
-                    { tag: "span", class: "music-player-status text-overflow-nowrap", inner: "Stopped" }
-                ]
-            });
-            
-            this.musicStatusText = this.musicStatusElement.querySelector(".music-player-status");
-            
-            this.playButtonElement = this.toolbarElement.querySelector(".music-player-play-pause");
-            this.playButtonElement.onclick = () => {
-                this.playToggle();
-            };
-
-            this.repeatMode = "off";
-            this.repeatButtonElement = this.toolbarElement.querySelector(".music-player-repeat");
-            this.repeatButtonElement.onclick = () => {
-                this.toggleRepeatMode();
-            };
-
-            this.musicStatusElement.onclick = () => {
-                website.openToolbar("musicPlayer", true);
-            };
-
-            this.musicStatusElement.style.display = "none";
-            LS.SelectOne(".headerLeftContainer").appendChild(this.musicStatusElement);
-        }
-
-        setCover(imageURL = null, coverArtURL = null) {
-            if(!this.initialized) this.init();
-            this.toolbarElement.removeAttribute("ls-accent");
-            this.musicStatusElement.removeAttribute("ls-accent");
-            this.coverElement.style.display = "none";
-            this.toolbarElement.classList.remove("has-cover");
-
-            if(!imageURL) {
-                return;
-            }
-
-            this.coverElement.onload = () => {
-                this.coverElement.style.display = "block";
-                this.coverArtElement.style.display = "block";
-                this.toolbarElement.classList.add("has-cover");
-
-                LS.Color.fromImage(this.coverElement).toAccent("music-cover");
-
-                this.toolbarElement.setAttribute("ls-accent", "music-cover");
-                this.musicStatusElement.setAttribute("ls-accent", "music-cover");
-            }
-
-            this.coverElement.onerror = () => {
-                this.coverElement.style.display = "none";
-                this.coverArtElement.style.display = "none";
-            }
-
-            this.coverElement.src = imageURL;
-            this.coverArtElement.src = coverArtURL || imageURL;
-        }
-
-        setDetails(details, playImmediately = false) {
-            if(!this.initialized) this.init();
-            this.currentDetails = {
-                title: details.title || "Unknown Title",
-                artist: details.artist || "Unknown Artist",
-                album: details.album || "",
-                cover: details.cover || null,
-                source: details.source || null
-            }
-
-            this.musicStatusText.textContent = this.titleElement.textContent = this.currentDetails.title;
-            this.artistElement.textContent = this.currentDetails.artist;
-            this.setCover(this.currentDetails.cover);
-
-            LS.Animation.fadeIn(this.musicStatusElement, 300, "right");
-            this.audio.src = this.currentDetails.source;
-
-            website.collapseItems.schedule();
-            setTimeout(() => {
-                website.collapseItems.schedule();
-            }, 10);
-
-            if(playImmediately) {
-                this.play();
-            }
-
-            if ('mediaSession' in navigator) {
-                navigator.mediaSession.metadata = new MediaMetadata({
-                    title: this.currentDetails.title,
-                    artist: this.currentDetails.artist,
-                    album: this.currentDetails.album,
-                    artwork: this.currentDetails.artwork || this.currentDetails.cover ? [
-                        { src: this.currentDetails.cover, sizes: '96x96', type: 'image/png' },
-                        { src: this.currentDetails.cover, sizes: '128x128', type: 'image/png' },
-                        { src: this.currentDetails.cover, sizes: '192x192', type: 'image/png' },
-                        { src: this.currentDetails.cover, sizes: '256x256', type: 'image/png' },
-                        { src: this.currentDetails.cover, sizes: '384x384', type: 'image/png' },
-                        { src: this.currentDetails.cover, sizes: '512x512', type: 'image/png' }
-                    ] : []
-                });
-
-                navigator.mediaSession.setActionHandler('play', () => this.play());
-                navigator.mediaSession.setActionHandler('pause', () => this.pause());
-                navigator.mediaSession.setActionHandler('stop', () => {
-                    this.pause();
-                    this.stopped();
-                    this.audio.currentTime = 0;
-                });
-            }
-        }
-
-        stopped() {
-            if(!this.initialized) this.init();
-            this.musicStatusText.textContent = "Stopped";
-            this.titleElement.textContent = "No music playing";
-            this.artistElement.textContent = "";
-            this.setCover(null);
-            this.currentDetails = null;
-            LS.Animation.fadeOut(this.musicStatusElement, 300, "right");
-        }
-
-        playToggle() {
-            if(!this.initialized) this.init();
-            if(this.audio.paused) {
-                this.play();
-            } else {
-                this.pause();
-            }
-        }
-
-        play() {
-            if(!this.initialized) this.init();
-            this.audio.play();
-            this.playButtonElement.querySelector("i").className = "bi-pause-fill";
-        }
-
-        pause() {
-            if(!this.initialized) this.init();
-            this.audio.pause();
-            this.playButtonElement.querySelector("i").className = "bi-play-fill";
-        }
-
-        toggleRepeatMode() {
-            if(!this.initialized) this.init();
-            if(this.repeatMode === "off") {
-                this.repeatMode = "one";
-                this.repeatButtonElement.classList.add("active");
-                this.repeatButtonElement.querySelector("i").className = "bi-repeat-1";
-                this.repeatButtonElement.setAttribute("ls-tooltip", LS.Tooltips.set("Repeat One").position(this.repeatButtonElement).container.textContent);
-                this.audio.loop = true;
-            } else if(this.repeatMode === "one") {
-                this.repeatMode = "all";
-                this.repeatButtonElement.querySelector("i").className = "bi-arrow-right";
-                this.repeatButtonElement.setAttribute("ls-tooltip", LS.Tooltips.set("Repeat All").position(this.repeatButtonElement).container.textContent);
-                this.audio.loop = false;
-            } else {
-                this.repeatMode = "off";
-                this.repeatButtonElement.classList.remove("active");
-                this.repeatButtonElement.querySelector("i").className = "bi-repeat";
-                this.repeatButtonElement.setAttribute("ls-tooltip", LS.Tooltips.set("Repeat Off").position(this.repeatButtonElement).container.textContent);
-                this.audio.loop = false;
-            }
-        }
-    },
+    // Destroy shared state
+    destroyState() {
+        website.desktop.destroy();
+    }
 }
 
 website.events = new LS.EventEmitter(website);
@@ -2834,8 +3035,11 @@ const kernel = new class Kernel extends LS.Context {
         });
 
         LS.Color.on("theme-changed", () => {
-            const themeButton = website.panelItems.get("themeButton").element;
-            if (themeButton) themeButton.querySelector("i").className = 'bi-' + (website.theme === "dark" ? "moon-stars" : "sun") + "-fill";
+            for(const item of website.desktop.panelState) {
+                if(item.kind === "themeButton" && item.element) {
+                    item.element.querySelector("i").className = 'bi-' + (website.theme === "dark" ? "moon-stars" : "sun") + "-fill";
+                }
+            }
         });
 
         this.auth.on("user-updated", (patch) => {
@@ -2880,7 +3084,8 @@ const kernel = new class Kernel extends LS.Context {
                 window.__init = null;
             }
 
-            this.#initializeToolbars();
+            website.desktop.initPanel();
+            this.#setupAuth();
             this.loadUser();
 
             // Display content
@@ -3226,7 +3431,7 @@ const kernel = new class Kernel extends LS.Context {
         const accounts = await this.auth.listAccounts();
         website.accounts = accounts && accounts.accounts || [];
 
-        const list = website.toolbars.get("login").element.querySelector(".accounts-list");
+        const list = website.desktop.toolbars.get("login").element.querySelector(".accounts-list");
         list.innerHTML = "";
 
         for (const account of website.accounts) {
@@ -3286,8 +3491,8 @@ const kernel = new class Kernel extends LS.Context {
         this.loadUserList();
 
         // There should never be a situation where accountsButton doesn't exist, yet it has happened to me. How..
-        const accountsButton = website.panelItems.get("accountsButton").element;
-        if (accountsButton) accountsButton.disabled = false;
+        // const accountsButton = website.panelItems.get("accountsButton").element;
+        // if (accountsButton) accountsButton.disabled = false;
 
         website.events.emit("user-changed", [ isLoggedIn, this.userFragment ]);
         website.events.completed("user-loaded");
@@ -3316,315 +3521,6 @@ const kernel = new class Kernel extends LS.Context {
         const CommandPaletteExports = (await import("/~/assets/js/pallete.mjs?1.4"));
         CommandPaletteExports.init(this, website, LoggerContext);
         console.log("Command palette initialized");
-    }
-
-    #initializeToolbars() {
-        const nav = LS.SelectOne("#topPanel");
-        const moreButton = LS.SelectOne("#moreButton");
-        const container = LS.SelectOne(".headerButtons");
-
-        moreButton.addEventListener("click", () => {
-            website.openToolbar("more", true);
-        });
-
-        const menu = LS.SelectOne("#toolbarMore");
-
-        const navPadding = 28 + 5;
-        const gap = 10;
-
-        for (const item of website.panelItems.values()) {
-            if(item.shortcuts) {
-                this.shortcutManager.register(item.shortcuts, () => {
-                    if(item.onclick) item.onclick.call(item.element);
-                });
-            }
-        }
-
-        const collapseItems = new LS.Util.FrameScheduler(() => {
-            // Read widths first to prevent relayouts
-            const isTooSmall = window.innerWidth < 100 || window.innerHeight < 200; // Precalc
-            if(resizeMessageSwitch.set(isTooSmall)) {
-                return;
-            }
-
-            const availableSpace = nav.clientWidth - navPadding - gap - moreButton.clientWidth - (nav.firstElementChild?.clientWidth || 0);
-            const moreButtonClientWidth = moreButton.clientWidth;
-
-            // Try to batch appends (god i hate the dom api so much)
-            let frag, menuFrag;
-
-            let takenSpace = 0;
-            for(const item of website.panelItems.values()) {
-                if(!item.element) {
-                    let assumedWidth = 40 + gap;
-                    const icon = item.showIcon === false ? null : { tag: "i", class: item.icon };
-                    const buttonLabel = item.buttonLabel || item.label;
-
-                    if(icon) assumedWidth += 16;
-                    if(item.label === "Account") assumedWidth += 46;
-                    if(item.showLabel) assumedWidth += (buttonLabel ? (typeof buttonLabel === "string" ? 8 * buttonLabel.length : 16) : 16);
-
-                    item.element = LS.Create("button.toolbar-button.pill.elevated[aria-label='"+item.description+"']", {
-                        tooltip: item.tooltip || item.label,
-                        inner: item.showLabel !== false? [icon, { tag: "span", inner: buttonLabel, class: typeof buttonLabel === "string" ? "label" : "" }]: icon,
-                        onclick: () => {
-                            if(item.onclick) item.onclick.call(item.element);
-                        }
-                    });
-
-                    if(!frag) frag = document.createDocumentFragment();
-                    frag.appendChild(item.element);
-
-                    // Browser layout rendering is an absolutely incompetent piece of crap
-                    // so we need to guess the width to avoid the render>wait>read>render hell
-                    // Of course this opens up a whole bunch of other possible problems
-                    item.cachedWidth = assumedWidth;
-                }
-
-                // if(!item.bs) {
-                //     item.element.append(LS.Create({ style: "width:"+item.cachedWidth+"px;position:absolute;height:10px;background:red;z-index:10000;bottom:0;left:0" }));
-                //     item.bs = true;
-                // }
-
-                // item.cachedWidth = (item.element ? item.element.clientWidth : item.cachedWidth || 0) + gap;
-            }
-
-            // const accountButtonText = website.panelItems.get("accountsButton")?.element?.textContent;
-            // if(accountButtonText) {
-            //     takenSpace += 46 + (accountButtonText.length * 8);
-            //     // console.log(takenSpace);
-            // }
-
-            let hasCollapsedItems = false;
-            for (const item of website.panelItems.values()) {
-                const detached = item.element.classList.contains("detached");
-
-                takenSpace += item.cachedWidth;
-
-                if(takenSpace > availableSpace) {
-                    hasCollapsedItems = true;
-                    if(detached) continue;
-                    item.element.classList.add("detached");
-
-                    if(!item.menuElement) {
-                        item.menuElement = LS.Create({
-                            class: "toolbar-menu-item",
-                            attributes: { "aria-label": item.description },
-                            inner: [{ tag: "i", class: item.icon }, { tag: "span", innerText: item.label }],
-                            onclick: () => {
-                                if(item.onclick) item.onclick.call(item.element);
-                            }
-                        })
-                    }
-
-                    if(!menuFrag) menuFrag = document.createDocumentFragment();
-                    menuFrag.appendChild(item.menuElement);
-                } else {
-                    if(!detached) continue;
-                    item.element.classList.remove("detached");
-                    if(item.menuElement && item.menuElement.parentElement) {
-                        item.menuElement.parentElement.removeChild(item.menuElement);
-                    }
-                }
-            }
-
-            // Write operations
-            if(frag) container.appendChild(frag);
-            if(menuFrag) menu.appendChild(menuFrag);
-            moreButton.style.display = (availableSpace + moreButtonClientWidth) < takenSpace ? "inline-flex" : "none";
-
-            // Close the toolbar if no items are collapsed and it's currently open
-            if (!hasCollapsedItems && website.isToolbarOpen && website.currentToolbar === "more") {
-                website.closeToolbar();
-            }
-        });
-
-        const resizeMessageContainer = document.getElementById("resizeMessage");
-        const resizeMessageSwitch = new LS.Util.Switch((on) => {
-            if(on) {
-                resizeMessageContainer.style.display = "flex";
-                website.container.style.display = "none";
-            } else {
-                resizeMessageContainer.style.display = "none";
-                website.container.style.display = "flex";
-            }
-        });
-
-        collapseItems.schedule();
-
-        window.addEventListener("resize", () => {
-            collapseItems.schedule();
-        });
-
-        if(window.visualViewport) {
-            window.visualViewport.addEventListener("resize", () => {
-                collapseItems.schedule();
-            });
-        }
-
-        website.collapseItems = collapseItems;
-
-        LS.SelectOne("#logOutButton").addEventListener("click", function (){
-            kernel.auth.logout(() => {
-                LS.Toast.show("Logged out successfully.", {
-                    timeout: 2000
-                });
-
-                website.closeToolbar();
-                kernel.loadUser();
-                website.loginTabs.set("default");
-            });
-        });
-
-        function clearLoginError() {
-            const view = website.loginTabs.currentElement();
-            if (!view) return;
-
-            const errorMessage = view.querySelector(".error-message");
-            if (errorMessage) errorMessage.textContent = "";
-
-            const offendingElement = view.querySelector("input[aria-invalid='true']");
-            if (offendingElement) {
-                offendingElement.removeAttribute("aria-invalid");
-                offendingElement.removeAttribute("ls-accent");
-            }
-        }
-
-        function displayLoginError(message, offendingElement) {
-            if (offendingElement) {
-                offendingElement.setAttribute("aria-invalid", "true");
-                offendingElement.setAttribute("ls-accent", "red");
-            }
-
-            const errorMessage = website.loginTabs.currentElement().querySelector(".error-message");
-            if (errorMessage) errorMessage.textContent = message;
-        }
-
-        function redirectAfterLogin() {
-            const redirect = kernel.queryParams.continue || ((location.pathname.startsWith("/login") || location.pathname.startsWith("/sign-up"))? "/": null);
-            if (redirect) {
-                location.replace(redirect);
-                return;
-            }
-
-            // Update user without reloading
-            kernel.loadUser().then(() => {
-                website.closeToolbar();
-                website.loginTabs.set("default");
-            });
-        }
-
-        document.forms["loginForm"].addEventListener("submit", (event) => {
-            event.preventDefault();
-            clearLoginError();
-            const username = LS.SelectOne("#username").value;
-            const password = LS.SelectOne("#password").value;
-
-            if (!username || !password) {
-                displayLoginError("Username and password are required", LS.SelectOne(!username? "#username" : "#password"));
-                return;
-            }
-
-            this.auth.login(username, password, (error, result) => {
-                if (error) {
-                    displayLoginError(error.message || error.error || "An error occurred while logging in");
-                    return;
-                }
-
-                redirectAfterLogin();
-            });
-
-            return false;
-        });
-
-        document.forms["registerForm"].addEventListener("submit", (event) => {
-            event.preventDefault();
-            clearLoginError();
-            document.forms["registerStep2Form"].querySelector("input").focus();
-            website.loginTabs.set('register-step2');
-
-            return false;
-        });
-
-        document.forms["registerStep2Form"].addEventListener("submit", (event) => {
-            event.preventDefault();
-            clearLoginError();
-            const email = LS.SelectOne("#regEmail").value;
-            const username = LS.SelectOne("#regUsername").value.toLowerCase();
-            const password = LS.SelectOne("#regPassword").value;
-            const displayName = event.target.querySelector("input[name='displayname']").value;
-
-            if (!email || !username || !password) {
-                website.loginTabs.set('register');
-                displayLoginError("All fields are required");
-                return;
-            }
-
-            this.auth.register({ email, username, password, displayname: displayName || null }, (error, result) => {
-                if (error) {
-                    website.loginTabs.set('register');
-                    console.log(error, (error.code === 4 || error.code === 5)? LS.SelectOne("#regEmail"): (error.code === 3 || error.code === 6)? LS.SelectOne("#regUsername"): error.code === 7? LS.SelectOne("#regPassword"): null);
-                    
-                    displayLoginError(error.message || error.error || "An error occurred while signing up", (error.code === 4 || error.code === 5)? LS.SelectOne("#regEmail"): (error.code === 3 || error.code === 6)? LS.SelectOne("#regUsername"): error.code === 6? LS.SelectOne("#regPassword"): null);
-                    return;
-                }
-
-                redirectAfterLogin();
-            });
-  
-            return false;
-        });
-
-        website.loginTabs.on("changed", (tab, old) => {
-            const view = website.loginTabs.currentElement();
-            const oldElement = website.loginTabs.tabs.get(old)?.element;
-
-            clearLoginError();
-
-            view.style.transition = (!website.isToolbarOpen || !oldElement)? "none" : "";
-
-            LS.Animation.slideInToggle(view, oldElement);
-
-            setTimeout(() => {
-                LS.SelectOne("#toolbarLogin").style.height = view.offsetHeight + "px";
-            });
-        });
-
-        website.loginTabs.set(location.pathname.startsWith("/login") ? "login" : location.pathname.startsWith("/sign-up") ?  "register" : "default");
-
-        LS.SelectOne("#randomPassword").addEventListener("click", function (){
-            const password = website.utils.generateSecurePassword(12);
-            LS.SelectOne("#regPassword").value = password;
-            LS.SelectOne("#regPassword").dispatchEvent(new Event("input"));
-            alert("Your generated password: " + password);
-        });
-
-        LS.SelectOne("#randomUsername").addEventListener("click", function (){
-            const username = website.utils.generateUsername();
-            LS.SelectOne("#regUsername").value = username.toLowerCase();
-            LS.SelectOne("#regUsername").dispatchEvent(new Event("input"));
-            LS.SelectOne("#displayname").value = username;
-        });
-
-        for(let accent of website.ACCENT_COLORS) {
-            LS.SelectOne("#accentButtons").add(LS.Create("button", {
-                class: "square",
-                inner: accent === "white" ? LS.Create("i", { class: "bi-x-circle-fill" }) : null,
-                accent,
-                tooltip: accent === "white" ? "Reset": (accent.charAt(0).toUpperCase() + accent.slice(1)),
-                onclick(){
-                    LS.Color.setAccent(accent);
-                }
-            }));
-
-            LS.SelectOne("#accentButtons").querySelector("input[type=color]").addEventListener("input", function (){
-                LS.Color.setAccent(this.value);
-            });
-        }
-
-        this.addExternalEventListener(document, "pointerdown", (event) => {
-            if (website.isToolbarOpen && !event.target.closest("#toolbars,.toolbar-button")) website.closeToolbar();
-        }, { passive: true });
     }
 
     /**
@@ -3740,7 +3636,7 @@ const kernel = new class Kernel extends LS.Context {
             if(this.initialized) return;
             this.initialized = true;
 
-            const container = website.toolbars.get("apps").element;
+            const container = website.desktop.toolbars.get("apps").element;
             this.appListElement = container.querySelector(".app-list");
 
             kernel.on("application-installed", (manifest) => {
@@ -3777,7 +3673,7 @@ const kernel = new class Kernel extends LS.Context {
                         }
 
                         window.open(manifest.link, "_blank", "noopener");
-                        website.closeToolbar();
+                        website.desktop.closeToolbar();
                         return;
                     }
 
@@ -3787,7 +3683,7 @@ const kernel = new class Kernel extends LS.Context {
                         })
                         .done((instance) => {
                             instance.open?.();
-                            website.closeToolbar();
+                            website.desktop.closeToolbar();
                         })
                         .catch(error => {
                             LS.Toast.show("Failed to open application: " + error.message, { accent: "red" });
@@ -3801,6 +3697,150 @@ const kernel = new class Kernel extends LS.Context {
 
             this.appListElement.appendChild(appButton);
         }
+    }
+
+    #setupAuth() {
+        LS.SelectOrCreate("#logOutButton").addEventListener("click", function (){
+            kernel.auth.logout(() => {
+                LS.Toast.show("Logged out successfully.", {
+                    timeout: 2000
+                });
+
+                website.desktop.closeToolbar();
+                kernel.loadUser();
+                website.loginTabs.set("default");
+            });
+        });
+
+        function clearLoginError() {
+            const view = website.loginTabs.currentElement();
+            if (!view) return;
+
+            const errorMessage = view.querySelector(".error-message");
+            if (errorMessage) errorMessage.textContent = "";
+
+            const offendingElement = view.querySelector("input[aria-invalid='true']");
+            if (offendingElement) {
+                offendingElement.removeAttribute("aria-invalid");
+                offendingElement.removeAttribute("ls-accent");
+            }
+        }
+
+        function displayLoginError(message, offendingElement) {
+            if (offendingElement) {
+                offendingElement.setAttribute("aria-invalid", "true");
+                offendingElement.setAttribute("ls-accent", "red");
+            }
+
+            const errorMessage = website.loginTabs.currentElement().querySelector(".error-message");
+            if (errorMessage) errorMessage.textContent = message;
+        }
+
+        function redirectAfterLogin() {
+            const redirect = kernel.queryParams.continue || ((location.pathname.startsWith("/login") || location.pathname.startsWith("/sign-up"))? "/": null);
+            if (redirect) {
+                location.replace(redirect);
+                return;
+            }
+
+            // Update user without reloading
+            kernel.loadUser().then(() => {
+                website.desktop.closeToolbar();
+                website.loginTabs.set("default");
+            });
+        }
+
+        document.forms["loginForm"].addEventListener("submit", (event) => {
+            event.preventDefault();
+            clearLoginError();
+            const username = LS.SelectOne("#username").value;
+            const password = LS.SelectOne("#password").value;
+
+            if (!username || !password) {
+                displayLoginError("Username and password are required", LS.SelectOne(!username? "#username" : "#password"));
+                return;
+            }
+
+            this.auth.login(username, password, (error, result) => {
+                if (error) {
+                    displayLoginError(error.message || error.error || "An error occurred while logging in");
+                    return;
+                }
+
+                redirectAfterLogin();
+            });
+
+            return false;
+        });
+
+        document.forms["registerForm"].addEventListener("submit", (event) => {
+            event.preventDefault();
+            clearLoginError();
+            document.forms["registerStep2Form"].querySelector("input").focus();
+            website.loginTabs.set('register-step2');
+
+            return false;
+        });
+
+        document.forms["registerStep2Form"].addEventListener("submit", (event) => {
+            event.preventDefault();
+            clearLoginError();
+            const email = LS.SelectOne("#regEmail").value;
+            const username = LS.SelectOne("#regUsername").value.toLowerCase();
+            const password = LS.SelectOne("#regPassword").value;
+            const displayName = event.target.querySelector("input[name='displayname']").value;
+
+            if (!email || !username || !password) {
+                website.loginTabs.set('register');
+                displayLoginError("All fields are required");
+                return;
+            }
+
+            this.auth.register({ email, username, password, displayname: displayName || null }, (error, result) => {
+                if (error) {
+                    website.loginTabs.set('register');
+                    console.log(error, (error.code === 4 || error.code === 5)? LS.SelectOne("#regEmail"): (error.code === 3 || error.code === 6)? LS.SelectOne("#regUsername"): error.code === 7? LS.SelectOne("#regPassword"): null);
+                    
+                    displayLoginError(error.message || error.error || "An error occurred while signing up", (error.code === 4 || error.code === 5)? LS.SelectOne("#regEmail"): (error.code === 3 || error.code === 6)? LS.SelectOne("#regUsername"): error.code === 6? LS.SelectOne("#regPassword"): null);
+                    return;
+                }
+
+                redirectAfterLogin();
+            });
+  
+            return false;
+        });
+
+        website.loginTabs.on("changed", (tab, old) => {
+            const view = website.loginTabs.currentElement();
+            const oldElement = website.loginTabs.tabs.get(old)?.element;
+
+            clearLoginError();
+
+            view.style.transition = (!website.isToolbarOpen || !oldElement)? "none" : "";
+
+            LS.Animation.slideInToggle(view, oldElement);
+
+            setTimeout(() => {
+                LS.SelectOne("#toolbarLogin").style.height = view.offsetHeight + "px";
+            });
+        });
+
+        website.loginTabs.set(location.pathname.startsWith("/login") ? "login" : location.pathname.startsWith("/sign-up") ?  "register" : "default");
+
+        LS.SelectOne("#randomPassword").addEventListener("click", function (){
+            const password = website.utils.generateSecurePassword(12);
+            LS.SelectOne("#regPassword").value = password;
+            LS.SelectOne("#regPassword").dispatchEvent(new Event("input"));
+            alert("Your generated password: " + password);
+        });
+
+        LS.SelectOne("#randomUsername").addEventListener("click", function (){
+            const username = website.utils.generateUsername();
+            LS.SelectOne("#regUsername").value = username.toLowerCase();
+            LS.SelectOne("#regUsername").dispatchEvent(new Event("input"));
+            LS.SelectOne("#displayname").value = username;
+        });
     }
 
     /**
@@ -3956,6 +3996,7 @@ const kernel = new class Kernel extends LS.Context {
         for(const thread of this.threads.values()) {
             thread.destroy();
         }
+        website.destroyState();
         super.destroy();
     }
 }
