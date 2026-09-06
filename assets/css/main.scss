@@ -23,17 +23,9 @@ html, body {
         flex-direction: column-reverse;
     }
 
-    // .headerLeftContainer {
-    //     display: none;
-    // }
-    
     #toolbars {
         top: unset;
         bottom: calc(var(--header-height, 50px) + 10px);
-    }
-
-    #topPanel {
-        flex-direction: row-reverse;
     }
 
     .toolbar {
@@ -121,7 +113,7 @@ body {
 
 
 /* Part: Header */
-#topPanel {
+#primaryPanel {
     padding: 8px 14px;
     display: flex;
     justify-content: space-between;
@@ -141,12 +133,17 @@ body {
     svg { margin: 0 5px }
 }
 
-.headerButtons, .headerButtonsContainer {
+.headerButtons {
     display: flex;
+    width: 100%;
     gap: 10px;
 }
 
-#topPanel button {
+.spacer {
+    flex: 1;
+}
+
+#primaryPanel button {
     margin: 0;
     font-size: .9rem;
     display: flex;
@@ -1584,11 +1581,6 @@ ls-text-input.has-textarea {
 
 [ls-theme="light"] .music-player {
     background: var(--accent-90);
-}
-
-.headerLeftContainer {
-    display: flex;
-    gap: 12px;
 }
 
 .music-player-info {

@@ -675,6 +675,21 @@ class ClockApp extends website.ContentContext {
     }
 
     #playDing() {
+        if(app.hasCapability("notifications")) {
+            this.sendNotify("Timer finished!", {
+                body: "Your timer has completed.",
+                icon: "/assets/icons/clock.png",
+                sound: "system:timer"
+            });
+            return;
+        }
+
+        if(app.hasCapability("system-sounds")) {
+            app.desktop.soundBox.play("system:timer");
+            return;
+        }
+
+        // Fallback to Web Audio API
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         if (!AudioCtx) return;
         try {

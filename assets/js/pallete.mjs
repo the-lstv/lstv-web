@@ -2009,7 +2009,7 @@ class CommandPalette {
 
 // --- lstv.space specific
 
-function init(kernel, website, LoggerContext) {
+function init(kernel, desktop, LoggerContext) {
     const topBar = LS.SelectOne("#topOverlay");
 
     topBar.innerHTML = `<div id="commandTerminal" class="level-n3" style="display: none">
@@ -2041,7 +2041,7 @@ function init(kernel, website, LoggerContext) {
     const terminalOutput = terminalContainer.querySelector(".terminal-output");
 
     const paletteLogger = new LoggerContext("Command Palette");
-    website.palette = new CommandPalette({
+    desktop.commandPalette = new CommandPalette({
         wrapperElement: paletteContainer,
         menuElement: paletteContainer.querySelector(".completion-menu"),
         iconElement: paletteContainer.querySelector(".command-icon"),
@@ -2082,14 +2082,14 @@ function init(kernel, website, LoggerContext) {
     terminalObserver.observe(terminalOutput, { childList: true });
 
     const terminalWriter = {
-        log: website.palette.log.bind(website.palette)
+        log: desktop.commandPalette.log.bind(desktop.commandPalette)
     }
 
     kernel.terminalWriter = terminalWriter;
     paletteLogger.writer = terminalWriter;
 
     paletteBar.querySelector("button").onclick = () => {
-        website.palette.close();
+        desktop.commandPalette.close();
     };
 
     /**
@@ -2114,7 +2114,7 @@ function init(kernel, website, LoggerContext) {
 
     /*comptime*/ const ckMeta = kVersionMeta[kernel.version.split(".")[0]] || { codename: "Unknown", color: "var(--accent)" };
 
-    website.palette.register([
+    desktop.commandPalette.register([
         {
             name: "kernel-info",
             alias: ["kernel-version", "version"],
@@ -2268,7 +2268,7 @@ function init(kernel, website, LoggerContext) {
             },
 
             inputs: [
-                { name: "preset", type: "list", list: [ { name: "custom", icon: "bi-palette2", type: "color" }, ...website.ACCENT_COLORS.map(accent => ({
+                { name: "preset", type: "list", list: [ { name: "custom", icon: "bi-palette2", type: "color" }, ...app.ACCENT_COLORS.map(accent => ({
                     name: accent,
                     icon: `bi-circle-fill`,
                     accentColor: accent,
@@ -2285,7 +2285,7 @@ function init(kernel, website, LoggerContext) {
                 if (theme === "system") {
                     localStorage.removeItem("ls-theme"); LS.Color.setAdaptiveTheme();
                 } else {
-                    website.theme = theme;
+                    app.theme = theme;
                 }
             },
             inputs: [
@@ -2306,8 +2306,8 @@ function init(kernel, website, LoggerContext) {
             icon: "bi-tools",
             description: "Toolbars",
             onCalled(toolbar) {
-                website.openToolbar(toolbar);
-                website.palette.close();
+                desktop.openToolbar(toolbar);
+                desktop.commandPalette.close();
             },
 
             inputs: [
@@ -2341,7 +2341,7 @@ function init(kernel, website, LoggerContext) {
                                 // .loading(() => {}) // TODO: loading mark for the palette
                                 .done((instance) => {
                                     instance.open?.();
-                                    website.palette.close();
+                                    desktop.commandPalette.close();
                                 })
                                 .catch(error => {
                                     terminalWriter.log("Failed to open app: " + (error.message || error.error || "Unknown error"));
@@ -2412,7 +2412,7 @@ function init(kernel, website, LoggerContext) {
             alias: ["exit"],
             icon: "bi-x-circle",
             description: "Close the command palette",
-            onCalled() { website.palette.close() }
+            onCalled() { desktop.commandPalette.close() }
         }
     ]);
 }

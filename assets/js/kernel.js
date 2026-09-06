@@ -2,13 +2,15 @@
     lstv.space kernel
     Author: Lukas (thelstv)
     Copyright: (c) https://lstv.space
+    No commercial use permitted.
 
     Last modified: 2026
     See: https://github.com/the-lstv/lstv-web
 */
 
-"use walker";
+"use walker { walk $INPUT -v1.1 --no-exec --block-agents; _ifset PROD_BUILD else return 1; g-walker rebuild -I../glitter/compilers/ --toolset glitter-js-v8-specific --lang js -OM --format min -i $INPUT -o assets/js/kernel.js }";
 
+// TODO:
 const BUILTIN_APPS = [
     {
         "name": "Townhall",
@@ -98,8 +100,8 @@ const BUILTIN_APPS = [
     }
 ];
 
-// --- SOME PRE-INITIALIZATION STUFF ---
-// Note that if the environment is correct, this module should be wrapped in an IIFE by the build system & not leak
+// --- INITIALIZATION STUFF & DEFINITIONS (SKIP THIS PART)
+// If the environment is correct, this file should be wrapped in an IIFE by the build system & not leak.
 
 if(window.__kernelInitialized) {
     throw new Error("Kernel was already initialized - this is a bug!");
@@ -110,10 +112,10 @@ if(globalThis === this) {
 }
 
 window.__kernelInitialized = true;
-
 const KERNEL_VERSION = (typeof __buildVersion !== "undefined")? __buildVersion: "1.3.0-beta";
 
-window.cacheKey = "?mtime=" + (LS.Util.parseURLParams(document.currentScript?.src, "mtime") || Date.now()); // Mtime mapped to kernel.js (This should never fallback)
+// Mtime mapped to kernel.js (This should never fallback)
+window.cacheKey = "?mtime=" + (LS.Util.parseURLParams(document.currentScript?.src, "mtime") || Date.now());
 
 if(!window.LS || typeof LS !== "object" || LS.v < 5) {
     window.__loadError('<h3 style="margin:40px 20px">The application framework failed to load. Please try again later.</h3>')
@@ -142,12 +144,12 @@ Document.prototype.write = Document.prototype.writeln = function() {
 };
 
 // --- MEMORY SAFETY ---
-// We can use globals in the kernel, anywhere else should throw an error
-
-// This is to catch bad code usage before it leaks. Not needed in production, but can be useful during development. Will throw if any context-unsafe APIs are used outside of the kernel or a registered application context.
+// We can use globals in the kernel code, anywhere else should throw an error.
+// This is to help catch bad code before it causes leaks.
+// Not needed in production, but can be useful during development, eg. if I forget to correctly isolate something.
+// Why am I writing comments that nobody will read.
 // LS.Context.debugEnforceContextSafety();
 // LS.Context.debugWarnContextSafety();
-
 const setTimeout = LS.Context.setTimeout;
 const setInterval = LS.Context.setInterval;
 const clearTimeout = LS.Context.clearTimeout;
@@ -156,23 +158,8 @@ const requestAnimationFrame = LS.Context.requestAnimationFrame;
 const queueMicrotask = LS.Context.queueMicrotask;
 const fetch = LS.Context.fetch;
 
-/**
- * Application model:
- * - Kernel                     - Manages everything
- *   - Viewport                 - Renders ContentContexts
- *   - Page / Application       - Represents a single page or application instance
- *     - ContentContext         - Manages content, assets, state
- *       - Assets               - Styles and Scripts
- *       - Modules              - Extend functionality of ContentContexts
- *       - SPA Extensions       - Handle SPA navigation for specific paths
- *   - ContentContext           - Can be as an application itself
- *       - Window (Viewport)    - Contexts can create viewports in the form of windows.
- */
-
-
-// --- START ---
-
 try {
+// --- CLASSES
 
 /**
  * LoggerContext class
@@ -1081,15 +1068,30 @@ class ContentContext extends LS.View {
     }
 
     /**
-     * Equivalent to website.watchUser, but scoped to this context.
-     * @param {*} callback 
+     * Equivalent to website.watchUser, scoped to this context.
+     * Gets called once when the user state is loaded, and then every time the user state changes.
+     * 
+     * You MUST use this to signal that your context is aware of dynamic user state changes, otherwise the kernel can suspend or reload your context on login/logout.
+     * 
+     * @param {*} callback Callback function that receives (isLoggedIn, userFragment) when the user state changes.
+     * @returns {void}
+     * 
+     * @example
+     * // The following will run at least once as soon as the user state is available, and then every time the user state changes.
+     * context.watchUser((isLoggedIn, userFragment) => {
+     *     if(isLoggedIn) {
+     *         console.log("User logged in:", userFragment);
+     *     } else {
+     *         console.log("User logged out");
+     *     }
+     * });
      */
     watchUser(callback) {
-        website.once("user-loaded", () => {
+        app.once("user-loaded", () => {
             if(this.destroyed) return;
 
-            callback(website.isLoggedIn, website.userFragment);
-            this.addExternalEventListener(website, "user-changed", callback);
+            callback(app.isLoggedIn, app.userFragment);
+            this.addExternalEventListener(app, "user-changed", callback);
         });
     }
 
@@ -1332,7 +1334,7 @@ class Viewport extends LS.EventEmitter {
                         history.pushState({ path: historyPath }, document.title, historyPath);
                     }
                     document.title = `LSTV | ${manifest?.name || appId}`;
-                    website.desktop.closeToolbar();
+                    app.desktop.closeToolbar();
                 }
 
                 kernel.log(`Opened app ${appId} from route ${path}`);
@@ -1437,7 +1439,7 @@ class Viewport extends LS.EventEmitter {
                         history.pushState({ path: historyPath }, document.title, historyPath);
                     }
                 }
-                website.desktop.closeToolbar();
+                app.desktop.closeToolbar();
             }
 
             if(hash) {
@@ -1487,7 +1489,7 @@ class Viewport extends LS.EventEmitter {
         this.errorPageElement; // Ensure it's created
 
         this.errorPageStatus.textContent = String(status);
-        this.errorPageMessage1.textContent = website.errorMessages[status] || 'Unexpected error.';
+        this.errorPageMessage1.textContent = app.errorMessages[status] || 'Unexpected error.';
         this.errorPageMessage2.textContent = this.errorPageMessage1.textContent;
         this.target.replaceChildren(this.errorPageElement);
     }
@@ -1540,7 +1542,6 @@ class Viewport extends LS.EventEmitter {
         this.options = null;
     }
 }
-
 
 /**
  * Thread class
@@ -1595,15 +1596,11 @@ class Thread extends LS.EventEmitter {
 
 class MusicPlayer {
     constructor() {
-        this.toolbarElement = LS.SelectOne("#musicPlayer");
+        this.toolbarElement = LS.SelectOrCreate("#musicPlayer");
         this.initialized = false;
-        if(!this.toolbarElement) {
-            console.warn("Music Player toolbar element not found.");
-            return;
-        }
 
-        shortcutManager.register('ctrl+m', () => {
-            website.desktop.openToolbar("musicPlayer", true);
+        shortcutManager.assign('OPEN_MUSIC_PLAYER', () => {
+            app.desktop.openToolbar("musicPlayer", true);
         });
     }
 
@@ -1636,37 +1633,35 @@ class MusicPlayer {
             }
         }
 
-        // Panel
-        this.musicStatusElement = LS.Create("button", {
-            id: "musicButton",
-            class: "pill",
-            tooltip: "Music Player <kbd>Ctrl+M</kbd>",
-            attr: { "aria-label": "Open music player" },
-            inner: [
-                { tag: "i", class: "bi-vinyl-fill" },
-                { tag: "span", class: "music-player-status text-overflow-nowrap", inner: "Stopped" }
-            ]
-        });
+        // // Panel
+        // this.musicStatusElement = LS.Create("button#musicButton.pill", {
+        //     tooltip: "Music Player <kbd>Ctrl+M</kbd>",
+        //     attr: { "aria-label": "Open music player" },
+        //     inner: [
+        //         { tag: "i", class: "bi-vinyl-fill" },
+        //         { tag: "span", class: "music-player-status text-overflow-nowrap", inner: "Stopped" }
+        //     ]
+        // });
 
-        this.musicStatusText = this.musicStatusElement.querySelector(".music-player-status");
+        // this.musicStatusText = this.musicStatusElement.querySelector(".music-player-status");
         
-        this.playButtonElement = this.toolbarElement.querySelector(".music-player-play-pause");
-        this.playButtonElement.onclick = () => {
-            this.playToggle();
-        };
+        // this.playButtonElement = this.toolbarElement.querySelector(".music-player-play-pause");
+        // this.playButtonElement.onclick = () => {
+        //     this.playToggle();
+        // };
 
-        this.repeatMode = "off";
-        this.repeatButtonElement = this.toolbarElement.querySelector(".music-player-repeat");
-        this.repeatButtonElement.onclick = () => {
-            this.toggleRepeatMode();
-        };
+        // this.repeatMode = "off";
+        // this.repeatButtonElement = this.toolbarElement.querySelector(".music-player-repeat");
+        // this.repeatButtonElement.onclick = () => {
+        //     this.toggleRepeatMode();
+        // };
 
-        this.musicStatusElement.onclick = () => {
-            website.desktop.openToolbar("musicPlayer", true);
-        };
+        // this.musicStatusElement.onclick = () => {
+        //     app.desktop.openToolbar("musicPlayer", true);
+        // };
 
-        this.musicStatusElement.style.display = "none";
-        LS.SelectOne(".headerLeftContainer").appendChild(this.musicStatusElement);
+        // this.musicStatusElement.style.display = "none";
+        // LS.SelectOne(".headerLeftContainer").appendChild(this.musicStatusElement);
     }
 
     setCover(imageURL = null, coverArtURL = null) {
@@ -1717,9 +1712,9 @@ class MusicPlayer {
         LS.Animation.fadeIn(this.musicStatusElement, 300, "right");
         this.audio.src = this.currentDetails.source;
 
-        website.collapseItems.schedule();
+        app.collapseItems.schedule();
         setTimeout(() => {
-            website.collapseItems.schedule();
+            app.collapseItems.schedule();
         }, 10);
 
         if(playImmediately) {
@@ -1803,39 +1798,571 @@ class MusicPlayer {
             this.audio.loop = false;
         }
     }
+
+    destroy() {
+        if(this.destroyed) return;
+        this.destroyed = true;
+
+        if(this.audio) {
+            this.audio.pause();
+            this.audio.src = "";
+            this.audio = null;
+        }
+
+        if(this.toolbarElement) {
+            this.toolbarElement.remove();
+            this.toolbarElement = null;
+        }
+
+        if(this.musicStatusElement) {
+            this.musicStatusElement.remove();
+            this.musicStatusElement = null;
+        }
+
+        this.currentDetails = null;
+    }
 }
 
-class Desktop {
-    constructor(options) {
-        this.musicPlayer = new MusicPlayer;
-        this.windowManager = LS.WindowManager;
+
+/**
+ * SoundBox class
+ * It is used for playing system sound effects and other simple audio with user-overridable sound packs.
+ * A revamped version of my old jukebox.js mini-library.
+ * 
+ * This functions separetely from the global media player.
+ * 
+ * @param {Object} options - The options for the SoundBox.
+ * @param {number} options.volume - The global volume of the SoundBox.
+ * @param {SoundBox} parent - Optional parent SoundBox. Will inherit the sound map but have its own volume and threads for context isolation.
+ * @param {string} nameScope - Optional scope for sound names to also isolate created sounds under a namespace.
+ */
+class SoundBox {
+    constructor(options = {}, parent = null, nameScope = null) {
+        this.parent = parent;
+        this.nameScope = nameScope;
+
+        this.ctx =      parent? parent.ctx: new (window.AudioContext || window.webkitAudioContext)();
+        this.soundMap = parent? parent.soundMap: new Map();
+        this.threads =  new Set();
+
+        // Global gain node for controlling volume of all sounds played through this SoundBox
+        this.gainNode = this.ctx.createGain();
+        this.gainNode.connect(this.ctx.destination);
+
+        this.setVolume(options.volume ?? 1);
+
+        if(options.sounds) {
+            this.registerMany(options.sounds);
+        }
     }
 
+    /**
+     * Sets the volume of all sounds played through this SoundBox.
+     * @param {number} volume The volume to set, between 0 and 1.
+     */
+    setVolume(volume = 1) {
+        this.gainNode.gain.value = Math.max(0, Math.min(1, volume));
+    }
+
+    get volume() {
+        return this.gainNode.gain.value;
+    }
+
+    set volume(value) {
+        this.setVolume(value);
+    }
+
+    /**
+     * Creates a new sound thread. Loads the sound if it is not already loaded.
+     * @param {*} soundName The name of the sound to play. Must be registered first.
+     * @param {*} options Options for the sound thread. Can include volume, loop, playbackRate, etc.
+     * @returns {Promise<SoundBoxThread>} A promise that resolves to a SoundBoxThread instance.
+     */
+    async createThread(soundName, options = {}) {
+        let sound = this.soundMap.get(soundName);
+        if(!sound) {
+            kernel.error("Sound not found:", soundName);
+            return null;
+        }
+
+        if(!sound.buffer) {
+            await this.load(soundName);
+            if(!sound.buffer) {
+                return;
+            }
+        }
+
+        const thread = new SoundBoxThread(this, sound, options);
+        return thread;
+    }
+
+    /**
+     * Helper that plays a sound by creating a thread and starting it. It will load the sound if it is not already loaded.
+     * @param {*} soundName The name of the sound to play. Must be registered first.
+     * @param {*} options Options for the sound thread. Can include volume, loop, playbackRate, etc.
+     * @returns {Promise<void>} A promise that resolves when the sound is played.
+     */
+    async play(soundName, options = {}) {
+        options ??= {};
+        options.ephemeral ??= true;
+        options.autoPlay  ??= true;
+
+        const thread = await this.createThread(soundName, options);
+        if(!thread) {
+            kernel.error("Failed to create sound thread for:", soundName);
+            return;
+        }
+        return thread;
+    }
+
+    /**
+     * Registers a sound with the SoundBox.
+     * @param {*} soundName The name of the sound to register.
+     * @param {*} options Options for the sound. Can include src (URL), volume, loop, etc.
+     */
+    register(soundName, options) {
+        if(!soundName || typeof soundName !== "string") {
+            kernel.error("Sound name must be a non-empty string.");
+            return;
+        }
+
+        if(this.nameScope) {
+            soundName = `${this.nameScope}:${soundName}`;
+        }
+
+        if(this.soundMap.has(soundName)) {
+            kernel.warn("Sound already registered:", soundName);
+            return;
+        }
+
+        if(typeof options === "string") {
+            options = { src: options };
+        }
+
+        this.soundMap.set(soundName, options);
+    }
+
+    update(soundName, options) {
+        if(this.nameScope) {
+            soundName = `${this.nameScope}:${soundName}`;
+        }
+
+        const existingOptions = this.soundMap.get(soundName);
+        if(!existingOptions) {
+            kernel.warn("Sound not registered:", soundName);
+            return;
+        }
+
+        Object.assign(existingOptions, options);
+    }
+
+    /**
+     * Registers multiple sounds at once.
+     * @param {Object} sounds - An object where keys are sound names and values are options.
+     */
+    registerMany(sounds) {
+        for(const [soundName, options] of Object.entries(sounds)) {
+            this.register(soundName, options);
+        }
+    }
+
+    unregister(soundName) {
+        if(this.nameScope) {
+            soundName = `${this.nameScope}:${soundName}`;
+        }
+
+        if(!this.soundMap.has(soundName)) {
+            kernel.warn("Sound not registered:", soundName);
+            return;
+        }
+
+        this.soundMap.delete(soundName);
+    }
+
+    /**
+     * Unregisters multiple sounds at once.
+     * @param {string[]} soundNames - An array of sound names to unregister.
+     */
+    unregisterMany(soundNames) {
+        for(const soundName of soundNames) {
+            this.unregister(soundName);
+        }
+    }
+
+    /**
+     * Loads a sound into the SoundBox. If the sound is already loaded, it will not reload it.
+     * @param {*} soundName The name of the sound to load.
+     * @returns {Promise<boolean>} Returns true if the sound is playable, false if something went wrong.
+     */
+    async load(soundName) {
+        const sound = this.soundMap.get(soundName);
+
+        if(!sound) {
+            kernel.error("Sound not found:", soundName);
+            return false;
+        }
+
+        if(sound.buffer && sound.__lastSrc === sound.src) return true;
+
+        try {
+            const response = await fetch(sound.src);
+            const arrayBuffer = await response.arrayBuffer();
+            sound.buffer = await this.ctx.decodeAudioData(arrayBuffer);
+            sound.__lastSrc = sound.src;
+            return true;
+        } catch (e) {
+            kernel.error("Failed to load sound:", soundName, e);
+            return false;
+        }
+    }
+
+    async loadAll() {
+        const loadPromises = [];
+        for(const [soundName, sound] of this.soundMap.entries()) {
+            loadPromises.push(this.load(soundName));
+        }
+        await Promise.all(loadPromises);
+    }
+
+    stopAll(id = null) {
+        for(const thread of this.threads) {
+            if(id === null || thread.userId === id) {
+                thread.terminate();
+            }
+        }
+        this.threads.clear();
+    }
+
+    pauseAll(id = null) {
+        for(const thread of this.threads) {
+            if(id === null || thread.userId === id) {
+                thread.pause();
+            }
+        }
+    }
+
+    resumeAll(id = null) {
+        for(const thread of this.threads) {
+            if(id === null || thread.userId === id) {
+                thread.resume();
+            }
+        }
+    }
+
+    destroy() {
+        if(this.destroyed) return;
+        this.destroyed = true;
+
+        this.stopAll();
+
+        this.soundMap.clear();
+        this.soundMap = null;
+
+        if(this.ctx) {
+            this.ctx.close();
+            this.ctx = null;
+        }
+    }
+}
+
+/**
+ * SoundBoxThread class
+ * Represents a single sound thread that can be played, stopped, and controlled.
+ * 
+ * This class has no awareness of loading or managing media, it simply provides an interface for controlling an existing sound buffer.
+ */
+class SoundBoxThread {
+    constructor(parent, sound, options = {}) {
+        if(!(parent instanceof SoundBox) || !sound) {
+            throw new Error("SoundBoxThread requires a parent SoundBox and a source.");
+        }
+
+        this.parent  = parent;
+        this.sound   = sound;
+        this.options = options ?? {};
+        this.parent.threads.add(this);
+
+        this.created = false;
+        this.source  = null;
+        this.destroyed = false;
+
+        this._speed = this.options.speed ?? 1;
+        this._loop = this.options.loop   ?? false;
+        this.volume = this.options.volume ?? 1;
+
+        this.userId = this.options.userId ?? null;
+
+        // this.span = [0, -1];
+
+        if(this.options.autoPlay) {
+            this.play();
+        } else if(this.options.autoCreate) {
+            this.create();
+        }
+    }
+
+    /**
+     * Creates (or reloads) the audio context for the sound thread.
+     */
+    create() {
+        if(this.destroyed) {
+            throw new Error("Cannot initialize a destroyed SoundBoxThread.");
+        }
+
+        this.disposeSource();
+        this.source = this.parent.ctx.createBufferSource();
+        this.source.buffer = this.sound.buffer;
+
+        this.source.connect(this.outputNode);
+
+        this.loop = this._loop;
+        this.speed = this._speed;
+
+        this.created = true;
+    }
+
+    /**
+     * Plays the sound thread from a specific offset and for a specific duration.
+     * Can be called multiple times to play the sound again.
+     * @param {number} offset - The offset in seconds to start playing from.
+     * @param {number} duration - The duration in seconds to play. If negative, plays the entire sound.
+     */
+    play(offset = 0, duration = -1) {
+        if(this.destroyed) {
+            throw new Error("Cannot play a destroyed SoundBoxThread.");
+        }
+
+        // Sadly the API was desgined by a r*tard so we have to recreate the source every time we play a sound.
+        // if(!this.created) this.create();
+        this.create();
+
+        if(duration < 0) {
+            duration = this.duration;
+        }
+
+        this.source.start(0, offset, duration);
+
+        this.completedPromise().then(() => {
+            if(this.options.ephemeral) {
+                // Terminate & delete the thread after the sound has finished playing.
+                this.terminate();
+            } else {
+                // We could reuse the node but we can't.
+                this.source.disconnect();
+                this.source = null;
+            }
+        });
+    }
+
+    completedPromise() {
+        if(!this.source) {
+            return Promise.resolve();
+        }
+
+        return new Promise((resolve) => {
+            this.source.onended = () => {
+                resolve();
+            };
+        });
+    }
+
+    get duration() {
+        if(!this.source) {
+            return 0;
+        }
+        return this.source.buffer?.duration || 0;
+    }
+
+    get volume() {
+        return this.gainNode?.gain.value ?? 1;
+    }
+
+    set volume(value) {
+        value = Math.max(0, Math.min(1, value ?? 1));
+
+        if(this.gainNode) {
+            this.gainNode.gain.value = value;
+            return;
+        }
+
+        if(value === 1) {
+            // We can skip creating a gain node if the volume is 1.
+            this.gainNode = null;
+            this.outputNode = this.parent.gainNode;
+            return;
+        }
+
+        this.gainNode = this.parent.ctx.createGain();
+        this.gainNode.gain.value = value;
+        this.gainNode.connect(this.parent.gainNode);
+        this.outputNode = this.gainNode;
+    }
+
+    get loop() {
+        return this._loop;
+    }
+
+    set loop(value) {
+        this._loop = !!value;
+        if(this.source) {
+            this.source.loop = this._loop;
+        }
+    }
+
+    get speed() {
+        return this._speed;
+    }
+
+    set speed(value) {
+        if(!this.source) return;
+        this.source.playbackRate.value = value;
+        this._speed = this.source.playbackRate.value;
+    }
+
+    pause() {
+        if(!this.source) return;
+        this.source.playbackRate.value = 0;
+    }
+
+    resume() {
+        if(!this.source) return;
+        this.source.playbackRate.value = this._speed;
+    }
+
+    stop() {
+        if(!this.source) return;
+        try {
+            this.source.stop();
+        } catch (e) {
+            console.error("Error stopping audio source:", e);
+        }
+    }
+
+    disposeSource() {
+        this.stop();
+        if(this.source) {
+            this.source.disconnect();
+            this.source = null;
+        }
+    }
+
+    terminate() {
+        this.disposeSource();
+        if(this.gainNode) {
+            this.gainNode.disconnect();
+            this.gainNode = null;
+        }
+        this.parent.threads.delete(this);
+        this.parent = null;
+        this.sound = null;
+        this.options = null;
+        this.created = false;
+        this.source = null;
+        this.outputNode = null;
+        this.destroyed = true;
+    }
+}
+
+
+/**
+ * Desktop class
+ * Represents the virtual desktop environment and its components.
+ * It does not manage windows or content (that is done by LS.WindowManager).
+ */
+class Desktop {
+    name = "lide-web";
+    version = "1.0.0-alpha";
+    codeName = "Based on LiDE 12 Hiroki";
+
+    constructor(options) {
+        this.windowManager = LS.WindowManager;
+
+        // System sounds
+        this.soundBox = new SoundBox({
+            volume: 0.5,
+            sounds: {
+                "click": { src: "/assets/audio/system/sfx/click.mp3" },
+                "notification": { src: "/assets/audio/system/sfx/notification.mp3" },
+                "error": { src: "/assets/audio/system/sfx/error.mp3" },
+                "success": { src: "/assets/audio/system/sfx/success.mp3" },
+                "startup": { src: "/assets/audio/system/sfx/startup_1.wav" },
+                "timer": { src: "/assets/audio/system/sfx/timer.mp3" },
+            }
+        }, null, "system");
+
+        // Enables closing the toolbar via esc
+        this.ToolbarStackRef = { close() { app.desktop.closeToolbar() } };
+
+        // Initialize music player (for global media controls, and it is also a player on it's own.)
+        this.musicPlayer = new MusicPlayer;
+
+        this.isToolbarOpen = false;
+    }
+
+    /**
+     * The state of the desktop's panel.
+     * @type {Array}
+     */
     // Todo: this is user data
+    // panelState = [
+    //     { kind: "website-header" },
+    //     { kind: "spacer" },
+    //     { kind: "accountsButton" },
+    //     { kind: "appsButton" },
+    //     { kind: "themeButton" },
+    //     { kind: "commandPaletteButton" },
+    // ]
     panelState = [
-        { kind: "website-header" },
-        { kind: "spacer" },
-        { kind: "accountsButton" },
         { kind: "appsButton" },
+        { kind: "accountsButton" },
         { kind: "themeButton" },
         { kind: "commandPaletteButton" },
+        { kind: "spacer" },
+        { kind: "clock" }
     ]
 
-    setState(state) {
-
-    }
-
     static panelComponents = new Map([
-        ["accountsButton", { label: "Account", showIcon: false, buttonLabel: { class: "accountsButton", inner: [{ reactive: "user.username ?? 'Log-In'" }, { class: "profile-picture-preview", inner: { tag: "i", class: "bi-person-fill" } }] }, description: "View and edit your profile or log-in", icon: "bi-person-fill", onclick: () => website.desktop.openToolbar("login") }],
+        ["accountsButton", { label: "Account", showIcon: false, buttonLabel: { class: "accountsButton", inner: [{ reactive: "user.username ?? 'Log-In'" }, { class: "profile-picture-preview", inner: { tag: "i", class: "bi-person-fill" } }] }, description: "View and edit your profile or log-in", icon: "bi-person-fill", onClick: () => app.desktop.openToolbar("login") }],
 
-        ["appsButton", { label: "Apps", tooltip: "Applications", description: "View applications", icon: "bi-grid-fill", onclick() { website.desktop.openToolbar("apps", true) } }],
+        ["appsButton", { label: "Apps", tooltip: "Applications", description: "View applications", icon: "bi-grid-fill", onClick() { app.desktop.openToolbar("apps", true) } }],
 
-        // ["assistantButton", { showLabel: false, label: "Assistant", description: "Open Assistant", icon: "bi-stars", onclick() {
+        // ["assistantButton", { showLabel: false, label: "Assistant", description: "Open Assistant", icon: "bi-stars", onClick() {
         //     website.desktop.openToolbar("assistant", true);
         // } }],
 
-        ["themeButton", { buttonLabel: { tag: "i", class: "bi-palette-fill" }, label: "Customize", description: "Customize the site appearance", icon: 'bi-' + (LS.Color.theme === "dark" ? "moon-stars" : "sun") + "-fill", onclick() {
-            website.desktop.openToolbar("theme", true);
+        ["themeButton", { buttonLabel: { tag: "i", class: "bi-palette-fill" }, label: "Customize", description: "Customize the site appearance", icon: 'bi-' + (LS.Color.theme === "dark" ? "moon-stars" : "sun") + "-fill",
+            onClick() {
+                app.desktop.openToolbar("theme", true);
+            },
+
+            onInit() {
+                // Color customization
+                for(let accent of app.ACCENT_COLORS) {
+                    LS.SelectOne("#accentButtons").add(LS.Create("button", {
+                        class: "square",
+                        inner: accent === "white" ? LS.Create("i", { class: "bi-x-circle-fill" }) : null,
+                        accent,
+                        tooltip: accent === "white" ? "Reset": (accent.charAt(0).toUpperCase() + accent.slice(1)),
+                        onclick(){
+                            LS.Color.setAccent(accent);
+                        }
+                    }));
+
+                    LS.SelectOne("#accentButtons").querySelector("input[type=color]").addEventListener("input", function (){
+                        LS.Color.setAccent(this.value);
+                    });
+                }
+            }
+        }],
+
+        ["commandPaletteButton", { showLabel: false, label: "Command Palette", tooltip: "Command Palette", description: "Open Command Palette", icon: "bi-terminal", onClick() {
+            if(!app.hasCapability("command-palette")) {
+                LS.Toast.show("Command Palette is not available in this environment.");
+                return;
+            }
+
+            app.desktop.closeToolbar();
+            app.desktop.openPalette();
         }}],
 
         ["clock", {
@@ -1849,28 +2376,33 @@ class Desktop {
 
         }],
 
-        ["commandPaletteButton", { showLabel: false, label: "Command Palette", tooltip: "Command Palette", description: "Open Command Palette", icon: "bi-terminal", onclick() {
-            website.desktop.closeToolbar();
-            website.openPalette();
-        }}],
+        ["website-header", {
+            getElement: () => LS.Create("a[href=/].homeButton[aria-label=LSTV Homepage]", {
+                html: `<svg xmlns="http://www.w3.org/2000/svg" width="21" height="15" fill="none"><path d="M19.1689 12.3682V13.7529H19.1182L18.3242 12.3682H19.1689ZM14.9346 13.7529H2.3457L8.63965 2.81445L14.9346 13.7529ZM19.1689 6.82617V8.48926H16.0996L15.1465 6.82617H19.1689ZM19.1689 1.5625V2.94727H12.9219L12.1279 1.5625H19.1689Z" stroke="currentColor" stroke-width="2.494"/></svg><span class="headerTitle">LSTV</span> <span class="headerText"></span>`
+            })
+        }],
+
+        ["spacer", {
+            getElement: () => LS.Create(".spacer")
+        }]
     ]);
 
     openToolbar(name, toggle = false) {
         console.log("Opening toolbar:", name, "Toggle:", toggle);
-        if(website.currentToolbar == name && website.isToolbarOpen) {
-            if(toggle) website.desktop.closeToolbar();
+        if(app.currentToolbar == name && app.isToolbarOpen) {
+            if(toggle) app.desktop.closeToolbar();
             return;
         }
 
-        const toolbar = website.desktop.toolbars.get(name);
+        const toolbar = app.desktop.toolbars.get(name);
         if(!toolbar) return;
 
-        const previousToolbar = website.currentToolbar && website.desktop.toolbars.get(website.currentToolbar);
+        const previousToolbar = app.currentToolbar && app.desktop.toolbars.get(app.currentToolbar);
         if(previousToolbar) {
             if(typeof previousToolbar.onClose === "function") previousToolbar.onClose();
 
             if(previousToolbar.panelItem) {
-                toolbar.eachButtonOfKind(website.currentToolbar, button => button.classList.remove("open"));
+                this.eachButtonOfKind(app.currentToolbar, button => button.classList.remove("open"));
             }
         }
 
@@ -1878,49 +2410,57 @@ class Desktop {
 
         // TODO: this is incredibly ass
         toolbar.element.classList.add("open");
-        for(const tb of website.desktop.toolbars.values()) {
+        for(const tb of app.desktop.toolbars.values()) {
             if(tb !== toolbar) tb.element.classList.remove("open");
         }
 
-        if (website.isToolbarOpen) LS.Animation.slideInToggle(toolbar.element, previousToolbar?.element || null);
-        if (!website.isToolbarOpen) LS.Animation.fadeIn(toolbar.element, "up");
+        if (app.isToolbarOpen) LS.Animation.slideInToggle(toolbar.element, previousToolbar?.element || null);
+        if (!app.isToolbarOpen) LS.Animation.fadeIn(toolbar.element, "up");
 
-        website.isToolbarOpen = true;
-        website.currentToolbar = name;
-        website.quickEmit("toolbar-open", name);
+        app.isToolbarOpen = true;
+        app.currentToolbar = name;
+        app.quickEmit("toolbar-open", name);
         kernel.viewport.target.classList.add("shade");
-        LS.Stack.push(ToolbarStackRef);
+        LS.Stack.push(this.ToolbarStackRef);
 
-        toolbar.eachButtonOfKind(website.currentToolbar, button => button.classList.add("open"));
+        this.eachButtonOfKind(app.currentToolbar, button => button.classList.add("open"));
 
         return toolbar;
     }
 
+    eachButtonOfKind(kind, callback) {
+        for(const item of app.desktop.panelState) {
+            if(item.kind === kind && item.element instanceof HTMLElement) {
+                callback(item.element);
+            }
+        }
+    }
+
     closeToolbar() {
         console.log("Closing toolbar");
-        if(!website.isToolbarOpen) return;
+        if(!app.isToolbarOpen) return;
 
-        const toolbar = website.desktop.toolbars.get(website.currentToolbar);
+        const toolbar = app.desktop.toolbars.get(app.currentToolbar);
         LS.Animation.fadeOut(toolbar.element, "down");
 
         if(toolbar) {
             if(typeof toolbar.onClose === "function") toolbar.onClose();
-            toolbar.panelItem instanceof HTMLElement? toolbar.panelItem: website.desktop.panelState.forEach(item => {
-                if(item.kind === website.currentToolbar) item.element.classList.remove("open");
+            toolbar.panelItem instanceof HTMLElement? toolbar.panelItem: app.desktop.panelState.forEach(item => {
+                if(item.kind === app.currentToolbar) item.element.classList.remove("open");
             });
-            website.currentToolbar = null;
+            app.currentToolbar = null;
         }
 
-        website.isToolbarOpen = false;
-        website.quickEmit("toolbar-close");
+        app.isToolbarOpen = false;
+        app.quickEmit("toolbar-close");
         kernel.viewport.target.classList.remove("shade");
-        LS.Stack.remove(ToolbarStackRef);
+        LS.Stack.remove(this.ToolbarStackRef);
     }
 
     async openPalette() {
-        if (website.isEmbedded) return;
+        if (app.isEmbedded) return;
 
-        if (!website.palette) {
+        if (!this.commandPalette) {
             if(kernel._initializingPalette) {
                 await kernel._initializingPalette;
             } else {
@@ -1930,7 +2470,7 @@ class Desktop {
             }
         }
 
-        website.palette.open();
+        this.commandPalette.open();
     }
 
     showLoginToolbar(toggle = false) {
@@ -1938,11 +2478,11 @@ class Desktop {
         // accountsButton.focus();
     
         setTimeout(() => {
-            if(!toggle && website.isToolbarOpen && website.currentToolbar === "login") return;
+            if(!toggle && app.isToolbarOpen && app.currentToolbar === "login") return;
 
-            website.desktop.openToolbar("login", toggle);
+            app.desktop.openToolbar("login", toggle);
 
-            if(!website.isLoggedIn) setTimeout(() => {
+            if(!app.isLoggedIn) setTimeout(() => {
                 LS.SelectOne("#loginPopup")?.querySelector("button,input")?.focus();
             }, 0);
         }, 0);
@@ -1969,7 +2509,7 @@ class Desktop {
             description: "View and edit your profile or log-in",
             panelItem: "accountsButton",
             onOpen() {
-                website.loginTabs.set(website.isLoggedIn? "account": "default", true);
+                app.loginTabs.set(app.isLoggedIn? "account": "default", true);
             }
         }],
 
@@ -1983,6 +2523,24 @@ class Desktop {
                 if(!kernel.applicationMenu.initialized) {
                     kernel.applicationMenu.init();
                 }
+            }
+        }],
+
+        ["theme", {
+            element: LS.SelectOne("#toolbarTheme"),
+            name: "Theme",
+            description: "Customize the site appearance",
+            panelItem: "themeButton"
+        }],
+
+        ["musicPlayer", {
+            element: LS.SelectOne("#musicPlayer"),
+            name: "Music Player",
+            description: "Control music playback",
+            get panelItem() { return website.desktop.musicPlayer.musicStatusElement; },
+
+            onOpen() {
+                if(!website.desktop.musicPlayer.initialized) website.desktop.musicPlayer.init();
             }
         }],
 
@@ -2019,53 +2577,77 @@ class Desktop {
     ])
 
     initPanel() {
-        const nav =        LS.SelectOrCreate("#topPanel");
         const moreButton = LS.SelectOrCreate("#moreButton");
-        const container =  LS.SelectOrCreate(".headerButtons");
-
-        const menu = LS.SelectOrCreate("#toolbarMore");
-
         moreButton.addEventListener("click", () => {
-            website.desktop.openToolbar("more", true);
+            app.desktop.openToolbar("more", true);
         });
 
-        const navPadding = 28 + 5;
-        const gap = 10;
-
-        // TODO
-        // for (const [key, item] of this.panelComponents) {
-        //     if(item.shortcuts) {
-        //         shortcutManager.register(item.shortcuts, () => {
-        //             // if(item.onclick) item.onclick.call(item.element);
-        //             console.log("skjfklsfj")
-        //         });
-        //     }
-        // }
-
-        const collapseItems = new LS.Util.FrameScheduler(() => {
+        this.frameScheduler = new LS.Util.FrameScheduler(() => {
             // Read widths first to prevent relayouts
             const isTooSmall = window.innerWidth < 100 || window.innerHeight < 200; // Precalc
             if(resizeMessageSwitch.set(isTooSmall)) {
                 return;
             }
 
-            const availableSpace = nav.clientWidth - navPadding - gap - moreButton.clientWidth - (nav.firstElementChild?.clientWidth || 0);
-            const moreButtonClientWidth = moreButton.clientWidth;
+            this.updatePanelLayout();
+        });
 
-            // Try to batch appends (god i hate the dom api SO much)
-            let frag, menuFrag;
+        const resizeMessageContainer = LS.SelectOrCreate("resizeMessage");
+        const resizeMessageSwitch = new LS.Util.Switch((on) => {
+            if(on) {
+                resizeMessageContainer.style.display = "flex";
+                app.container.style.display = "none";
+            } else {
+                resizeMessageContainer.style.display = "none";
+                app.container.style.display = "flex";
+            }
+        });
 
-            let takenSpace = 0;
-            for(const item of website.desktop.panelState) {
-                const component = Desktop.panelComponents.get(item.kind);
-                if(!component) continue;
+        this.frameScheduler.schedule();
 
-                if(!item.element) {
-                    if(component.getElement) {
-                        item.element = component.getElement();
-                        continue;
-                    }
+        window.addEventListener("resize", this.__resizeHandler = () => {
+            this.frameScheduler.schedule();
+        });
 
+        if(window.visualViewport) {
+            window.visualViewport.addEventListener("resize", () => {
+                this.frameScheduler.schedule();
+            });
+        }
+
+        app.collapseItems = this.frameScheduler;
+
+        kernel.addExternalEventListener(document, "pointerdown", (event) => {
+            if (app.isToolbarOpen && !event.target.closest("#toolbars,.toolbar-button")) app.desktop.closeToolbar();
+        }, { passive: true });
+    }
+
+    updatePanelLayout() {
+        const navPadding = 28 + 5;
+        const gap = 10;
+
+        const nav =        LS.SelectOrCreate("#primaryPanel");
+        const container =  LS.SelectOrCreate(".headerButtons");
+        const menu = LS.SelectOrCreate("#toolbarMore");
+        const moreButton = LS.SelectOrCreate("#moreButton");
+
+        const availableSpace = nav.clientWidth - navPadding - gap - moreButton.clientWidth - (nav.firstElementChild?.clientWidth || 0);
+        const moreButtonClientWidth = moreButton.clientWidth;
+
+        // Try to batch appends (god i hate the dom api SO much)
+        let frag, menuFrag;
+
+        let takenSpace = 0;
+        for(const item of app.desktop.panelState) {
+            const component = Desktop.panelComponents.get(item.kind);
+            if(!component) continue;
+
+            if(!item.element) {
+                if(typeof component.onInit === "function") component.onInit();
+
+                if(component.getElement) {
+                    item.element = component.getElement();
+                } else {
                     let assumedWidth = 40 + gap;
                     const icon = component.showIcon === false ? null : { tag: "i", class: component.icon };
                     const buttonLabel = component.buttonLabel || component.label;
@@ -2077,139 +2659,153 @@ class Desktop {
                     item.element = LS.Create("button.toolbar-button.pill.elevated[aria-label='" + component.description + "']", {
                         tooltip: component.tooltip || component.label,
                         inner: component.showLabel !== false? [icon, { tag: "span", inner: buttonLabel, class: typeof buttonLabel === "string" ? "label" : "" }]: icon,
-                        onclick: () => {
-                            if(component.onclick) component.onclick.call(item.element);
-                        }
+                        onclick: component.onClick || null
                     });
 
-                    if(!frag) frag = document.createDocumentFragment();
-                    frag.appendChild(item.element);
-
+                    
                     // Browser layout rendering is an absolutely incompetent piece of crap
                     // so we need to guess the width to avoid the render>wait>read>render hell
                     // Of course this opens up a whole bunch of other possible problems
                     item.cachedWidth = assumedWidth;
                 }
 
-                // if(!item.bs) {
-                //     item.element.append(LS.Create({ style: "width:"+item.cachedWidth+"px;position:absolute;height:10px;background:red;z-index:10000;bottom:0;left:0" }));
-                //     item.bs = true;
-                // }
-
-                // item.cachedWidth = (item.element ? item.element.clientWidth : item.cachedWidth || 0) + gap;
+                if(!frag) frag = document.createDocumentFragment();
+                frag.appendChild(item.element);
             }
 
-            // const accountButtonText = website.panelItems.get("accountsButton")?.element?.textContent;
-            // if(accountButtonText) {
-            //     takenSpace += 46 + (accountButtonText.length * 8);
-            //     // console.log(takenSpace);
+
+            // if(!item.bs) {
+            //     item.element.append(LS.Create({ style: "width:"+item.cachedWidth+"px;position:absolute;height:10px;background:red;z-index:10000;bottom:0;left:0" }));
+            //     item.bs = true;
             // }
 
-            let hasCollapsedItems = false;
-            for (const item of website.desktop.panelState) {
-                if(!item.element) continue;
-                const detached = item.element.classList.contains("detached");
-
-                takenSpace += item.cachedWidth;
-
-                if(takenSpace > availableSpace) {
-                    hasCollapsedItems = true;
-                    if(detached) continue;
-                    item.element.classList.add("detached");
-
-                    if(!item.menuElement) {
-                        item.menuElement = LS.Create({
-                            class: "toolbar-menu-item",
-                            attributes: { "aria-label": item.description },
-                            inner: [{ tag: "i", class: item.icon }, { tag: "span", innerText: item.label }],
-                            onclick: () => {
-                                if(item.onclick) item.onclick.call(item.element);
-                            }
-                        })
-                    }
-
-                    if(!menuFrag) menuFrag = document.createDocumentFragment();
-                    menuFrag.appendChild(item.menuElement);
-                } else {
-                    if(!detached) continue;
-                    item.element.classList.remove("detached");
-                    if(item.menuElement && item.menuElement.parentElement) {
-                        item.menuElement.parentElement.removeChild(item.menuElement);
-                    }
-                }
-            }
-
-            // Write operations
-            if(frag) container.appendChild(frag);
-            if(menuFrag) menu.appendChild(menuFrag);
-            moreButton.style.display = (availableSpace + moreButtonClientWidth) < takenSpace ? "inline-flex" : "none";
-
-            // Close the toolbar if no items are collapsed and it's currently open
-            if (!hasCollapsedItems && website.isToolbarOpen && website.currentToolbar === "more") {
-                website.desktop.closeToolbar();
-            }
-        });
-
-        const resizeMessageContainer = LS.SelectOrCreate("resizeMessage");
-        const resizeMessageSwitch = new LS.Util.Switch((on) => {
-            if(on) {
-                resizeMessageContainer.style.display = "flex";
-                website.container.style.display = "none";
-            } else {
-                resizeMessageContainer.style.display = "none";
-                website.container.style.display = "flex";
-            }
-        });
-
-        collapseItems.schedule();
-
-        window.addEventListener("resize", () => {
-            collapseItems.schedule();
-        });
-
-        if(window.visualViewport) {
-            window.visualViewport.addEventListener("resize", () => {
-                collapseItems.schedule();
-            });
+            // item.cachedWidth = (item.element ? item.element.clientWidth : item.cachedWidth || 0) + gap;
         }
 
-        website.collapseItems = collapseItems;
+        // const accountButtonText = website.panelItems.get("accountsButton")?.element?.textContent;
+        // if(accountButtonText) {
+        //     takenSpace += 46 + (accountButtonText.length * 8);
+        //     // console.log(takenSpace);
+        // }
 
-        for(let accent of website.ACCENT_COLORS) {
-            LS.SelectOne("#accentButtons").add(LS.Create("button", {
-                class: "square",
-                inner: accent === "white" ? LS.Create("i", { class: "bi-x-circle-fill" }) : null,
-                accent,
-                tooltip: accent === "white" ? "Reset": (accent.charAt(0).toUpperCase() + accent.slice(1)),
-                onclick(){
-                    LS.Color.setAccent(accent);
-                }
-            }));
+        let hasCollapsedItems = false;
+        // for (const item of app.desktop.panelState) {
+        //     if(!item.element) continue;
+        //     const detached = item.element.classList.contains("detached");
 
-            LS.SelectOne("#accentButtons").querySelector("input[type=color]").addEventListener("input", function (){
-                LS.Color.setAccent(this.value);
-            });
+        //     takenSpace += item.cachedWidth;
+
+        //     if(takenSpace > availableSpace) {
+        //         hasCollapsedItems = true;
+        //         if(detached) continue;
+        //         item.element.classList.add("detached");
+
+        //         if(!item.menuElement) {
+        //             item.menuElement = LS.Create({
+        //                 class: "toolbar-menu-item",
+        //                 attributes: { "aria-label": item.description },
+        //                 inner: [{ tag: "i", class: item.icon }, { tag: "span", innerText: item.label }],
+        //                 onclick: () => {
+        //                     if(item.onclick) item.onclick.call(item.element);
+        //                 }
+        //             })
+        //         }
+
+        //         if(!menuFrag) menuFrag = document.createDocumentFragment();
+        //         menuFrag.appendChild(item.menuElement);
+        //     } else {
+        //         if(!detached) continue;
+        //         item.element.classList.remove("detached");
+        //         if(item.menuElement && item.menuElement.parentElement) {
+        //             item.menuElement.parentElement.removeChild(item.menuElement);
+        //         }
+        //     }
+        // }
+
+        // Write operations
+        if(frag)     container.replaceChildren(frag);
+        if(menuFrag) menu.replaceChildren(menuFrag);
+        moreButton.style.display = (availableSpace + moreButtonClientWidth) < takenSpace ? "inline-flex" : "none";
+
+        // Close the toolbar if no items are collapsed and it's currently open
+        if (!hasCollapsedItems && app.isToolbarOpen && app.currentToolbar === "more") {
+            app.desktop.closeToolbar();
         }
+    }
 
-        kernel.addExternalEventListener(document, "pointerdown", (event) => {
-            if (website.isToolbarOpen && !event.target.closest("#toolbars,.toolbar-button")) website.desktop.closeToolbar();
-        }, { passive: true });
+    _welcome(){
+        this.soundBox.play("system:startup");
+        LS.Create("{Welcome to desktop mode}", {
+    		style: "position: fixed; top: 50%; left: 50%; translate: -60% -50%; font-size: 4em",
+            parent: "top",
+            ephemeral: true,
+            animationOptions: { duration: 6000, easing: "ease" },
+            animation: [
+                { opacity: 0, offset: 0, filter: "blur(60px)" },
+                { opacity: 1, offset: 0.25, filter: "blur(5px)" },
+                { opacity: 1, offset: 0.50, filter: "blur(0)" },
+                { opacity: 1, offset: 0.94 },
+                { opacity: 0, translate: "-40% -50%", offset: 1 }
+            ],
+        });
     }
 
     destroy() {
+        const replacingWM = this.windowManager === LS.WindowManager;
+        this.windowManager.destroy(replacingWM);
+        this.windowManager = null;
 
+        this.musicPlayer.destroy();
+        this.musicPlayer = null;
+        if(this.frameScheduler) {
+            this.frameScheduler.destroy();
+            this.frameScheduler = null;
+        }
+        window.removeEventListener("resize", this.__resizeHandler);
+        this.toolbars.clear();
     }
 }
 
-// Enables closing the toolbar via esc
-const ToolbarStackRef = { close() { website.desktop.closeToolbar() } };
+/**
+ * Promise helper
+ */
+class OpenerPromise {
+    loading(callback)   { if (callback) this._l = callback; return this; }
+    done(callback)      { if (callback) this._d = callback; return this; }
+    catch(callback)     { if (callback) this._c = callback; return this; }
+    finally(callback)   { if (callback) this._f = callback; return this; }
+    loadingState(state) { if (this._l) this._l(state); return this;      }
+
+    throw(error) {
+        if (this._c) this._c(error);
+        if (this._f) this._f();
+        return this;
+    }
+
+    resolve(instance) {
+        if (this._d) this._d(instance);
+        if (this._f) this._f();
+        return this;
+    }
+
+    dispose() {
+        this._l = null;
+        this._d = null;
+        this._c = null;
+        this._f = null;
+    }
+}
+
+// --- SHARED STATE
 
 /**
- * Shared website object
- * Utilities and constants related to the website as a whole.
- * This is global, so nothing sensitive should be exposed.
+ * Shared website object.
+ * Utilities and constants related to the site as a whole.
+ * This is global and accessible by 3rd party code, nothing sensitive or potentially vulnerable should be exposed.
  */
-const website = {
+const isDesktopModeEnabledAtStartup = localStorage.getItem("desktopMode") === "true";
+
+const app = {
     // Utils
     LoggerContext,
     ContentContext,
@@ -2217,10 +2813,9 @@ const website = {
     Thread,
     Window: LS.Window,
 
-    // Create new instance of the desktop env
-    desktop: new Desktop({
-        limited: localStorage.getItem("desktopMode") !== "true"
-    }),
+    // Create new instance of the desktop env.
+    // If desktop mode is disabled, the desktop can skip some features, things like the login prompt, and run in a website-only mode.
+    desktop: new Desktop({ limited: !isDesktopModeEnabledAtStartup }),
 
     // Constants
     loaded: true,
@@ -2228,6 +2823,9 @@ const website = {
     cdn: "https://cdn.extragon.cloud",
     api: "https://api.extragon." + (isDebug ? "localhost" : "cloud"),
 
+    /**
+     * List of available user badges.
+     */
     BADGES: [
         { icon: "owner.png", label: "Owner", id: 0 },
         { icon: "developer.webp", label: "Developer at lstv.space", id: 1 },
@@ -2239,6 +2837,9 @@ const website = {
         { icon: "legacy.webp", label: "Legacy (2018-2024) account", id: -1 },
     ],
 
+    /**
+     * Reusable views
+     */
     views: {
         getProfilePictureView(source, args, element, user) {
             const filename = (source && typeof source === "object")? source.pfp: source;
@@ -2252,7 +2853,7 @@ const website = {
             }
 
             const isAnimated = filename && (user && user.__animated_pfp) || filename && filename.endsWith(".webm");
-            const src = filename? filename.startsWith("blob:")? filename : website.cdn + '/file/' + filename + (!isAnimated? "?size=" + IMAGE_RESOLUTION: ""): DEFAULT_PROFILE;
+            const src = filename? filename.startsWith("blob:")? filename : app.cdn + '/file/' + filename + (!isAnimated? "?size=" + IMAGE_RESOLUTION: ""): DEFAULT_PROFILE;
 
             const img = LS.Create(isAnimated ? "video" : "img", {
                 alt: "Profile Picture",
@@ -2328,7 +2929,7 @@ const website = {
             const filename = (source && typeof source === "object")? source.banner: source;
 
             if(filename) {
-                const src = filename.startsWith("blob:")? filename : website.cdn + '/file/' + filename;
+                const src = filename.startsWith("blob:")? filename : app.cdn + '/file/' + filename;
                 const isAnimated = user.__animated_banner || filename.endsWith(".webm");
 
                 const img = LS.Create(isAnimated? "video" : "img", {
@@ -2383,7 +2984,7 @@ const website = {
             return LS.Create({
                 class: "badges-container",
                 inner: badges.map(badge => {
-                    const badgeInfo = website.BADGES.find(b => b.id === badge);
+                    const badgeInfo = app.BADGES.find(b => b.id === badge);
                     if (!badgeInfo) return null;
 
                     return LS.Create({
@@ -2407,7 +3008,7 @@ const website = {
             return LS.Create({
                 class: "links-container",
                 inner: links.map(link => {
-                    const linkInfo = website.LINKS[link.type.toUpperCase()];
+                    const linkInfo = app.LINKS[link.type.toUpperCase()];
 
                     return LS.Create("a", {
                         href: link.type === "url" ? link.link : linkInfo.scheme + link.link,
@@ -2436,19 +3037,19 @@ const website = {
 
             return LS.Create({
                 class: "profile-bio",
-                innerHTML: website.utils.basicMarkDown(bio)
+                innerHTML: app.utils.basicMarkDown(bio)
             })
         },
 
         getAppIconView(resource, args) {
             const iconParam = resource && resource.icon;
-            const iconSrc = iconParam ? website.cdn + "/file/" + iconParam : null;
+            const iconSrc = iconParam ? app.cdn + "/file/" + iconParam : null;
 
             const size = args && args[0] ? (typeof args[0] === "number" ? args[0] : parseInt(args[0], 10)) : 32;
             const padding = (size < 24) ? 0 : Math.max(4, (size - 24) / 6);
             const paddedSize = size - (padding * 2);
 
-            const icon = LS.Create(iconSrc ? { tag: "img", attributes: { state: "loading" }, src: iconSrc, onerror() { this.parentElement.replaceChild(website.views.getAppIconView(null, args), this) }, onload() { this.removeAttribute('state'); } } : { tag: "i", class: "bi bi-app-indicator", style: "font-size: " + paddedSize + "px; line-height: 0" })
+            const icon = LS.Create(iconSrc ? { tag: "img", attributes: { state: "loading" }, src: iconSrc, onerror() { this.parentElement.replaceChild(app.views.getAppIconView(null, args), this) }, onload() { this.removeAttribute('state'); } } : { tag: "i", class: "bi bi-app-indicator", style: "font-size: " + paddedSize + "px; line-height: 0" })
             icon.style.boxSizing = "border-box";
             icon.style.display = "inline-block";
             icon.style.objectFit = "contain";
@@ -2464,6 +3065,9 @@ const website = {
         }
     },
 
+    /**
+     * Utility functions
+     */
     utils: {
         generateIdentifier(){
             return crypto.getRandomValues(new Uint32Array(1))[0].toString(36) + Date.now().toString(36);
@@ -2649,9 +3253,10 @@ const website = {
 
     collapseItems: { schedule() {} },
 
-    // NOTE: This is a cached result, and so may not be up to date. Wherever you can (async context), use await kernel.auth.isLoggedIn(); instead - it's more expensive but more accurate.
+    /**
+     * NOTE: This is a cached result, and so may not be up to date. Wherever you can, use await kernel.auth.isLoggedIn(); instead - it's more expensive but accurate.
+     */
     isLoggedIn: false,
-    isToolbarOpen: false,
 
     toolbarsContainer: document.getElementById("toolbars"),
 
@@ -2670,13 +3275,16 @@ const website = {
      * TODO: Move to isolated contexts to avoid leaking the user fragment.
      * @param {Function} callback - The function to call with user data updates.
      * 
-     * @warning Do NOT use this inside page contexts, use context.watchUser(). Otherwise you this may get called on dead code.
+     * @warning Do NOT use this inside page contexts, use the handy wrapper context.watchUser().
+     * Otherwise you this may get called on dead code.
+     * 
+     * @returns {void}
      */
     watchUser(callback) {
         // user-loaded is a completed event, meaning it will call immediately
-        website.once("user-loaded", () => {
-            callback(website.isLoggedIn, website.userFragment);
-            website.on("user-changed", callback);
+        app.once("user-loaded", () => {
+            callback(app.isLoggedIn, app.userFragment);
+            app.on("user-changed", callback);
         });
     },
 
@@ -2688,13 +3296,44 @@ const website = {
 
     // Destroy shared state
     destroyState() {
-        website.desktop.destroy();
+        app.desktop.destroy();
+    },
+
+    /**
+     * Check if the current environment has a specific capability.
+     * This includes APIs, permissions, or features that may be available only in certain contexts.
+     * @param {*} capability - The capability to check for.
+     * @returns {boolean} - True if the capability is available, false otherwise.
+     */
+    hasCapability(capability) {
+        if(capability === "desktop") return !!app.desktop;
+        if(capability === "system-sounds") return app.desktop && app.desktop.soundBox !== null;
+        if(capability === "shell") return true; // todo
+        if(capability === "filesystem") return true; // todo
+        // if(capability === "notifications") return ;
+        if(capability === "clipboard") return !!navigator.clipboard;
+        if(capability === "windows") return app.desktop && app.desktop.windowManager !== null;
+        if(capability === "native") return location.protocol !== "https:" && location.protocol !== "http:" && location.protocol !== "file:";
+        if(capability === "cloud-user") return location.protocol === "https:"; // todo
+        if(capability === "gpu") return true; // todo
+        if(capability === "vulkan") return false; // todo
+        if(capability === "opengl") return false; // todo
+        if(capability === "crystaline") return false; // todo
+        if(capability === "glitter") return false; // todo
+        if(capability === "csuite-toolkit") return false; // todo
+        if(capability === "lsgio") return true; // todo
+        if(capability === "midi") return navigator.requestMIDIAccess !== undefined;
+        if(capability === "command-palette") return app.desktop && app.desktop.commandPalette !== null; // todo
+        return kernel.hasCapability(capability);
     }
 }
 
-website.events = new LS.EventEmitter(website);
-window.website = website;
+app.events = new LS.EventEmitter(app);
+globalThis.website = app; // I just can't decide. I think I will keep app due to the app getting more integrated beyond a simple website.
+globalThis.app = app;
 
+
+// --- MAIN
 
 /**
  * Kernel class
@@ -2904,7 +3543,7 @@ const kernel = new class Kernel extends LS.Context {
 
         async isLoggedIn(callback) {
             const result = await this.postMessage('isLoggedIn', null, callback);
-            website.isLoggedIn = result;
+            app.isLoggedIn = result;
             return result;
         }
 
@@ -2934,6 +3573,17 @@ const kernel = new class Kernel extends LS.Context {
 
         switchAccount(accountId, callback) {
             return this.postMessage('switchAccount', { accountId }, callback);
+        }
+
+        destroy() {
+            if (this.iframe) {
+                this.iframe.remove();
+                this.iframe = null;
+            }
+            this.callbacks.clear();
+            this.startupQueue = [];
+            this.ready = false;
+            this.loading = false;
         }
     }
 
@@ -2967,7 +3617,7 @@ const kernel = new class Kernel extends LS.Context {
         super('kernel');
         this.logger = new LoggerContext("kernel");
 
-        website.viewport = this.viewport = new Viewport('main', document.getElementById('viewport'), {
+        app.viewport = this.viewport = new Viewport('main', document.getElementById('viewport'), {
             kernel: this
         });
 
@@ -2979,11 +3629,11 @@ const kernel = new class Kernel extends LS.Context {
         this.log('Kernel initialized, version %c' + this.version + '%c, time since first load: ' + this.ttl + 'ms', 'font-weight:bold', 'font-weight:normal');
 
         // Register reactive types
-        LS.Reactive.registerType("ProfilePicture", website.views.getProfilePictureView);
-        LS.Reactive.registerType("ProfileBadges", website.views.getProfileBadgesView);
-        LS.Reactive.registerType("ProfileBanner", website.views.getBannerView);
-        LS.Reactive.registerType("ProfileLinks", website.views.getLinksView);
-        LS.Reactive.registerType("ProfileBio", website.views.getBioView);
+        LS.Reactive.registerType("ProfilePicture", app.views.getProfilePictureView);
+        LS.Reactive.registerType("ProfileBadges", app.views.getProfileBadgesView);
+        LS.Reactive.registerType("ProfileBanner", app.views.getBannerView);
+        LS.Reactive.registerType("ProfileLinks", app.views.getLinksView);
+        LS.Reactive.registerType("ProfileBio", app.views.getBioView);
         LS.Reactive.registerType("DisplayName", (value, args, element, user) => {
             return value || user.displayname || user.username || "Anonymous";
         });
@@ -3035,9 +3685,9 @@ const kernel = new class Kernel extends LS.Context {
         });
 
         LS.Color.on("theme-changed", () => {
-            for(const item of website.desktop.panelState) {
+            for(const item of app.desktop.panelState) {
                 if(item.kind === "themeButton" && item.element) {
-                    item.element.querySelector("i").className = 'bi-' + (website.theme === "dark" ? "moon-stars" : "sun") + "-fill";
+                    item.element.querySelector("i").className = 'bi-' + (app.theme === "dark" ? "moon-stars" : "sun") + "-fill";
                 }
             }
         });
@@ -3053,10 +3703,10 @@ const kernel = new class Kernel extends LS.Context {
         });
 
         this.addExternalEventListener(document, 'DOMContentLoaded', () => {
-            website.container = this.container = document.getElementById('app');
-            website.viewportElement = this.viewportElement = this.viewport.target;
+            app.container = this.container = document.getElementById('app');
+            app.viewportElement = this.viewportElement = this.viewport.target;
 
-            website.DESKTOP_MODE = localStorage.getItem("desktopMode") === "true";
+            app.DESKTOP_MODE = localStorage.getItem("desktopMode") === "true";
 
             const scopeKey = document.querySelector("#scope-key")?.textContent || null;
             const context = this.registerPage(location.pathname, {
@@ -3084,17 +3734,18 @@ const kernel = new class Kernel extends LS.Context {
                 window.__init = null;
             }
 
-            website.desktop.initPanel();
+            app.desktop.initPanel();
             this.#setupAuth();
             this.loadUser();
 
             // Display content
             document.querySelector(".loaderContainer").style.display = "none";
-            website.container.style.display = "flex";
-            website.emit("dom-ready");
+            app.container.style.display = "flex";
+            app.emit("dom-ready");
 
             this.shortcutManager.register(['ctrl+shift+p', 'ctrl+k'], () => {
-                website.openPalette();
+                if(!app.hasCapability("command-palette")) return;
+                app.desktop.openPalette();
             });
 
             if(isBeta) {
@@ -3214,7 +3865,7 @@ const kernel = new class Kernel extends LS.Context {
                             previewPopout.setAttribute("state", "loading");
 
                             if(!isLocal) {
-                                fetch(website.api + "/metascraper?url=" + encodeURIComponent(link)).then(response => response.json()).then(data => {
+                                fetch(app.api + "/metascraper?url=" + encodeURIComponent(link)).then(response => response.json()).then(data => {
                                     if(lastLink !== link) return;
 
                                     previewPopout.innerHTML = "";
@@ -3275,8 +3926,8 @@ const kernel = new class Kernel extends LS.Context {
         }
 
         // TODO:FIXME: This should only allow non-authenticated access
-        website.fetch = this.auth.fetch.bind(this.auth);
-        website.emit("ready");
+        app.fetch = this.auth.fetch.bind(this.auth);
+        app.emit("ready");
 
         this.ttl_scripting = Date.now() - scriptingLoadTime;
     }
@@ -3429,14 +4080,14 @@ const kernel = new class Kernel extends LS.Context {
 
     async loadUserList() {
         const accounts = await this.auth.listAccounts();
-        website.accounts = accounts && accounts.accounts || [];
+        app.accounts = accounts && accounts.accounts || [];
 
-        const list = website.desktop.toolbars.get("login").element.querySelector(".accounts-list");
+        const list = app.desktop.toolbars.get("login").element.querySelector(".accounts-list");
         list.innerHTML = "";
 
-        for (const account of website.accounts) {
+        for (const account of app.accounts) {
             const item = LS.Create("button", { class: 'account-item elevated loading-right', tabindex: 0, inner: [
-                website.views.getProfilePictureView(account.pfp, [ 32 ]),
+                app.views.getProfilePictureView(account.pfp, [ 32 ]),
                 { tag: "span", class: 'account-username', textContent: account.username }
             ]});
 
@@ -3452,10 +4103,10 @@ const kernel = new class Kernel extends LS.Context {
                     });
                 }).catch(error => {
                     if(error.code === 401) {
-                        website.loginTabs.set("login");
-                        website.loginTabs.element.querySelector("#username").value = account.username;
-                        website.loginTabs.element.querySelector(".error-message").textContent = "Session expired for this account, please log in again.";
-                        const p = website.loginTabs.element.querySelector("#password");
+                        app.loginTabs.set("login");
+                        app.loginTabs.element.querySelector("#username").value = account.username;
+                        app.loginTabs.element.querySelector(".error-message").textContent = "Session expired for this account, please log in again.";
+                        const p = app.loginTabs.element.querySelector("#password");
                         p.value = "";
                         p.focus();
                         return;
@@ -3468,7 +4119,7 @@ const kernel = new class Kernel extends LS.Context {
             list.appendChild(item);
         }
 
-        website.events.emit("user-list-updated", [ website.accounts ]);
+        app.events.emit("user-list-updated", [ app.accounts ]);
     }
 
     async loadUser() {
@@ -3494,8 +4145,8 @@ const kernel = new class Kernel extends LS.Context {
         // const accountsButton = website.panelItems.get("accountsButton").element;
         // if (accountsButton) accountsButton.disabled = false;
 
-        website.events.emit("user-changed", [ isLoggedIn, this.userFragment ]);
-        website.events.completed("user-loaded");
+        app.events.emit("user-changed", [ isLoggedIn, this.userFragment ]);
+        app.events.completed("user-loaded");
 
         if(!this.__pingsInitialized) this.#initializePings();
     }
@@ -3517,9 +4168,9 @@ const kernel = new class Kernel extends LS.Context {
     }
 
     async _initializeCommandPalette() {
-        if (this._initializingPalette || website.palette) return;
-        const CommandPaletteExports = (await import("/~/assets/js/pallete.mjs?1.4"));
-        CommandPaletteExports.init(this, website, LoggerContext);
+        if (this._initializingPalette || app.desktop.commandPalette) return;
+        const CommandPaletteExports = (await import("/~/assets/js/pallete.mjs?1.5"));
+        CommandPaletteExports.init(this, app.desktop, LoggerContext);
         console.log("Command palette initialized");
     }
 
@@ -3535,7 +4186,7 @@ const kernel = new class Kernel extends LS.Context {
         this.__pingsInitialized = true;
 
         const PING_URL = '/check-in';
-        const SESSION_ID = website.utils.generateIdentifier(); // True random ID
+        const SESSION_ID = app.utils.generateIdentifier(); // True random ID
         let current_interval = 15000, first = true;
 
         const sendPing = (beacon = false) => {
@@ -3555,7 +4206,7 @@ const kernel = new class Kernel extends LS.Context {
                 contexts: kernel.contexts.size,
                 threads: kernel.threads.size,
                 currentPage: kernel.viewport.current?.path, // Does not include query or fragments, neither things like the content being viewed (eg. /post/123 will likely show up as just /post))
-                userLoggedIn: website.isLoggedIn, // No identifiable info, just yes/no
+                userLoggedIn: app.isLoggedIn, // No identifiable info, just yes/no
                 uptimeMs: Math.round(Date.now() - window.__loadTime),
 
                 ...first ? {
@@ -3636,7 +4287,7 @@ const kernel = new class Kernel extends LS.Context {
             if(this.initialized) return;
             this.initialized = true;
 
-            const container = website.desktop.toolbars.get("apps").element;
+            const container = app.desktop.toolbars.get("apps").element;
             this.appListElement = container.querySelector(".app-list");
 
             kernel.on("application-installed", (manifest) => {
@@ -3661,7 +4312,7 @@ const kernel = new class Kernel extends LS.Context {
                 class: "app-list-item",
 
                 inner: [
-                    website.views.getAppIconView(manifest, [64]),
+                    app.views.getAppIconView(manifest, [64]),
                     LS.Create('span', { class: 'app-name text-overflow-nowrap', textContent: manifest.name || appId })
                 ],
 
@@ -3673,7 +4324,7 @@ const kernel = new class Kernel extends LS.Context {
                         }
 
                         window.open(manifest.link, "_blank", "noopener");
-                        website.desktop.closeToolbar();
+                        app.desktop.closeToolbar();
                         return;
                     }
 
@@ -3683,7 +4334,7 @@ const kernel = new class Kernel extends LS.Context {
                         })
                         .done((instance) => {
                             instance.open?.();
-                            website.desktop.closeToolbar();
+                            app.desktop.closeToolbar();
                         })
                         .catch(error => {
                             LS.Toast.show("Failed to open application: " + error.message, { accent: "red" });
@@ -3706,14 +4357,14 @@ const kernel = new class Kernel extends LS.Context {
                     timeout: 2000
                 });
 
-                website.desktop.closeToolbar();
+                app.desktop.closeToolbar();
                 kernel.loadUser();
-                website.loginTabs.set("default");
+                app.loginTabs.set("default");
             });
         });
 
         function clearLoginError() {
-            const view = website.loginTabs.currentElement();
+            const view = app.loginTabs.currentElement();
             if (!view) return;
 
             const errorMessage = view.querySelector(".error-message");
@@ -3732,7 +4383,7 @@ const kernel = new class Kernel extends LS.Context {
                 offendingElement.setAttribute("ls-accent", "red");
             }
 
-            const errorMessage = website.loginTabs.currentElement().querySelector(".error-message");
+            const errorMessage = app.loginTabs.currentElement().querySelector(".error-message");
             if (errorMessage) errorMessage.textContent = message;
         }
 
@@ -3745,8 +4396,8 @@ const kernel = new class Kernel extends LS.Context {
 
             // Update user without reloading
             kernel.loadUser().then(() => {
-                website.desktop.closeToolbar();
-                website.loginTabs.set("default");
+                app.desktop.closeToolbar();
+                app.loginTabs.set("default");
             });
         }
 
@@ -3777,7 +4428,7 @@ const kernel = new class Kernel extends LS.Context {
             event.preventDefault();
             clearLoginError();
             document.forms["registerStep2Form"].querySelector("input").focus();
-            website.loginTabs.set('register-step2');
+            app.loginTabs.set('register-step2');
 
             return false;
         });
@@ -3791,14 +4442,14 @@ const kernel = new class Kernel extends LS.Context {
             const displayName = event.target.querySelector("input[name='displayname']").value;
 
             if (!email || !username || !password) {
-                website.loginTabs.set('register');
+                app.loginTabs.set('register');
                 displayLoginError("All fields are required");
                 return;
             }
 
             this.auth.register({ email, username, password, displayname: displayName || null }, (error, result) => {
                 if (error) {
-                    website.loginTabs.set('register');
+                    app.loginTabs.set('register');
                     console.log(error, (error.code === 4 || error.code === 5)? LS.SelectOne("#regEmail"): (error.code === 3 || error.code === 6)? LS.SelectOne("#regUsername"): error.code === 7? LS.SelectOne("#regPassword"): null);
                     
                     displayLoginError(error.message || error.error || "An error occurred while signing up", (error.code === 4 || error.code === 5)? LS.SelectOne("#regEmail"): (error.code === 3 || error.code === 6)? LS.SelectOne("#regUsername"): error.code === 6? LS.SelectOne("#regPassword"): null);
@@ -3811,13 +4462,13 @@ const kernel = new class Kernel extends LS.Context {
             return false;
         });
 
-        website.loginTabs.on("changed", (tab, old) => {
-            const view = website.loginTabs.currentElement();
-            const oldElement = website.loginTabs.tabs.get(old)?.element;
+        app.loginTabs.on("changed", (tab, old) => {
+            const view = app.loginTabs.currentElement();
+            const oldElement = app.loginTabs.tabs.get(old)?.element;
 
             clearLoginError();
 
-            view.style.transition = (!website.isToolbarOpen || !oldElement)? "none" : "";
+            view.style.transition = (!app.isToolbarOpen || !oldElement)? "none" : "";
 
             LS.Animation.slideInToggle(view, oldElement);
 
@@ -3826,17 +4477,17 @@ const kernel = new class Kernel extends LS.Context {
             });
         });
 
-        website.loginTabs.set(location.pathname.startsWith("/login") ? "login" : location.pathname.startsWith("/sign-up") ?  "register" : "default");
+        app.loginTabs.set(location.pathname.startsWith("/login") ? "login" : location.pathname.startsWith("/sign-up") ?  "register" : "default");
 
         LS.SelectOne("#randomPassword").addEventListener("click", function (){
-            const password = website.utils.generateSecurePassword(12);
+            const password = app.utils.generateSecurePassword(12);
             LS.SelectOne("#regPassword").value = password;
             LS.SelectOne("#regPassword").dispatchEvent(new Event("input"));
             alert("Your generated password: " + password);
         });
 
         LS.SelectOne("#randomUsername").addEventListener("click", function (){
-            const username = website.utils.generateUsername();
+            const username = app.utils.generateUsername();
             LS.SelectOne("#regUsername").value = username.toLowerCase();
             LS.SelectOne("#regUsername").dispatchEvent(new Event("input"));
             LS.SelectOne("#displayname").value = username;
@@ -3946,7 +4597,7 @@ const kernel = new class Kernel extends LS.Context {
      * @param {object} options
      */
     openApplication(manifest, options = {}) {
-        const p = new ApplicationOpenerPromise();
+        const p = new OpenerPromise();
 
         queueMicrotask(() => {
             if(typeof manifest === "string") {
@@ -3983,9 +4634,14 @@ const kernel = new class Kernel extends LS.Context {
         return p;
     }
 
-    log() { this.logger.log(...arguments); }
-    warn() { this.logger.warn(...arguments); }
+    log()   { this.logger.log(...arguments);   }
+    warn()  { this.logger.warn(...arguments);  }
     error() { this.logger.error(...arguments); }
+
+    hasCapability(capability) {
+        // tba
+        return false;
+    }
 
     destroy() {
         if(this.destroyed) return;
@@ -3996,34 +4652,25 @@ const kernel = new class Kernel extends LS.Context {
         for(const thread of this.threads.values()) {
             thread.destroy();
         }
-        website.destroyState();
+
+        app.destroyState();
+
+        this.contexts.clear();
+        this.threads.clear();
+        this.viewports.clear();
+        this.pageCache.clear();
+        this.aliasMap.clear();
+        this.applications.clear();
+        this.appManifests.clear();
+        this.SPAExtensions.clear();
+        this.logger.destroy();
+        this.logger = null;
+        this.auth.destroy();
+        this.auth = null;
+
         super.destroy();
     }
 }
 
-/**
- * Promise helpers
- */
-class ApplicationOpenerPromise {
-    loading(callback) { if (callback) this._l = callback; return this; }
-    done(callback) { if (callback) this._d = callback; return this; }
-    catch(callback) { if (callback) this._c = callback; return this; }
-    finally(callback) { if (callback) this._f = callback; return this; }
 
-    loadingState(state) { if (this._l) this._l(state); return this; }
-
-    throw(error) {
-        if (this._c) this._c(error);
-        if (this._f) this._f();
-        return this;
-    }
-
-    resolve(instance) {
-        if (this._d) this._d(instance);
-        if (this._f) this._f();
-        return this;
-    }
-}
-
-
-} catch (e) { console.error("Fatal error during app initialization:", e); window.__loadError() }
+} catch (e) { console.error("Fatal error during app initialization:", e); globalThis.__loadError() }
