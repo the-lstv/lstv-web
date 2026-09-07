@@ -2,7 +2,10 @@
 - Updated LS v6.0.0-alpha.2 -> v6.0.0-alpha.3
 - Moved window management from kernel to LS.WindowManager
 - Moved navigation from kernel to LS.SPA
-- Shader performance improvements
+- Added desktop mode!
+- Added system sound API
+- Small shader performance & renedring improvements
+- Fixed homepage animations
 - A bunch of bug fixes all over the place
 
 ## 1.2.6-beta

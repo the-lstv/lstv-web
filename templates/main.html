@@ -23,6 +23,8 @@
             autoAccent: true
         };
 
+        window.__windowManagerTarget = document.createElement("div");
+
         window.website = {
             /**
              * Requests scoped access. This is required to access the website APIs.
@@ -273,6 +275,12 @@
 
             <div .toolbar .toolbar-styled #toolbarMore style="display: none"></div>
 
+        </div>
+
+        <div #desktop hidden>
+            <div #wallpaper>
+                <img src="/assets/image/wallpapers/test1.png">
+            </div>
         </div>
 
         <main #viewport>

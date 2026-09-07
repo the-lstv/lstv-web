@@ -619,9 +619,9 @@ website.register(document.currentScript, class extends LS.Context {
         this.renderObserver = null;
         this.setupRenderObservers();
 
-        this.supportsAcceleratedScrollAnim = CSS.supports('animation-timeline: scroll()') && CSS.supports('animation-range: 0% 100%');
+        this.supportsAcceleratedScrollAnim = app.hasCapability("css-scroll-animations");
         if(!this.supportsAcceleratedScrollAnim) {
-            context.logContext.warn("Your browser does not support accelerated scroll animations. Falling back to CPU animations.");
+            context.logContext.warn("Your browser does not support accelerated CSS scroll animations. Falling back to JS-driven animation.");
         } else {
             container.classList.add("supports-accelerated-scroll");
         }
@@ -934,7 +934,7 @@ website.register(document.currentScript, class extends LS.Context {
                 this.handleScroll();
             }));
 
-            this.onScroll.limitFPS(60);
+            this.onScroll.limitFPS(120);
 
             context.once("loaded", () => this.setupGL());
 
@@ -1016,7 +1016,7 @@ website.register(document.currentScript, class extends LS.Context {
 
         if(!window.LOW_PERFORMANCE_MODE) {
             if(!this.supportsAcceleratedScrollAnim) {
-                // Fallback to CPU animation (otherwise a hardware accelerated one is applied via CSS)
+                // Manual fallback animation
                 const logoOpacity = Math.max(0, 1 - (scroll / 800));
                 this.logoOpacity = logoOpacity;
                 this.loreSection.style.opacity = Math.min(1, scroll / 500);
@@ -1123,6 +1123,9 @@ website.register(document.currentScript, class extends LS.Context {
 
             this.blurRenderer.limitFPS(FRAMERATE);
 
+            // todo: moving to LS.GL could be better
+            // better initialization and more features, though larger bundle size and may not be worth the extra overhead.
+
             this.blurRenderer.addShaderContext(ShaderSource.blurredColors(this.blurRenderer.gl), {
                 u_time: { type: "uniform1f", value: time => [(time * this.bgaSpeedFactor) + 1000] },
                 u_resolution: { type: "uniform2f", value: () => [this.introCanvas.width, this.introCanvas.height] },
@@ -1138,10 +1141,10 @@ website.register(document.currentScript, class extends LS.Context {
 
             this.blurRenderer.addShaderContext(ShaderSource.sparkles(this.blurRenderer.gl), {
                 time: { type: "uniform1f", value: time => [time * this.bgaSpeedFactor] },
-                resolution: { type: "uniform2f", value: () => [this.introCanvas.width * 1.9, this.introCanvas.height] },
-                areaBounds: { type: "uniform4f", value: [0.5, 0.5, 0.6, 0.1] },
+                resolution:  { type: "uniform2f", value: () => [this.introCanvas.width * 1.9, this.introCanvas.height] },
+                areaBounds:  { type: "uniform4f", value: [0.5, 0.5, 0.6, 0.1] },
                 areaFeather: { type: "uniform1f", value: [1.0] },
-                areaInvert: { type: "uniform1f", value: [0.0] },
+                areaInvert:  { type: "uniform1f", value: [0.0] },
             });
 
             this.blurRenderer.start();

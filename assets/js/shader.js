@@ -54,11 +54,21 @@ class CombinedShaderRenderer extends LS.Util.FrameScheduler {
         });
 
         if (!this.gl) {
-            console.error('WebGL2 not supported');
-            super.destroy();
-            this.supported = false;
-            this.gl = null;
-            return;
+            // console.error('WebGL2 not supported, trying WebGL 1.0');
+            
+            // this.gl = canvas.getContext('webgl', {
+            //     alpha: true,
+            //     // premultipliedAlpha: false,
+            //     // antialias: true,
+            // });
+            
+            if(!this.gl) {
+                console.error('WebGL not supported, can\'t draw shaders.');
+                super.destroy();
+                this.supported = false;
+                this.gl = null;
+                return;
+            }
         }
 
         this.supported = true;
@@ -69,14 +79,6 @@ class CombinedShaderRenderer extends LS.Util.FrameScheduler {
         this.qualityReduction = 1;
         this.paused = true;
 
-        // FPS tracking
-        this.fpsEnabled = false;
-        this.fpsCallback = null;
-        this.fpsFrameTimes = [];
-        this.fpsLastReportTime = 0;
-        this.fpsReportInterval = 500; // Report FPS every 500ms
-
-        this.setupBuffers();
         this.frame = this.render.bind(this);
     }
 
@@ -89,42 +91,8 @@ class CombinedShaderRenderer extends LS.Util.FrameScheduler {
         this.uniforms.push(uniforms || {});
     }
 
-    setupBuffers() {
-        const gl = this.gl;
-
-        // Fullscreen quad
-        const vertices = new Float32Array([
-            -1.0, -1.0,
-            1.0, -1.0,
-            -1.0, 1.0,
-            1.0, 1.0,
-        ]);
-
-        this.positionBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-    }
-
-    render(time) {
+    render(delta, time) {
         if(!this.gl) return;
-
-        // FPS tracking
-        if (this.fpsEnabled) {
-            this.fpsFrameTimes.push(time);
-            // Keep only last 60 frame times
-            if (this.fpsFrameTimes.length > 60) {
-                this.fpsFrameTimes.shift();
-            }
-            
-            // Report FPS at interval
-            if (time - this.fpsLastReportTime >= this.fpsReportInterval) {
-                const fps = this.calculateFPS();
-                if (this.fpsCallback) {
-                    this.fpsCallback(fps);
-                }
-                this.fpsLastReportTime = time;
-            }
-        }
 
         const gl = this.gl;
 
@@ -137,21 +105,9 @@ class CombinedShaderRenderer extends LS.Util.FrameScheduler {
         // gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
 
-        // Bind buffer once for all shaders sharing the same quad geometry
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
-
         this.shaders.forEach((shaderContext, index) => {
             const uniforms = this.uniforms[index];
             gl.useProgram(shaderContext.program);
-
-            // Bind position buffer
-            // Use cached attribute location
-            const positionLocation = shaderContext.getPositionAttribute();
-            
-            if (positionLocation !== -1) {
-                gl.enableVertexAttribArray(positionLocation);
-                gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
-            }
 
             // Set uniforms
             for (const [name, { type, value }] of Object.entries(uniforms)) {
@@ -162,31 +118,6 @@ class CombinedShaderRenderer extends LS.Util.FrameScheduler {
 
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         });
-    }
-
-    calculateFPS() {
-        if (this.fpsFrameTimes.length < 2) return 0;
-        
-        const timeSpan = this.fpsFrameTimes[this.fpsFrameTimes.length - 1] - this.fpsFrameTimes[0];
-        const frameCount = this.fpsFrameTimes.length - 1;
-        
-        if (timeSpan === 0) return 0;
-        
-        return Math.round((frameCount / timeSpan) * 1000);
-    }
-
-    watchFPS(callback, reportInterval = 500) {
-        this.fpsEnabled = true;
-        this.fpsCallback = callback;
-        this.fpsReportInterval = reportInterval;
-        this.fpsFrameTimes = [];
-        this.fpsLastReportTime = 0;
-    }
-
-    unwatchFPS() {
-        this.fpsEnabled = false;
-        this.fpsCallback = null;
-        this.fpsFrameTimes = [];
     }
 
     resize(width = this.width, height = this.height) {
@@ -202,12 +133,6 @@ class CombinedShaderRenderer extends LS.Util.FrameScheduler {
 
         const gl = this.gl;
         if (!gl) return;
-
-        // Delete position buffer
-        if (this.positionBuffer) {
-            gl.deleteBuffer(this.positionBuffer);
-            this.positionBuffer = null;
-        }
 
         // Delete shaders and programs
         this.shaders.forEach((shaderContext) => {
@@ -226,11 +151,8 @@ class CombinedShaderRenderer extends LS.Util.FrameScheduler {
         });
 
         // Clear arrays
-        this.shaders = [];
-        this.uniforms = [];
-
-        // Clear FPS tracking
-        this.unwatchFPS();
+        this.shaders = null;
+        this.uniforms = null;
 
         super.destroy();
     }
@@ -257,11 +179,28 @@ class ShaderSource {
         return shader;
     }
 
-    static gl2_vertex = `#version 300 es\nprecision mediump float; in vec4 a_position; void main() { gl_Position = a_position; }`;
+    // Fullscreen triangle vertex
+    static gl2_vertex = `#version 300 es
+
+out vec2 uv;
+
+uniform vec2 uResolution;
+
+const vec2 positions[3] = vec2[](
+    vec2(-1.0, -1.0),
+    vec2( 3.0, -1.0),
+    vec2(-1.0,  3.0)
+);
+
+void main() {
+    vec2 pos = positions[gl_VertexID];
+    gl_Position = vec4(pos, 0.0, 1.0);
+    uv = (pos * 0.5 + 0.5) * uResolution;
+    uv.y = uResolution.y - uv.y;
+}`;
     static gl_vertex  = `attribute vec4 a_position;\nvoid main() { gl_Position = a_position; }`;
 
     // Shader presets
-
     static animatedNoise(gl) {
         return new ShaderSource(gl, ShaderSource.gl2_vertex, `#version 300 es
 precision mediump float;
@@ -291,74 +230,31 @@ float fbm(vec2 n){float t=0.,a=.1;int it=int(mix(4.,7.,u_quality));for(int i=0;i
 void main(){vec2 p=gl_FragCoord.xy/u_resolution.xy,uv=p*vec2(u_resolution.x/u_resolution.y,1.);float s=u_speed*.1,t=u_time*s,sc=1.-u_scale,q=fbm(uv*sc*.5);vec2 bu=uv*sc-q;int it1=int(mix(5.,8.,u_quality));float r=0.,w=.8;vec2 u1=bu+t;for(int i=0;i<8;i++){if(i>=it1)break;r+=abs(w*noise(u1));u1=m*u1+t;w*=.7;}int it2=int(mix(5.,8.,u_quality));float f=0.;w=.7;vec2 u2=bu+t;for(int i=0;i<8;i++){if(i>=it2)break;f+=w*noise(u2);u2=m*u2+t;w*=.6;}f*=r+f;int it3=int(mix(4.,7.,u_quality));float c=0.;w=.4;vec2 u3=uv*vec2(u_resolution.x/u_resolution.y,1.)*sc*2.-q+t*2.;for(int i=0;i<7;i++){if(i>=it3)break;c+=w*noise(u3);u3=m*u3+t*2.;w*=.6;}int it4=int(mix(4.,7.,u_quality));float c1=0.;w=.4;vec2 u4=uv*vec2(u_resolution.x/u_resolution.y,1.)*sc*3.-q+t*3.;for(int i=0;i<7;i++){if(i>=it4)break;c1+=abs(w*noise(u4));u4=m*u4+t*3.;w*=.6;}c+=c1;vec4 sky=mix(u_colors[1],u_colors[0],p.y),cld=vec4(1.)*clamp(1.-shadow+light*c,0.,1.);f=coverage+20.*alpha*f*r;gl_FragColor=mix(sky,clamp(tint*sky+cld,0.,1.),clamp(f+c,0.,1.));}`);
     }
 
-    static blurredColors(gl) {
-        return new ShaderSource(gl, ShaderSource.gl_vertex, `precision highp float;uniform vec2 u_resolution;uniform vec2 u_mouse;uniform float u_time;uniform float alpha;uniform vec4 u_colors[4];uniform float u_blur;uniform bool u_animate;uniform float u_animate_speed;uniform float u_frequency;
-#define S(a,b,t) smoothstep(a,b,t)
-#ifndef SRGB_EPSILON
-#define SRGB_EPSILON 0.00000001
-#endif
-#ifndef FNC_SRGB2RGB
-#define FNC_SRGB2RGB
-float srgb2rgb(float channel){return(channel<0.04045)?channel*0.0773993808:pow((channel+0.055)*0.947867298578199,2.4);}
-vec3 srgb2rgb(vec3 srgb){return vec3(srgb2rgb(srgb.r+SRGB_EPSILON),srgb2rgb(srgb.g+SRGB_EPSILON),srgb2rgb(srgb.b+SRGB_EPSILON));}
-vec4 srgb2rgb(vec4 srgb){return vec4(srgb2rgb(srgb.rgb),srgb.a);}
-#endif
-#if !defined(FNC_SATURATE)&&!defined(saturate)
-#define FNC_SATURATE
-#define saturate(x) clamp(x,0.0,1.0)
-#endif
-#ifndef SRGB_EPSILON
-#define SRGB_EPSILON 0.00000001
-#endif
-#ifndef FNC_RGB2SRGB
-#define FNC_RGB2SRGB
-float rgb2srgb(float channel){return(channel<0.0031308)?channel*12.92:1.055*pow(channel,0.4166666666666667)-0.055;}
-vec3 rgb2srgb(vec3 rgb){return saturate(vec3(rgb2srgb(rgb.r-SRGB_EPSILON),rgb2srgb(rgb.g-SRGB_EPSILON),rgb2srgb(rgb.b-SRGB_EPSILON)));}
-vec4 rgb2srgb(vec4 rgb){return vec4(rgb2srgb(rgb.rgb),rgb.a);}
-#endif
-#ifndef FNC_MIXOKLAB
-#define FNC_MIXOKLAB
-vec3 mixOklab(vec3 colA,vec3 colB,float h){
-#ifdef MIXOKLAB_COLORSPACE_SRGB
-colA=srgb2rgb(colA);colB=srgb2rgb(colB);
-#endif
-const mat3 kCONEtoLMS=mat3(0.4121656120,0.2118591070,0.0883097947,0.5362752080,0.6807189584,0.2818474174,0.0514575653,0.1074065790,0.6302613616);
-const mat3 kLMStoCONE=mat3(4.0767245293,-1.2681437731,-0.0041119885,-3.3072168827,2.6093323231,-0.7034763098,0.2307590544,-0.3411344290,1.7068625689);
-vec3 lmsA=pow(kCONEtoLMS*colA,vec3(1.0/3.0));vec3 lmsB=pow(kCONEtoLMS*colB,vec3(1.0/3.0));
-vec3 lms=mix(lmsA,lmsB,h);vec3 rgb=kLMStoCONE*(lms*lms*lms);
-#ifdef MIXOKLAB_COLORSPACE_SRGB
-return rgb2srgb(rgb);
-#else
-return rgb;
-#endif
-}
-vec4 mixOklab(vec4 colA,vec4 colB,float h){return vec4(mixOklab(colA.rgb,colB.rgb,h),mix(colA.a,colB.a,h));}
-#endif
-mat2 Rot(float a){float s=sin(a),c=cos(a);return mat2(c,-s,s,c);}
+    static blurredColors(gl){return new ShaderSource(gl,ShaderSource.gl2_vertex,`#version 300 es
 // Created by inigo quilez - iq/2014
+// Ported to WebGL2
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+precision highp float;uniform vec2 u_resolution,u_mouse;uniform float u_time,alpha,u_blur,u_animate_speed,u_frequency;uniform vec4 u_colors[4];uniform bool u_animate;out vec4 fragColor;
+#define S(a,b,t) smoothstep(a,b,t)
 vec2 hash(vec2 p){p=vec2(dot(p,vec2(2127.1,81.17)),dot(p,vec2(1269.5,283.37)));return fract(sin(p)*43758.5453);}
-float noise(in vec2 p){vec2 i=floor(p),f=fract(p),u=f*f*(3.0-2.0*f);
-float n=mix(mix(dot(-1.0+2.0*hash(i+vec2(0.0,0.0)),f-vec2(0.0,0.0)),dot(-1.0+2.0*hash(i+vec2(1.0,0.0)),f-vec2(1.0,0.0)),u.x),mix(dot(-1.0+2.0*hash(i+vec2(0.0,1.0)),f-vec2(0.0,1.0)),dot(-1.0+2.0*hash(i+vec2(1.0,1.0)),f-vec2(1.0,1.0)),u.x),u.y);return 0.5+0.5*n;}
-void main(){
-vec2 uv=gl_FragCoord.xy/u_resolution.xy;float ratio=u_resolution.x/u_resolution.y;vec2 tuv=uv;tuv-=.5;float speed=u_time*10.*u_animate_speed;if(u_animate==false){speed=0.0;}
-float degree=noise(vec2(speed/100.0,tuv.x*tuv.y));tuv.y*=1./ratio;tuv*=Rot(radians((degree-.5)*720.+180.));tuv.y*=ratio;float frequency=20.*u_frequency;float amplitude=30.*(10.*(0.01+u_blur));
-tuv.x+=sin(tuv.y*frequency+speed)/amplitude;tuv.y+=sin(tuv.x*frequency*1.5+speed)/(amplitude*.5);
-vec4 layer1=mixOklab(u_colors[0],u_colors[1],S(-.3,.2,(tuv*Rot(radians(-5.))).x)),layer2=mixOklab(u_colors[2],u_colors[3],S(-.3,.2,(tuv*Rot(radians(-5.))).x));
-vec4 finalComp=mixOklab(layer1,layer2,S(.5,-.3,tuv.y));gl_FragColor=vec4(finalComp.rgb, finalComp.a * alpha);}`);
+float noise(vec2 p){vec2 i=floor(p),f=fract(p),u=f*f*(3.-2.*f);return .5+.5*mix(mix(dot(-1.+2.*hash(i),f),dot(-1.+2.*hash(i+vec2(1,0)),f-vec2(1,0)),u.x),mix(dot(-1.+2.*hash(i+vec2(0,1)),f-vec2(0,1)),dot(-1.+2.*hash(i+vec2(1)),f-1.),u.x),u.y);}
+vec3 ok(vec3 a,vec3 b,float t){const mat3 A=mat3(.412165612,.211859107,.088309795,.536275208,.680718958,.281847417,.051457565,.107406579,.630261362),B=mat3(4.076724529,-1.268143773,-.004111989,-3.307216883,2.609332323,-.703476309,.230759054,-.341134429,1.706862569);vec3 x=pow(A*a,vec3(1./3.)),y=pow(A*b,vec3(1./3.));x=mix(x,y,t);return B*(x*x*x);}
+vec4 ok(vec4 a,vec4 b,float t){return vec4(ok(a.rgb,b.rgb,t),mix(a.a,b.a,t));}
+void main(){vec2 u=gl_FragCoord.xy/u_resolution,p=u-.5;float r=u_resolution.x/u_resolution.y,s=u_animate?u_time*10.*u_animate_speed:0.,d=noise(vec2(s*.01,p.x*p.y));p.y/=r;float a=(d-.5)*720.*.01745329252+3.141592654,c=cos(a),q=sin(a);p*=mat2(c,-q,q,c);p.y*=r;float f=20.*u_frequency,A=300.*(.01+u_blur);p.x+=sin(p.y*f+s)/A;p.y+=sin(p.x*f*1.5+s)/(A*.5);float t=S(-.3,.2,(p*mat2(.9961947,.08715574,-.08715574,.9961947)).x);vec4 a1=ok(u_colors[0],u_colors[1],t),a2=ok(u_colors[2],u_colors[3],t),z=ok(a1,a2,S(.5,-.3,p.y));fragColor=vec4(z.rgb,z.a*alpha);}`);
     }
 
-    static sparkles(gl) {
-        return new ShaderSource(gl, `attribute vec2 a_position;varying vec2 vUV;void main(){vUV=(a_position+1.0)/2.0;gl_Position=vec4(a_position,0.0,1.0);}`,`
-precision mediump float;varying vec2 vUV;uniform vec2 resolution;uniform float time;uniform vec4 areaBounds;uniform float areaFeather;uniform float areaInvert;
-vec2 hash22(vec2 p){p=fract(p*vec2(123.34,345.45));p+=dot(p,p+34.345);return fract(vec2(p.x*p.y,p.x+p.y));}
-vec2 randomDir(vec2 r){vec2 d=r-0.5;float l=length(d);return l<0.001?vec2(0.0,1.0):d/l;}
-float densityMap(vec2 u,float t){float w1=sin(u.x*3.0+t*0.5)*0.5+0.5;float w2=sin(u.y*4.0-t*0.3)*0.5+0.5;vec2 c1=vec2(0.5+sin(t*0.4)*0.3,0.5+cos(t*0.3)*0.3);vec2 c2=vec2(0.5-sin(t*0.5)*0.2,0.5-cos(t*0.4)*0.2);float d1=length(u-c1);float d2=length(u-c2);float z1=exp(-d1*3.0);float z2=exp(-d2*4.0);return mix(0.4,1.4,w1*w2*0.3+z1*0.5+z2*0.4);}
-float sparkleContribution(vec2 c,vec2 f,float tm,float te,float d){vec2 r=hash22(c);if(r.x>d)return 0.0;vec2 dr=randomDir(r);vec2 ct=fract(r+dr*tm*mix(0.08,0.24,r.x));vec2 df=(c+ct)-f;float sp=exp(-pow(length(df)/mix(0.001,0.1,r.y),10.5));float lf=fract(te*mix(0.5,1.2,r.x)+r.y);float fd=smoothstep(0.0,0.2,lf)*(1.0-smoothstep(0.75,1.0,lf));float gl=smoothstep(0.0,0.05,lf)*(1.0-smoothstep(0.05,0.15,lf));float tw=0.5+0.5*sin(te*0.01*mix(6.0,14.0,r.x)+r.y*6.283);return sp*tw*fd*(1.0+gl*2.5);}
-float ovalMask(vec2 u){float b=sin(time*0.8)*0.15;float p=sin(time*1.2)*0.1;vec2 c=areaBounds.xy;vec2 rd=areaBounds.zw;rd.x+=b;rd.y+=p;float a=atan(u.y-c.y,u.x-c.x);float w=sin(a*3.0+time*0.5)*0.05;vec2 df=(u-c)/(rd+w);float dt=length(df);float ft=max(areaFeather,1e-4);float m=1.0-smoothstep(1.0-ft,1.0+ft,dt);return mix(m,1.0-m,clamp(areaInvert,0.0,1.0));}
-void main(){vec2 u=gl_FragCoord.xy/resolution.xy;vec2 f=u*vec2(50.0,28.0);vec2 b=floor(f);float tm=time*2.0;float te=time*0.6;float d=densityMap(u,time);float g=0.0;for(int y=-1;y<=1;y++){for(int x=-1;x<=1;x++){vec2 cl=b+vec2(float(x),float(y));g+=sparkleContribution(cl,f,tm,te,d);}}float m=ovalMask(u);g=clamp(g*m,0.0,1.0);gl_FragColor=vec4(vec3(1.0)*g,g*0.85);}`);
-    }
+    static sparkles(gl){return new ShaderSource(gl,ShaderSource.gl2_vertex,`#version 300 es
+// Created by thelstv - 2025
+// Inspired by PS3 XMB
+precision mediump float;uniform vec2 resolution;uniform float time,areaFeather,areaInvert;uniform vec4 areaBounds;out vec4 fragColor;
+vec2 h(vec2 p){p=fract(p*vec2(123.34,345.45));p+=dot(p,p+34.345);return fract(vec2(p.x*p.y,p.x+p.y));}
+vec2 d(vec2 r){vec2 p=r-.5,l=vec2(length(p));return l.x<.001?vec2(0,1):p/l.x;}
+float D(vec2 u,float t){float w=(sin(u.x*3.+t*.5)*.5+.5)*(sin(u.y*4.-t*.3)*.5+.5)*.3;vec2 a=vec2(.5+sin(t*.4)*.3,.5+cos(t*.3)*.3),b=vec2(.5-sin(t*.5)*.2,.5-cos(t*.4)*.2);return mix(.4,1.4,w+exp(-length(u-a)*3.)*.5+exp(-length(u-b)*4.)*.4);}
+float C(vec2 c,vec2 f,float m,float e,float n){vec2 r=h(c);if(r.x>n)return 0.;vec2 q=d(r),p=fract(r+q*m*mix(.08,.24,r.x)),v=c+p-f;float s=exp(-pow(length(v)/mix(.001,.1,r.y),10.5)),l=fract(e*mix(.5,1.2,r.x)+r.y),F=smoothstep(0.,.2,l)*(1.-smoothstep(.75,1.,l)),G=smoothstep(0.,.05,l)*(1.-smoothstep(.05,.15,l)),T=.5+.5*sin(e*.01*mix(6.,14.,r.x)+r.y*6.2831853);return s*T*F*(1.+G*2.5);}
+float M(vec2 u){float b=sin(time*.8)*.15,p=sin(time*1.2)*.1;vec2 c=areaBounds.xy,r=areaBounds.zw+vec2(b,p);float a=atan(u.y-c.y,u.x-c.x),w=sin(a*3.+time*.5)*.05,x=length((u-c)/(r+w)),f=max(areaFeather,1e-4),m=1.-smoothstep(1.-f,1.+f,x);return mix(m,1.-m,clamp(areaInvert,0.,1.));}
+void main(){vec2 u=gl_FragCoord.xy/resolution,f=u*vec2(50.,28.),b=floor(f);float m=time*2.,e=time*.6,n=D(u,time),g=0.;for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++)g+=C(b+vec2(x,y),f,m,e,n);g=clamp(g*M(u),0.,1.);fragColor=vec4(g,g,g,g*.85);}`);
 }
+    }
 
 window.CombinedShaderRenderer = CombinedShaderRenderer;
 window.ShaderSource = ShaderSource;

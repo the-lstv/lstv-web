@@ -45,10 +45,10 @@ class ClockApp extends website.ContentContext {
             class: "clock-app",
             inner: [
                 { class: "tab-bar", inner: [
-                    { tag: "button", class: "clock-tab-button pill",       inner: [icon("bi-clock"), "Time"] },
-                    { tag: "button", class: "clock-tab-button pill clear", inner: [icon("bi-stopwatch"), "Stopwatch"] },
-                    { tag: "button", class: "clock-tab-button pill clear", inner: [icon("bi-hourglass-split"), "Timer"] },
-                    { tag: "button", class: "clock-tab-button pill clear", inner: [icon("bi-globe2"), "World Clock"] },
+                    { tag: "button", class: "clock-tab-button pill",       inner: [icon("bi-clock"), ["Time"]] },
+                    { tag: "button", class: "clock-tab-button pill clear", inner: [icon("bi-stopwatch"), ["Stopwatch"]] },
+                    { tag: "button", class: "clock-tab-button pill clear", inner: [icon("bi-hourglass-split"), ["Timer"]] },
+                    { tag: "button", class: "clock-tab-button pill clear", inner: [icon("bi-globe2"), ["World Clock"]] },
                 ] },
 
                 {
@@ -232,6 +232,7 @@ class ClockApp extends website.ContentContext {
     flex-direction: column;
     width: 100%;
     height: 100%;
+    background: var(--background);
 }
 .clock-app .tab-bar {
     display: flex;
@@ -344,6 +345,21 @@ class ClockApp extends website.ContentContext {
     font-family: "JetBrains Mono", Poppins, sans-serif;
     background: var(--accent-mix-40);
 }
+
+@container ls-view (width < 520px) {
+    .clock-tab-button div {
+        display: none;
+    }
+
+    .clock-app .time {
+        font-size: 2em;
+    }
+
+    .clock-app {
+        background: color-mix(var(--background), transparent 40%);
+        backdrop-filter: blur(8px);
+    }
+}
     `           }
             ]
         });
@@ -377,7 +393,8 @@ class ClockApp extends website.ContentContext {
             width: 600,
             height: 400,
             minWidth: 350,
-            minHeight: 130
+            minHeight: 130,
+            transparent: true
         });
 
         this.setInterval(() => this.#render(), 1000);

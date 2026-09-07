@@ -2,7 +2,8 @@
     lstv.space kernel
     Author: Lukas (thelstv)
     Copyright: (c) https://lstv.space
-    No commercial use permitted.
+    No commercial or training use permitted.
+    This code is not open-source.
 
     Last modified: 2026
     See: https://github.com/the-lstv/lstv-web
@@ -42,8 +43,8 @@ const BUILTIN_APPS = [
         "id": "clock",
         "icon": "d2973ce4286307f8.svg",
         "description": "What is the current time?",
-        "version": "1.0.0",
-        "main": "clock.mjs?0"
+        "version": "1.1.0",
+        "main": "clock.mjs?0.1"
     },
     {
         "name": "Text Editor",
@@ -85,6 +86,7 @@ const BUILTIN_APPS = [
         "version": "1.0.0",
         "main": "media-center.mjs"
     },
+
     localStorage.getItem("enableExperimentalApps") === "true" && {
         "name": "monitors",
         "id": "monitors",
@@ -158,6 +160,11 @@ const requestAnimationFrame = LS.Context.requestAnimationFrame;
 const queueMicrotask = LS.Context.queueMicrotask;
 const fetch = LS.Context.fetch;
 
+function invokeAndReturn(f) {
+    f();
+    return f;
+}
+
 try {
 // --- CLASSES
 
@@ -228,6 +235,7 @@ class LoggerContext {
 /**
  * GlobalAsset manager
  * Keeps track of globally registered assets (styles and scripts) to avoid duplicates.
+ * Website only
  */
 const AssetManager = new class {
     constructor() {
@@ -1543,6 +1551,7 @@ class Viewport extends LS.EventEmitter {
     }
 }
 
+
 /**
  * Thread class
  * Used to summon separate threads (web-workers). You can think of it as "processes", managed by the kernel.
@@ -1594,6 +1603,10 @@ class Thread extends LS.EventEmitter {
     }
 }
 
+
+/**
+ * Media player class
+ */
 class MusicPlayer {
     constructor() {
         this.toolbarElement = LS.SelectOrCreate("#musicPlayer");
@@ -1633,35 +1646,35 @@ class MusicPlayer {
             }
         }
 
-        // // Panel
-        // this.musicStatusElement = LS.Create("button#musicButton.pill", {
-        //     tooltip: "Music Player <kbd>Ctrl+M</kbd>",
-        //     attr: { "aria-label": "Open music player" },
-        //     inner: [
-        //         { tag: "i", class: "bi-vinyl-fill" },
-        //         { tag: "span", class: "music-player-status text-overflow-nowrap", inner: "Stopped" }
-        //     ]
-        // });
+        // Panel
+        this.musicStatusElement = LS.Create("button#musicButton.pill", {
+            tooltip: "Music Player <kbd>Ctrl+M</kbd>",
+            attr: { "aria-label": "Open music player" },
+            inner: [
+                { tag: "i", class: "bi-vinyl-fill" },
+                { tag: "span", class: "music-player-status text-overflow-nowrap", inner: "Stopped" }
+            ]
+        });
 
-        // this.musicStatusText = this.musicStatusElement.querySelector(".music-player-status");
-        
-        // this.playButtonElement = this.toolbarElement.querySelector(".music-player-play-pause");
-        // this.playButtonElement.onclick = () => {
-        //     this.playToggle();
-        // };
+        this.musicStatusText = this.musicStatusElement.querySelector(".music-player-status");
 
-        // this.repeatMode = "off";
-        // this.repeatButtonElement = this.toolbarElement.querySelector(".music-player-repeat");
-        // this.repeatButtonElement.onclick = () => {
-        //     this.toggleRepeatMode();
-        // };
+        this.playButtonElement = this.toolbarElement.querySelector(".music-player-play-pause");
+        this.playButtonElement.onclick = () => {
+            this.playToggle();
+        };
 
-        // this.musicStatusElement.onclick = () => {
-        //     app.desktop.openToolbar("musicPlayer", true);
-        // };
+        this.repeatMode = "off";
+        this.repeatButtonElement = this.toolbarElement.querySelector(".music-player-repeat");
+        this.repeatButtonElement.onclick = () => {
+            this.toggleRepeatMode();
+        };
 
-        // this.musicStatusElement.style.display = "none";
-        // LS.SelectOne(".headerLeftContainer").appendChild(this.musicStatusElement);
+        this.musicStatusElement.onclick = () => {
+            app.desktop.openToolbar("musicPlayer", true);
+        };
+
+        this.musicStatusElement.style.display = "none";
+        LS.SelectOne(".headerLeftContainer").appendChild(this.musicStatusElement);
     }
 
     setCover(imageURL = null, coverArtURL = null) {
@@ -1994,7 +2007,7 @@ class SoundBox {
      * @param {*} soundName The name of the sound to load.
      * @returns {Promise<boolean>} Returns true if the sound is playable, false if something went wrong.
      */
-    async load(soundName) {
+    async load(soundName, fallbackIndex = -1) {
         const sound = this.soundMap.get(soundName);
 
         if(!sound) {
@@ -2005,12 +2018,21 @@ class SoundBox {
         if(sound.buffer && sound.__lastSrc === sound.src) return true;
 
         try {
-            const response = await fetch(sound.src);
+            const src = fallbackIndex < 0? sound.src: (this.soundMap.get(sound.fallback[fallbackIndex])?.src);
+            if(!src) throw "No available source";
+
+            const response = await fetch(src);
             const arrayBuffer = await response.arrayBuffer();
             sound.buffer = await this.ctx.decodeAudioData(arrayBuffer);
-            sound.__lastSrc = sound.src;
+            sound.__lastSrc = src;
             return true;
         } catch (e) {
+            if(Array.isArray(sound.fallback) && sound.fallback.length > (fallbackIndex + 1)) {
+                fallbackIndex ++;
+                kernel.error("Failed to load sound:", soundName, ", trying to fallback to next alternative: ", sound.fallback[fallbackIndex], e);
+                return await this.load(soundName, fallbackIndex);
+            }
+
             kernel.error("Failed to load sound:", soundName, e);
             return false;
         }
@@ -2267,9 +2289,9 @@ class SoundBoxThread {
 /**
  * Desktop class
  * Represents the virtual desktop environment and its components.
- * It does not manage windows or content (that is done by LS.WindowManager).
+ * It does not manage or access windows or their content (that is done by LS.WindowManager & kernel) or any other system features.
  */
-class Desktop {
+class LiDesktop {
     name = "lide-web";
     version = "1.0.0-alpha";
     codeName = "Based on LiDE 12 Hiroki";
@@ -2278,19 +2300,20 @@ class Desktop {
         this.windowManager = LS.WindowManager;
 
         // System sounds
+        const base = "/assets/audio/system/sfx/";
         this.soundBox = new SoundBox({
             volume: 0.5,
             sounds: {
-                "click": { src: "/assets/audio/system/sfx/click.mp3" },
-                "notification": { src: "/assets/audio/system/sfx/notification.mp3" },
-                "error": { src: "/assets/audio/system/sfx/error.mp3" },
-                "success": { src: "/assets/audio/system/sfx/success.mp3" },
-                "startup": { src: "/assets/audio/system/sfx/startup_1.wav" },
-                "timer": { src: "/assets/audio/system/sfx/timer.mp3" },
+                "click":        { src: base + "click.mp3" },
+                "notification": { src: base + "notification.mp3" },
+                "error":        { src: base + "error.mp3", fallback: ["system:notification"] },
+                "success":      { src: base + "success.mp3" },
+                "startup":      { src: base + "startup_1.wav" },
+                "timer":        { src: base + "timer.mp3", fallback: ["system:notification"] },
             }
         }, null, "system");
 
-        // Enables closing the toolbar via esc
+        // Enables closing toolbars via esc
         this.ToolbarStackRef = { close() { app.desktop.closeToolbar() } };
 
         // Initialize music player (for global media controls, and it is also a player on it's own.)
@@ -2304,38 +2327,23 @@ class Desktop {
      * @type {Array}
      */
     // Todo: this is user data
-    // panelState = [
-    //     { kind: "website-header" },
-    //     { kind: "spacer" },
-    //     { kind: "accountsButton" },
-    //     { kind: "appsButton" },
-    //     { kind: "themeButton" },
-    //     { kind: "commandPaletteButton" },
-    // ]
-    panelState = [
-        { kind: "appsButton" },
-        { kind: "accountsButton" },
-        { kind: "themeButton" },
-        { kind: "commandPaletteButton" },
-        { kind: "spacer" },
-        { kind: "clock" }
-    ]
+    panelState = []
 
     static panelComponents = new Map([
-        ["accountsButton", { label: "Account", showIcon: false, buttonLabel: { class: "accountsButton", inner: [{ reactive: "user.username ?? 'Log-In'" }, { class: "profile-picture-preview", inner: { tag: "i", class: "bi-person-fill" } }] }, description: "View and edit your profile or log-in", icon: "bi-person-fill", onClick: () => app.desktop.openToolbar("login") }],
+        ["accounts", { label: "Account", showIcon: false, buttonLabel: { class: "accountsButton", inner: [{ reactive: "user.username ?? 'Log-In'" }, { class: "profile-picture-preview", inner: { tag: "i", class: "bi-person-fill" } }] }, description: "View and edit your profile or log-in", icon: "bi-person-fill", onClick: () => app.desktop.openToolbar("login") }],
 
-        ["appsButton", { label: "Apps", tooltip: "Applications", description: "View applications", icon: "bi-grid-fill", onClick() { app.desktop.openToolbar("apps", true) } }],
+        ["apps", { label: "Apps", tooltip: "Applications", description: "View applications", icon: "bi-grid-fill", onClick() { app.desktop.openToolbar("apps", true) } }],
 
-        // ["assistantButton", { showLabel: false, label: "Assistant", description: "Open Assistant", icon: "bi-stars", onClick() {
+        // ["assistant", { showLabel: false, label: "Assistant", description: "Open Assistant", icon: "bi-stars", onClick() {
         //     website.desktop.openToolbar("assistant", true);
         // } }],
 
-        ["themeButton", { buttonLabel: { tag: "i", class: "bi-palette-fill" }, label: "Customize", description: "Customize the site appearance", icon: 'bi-' + (LS.Color.theme === "dark" ? "moon-stars" : "sun") + "-fill",
+        ["theme", { buttonLabel: { tag: "i", class: "bi-palette-fill" }, label: "Customize", description: "Customize the site appearance", icon: 'bi-' + (LS.Color.theme === "dark" ? "moon-stars" : "sun") + "-fill",
             onClick() {
                 app.desktop.openToolbar("theme", true);
             },
 
-            onInit() {
+            onceInit() {
                 // Color customization
                 for(let accent of app.ACCENT_COLORS) {
                     LS.SelectOne("#accentButtons").add(LS.Create("button", {
@@ -2355,7 +2363,7 @@ class Desktop {
             }
         }],
 
-        ["commandPaletteButton", { showLabel: false, label: "Command Palette", tooltip: "Command Palette", description: "Open Command Palette", icon: "bi-terminal", onClick() {
+        ["commandPalette", { showLabel: false, label: "Command Palette", tooltip: "Command Palette", description: "Open Command Palette", icon: "bi-terminal", onClick() {
             if(!app.hasCapability("command-palette")) {
                 LS.Toast.show("Command Palette is not available in this environment.");
                 return;
@@ -2369,124 +2377,38 @@ class Desktop {
             getElement: () => LS.Create(".taskbar-clock{0:00}"),
             name: "Clock",
             description: "See the current time",
-            // panelItem: "clock"
+            // panelItem: "clock",
+
+            onInit(item) {
+                item.__updateInterval = setInterval(invokeAndReturn(() => {
+                    const now = new Date();
+                    const hours = now.getHours().toString().padStart(2, "0");
+                    const minutes = now.getMinutes().toString().padStart(2, "0");
+                    const seconds = now.getSeconds().toString().padStart(2, "0");
+                    item.element && (item.element.textContent = `${hours}:${minutes}:${seconds}`);
+                }), 1000);
+            },
+
+            onDestroy(item) {
+                clearInterval(item.__updateInterval);
+                item.__updateInterval = null;
+            }
         }],
 
         ["taskbar", {
-
+            getElement: () => LS.Create(".taskbar"),
+            name: "Taskbar",
+            description: "See open applications",
         }],
 
         ["website-header", {
             getElement: () => LS.Create("a[href=/].homeButton[aria-label=LSTV Homepage]", {
-                html: `<svg xmlns="http://www.w3.org/2000/svg" width="21" height="15" fill="none"><path d="M19.1689 12.3682V13.7529H19.1182L18.3242 12.3682H19.1689ZM14.9346 13.7529H2.3457L8.63965 2.81445L14.9346 13.7529ZM19.1689 6.82617V8.48926H16.0996L15.1465 6.82617H19.1689ZM19.1689 1.5625V2.94727H12.9219L12.1279 1.5625H19.1689Z" stroke="currentColor" stroke-width="2.494"/></svg><span class="headerTitle">LSTV</span> <span class="headerText"></span>`
+                html: `<svg xmlns="http://www.w3.org/2000/svg" width="21" height="15" fill="none"><path d="M19.1689 12.3682V13.7529H19.1182L18.3242 12.3682H19.1689ZM14.9346 13.7529H2.3457L8.63965 2.81445L14.9346 13.7529ZM19.1689 6.82617V8.48926H16.0996L15.1465 6.82617H19.1689ZM19.1689 1.5625V2.94727H12.9219L12.1279 1.5625H19.1689Z" stroke="currentColor" stroke-width="2.494"/></svg><span class="headerTitle">LSTV${isBeta? " Beta": ""}</span> <span class="headerText"></span>`
             })
         }],
 
-        ["spacer", {
-            getElement: () => LS.Create(".spacer")
-        }]
+        ["spacer", { getElement: () => LS.Create(".spacer") }]
     ]);
-
-    openToolbar(name, toggle = false) {
-        console.log("Opening toolbar:", name, "Toggle:", toggle);
-        if(app.currentToolbar == name && app.isToolbarOpen) {
-            if(toggle) app.desktop.closeToolbar();
-            return;
-        }
-
-        const toolbar = app.desktop.toolbars.get(name);
-        if(!toolbar) return;
-
-        const previousToolbar = app.currentToolbar && app.desktop.toolbars.get(app.currentToolbar);
-        if(previousToolbar) {
-            if(typeof previousToolbar.onClose === "function") previousToolbar.onClose();
-
-            if(previousToolbar.panelItem) {
-                this.eachButtonOfKind(app.currentToolbar, button => button.classList.remove("open"));
-            }
-        }
-
-        if(typeof toolbar.onOpen === "function") toolbar.onOpen();
-
-        // TODO: this is incredibly ass
-        toolbar.element.classList.add("open");
-        for(const tb of app.desktop.toolbars.values()) {
-            if(tb !== toolbar) tb.element.classList.remove("open");
-        }
-
-        if (app.isToolbarOpen) LS.Animation.slideInToggle(toolbar.element, previousToolbar?.element || null);
-        if (!app.isToolbarOpen) LS.Animation.fadeIn(toolbar.element, "up");
-
-        app.isToolbarOpen = true;
-        app.currentToolbar = name;
-        app.quickEmit("toolbar-open", name);
-        kernel.viewport.target.classList.add("shade");
-        LS.Stack.push(this.ToolbarStackRef);
-
-        this.eachButtonOfKind(app.currentToolbar, button => button.classList.add("open"));
-
-        return toolbar;
-    }
-
-    eachButtonOfKind(kind, callback) {
-        for(const item of app.desktop.panelState) {
-            if(item.kind === kind && item.element instanceof HTMLElement) {
-                callback(item.element);
-            }
-        }
-    }
-
-    closeToolbar() {
-        console.log("Closing toolbar");
-        if(!app.isToolbarOpen) return;
-
-        const toolbar = app.desktop.toolbars.get(app.currentToolbar);
-        LS.Animation.fadeOut(toolbar.element, "down");
-
-        if(toolbar) {
-            if(typeof toolbar.onClose === "function") toolbar.onClose();
-            toolbar.panelItem instanceof HTMLElement? toolbar.panelItem: app.desktop.panelState.forEach(item => {
-                if(item.kind === app.currentToolbar) item.element.classList.remove("open");
-            });
-            app.currentToolbar = null;
-        }
-
-        app.isToolbarOpen = false;
-        app.quickEmit("toolbar-close");
-        kernel.viewport.target.classList.remove("shade");
-        LS.Stack.remove(this.ToolbarStackRef);
-    }
-
-    async openPalette() {
-        if (app.isEmbedded) return;
-
-        if (!this.commandPalette) {
-            if(kernel._initializingPalette) {
-                await kernel._initializingPalette;
-            } else {
-                kernel._initializingPalette = kernel._initializeCommandPalette();
-                await kernel._initializingPalette;
-                kernel._initializingPalette = null;
-            }
-        }
-
-        this.commandPalette.open();
-    }
-
-    showLoginToolbar(toggle = false) {
-        // const accountsButton = website.panelItems.get("accountsButton").element;
-        // accountsButton.focus();
-    
-        setTimeout(() => {
-            if(!toggle && app.isToolbarOpen && app.currentToolbar === "login") return;
-
-            app.desktop.openToolbar("login", toggle);
-
-            if(!app.isLoggedIn) setTimeout(() => {
-                LS.SelectOne("#loginPopup")?.querySelector("button,input")?.focus();
-            }, 0);
-        }, 0);
-    }
 
     toolbars = new Map([
         ["statusbar", {
@@ -2507,7 +2429,7 @@ class Desktop {
             element: LS.SelectOne("#toolbarLogin"),
             name: "Account",
             description: "View and edit your profile or log-in",
-            panelItem: "accountsButton",
+            panelItem: "accounts",
             onOpen() {
                 app.loginTabs.set(app.isLoggedIn? "account": "default", true);
             }
@@ -2517,7 +2439,7 @@ class Desktop {
             element: LS.SelectOne("#toolbarApps"),
             name: "Apps",
             description: "View applications",
-            panelItem: "appsButton",
+            panelItem: "apps",
 
             onOpen() {
                 if(!kernel.applicationMenu.initialized) {
@@ -2576,6 +2498,108 @@ class Desktop {
         }]
     ])
 
+    openToolbar(name, toggle = false) {
+        console.log("Opening toolbar:", name, "Toggle:", toggle);
+        if(app.currentToolbar == name && app.isToolbarOpen) {
+            if(toggle) app.desktop.closeToolbar();
+            return;
+        }
+
+        const toolbar = app.desktop.toolbars.get(name);
+        if(!toolbar) return;
+
+        const previousToolbar = app.currentToolbar && app.desktop.toolbars.get(app.currentToolbar);
+        if(previousToolbar) {
+            if(typeof previousToolbar.onClose === "function") previousToolbar.onClose();
+
+            if(previousToolbar.panelItem) {
+                this.eachButtonOfKind(app.currentToolbar, button => button.classList.remove("open"));
+            }
+        }
+
+        if(typeof toolbar.onOpen === "function") toolbar.onOpen();
+
+        // TODO: this is incredibly ass
+        toolbar.element.classList.add("open");
+        for(const tb of app.desktop.toolbars.values()) {
+            if(tb !== toolbar) tb.element.classList.remove("open");
+        }
+
+        if (app.isToolbarOpen) LS.Animation.slideInToggle(toolbar.element, previousToolbar?.element || null);
+        if (!app.isToolbarOpen) LS.Animation.fadeIn(toolbar.element, "up");
+
+        app.isToolbarOpen = true;
+        app.currentToolbar = name;
+        app.quickEmit("toolbar-open", name);
+        kernel.viewport.target.classList.add("shade");
+        LS.Stack.push(this.ToolbarStackRef);
+
+        this.eachButtonOfKind(app.currentToolbar, button => button.classList.add("open"));
+
+        return toolbar;
+    }
+
+    eachButtonOfKind(kind, callback) {
+        for(const item of app.desktop.panelState) {
+            console.log(kind, item.kind);
+            if(item.kind === kind && item.element instanceof HTMLElement) {
+                callback(item.element);
+            }
+        }
+    }
+
+    closeToolbar() {
+        console.log("Closing toolbar");
+        if(!app.isToolbarOpen) return;
+
+        const toolbar = app.desktop.toolbars.get(app.currentToolbar);
+        LS.Animation.fadeOut(toolbar.element, "down");
+
+        if(toolbar) {
+            if(typeof toolbar.onClose === "function") toolbar.onClose();
+            toolbar.panelItem instanceof HTMLElement? toolbar.panelItem: app.desktop.panelState.forEach(item => {
+                if(item.kind === app.currentToolbar) item.element.classList.remove("open");
+            });
+            app.currentToolbar = null;
+        }
+
+        app.isToolbarOpen = false;
+        app.quickEmit("toolbar-close");
+        kernel.viewport.target.classList.remove("shade");
+        LS.Stack.remove(this.ToolbarStackRef);
+    }
+
+    async openPalette() {
+        if (app.isEmbedded) return;
+
+        if (!this.commandPalette) {
+            if(kernel._initializingPalette) {
+                await kernel._initializingPalette;
+            } else {
+                kernel._initializingPalette = kernel._initializeCommandPalette();
+                await kernel._initializingPalette;
+                kernel._initializingPalette = null;
+            }
+        }
+
+        this.commandPalette.open();
+    }
+
+    showLoginToolbar(toggle = false) {
+        // const accountsButton = website.panelItems.get("accountsButton").element;
+        // accountsButton.focus();
+    
+        setTimeout(() => {
+            if(!toggle && app.isToolbarOpen && app.currentToolbar === "login") return;
+
+            app.desktop.openToolbar("login", toggle);
+
+            if(!app.isLoggedIn) setTimeout(() => {
+                LS.SelectOne("#loginPopup")?.querySelector("button,input")?.focus();
+            }, 0);
+        }, 0);
+    }
+
     initPanel() {
         const moreButton = LS.SelectOrCreate("#moreButton");
         moreButton.addEventListener("click", () => {
@@ -2628,7 +2652,7 @@ class Desktop {
 
         const nav =        LS.SelectOrCreate("#primaryPanel");
         const container =  LS.SelectOrCreate(".headerButtons");
-        const menu = LS.SelectOrCreate("#toolbarMore");
+        const menu =       LS.SelectOrCreate("#toolbarMore");
         const moreButton = LS.SelectOrCreate("#moreButton");
 
         const availableSpace = nav.clientWidth - navPadding - gap - moreButton.clientWidth - (nav.firstElementChild?.clientWidth || 0);
@@ -2639,12 +2663,10 @@ class Desktop {
 
         let takenSpace = 0;
         for(const item of app.desktop.panelState) {
-            const component = Desktop.panelComponents.get(item.kind);
+            const component = LiDesktop.panelComponents.get(item.kind);
             if(!component) continue;
 
             if(!item.element) {
-                if(typeof component.onInit === "function") component.onInit();
-
                 if(component.getElement) {
                     item.element = component.getElement();
                 } else {
@@ -2661,7 +2683,6 @@ class Desktop {
                         inner: component.showLabel !== false? [icon, { tag: "span", inner: buttonLabel, class: typeof buttonLabel === "string" ? "label" : "" }]: icon,
                         onclick: component.onClick || null
                     });
-
                     
                     // Browser layout rendering is an absolutely incompetent piece of crap
                     // so we need to guess the width to avoid the render>wait>read>render hell
@@ -2670,7 +2691,20 @@ class Desktop {
                 }
 
                 if(!frag) frag = document.createDocumentFragment();
+
                 frag.appendChild(item.element);
+                if(typeof component.onceInit === "function" && !component.__initialized) {
+                    try {
+                        component.onceInit(item);
+                        component.__initialized = true;
+                    } catch(e) { console.error(e) }
+                }
+
+                if(typeof component.onInit === "function") {
+                    try {
+                        component.onInit(item);
+                    } catch(e) { console.error(e) }
+                }
             }
 
 
@@ -2724,7 +2758,8 @@ class Desktop {
 
         // Write operations
         if(frag)     container.replaceChildren(frag);
-        if(menuFrag) menu.replaceChildren(menuFrag);
+        if(menuFrag)      menu.replaceChildren(menuFrag);
+
         moreButton.style.display = (availableSpace + moreButtonClientWidth) < takenSpace ? "inline-flex" : "none";
 
         // Close the toolbar if no items are collapsed and it's currently open
@@ -2733,10 +2768,25 @@ class Desktop {
         }
     }
 
+    destroyPanelComponent(item) {
+        const component = LiDesktop.panelComponents.get(item.kind);
+        if(component && typeof component.onDestroy === "function") {
+            try {
+                component.onDestroy(item);
+            } catch(e) { console.error(e) }
+        }
+
+        if(item.element) {
+            item.element.remove();
+            item.element = null;
+        }
+    }
+
     _welcome(){
+        this.closeToolbar();
         this.soundBox.play("system:startup");
         LS.Create("{Welcome to desktop mode}", {
-    		style: "position: fixed; top: 50%; left: 50%; translate: -60% -50%; font-size: 4em",
+    		style: "position: fixed; top: 50%; left: 50%; translate: -60% -50%; font-size: 4em; text-align: center; pointer-events: none; display: block; background: #0008; border-radius: 16px; padding: 4px 16px",
             parent: "top",
             ephemeral: true,
             animationOptions: { duration: 6000, easing: "ease" },
@@ -2751,9 +2801,14 @@ class Desktop {
     }
 
     destroy() {
+        // If we used the shared WM, we should reset it back instead of just deleting it.
         const replacingWM = this.windowManager === LS.WindowManager;
         this.windowManager.destroy(replacingWM);
         this.windowManager = null;
+
+        for(const item of this.panelState) {
+            this.destroyPanelComponent(item);
+        }
 
         this.musicPlayer.destroy();
         this.musicPlayer = null;
@@ -2761,6 +2816,7 @@ class Desktop {
             this.frameScheduler.destroy();
             this.frameScheduler = null;
         }
+
         window.removeEventListener("resize", this.__resizeHandler);
         this.toolbars.clear();
     }
@@ -2796,6 +2852,305 @@ class OpenerPromise {
     }
 }
 
+class TmpFs {
+    fs = new Map;
+    encoder = new TextEncoder();
+    decoder = new TextDecoder();
+
+    constructor(data) {
+        if(data) this.fs = new Map(data);
+    }
+
+    /**
+     * Takes normalized directory, returns file descriptor or error code.
+     * @param {*} ndir Directory to open
+     * @param {*} flags Open flags, see https://man7.org/linux/man-pages/man2/open.2.html
+     * @returns {*} Something to describe the file handle.
+     * 
+     * Error code constants: https://www.chromium.org/chromium-os/developer-library/reference/linux-constants/errnos/
+     */
+    open(ndir, flags) {
+        const data = this.fs.get(ndir);
+        if(!data) return RootFs.errno.ENOENT;
+        return { _fs: this, data };
+    }
+
+    /**
+     * Destroy a file descriptor/handle.
+     * @param {*} fd File descriptor to be closed.
+     */
+    close(fd) {
+        fd._fs = null;
+        fd.data = null;
+        fd.closed = true;
+    }
+
+    checkFd(fd, kind) {
+        if(!fd || !fd.data || fd.closed) throw new Error(RootFs.errno.EBADF);
+        if(kind === 1 &&  fd.data.isFile) throw new Error(RootFs.errno.ENOTDIR);
+        if(kind === 0 && !fd.data.isFile) throw new Error(RootFs.errno.EISDIR);
+    }
+
+    read(fd, first, nbytes, encoding) {
+        this.checkFd(fd, 0);
+
+        const data = fd.data;
+        return (first === 0 && nbytes === -1)? this._toEncoding(data.contents, encoding): this._toEncoding(data.contents.slice(first, first + nbytes), encoding);
+    }
+
+    write(fd, first, nbytes, encoding) {
+        this.checkFd(fd, 0);
+
+        const data = fd.data;
+        if(!data || !data.contents) throw "Invalid file handle";
+        return (first === 0 && nbytes === -1)? this._toEncoding(data.contents, encoding): this._toEncoding(data.contents.slice(first, first + nbytes), encoding);
+    }
+
+    stat(fd) {
+        this.checkFd(fd);
+
+        return {
+            dir: fd.data.isFile
+        }
+    }
+
+    mkdir(ndir, recursive) {
+        if(recursive) {}
+    }
+
+    _toEncoding(data, encoding) {
+        if(encoding === RootFs.ENCODING.utf8) return typeof data === "string"? data: this.decoder.decode(data);
+        if(typeof data === "string") {
+            return this.encoder.encode(data);
+        }
+        return data;
+    }
+}
+
+/**
+ * Root Filesystem base class
+ * The base is always local but can sync to any backend.
+ */
+class RootFs {
+    static ENCODING = {
+        "binary": 0,
+        "utf8": 1,
+    }
+
+    static errno = {
+        EPERM: 0x01, // Operation not permitted
+        ENOENT: 0x02, // No such file or directory
+        ESRCH: 0x03, // No such process
+        EINTR: 0x04, // Interrupted system call
+        EIO: 0x05, // Input/output error
+        ENXIO: 0x06, // No such device or address
+        E2BIG: 0x07, // Argument list too long
+        ENOEXEC: 0x08, // Exec format error
+        EBADF: 0x09, // Bad file descriptor
+        ECHILD: 0x0a, // No child processes
+        EAGAIN: 0x0b, // Resource temporarily unavailable
+        EWOULDBLOCK: 0x0b, // (Same value as EAGAIN) Resource temporarily unavailable
+        ENOMEM: 0x0c, // Cannot allocate memory
+        EACCES: 0x0d, // Permission denied
+        EFAULT: 0x0e, // Bad address
+        ENOTBLK: 0x0f, // Block device required
+        EBUSY: 0x10, // Device or resource busy
+        EEXIST: 0x11, // File exists
+        EXDEV: 0x12, // Invalid cross-device link
+        ENODEV: 0x13, // No such device
+        ENOTDIR: 0x14, // Not a directory
+        EISDIR: 0x15, // Is a directory
+        EINVAL: 0x16, // Invalid argument
+        ENFILE: 0x17, // Too many open files in system
+        EMFILE: 0x18, // Too many open files
+        ENOTTY: 0x19, // Inappropriate ioctl for device
+        ETXTBSY: 0x1a, // Text file busy
+        EFBIG: 0x1b, // File too large
+        ENOSPC: 0x1c, // No space left on device
+        ESPIPE: 0x1d, // Illegal seek
+        EROFS: 0x1e, // Read-only file system
+        EMLINK: 0x1f, // Too many links
+        EPIPE: 0x20, // Broken pipe
+        EDOM: 0x21, // Numerical argument out of domain
+        ERANGE: 0x22, // Numerical result out of range
+        EDEADLK: 0x23, // Resource deadlock avoided
+        EDEADLOCK: 0x23, // (Same value as EDEADLK) Resource deadlock avoided
+        ENAMETOOLONG: 0x24, // File name too long
+        ENOLCK: 0x25, // No locks available
+        ENOSYS: 0x26, // Function not implemented
+        ENOTEMPTY: 0x27, // Directory not empty
+        ELOOP: 0x28, // Too many levels of symbolic links
+
+        ENOMSG: 0x2a, // No message of desired type
+        EIDRM: 0x2b, // Identifier removed
+        ECHRNG: 0x2c, // Channel number out of range
+        EL2NSYNC: 0x2d, // Level 2 not synchronized
+        EL3HLT: 0x2e, // Level 3 halted
+        EL3RST: 0x2f, // Level 3 reset
+        ELNRNG: 0x30, // Link number out of range
+        EUNATCH: 0x31, // Protocol driver not attached
+        ENOCSI: 0x32, // No CSI structure available
+        EL2HLT: 0x33, // Level 2 halted
+        EBADE: 0x34, // Invalid exchange
+        EBADR: 0x35, // Invalid request descriptor
+        EXFULL: 0x36, // Exchange full
+        ENOANO: 0x37, // No anode
+        EBADRQC: 0x38, // Invalid request code
+        EBADSLT: 0x39, // Invalid slot
+
+        EBFONT: 0x3b, // Bad font file format
+        ENOSTR: 0x3c, // Device not a stream
+        ENODATA: 0x3d, // No data available
+        ETIME: 0x3e, // Timer expired
+        ENOSR: 0x3f, // Out of streams resources
+        ENONET: 0x40, // Machine is not on the network
+        ENOPKG: 0x41, // Package not installed
+        EREMOTE: 0x42, // Object is remote
+        ENOLINK: 0x43, // Link has been severed
+        EADV: 0x44, // Advertise error
+        ESRMNT: 0x45, // Srmount error
+        ECOMM: 0x46, // Communication error on send
+        EPROTO: 0x47, // Protocol error
+        EMULTIHOP: 0x48, // Multihop attempted
+        EDOTDOT: 0x49, // RFS specific error
+        EBADMSG: 0x4a, // Bad message
+        EOVERFLOW: 0x4b, // Value too large for defined data type
+        ENOTUNIQ: 0x4c, // Name not unique on network
+        EBADFD: 0x4d, // File descriptor in bad state
+        EREMCHG: 0x4e, // Remote address changed
+        ELIBACC: 0x4f, // Can not access a needed shared library
+        ELIBBAD: 0x50, // Accessing a corrupted shared library
+        ELIBSCN: 0x51, // .lib section in a.out corrupted
+        ELIBMAX: 0x52, // Attempting to link in too many shared libraries
+        ELIBEXEC: 0x53, // Cannot exec a shared library directly
+        EILSEQ: 0x54, // Invalid or incomplete multibyte or wide character
+        ERESTART: 0x55, // Interrupted system call should be restarted
+        ESTRPIPE: 0x56, // Streams pipe error
+        EUSERS: 0x57, // Too many users
+        ENOTSOCK: 0x58, // Socket operation on non-socket
+        EDESTADDRREQ: 0x59, // Destination address required
+        EMSGSIZE: 0x5a, // Message too long
+        EPROTOTYPE: 0x5b, // Protocol wrong type for socket
+        ENOPROTOOPT: 0x5c, // Protocol not available
+        EPROTONOSUPPORT: 0x5d, // Protocol not supported
+        ESOCKTNOSUPPORT: 0x5e, // Socket type not supported
+        EOPNOTSUPP: 0x5f, // Operation not supported
+        ENOTSUP: 0x5f, // (Same value as EOPNOTSUPP) Operation not supported
+        EPFNOSUPPORT: 0x60, // Protocol family not supported
+        EAFNOSUPPORT: 0x61, // Address family not supported by protocol
+        EADDRINUSE: 0x62, // Address already in use
+        EADDRNOTAVAIL: 0x63, // Cannot assign requested address
+        ENETDOWN: 0x64, // Network is down
+        ENETUNREACH: 0x65, // Network is unreachable
+        ENETRESET: 0x66, // Network dropped connection on reset
+        ECONNABORTED: 0x67, // Software caused connection abort
+        ECONNRESET: 0x68, // Connection reset by peer
+        ENOBUFS: 0x69, // No buffer space available
+        EISCONN: 0x6a, // Transport endpoint is already connected
+        ENOTCONN: 0x6b, // Transport endpoint is not connected
+        ESHUTDOWN: 0x6c, // Cannot send after transport endpoint shutdown
+        ETOOMANYREFS: 0x6d, // Too many references: cannot splice
+        ETIMEDOUT: 0x6e, // Connection timed out
+        ECONNREFUSED: 0x6f, // Connection refused
+        EHOSTDOWN: 0x70, // Host is down
+        EHOSTUNREACH: 0x71, // No route to host
+        EALREADY: 0x72, // Operation already in progress
+        EINPROGRESS: 0x73, // Operation now in progress
+        ESTALE: 0x74, // Stale file handle
+        EUCLEAN: 0x75, // Structure needs cleaning
+        ENOTNAM: 0x76, // Not a XENIX named type file
+        ENAVAIL: 0x77, // No XENIX semaphores available
+        EISNAM: 0x78, // Is a named type file
+        EREMOTEIO: 0x79, // Remote I/O error
+        EDQUOT: 0x7a, // Disk quota exceeded
+        ENOMEDIUM: 0x7b, // No medium found
+        EMEDIUMTYPE: 0x7c, // Wrong medium type
+        ECANCELED: 0x7d, // Operation canceled
+        ENOKEY: 0x7e, // Required key not available
+        EKEYEXPIRED: 0x7f, // Key has expired
+        EKEYREVOKED: 0x80, // Key has been revoked
+        EKEYREJECTED: 0x81, // Key was rejected by service
+        EOWNERDEAD: 0x82, // Owner died
+        ENOTRECOVERABLE: 0x83, // State not recoverable
+        ERFKILL: 0x84, // Operation not possible due to RF-kill
+        EHWPOISON: 0x85, // Memory page has hardware error
+    };
+
+    static errCode(code) {
+        if(!this.__errCache) {
+            this.__errCache = new Map(Object.entries(this.errno).map(v => v.reverse()));
+        }
+        return this.__errCache.get(code);
+    }
+
+    fs = new TmpFs;
+    mounts = new Map;
+
+    constructor(data) {
+        if(data) this.fs = new TmpFs(data);
+    }
+
+    /**
+     * FS operations are always async since they may access the network or other devices, including real filesystem APIs.
+     * Filesystem resolution steps:
+     * - Normalize path
+     * - Resolve filesystem so we know how and where we can access data
+     * - Resolve directory
+     * - Open path & follow symlinks and check permissions
+     * - Obtain handle
+     * 
+     * @returns {*} fd
+     */
+    async open(dir, flags, absolutePath = true) {
+        dir = this.normalizePath(dir, absolutePath);
+
+        let usingFs = this.fs;
+        for(const [mp, fs] of this.mounts) {
+            if(dir.startsWith(mp)) {
+                usingFs = fs;
+                break;
+            }
+        }
+
+        const fd = await usingFs.open(dir, flags);
+        if(!fd || typeof fd === "number") throw new Error(RootFs.errCode(fd) + " when opening path: " + dir);
+        return fd;
+    }
+
+    async read(fd, first = 0, nbytes = -1, encoding = RootFs.ENCODING.utf8, close = true) {
+        if(!fd || !fd._fs) throw new Error(RootFs.errno.EBADF);
+        const data = await fd._fs.read(fd, first, nbytes, typeof encoding === "string"? RootFs.ENCODING[encoding]: encoding);
+        if(close) fd._fs.close(fd);
+        return data;
+    }
+
+    /**
+     * A higher-level method that simply resolves & reads a file content at a path.
+     * Note: file access can involve network/other operations, depending on the type of the fs mounted at a given path, so don't rely on this being guaranteed to resolve in a specified time.
+     * @param {*} dir Path to the file to read
+     * @param {*} encoding ENUM RootFs.ENCODING or binary/utf8
+     * @param {*} options More read options
+     * @returns {string|Uint8Array|ArrayBuffer} File content
+     */
+    async readFile(dir, encoding, options) {
+        return await this.read(await this.open(dir), options.start ?? 0, options.nbytes ?? -1, encoding, options.close ?? true);
+    }
+
+    normalizePath(path, isAbsolute = null) {
+        return LS.Util.normalizePath(path, isAbsolute);
+    }
+
+    /**
+     * Creates a new empty rootfs state.
+     * @returns {RootFs}
+     */
+    static initRootFs(){
+        return new RootFs([
+            ["/etc/config.conf", { contents: "Hi", isFile: true }]
+        ]);
+    }
+}
+
 // --- SHARED STATE
 
 /**
@@ -2815,7 +3170,7 @@ const app = {
 
     // Create new instance of the desktop env.
     // If desktop mode is disabled, the desktop can skip some features, things like the login prompt, and run in a website-only mode.
-    desktop: new Desktop({ limited: !isDesktopModeEnabledAtStartup }),
+    desktop: new LiDesktop({ limited: !isDesktopModeEnabledAtStartup }),
 
     // Constants
     loaded: true,
@@ -3236,18 +3591,42 @@ const app = {
         localStorage.setItem("desktopMode", value? "true": "false");
         document.body.classList.toggle("lsweb-desktop-mode", value);
 
+        if(value) {
+            LS.WindowManager.topOffset = 0;
+            LS.WindowManager.bottomOffset = 42;
+
+            app.desktop.panelState = [
+                { kind: "apps" },
+                { kind: "accounts" },
+                { kind: "taskbar" },
+                { kind: "spacer" },
+                { kind: "clock" },
+                { kind: "theme" },
+                { kind: "commandPalette" },
+            ];
+
+            // todo
+            app.desktop._welcome();
+        } else {
+            LS.WindowManager.topOffset = 50;
+            LS.WindowManager.bottomOffset = 0;
+
+            app.desktop.panelState = [
+                { kind: "website-header" },
+                { kind: "spacer" },
+                { kind: "accounts" },
+                { kind: "apps" },
+                { kind: "theme" },
+                { kind: "commandPalette" },
+            ];
+        }
+
+        app.desktop.updatePanelLayout();
+
         const switchEl = document.querySelector("#desktopModeSwitch");
         if(switchEl) {
             switchEl.querySelector("input").checked = value;
             if(value) switchEl.querySelector("ls-box").remove();
-        }
-
-        if(value) {
-            LS.WindowManager.topOffset = 0;
-            LS.WindowManager.bottomOffset = 50;
-        } else {
-            LS.WindowManager.topOffset = 50;
-            LS.WindowManager.bottomOffset = 0;
         }
     },
 
@@ -3312,6 +3691,7 @@ const app = {
         if(capability === "filesystem") return true; // todo
         // if(capability === "notifications") return ;
         if(capability === "clipboard") return !!navigator.clipboard;
+        if(capability === "css-scroll-animations") return CSS.supports('animation-timeline: scroll()') && CSS.supports('animation-range: 0% 100%');
         if(capability === "windows") return app.desktop && app.desktop.windowManager !== null;
         if(capability === "native") return location.protocol !== "https:" && location.protocol !== "http:" && location.protocol !== "file:";
         if(capability === "cloud-user") return location.protocol === "https:"; // todo
@@ -3350,6 +3730,8 @@ const kernel = new class Kernel extends LS.Context {
     aliasMap = new Map();
 
     threads = new Set();
+
+    fileSystem = RootFs.initRootFs();
 
     shortcutManager = shortcutManager;
 
@@ -3617,9 +3999,15 @@ const kernel = new class Kernel extends LS.Context {
         super('kernel');
         this.logger = new LoggerContext("kernel");
 
-        app.viewport = this.viewport = new Viewport('main', document.getElementById('viewport'), {
+        const appElement = LS.SelectOrCreate('#app');
+        const vpElement = LS.SelectOrCreate('#viewport');
+
+        app.viewport = this.viewport = new Viewport('main', vpElement, {
             kernel: this
         });
+
+        // Temporary
+        if(window.__windowManagerTarget) appElement.append(window.__windowManagerTarget);
 
         for(const manifest of BUILTIN_APPS) {
             this.appManifests.set(manifest.id, manifest);
@@ -3749,7 +4137,6 @@ const kernel = new class Kernel extends LS.Context {
             });
 
             if(isBeta) {
-                document.querySelector(".homeButton").append(document.createTextNode(" Beta"));
                 LS.Toast.show("You are using a beta version of lstv.space. Some features may be unstable or incomplete.", { accent: "orange", timeout: 60000 });
             }
         });
@@ -4672,5 +5059,6 @@ const kernel = new class Kernel extends LS.Context {
     }
 }
 
+window.kernel = kernel
 
 } catch (e) { console.error("Fatal error during app initialization:", e); globalThis.__loadError() }

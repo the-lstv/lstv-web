@@ -20,6 +20,7 @@ html, body {
 .lsweb-desktop-mode {
     #app {
         --topOffset: 10px;
+        --header-height: 42px;
         flex-direction: column-reverse;
     }
 
@@ -33,6 +34,44 @@ html, body {
         bottom: 0;
         left: 0;
     }
+
+    #primaryPanel {
+        border: none;
+        border-top: 1px solid var(--surface-2);
+
+        background: color-mix(var(--background), transparent 20%);
+        backdrop-filter: blur(20px);
+    }
+
+    .headerTitle, .headerButtons .label {
+        display: none;
+    }
+
+    #desktop {
+        display: block;
+    }
+}
+
+#desktop {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+}
+
+#wallpaper {
+    position: absolute;
+    inset: 0;
+}
+
+#wallpaper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.taskbar-clock {
+    display: flex;
+    align-items: center;
 }
 
 a > * {
