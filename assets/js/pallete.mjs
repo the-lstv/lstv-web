@@ -6,12 +6,13 @@ const clearInterval = LS.Context.clearInterval;
 const requestAnimationFrame = LS.Context.requestAnimationFrame;
 
 /**
- * Originally from lstv-web
  * Currently only a part of this is by me, the rest is pure slop garbage
  * I will rewrite this eventually!
  * It's the only component I haven't fully made
  * 
  * @slop
+ * 
+ * (also it is CRAZY that this has over 2k lines, which is almost half of what the kernel has)
  */
 class CommandPalette {
     /**
@@ -2094,7 +2095,7 @@ function init(kernel, desktop, LoggerContext) {
 
     /**
      * This should later be inline, so we don't waste client memory & work. 
-     * That's when we use Glitter
+     * That's when we use Glitter<3
      */
 
     /*comptime*/ const kVersionMeta = {

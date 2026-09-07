@@ -151,7 +151,12 @@ body {
 }
 
 
-/* Part: Header */
+/* Part: Panel */
+
+#app .ls-window-manager {
+    z-index: 4000;
+}
+
 #primaryPanel {
     padding: 8px 14px;
     display: flex;
@@ -159,7 +164,7 @@ body {
     align-items: center;
     position: relative;
     user-select: none;
-    z-index: 50;
+    z-index: 5000;
     height: var(--header-height);
     overflow: hidden;
 }

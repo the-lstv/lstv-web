@@ -9,7 +9,12 @@
     See: https://github.com/the-lstv/lstv-web
 */
 
-"use walker { walk $INPUT -v1.1 --no-exec --block-agents; _ifset PROD_BUILD else return 1; g-walker rebuild -I../glitter/compilers/ --toolset glitter-js-v8-specific --lang js -OM --format min -i $INPUT -o assets/js/kernel.js }";
+try {
+"use walker { walk $INPUT -v1.1 --no-exec --block-agents; _ifset PROD_BUILD else return 1; g-walker rebuild -I../glitter/compilers/ --toolset glitter-js-v8-specific --lang js -OM --format min -i $INPUT -o assets/js/kernel.js; ./merge.sh; }";
+
+// WARNING: The following imports are just a stub, the actual build system is being worked on.
+
+const KERNEL_VERSION = (typeof __buildVersion !== "undefined")? __buildVersion: "1.3.0-dev";
 
 // TODO:
 const BUILTIN_APPS = [
@@ -34,7 +39,7 @@ const BUILTIN_APPS = [
         "name": "Resources",
         "id": "resource-monitor",
         "icon": "4cf4213e702a21fe.svg",
-        "description": "Monitor loaded pages and applications.",
+        "description": "Monitor loaded pages, applications, and other resources.",
         "version": "1.0.0",
         "main": "resourcemanager.mjs?1"
     },
@@ -63,6 +68,54 @@ const BUILTIN_APPS = [
         "main": "store.mjs"
     },
     {
+        "name": "Media Center",
+        "id": "media-center",
+        "icon": "5fe6243a90ae967a.webp",
+        "description": "Your media hub.",
+        "version": "1.0.0",
+        "main": "media-center.mjs"
+    },
+    // {
+    //     "name": "Media Player",
+    //     "id": "media-center",
+    //     "icon": "5fe6243a90ae967a.webp",
+    //     "description": "Play all of your media.",
+    //     "version": "1.0.0",
+    //     "main": "media-player.mjs"
+    // },
+    {
+        "name": "File Manager",
+        "id": "file-manager",
+        "icon": "15043b26b7df5e3b.svg",
+        "description": "Manage your files.",
+        "version": "1.0.0",
+        "main": "file-manager.mjs"
+    },
+    {
+        "name": "Terminal",
+        "id": "terminal",
+        "icon": "c4972d221a92772b.svg",
+        "description": "Use the command line & manage things",
+        "version": "1.0.0",
+        "main": "terminal.mjs"
+    },
+    {
+        "name": "Calculator",
+        "id": "calculator",
+        "icon": "f0fb502ae0964022.svg",
+        "description": "Perform various calculations.",
+        "version": "1.0.0",
+        "main": "calculator.mjs"
+    },
+    {
+        "name": "WebView",
+        "id": "webview",
+        "icon": "62eb88beb684d561.svg",
+        "description": "A simple embedded web browser.",
+        "version": "1.0.0",
+        "main": "webview.mjs"
+    },
+    {
         "name": "Email",
         "id": "mail-client",
         "icon": "901fb7f3abda204f.svg",
@@ -78,29 +131,20 @@ const BUILTIN_APPS = [
         "version": "1.0.0",
         "main": "mind-reader.mjs"
     },
-    {
-        "name": "Media Center",
-        "id": "media-center",
-        "icon": "5fe6243a90ae967a.webp",
-        "description": "Your media hub.",
-        "version": "1.0.0",
-        "main": "media-center.mjs"
-    },
-
-    localStorage.getItem("enableExperimentalApps") === "true" && {
-        "name": "monitors",
-        "id": "monitors",
-        "icon": "866c8c15f1ff50f1.svg",
-        "description": "",
-        "version": "1.0.0",
-        "main": "https://monitors.lstv.space",
-
-        windowOptions: {
-            width: 800,
-            height: 600
-        }
-    }
 ];
+// localStorage.getItem("enableExperimentalApps") === "true" && {
+//     "name": "monitors",
+//     "id": "monitors",
+//     "icon": "866c8c15f1ff50f1.svg",
+//     "description": "",
+//     "version": "1.0.0",
+//     "main": "https://monitors.lstv.space",
+
+//     windowOptions: {
+//         width: 800,
+//         height: 600
+//     }
+// }
 
 // --- INITIALIZATION STUFF & DEFINITIONS (SKIP THIS PART)
 // If the environment is correct, this file should be wrapped in an IIFE by the build system & not leak.
@@ -114,7 +158,6 @@ if(globalThis === this) {
 }
 
 window.__kernelInitialized = true;
-const KERNEL_VERSION = (typeof __buildVersion !== "undefined")? __buildVersion: "1.3.0-beta";
 
 // Mtime mapped to kernel.js (This should never fallback)
 window.cacheKey = "?mtime=" + (LS.Util.parseURLParams(document.currentScript?.src, "mtime") || Date.now());
@@ -130,8 +173,16 @@ const shortcutManager = new LS.ShortcutManager();
 const isDebug = window.location.hostname === "lstv.localhost";
 const isBeta = window.location.hostname.startsWith("beta.lstv.");
 
-// Misc constants
-const DEFAULT_PROFILE = "/~/assets/image/default.svg";
+shortcutManager.map({
+    "GLOBAL_OPEN_COMMAND_PALETTE": ['ctrl+shift+p', 'ctrl+k'],
+    "GLOBAL_OPEN_MUSIC_PLAYER": ['ctrl+shift+alt+m', 'ctrl+alt+shift+m'],
+    "GLOBAL_DESKTOP_OPEN_MENU": ['ctrl+space', 'ctrl+shift+m', 'ctrl+alt+m'],
+    "GLOBAL_LOCK_SCREEN": ['ctrl+shift+l', 'ctrl+alt+l'],
+    "GLOBAL_LOG_OUT": ['ctrl+shift+q', 'ctrl+alt+q'],
+    "GLOBAL_OPEN_TERMINAL": ['ctrl+shift+t', 'ctrl+alt+t'],
+
+    ...{} // todo: User data
+});
 
 // Console welcome message
 if(!isDebug) console.log(
@@ -163,9 +214,8 @@ const fetch = LS.Context.fetch;
 function invokeAndReturn(f) {
     f();
     return f;
-}
+}// WARNING: The following imports are just a stub, the actual build system is being worked on.
 
-try {
 // --- CLASSES
 
 /**
@@ -1118,7 +1168,7 @@ class ContentContext extends LS.View {
 
                 content: [
                     { emmet: "h1.bi-exclamation-triangle-fill", style: "text-align: center; margin-top: 0; margin-bottom: 10px; font-size: xxx-large" },
-                    { style: "white-space: pre-wrap", inner: ["An external app or process (\"" + (this.visibleName || this.title || this.name) + "\") wants full access over this system.\n\nReason given by the app: ", { tag: "code", text: reason } ,"\n\nIMPORTANT: Unlike other permissions, this grants full control, and could allow 3rd parties to access your private data. Make sure you trust the source before allowing.\nIf someone instructed you to allow this, they are most likely trying to scam you.\nIf you didn't prompt this dialog, please deny this request."] }
+                    { style: "white-space: pre-wrap", inner: ["An external app or process (\"" + (this.visibleName || this.title || this.name) + "\") wants ", { tag: "strong", text: "full (\"root\") access over this system" } ,".\n\nReason given by the app:\n", { tag: "code", text: reason } , { tag: "span", style: "font-size: smaller", text: "\n\nPlease keep in mind: Unlike permissions, this grants full control and could allow 3rd parties to access your private data. Make sure you fully trust the source before allowing.\nIf someone instructed you to allow this, they are almost certainly trying to scam you. Please deny this request if you don't recognize the source." }] }
                 ],
 
                 buttons: [
@@ -1576,7 +1626,7 @@ class Thread extends LS.EventEmitter {
         kernel.threads.add(this);
     }
 
-    static fromCode(code, options = {}) {
+    static fromJavaScript(code, options = {}) {
         const blob = new Blob([code], { type: 'application/javascript' });
         const url = URL.createObjectURL(blob);
         const thread = new Thread(url, options);
@@ -1603,239 +1653,7 @@ class Thread extends LS.EventEmitter {
     }
 }
 
-
-/**
- * Media player class
- */
-class MusicPlayer {
-    constructor() {
-        this.toolbarElement = LS.SelectOrCreate("#musicPlayer");
-        this.initialized = false;
-
-        shortcutManager.assign('OPEN_MUSIC_PLAYER', () => {
-            app.desktop.openToolbar("musicPlayer", true);
-        });
-    }
-
-    create(d){'use strict';var e0=document.createElement("div");e0.setAttribute("class","music-player toolbar-styled");var e1=document.createElement("img");e1.setAttribute("alt","Music cover background");e1.setAttribute("crossorigin","anonymous");e1.setAttribute("class","music-player-cover");e0.appendChild(e1);var e2=document.createElement("img");e2.setAttribute("alt","Music cover art");e2.setAttribute("crossorigin","anonymous");e2.setAttribute("class","music-player-art");e0.appendChild(e2);var e3=document.createElement("div");e3.setAttribute("class","music-player-container");var e4=document.createElement("div");e4.setAttribute("class","music-player-info");var e5=document.createElement("span");e5.setAttribute("class","text-overflow-nowrap music-player-title");var t6=document.createTextNode("Lorem Ipsum");e5.appendChild(t6);e4.appendChild(e5);var e7=document.createElement("span");e7.setAttribute("class","text-overflow-nowrap music-player-artist");var t8=document.createTextNode("Dolor Sit Amet");e7.appendChild(t8);e4.appendChild(e7);e3.appendChild(e4);var e9=document.createElement("div");e9.setAttribute("class","music-player-progress");var e10=document.createElement("div");e10.setAttribute("class","music-player-progress-bar");var e11=document.createElement("div");e11.setAttribute("class","music-player-progress-filled");e10.appendChild(e11);e9.appendChild(e10);e3.appendChild(e9);var e12=document.createElement("div");e12.setAttribute("class","music-player-controls");var e13=document.createElement("button");e13.setAttribute("ls-tooltip","");e13.setAttribute("aria-label","Like");e13.setAttribute("class","circle clear music-player-like");var e14=document.createElement("i");e14.setAttribute("class","bi-hand-thumbs-up");e13.appendChild(e14);e12.appendChild(e13);var e15=document.createElement("button");e15.setAttribute("ls-tooltip","");e15.setAttribute("aria-label","Previous");e15.setAttribute("class","circle clear music-player-prev");var e16=document.createElement("i");e16.setAttribute("class","bi-skip-start-fill");e15.appendChild(e16);e12.appendChild(e15);var e17=document.createElement("button");e17.setAttribute("ls-tooltip","");e17.setAttribute("aria-label","Play/Pause");e17.setAttribute("class","circle clear music-player-play-pause");var e18=document.createElement("i");e18.setAttribute("class","bi-play-fill");e17.appendChild(e18);e12.appendChild(e17);var e19=document.createElement("button");e19.setAttribute("ls-tooltip","");e19.setAttribute("aria-label","Next");e19.setAttribute("class","circle clear music-player-next");var e20=document.createElement("i");e20.setAttribute("class","bi-skip-end-fill");e19.appendChild(e20);e12.appendChild(e19);var e21=document.createElement("button");e21.setAttribute("ls-tooltip","Repeat Off");e21.setAttribute("aria-label","Toggle repeat modes");e21.setAttribute("class","circle clear music-player-repeat");var e22=document.createElement("i");e22.setAttribute("class","bi-arrow-repeat");e21.appendChild(e22);e12.appendChild(e21);e3.appendChild(e12);e0.appendChild(e3);var __rootValue=e0;return{root:__rootValue};}
-
-    init(){
-        if(this.initialized) return;
-        this.initialized = true;
-
-        this.toolbarElement.appendChild(this.create().root);
-
-        this.audio = new Audio();
-        this.titleElement = this.toolbarElement.querySelector(".music-player-title");
-        this.artistElement = this.toolbarElement.querySelector(".music-player-artist");
-        this.coverElement = this.toolbarElement.querySelector(".music-player-cover");
-        this.coverArtElement = this.toolbarElement.querySelector(".music-player-art");
-
-        this.menuContainer = this.toolbarElement.querySelector(".music-menu");
-
-        if(this.menuContainer) {
-            let menuOpen = false;
-            this.toolbarElement.querySelector(".music-menu-toggle").onclick = () => {
-                menuOpen = !menuOpen;
-                if(!menuOpen) {
-                    LS.Animation.fadeOut(this.menuContainer, 300, "bottom");
-                    return;
-                }
-
-                LS.Animation.fadeIn(this.menuContainer, 300, "bottom");
-            }
-        }
-
-        // Panel
-        this.musicStatusElement = LS.Create("button#musicButton.pill", {
-            tooltip: "Music Player <kbd>Ctrl+M</kbd>",
-            attr: { "aria-label": "Open music player" },
-            inner: [
-                { tag: "i", class: "bi-vinyl-fill" },
-                { tag: "span", class: "music-player-status text-overflow-nowrap", inner: "Stopped" }
-            ]
-        });
-
-        this.musicStatusText = this.musicStatusElement.querySelector(".music-player-status");
-
-        this.playButtonElement = this.toolbarElement.querySelector(".music-player-play-pause");
-        this.playButtonElement.onclick = () => {
-            this.playToggle();
-        };
-
-        this.repeatMode = "off";
-        this.repeatButtonElement = this.toolbarElement.querySelector(".music-player-repeat");
-        this.repeatButtonElement.onclick = () => {
-            this.toggleRepeatMode();
-        };
-
-        this.musicStatusElement.onclick = () => {
-            app.desktop.openToolbar("musicPlayer", true);
-        };
-
-        this.musicStatusElement.style.display = "none";
-        LS.SelectOne(".headerLeftContainer").appendChild(this.musicStatusElement);
-    }
-
-    setCover(imageURL = null, coverArtURL = null) {
-        if(!this.initialized) this.init();
-        this.toolbarElement.removeAttribute("ls-accent");
-        this.musicStatusElement.removeAttribute("ls-accent");
-        this.coverElement.style.display = "none";
-        this.toolbarElement.classList.remove("has-cover");
-
-        if(!imageURL) {
-            return;
-        }
-
-        this.coverElement.onload = () => {
-            this.coverElement.style.display = "block";
-            this.coverArtElement.style.display = "block";
-            this.toolbarElement.classList.add("has-cover");
-
-            LS.Color.fromImage(this.coverElement).toAccent("music-cover");
-
-            this.toolbarElement.setAttribute("ls-accent", "music-cover");
-            this.musicStatusElement.setAttribute("ls-accent", "music-cover");
-        }
-
-        this.coverElement.onerror = () => {
-            this.coverElement.style.display = "none";
-            this.coverArtElement.style.display = "none";
-        }
-
-        this.coverElement.src = imageURL;
-        this.coverArtElement.src = coverArtURL || imageURL;
-    }
-
-    setDetails(details, playImmediately = false) {
-        if(!this.initialized) this.init();
-        this.currentDetails = {
-            title: details.title || "Unknown Title",
-            artist: details.artist || "Unknown Artist",
-            album: details.album || "",
-            cover: details.cover || null,
-            source: details.source || null
-        }
-
-        this.musicStatusText.textContent = this.titleElement.textContent = this.currentDetails.title;
-        this.artistElement.textContent = this.currentDetails.artist;
-        this.setCover(this.currentDetails.cover);
-
-        LS.Animation.fadeIn(this.musicStatusElement, 300, "right");
-        this.audio.src = this.currentDetails.source;
-
-        app.collapseItems.schedule();
-        setTimeout(() => {
-            app.collapseItems.schedule();
-        }, 10);
-
-        if(playImmediately) {
-            this.play();
-        }
-
-        if ('mediaSession' in navigator) {
-            navigator.mediaSession.metadata = new MediaMetadata({
-                title: this.currentDetails.title,
-                artist: this.currentDetails.artist,
-                album: this.currentDetails.album,
-                artwork: this.currentDetails.artwork || this.currentDetails.cover ? [
-                    { src: this.currentDetails.cover, sizes: '96x96', type: 'image/png' },
-                    { src: this.currentDetails.cover, sizes: '128x128', type: 'image/png' },
-                    { src: this.currentDetails.cover, sizes: '192x192', type: 'image/png' },
-                    { src: this.currentDetails.cover, sizes: '256x256', type: 'image/png' },
-                    { src: this.currentDetails.cover, sizes: '384x384', type: 'image/png' },
-                    { src: this.currentDetails.cover, sizes: '512x512', type: 'image/png' }
-                ] : []
-            });
-
-            navigator.mediaSession.setActionHandler('play', () => this.play());
-            navigator.mediaSession.setActionHandler('pause', () => this.pause());
-            navigator.mediaSession.setActionHandler('stop', () => {
-                this.pause();
-                this.stopped();
-                this.audio.currentTime = 0;
-            });
-        }
-    }
-
-    stopped() {
-        if(!this.initialized) this.init();
-        this.musicStatusText.textContent = "Stopped";
-        this.titleElement.textContent = "No music playing";
-        this.artistElement.textContent = "";
-        this.setCover(null);
-        this.currentDetails = null;
-        LS.Animation.fadeOut(this.musicStatusElement, 300, "right");
-    }
-
-    playToggle() {
-        if(!this.initialized) this.init();
-        if(this.audio.paused) {
-            this.play();
-        } else {
-            this.pause();
-        }
-    }
-
-    play() {
-        if(!this.initialized) this.init();
-        this.audio.play();
-        this.playButtonElement.querySelector("i").className = "bi-pause-fill";
-    }
-
-    pause() {
-        if(!this.initialized) this.init();
-        this.audio.pause();
-        this.playButtonElement.querySelector("i").className = "bi-play-fill";
-    }
-
-    toggleRepeatMode() {
-        if(!this.initialized) this.init();
-        if(this.repeatMode === "off") {
-            this.repeatMode = "one";
-            this.repeatButtonElement.classList.add("active");
-            this.repeatButtonElement.querySelector("i").className = "bi-repeat-1";
-            this.repeatButtonElement.setAttribute("ls-tooltip", LS.Tooltips.set("Repeat One").position(this.repeatButtonElement).container.textContent);
-            this.audio.loop = true;
-        } else if(this.repeatMode === "one") {
-            this.repeatMode = "all";
-            this.repeatButtonElement.querySelector("i").className = "bi-arrow-right";
-            this.repeatButtonElement.setAttribute("ls-tooltip", LS.Tooltips.set("Repeat All").position(this.repeatButtonElement).container.textContent);
-            this.audio.loop = false;
-        } else {
-            this.repeatMode = "off";
-            this.repeatButtonElement.classList.remove("active");
-            this.repeatButtonElement.querySelector("i").className = "bi-repeat";
-            this.repeatButtonElement.setAttribute("ls-tooltip", LS.Tooltips.set("Repeat Off").position(this.repeatButtonElement).container.textContent);
-            this.audio.loop = false;
-        }
-    }
-
-    destroy() {
-        if(this.destroyed) return;
-        this.destroyed = true;
-
-        if(this.audio) {
-            this.audio.pause();
-            this.audio.src = "";
-            this.audio = null;
-        }
-
-        if(this.toolbarElement) {
-            this.toolbarElement.remove();
-            this.toolbarElement = null;
-        }
-
-        if(this.musicStatusElement) {
-            this.musicStatusElement.remove();
-            this.musicStatusElement = null;
-        }
-
-        this.currentDetails = null;
-    }
-}
-
+// WARNING: The following imports are just a stub, the actual build system is being worked on.
 
 /**
  * SoundBox class
@@ -2285,6 +2103,240 @@ class SoundBoxThread {
     }
 }
 
+// WARNING: The following imports are just a stub, the actual build system is being worked on.
+
+/**
+ * Media player class
+ */
+class MusicPlayer {
+    constructor() {
+        this.toolbarElement = LS.SelectOrCreate("#musicPlayer");
+        this.initialized = false;
+
+        shortcutManager.assign('GLOBAL_OPEN_MUSIC_PLAYER', () => {
+            app.desktop.openToolbar("musicPlayer", true);
+        });
+    }
+
+    create(d){'use strict';var e0=document.createElement("div");e0.setAttribute("class","music-player toolbar-styled");var e1=document.createElement("img");e1.setAttribute("alt","Music cover background");e1.setAttribute("crossorigin","anonymous");e1.setAttribute("class","music-player-cover");e0.appendChild(e1);var e2=document.createElement("img");e2.setAttribute("alt","Music cover art");e2.setAttribute("crossorigin","anonymous");e2.setAttribute("class","music-player-art");e0.appendChild(e2);var e3=document.createElement("div");e3.setAttribute("class","music-player-container");var e4=document.createElement("div");e4.setAttribute("class","music-player-info");var e5=document.createElement("span");e5.setAttribute("class","text-overflow-nowrap music-player-title");var t6=document.createTextNode("Lorem Ipsum");e5.appendChild(t6);e4.appendChild(e5);var e7=document.createElement("span");e7.setAttribute("class","text-overflow-nowrap music-player-artist");var t8=document.createTextNode("Dolor Sit Amet");e7.appendChild(t8);e4.appendChild(e7);e3.appendChild(e4);var e9=document.createElement("div");e9.setAttribute("class","music-player-progress");var e10=document.createElement("div");e10.setAttribute("class","music-player-progress-bar");var e11=document.createElement("div");e11.setAttribute("class","music-player-progress-filled");e10.appendChild(e11);e9.appendChild(e10);e3.appendChild(e9);var e12=document.createElement("div");e12.setAttribute("class","music-player-controls");var e13=document.createElement("button");e13.setAttribute("ls-tooltip","");e13.setAttribute("aria-label","Like");e13.setAttribute("class","circle clear music-player-like");var e14=document.createElement("i");e14.setAttribute("class","bi-hand-thumbs-up");e13.appendChild(e14);e12.appendChild(e13);var e15=document.createElement("button");e15.setAttribute("ls-tooltip","");e15.setAttribute("aria-label","Previous");e15.setAttribute("class","circle clear music-player-prev");var e16=document.createElement("i");e16.setAttribute("class","bi-skip-start-fill");e15.appendChild(e16);e12.appendChild(e15);var e17=document.createElement("button");e17.setAttribute("ls-tooltip","");e17.setAttribute("aria-label","Play/Pause");e17.setAttribute("class","circle clear music-player-play-pause");var e18=document.createElement("i");e18.setAttribute("class","bi-play-fill");e17.appendChild(e18);e12.appendChild(e17);var e19=document.createElement("button");e19.setAttribute("ls-tooltip","");e19.setAttribute("aria-label","Next");e19.setAttribute("class","circle clear music-player-next");var e20=document.createElement("i");e20.setAttribute("class","bi-skip-end-fill");e19.appendChild(e20);e12.appendChild(e19);var e21=document.createElement("button");e21.setAttribute("ls-tooltip","Repeat Off");e21.setAttribute("aria-label","Toggle repeat modes");e21.setAttribute("class","circle clear music-player-repeat");var e22=document.createElement("i");e22.setAttribute("class","bi-arrow-repeat");e21.appendChild(e22);e12.appendChild(e21);e3.appendChild(e12);e0.appendChild(e3);var __rootValue=e0;return{root:__rootValue};}
+
+    init(){
+        if(this.initialized) return;
+        this.initialized = true;
+
+        this.toolbarElement.appendChild(this.create().root);
+
+        this.audio = new Audio();
+        this.titleElement = this.toolbarElement.querySelector(".music-player-title");
+        this.artistElement = this.toolbarElement.querySelector(".music-player-artist");
+        this.coverElement = this.toolbarElement.querySelector(".music-player-cover");
+        this.coverArtElement = this.toolbarElement.querySelector(".music-player-art");
+
+        this.menuContainer = this.toolbarElement.querySelector(".music-menu");
+
+        if(this.menuContainer) {
+            let menuOpen = false;
+            this.toolbarElement.querySelector(".music-menu-toggle").onclick = () => {
+                menuOpen = !menuOpen;
+                if(!menuOpen) {
+                    LS.Animation.fadeOut(this.menuContainer, 300, "bottom");
+                    return;
+                }
+
+                LS.Animation.fadeIn(this.menuContainer, 300, "bottom");
+            }
+        }
+
+        // Panel
+        this.musicStatusElement = LS.Create("button#musicButton.pill", {
+            tooltip: "Music Player <kbd>Ctrl+M</kbd>",
+            attr: { "aria-label": "Open music player" },
+            inner: [
+                { tag: "i", class: "bi-vinyl-fill" },
+                { tag: "span", class: "music-player-status text-overflow-nowrap", inner: "Stopped" }
+            ]
+        });
+
+        this.musicStatusText = this.musicStatusElement.querySelector(".music-player-status");
+
+        this.playButtonElement = this.toolbarElement.querySelector(".music-player-play-pause");
+        this.playButtonElement.onclick = () => {
+            this.playToggle();
+        };
+
+        this.repeatMode = "off";
+        this.repeatButtonElement = this.toolbarElement.querySelector(".music-player-repeat");
+        this.repeatButtonElement.onclick = () => {
+            this.toggleRepeatMode();
+        };
+
+        this.musicStatusElement.onclick = () => {
+            app.desktop.openToolbar("musicPlayer", true);
+        };
+
+        this.musicStatusElement.style.display = "none";
+        LS.SelectOne(".headerLeftContainer").appendChild(this.musicStatusElement);
+    }
+
+    setCover(imageURL = null, coverArtURL = null) {
+        if(!this.initialized) this.init();
+        this.toolbarElement.removeAttribute("ls-accent");
+        this.musicStatusElement.removeAttribute("ls-accent");
+        this.coverElement.style.display = "none";
+        this.toolbarElement.classList.remove("has-cover");
+
+        if(!imageURL) {
+            return;
+        }
+
+        this.coverElement.onload = () => {
+            this.coverElement.style.display = "block";
+            this.coverArtElement.style.display = "block";
+            this.toolbarElement.classList.add("has-cover");
+
+            LS.Color.fromImage(this.coverElement).toAccent("music-cover");
+
+            this.toolbarElement.setAttribute("ls-accent", "music-cover");
+            this.musicStatusElement.setAttribute("ls-accent", "music-cover");
+        }
+
+        this.coverElement.onerror = () => {
+            this.coverElement.style.display = "none";
+            this.coverArtElement.style.display = "none";
+        }
+
+        this.coverElement.src = imageURL;
+        this.coverArtElement.src = coverArtURL || imageURL;
+    }
+
+    setDetails(details, playImmediately = false) {
+        if(!this.initialized) this.init();
+        this.currentDetails = {
+            title: details.title || "Unknown Title",
+            artist: details.artist || "Unknown Artist",
+            album: details.album || "",
+            cover: details.cover || null,
+            source: details.source || null
+        }
+
+        this.musicStatusText.textContent = this.titleElement.textContent = this.currentDetails.title;
+        this.artistElement.textContent = this.currentDetails.artist;
+        this.setCover(this.currentDetails.cover);
+
+        LS.Animation.fadeIn(this.musicStatusElement, 300, "right");
+        this.audio.src = this.currentDetails.source;
+
+        app.collapseItems.schedule();
+        setTimeout(() => {
+            app.collapseItems.schedule();
+        }, 10);
+
+        if(playImmediately) {
+            this.play();
+        }
+
+        if ('mediaSession' in navigator) {
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: this.currentDetails.title,
+                artist: this.currentDetails.artist,
+                album: this.currentDetails.album,
+                artwork: this.currentDetails.artwork || this.currentDetails.cover ? [
+                    { src: this.currentDetails.cover, sizes: '96x96', type: 'image/png' },
+                    { src: this.currentDetails.cover, sizes: '128x128', type: 'image/png' },
+                    { src: this.currentDetails.cover, sizes: '192x192', type: 'image/png' },
+                    { src: this.currentDetails.cover, sizes: '256x256', type: 'image/png' },
+                    { src: this.currentDetails.cover, sizes: '384x384', type: 'image/png' },
+                    { src: this.currentDetails.cover, sizes: '512x512', type: 'image/png' }
+                ] : []
+            });
+
+            navigator.mediaSession.setActionHandler('play', () => this.play());
+            navigator.mediaSession.setActionHandler('pause', () => this.pause());
+            navigator.mediaSession.setActionHandler('stop', () => {
+                this.pause();
+                this.stopped();
+                this.audio.currentTime = 0;
+            });
+        }
+    }
+
+    stopped() {
+        if(!this.initialized) this.init();
+        this.musicStatusText.textContent = "Stopped";
+        this.titleElement.textContent = "No music playing";
+        this.artistElement.textContent = "";
+        this.setCover(null);
+        this.currentDetails = null;
+        LS.Animation.fadeOut(this.musicStatusElement, 300, "right");
+    }
+
+    playToggle() {
+        if(!this.initialized) this.init();
+        if(this.audio.paused) {
+            this.play();
+        } else {
+            this.pause();
+        }
+    }
+
+    play() {
+        if(!this.initialized) this.init();
+        this.audio.play();
+        this.playButtonElement.querySelector("i").className = "bi-pause-fill";
+    }
+
+    pause() {
+        if(!this.initialized) this.init();
+        this.audio.pause();
+        this.playButtonElement.querySelector("i").className = "bi-play-fill";
+    }
+
+    toggleRepeatMode() {
+        if(!this.initialized) this.init();
+        if(this.repeatMode === "off") {
+            this.repeatMode = "one";
+            this.repeatButtonElement.classList.add("active");
+            this.repeatButtonElement.querySelector("i").className = "bi-repeat-1";
+            this.repeatButtonElement.setAttribute("ls-tooltip", LS.Tooltips.set("Repeat One").position(this.repeatButtonElement).container.textContent);
+            this.audio.loop = true;
+        } else if(this.repeatMode === "one") {
+            this.repeatMode = "all";
+            this.repeatButtonElement.querySelector("i").className = "bi-arrow-right";
+            this.repeatButtonElement.setAttribute("ls-tooltip", LS.Tooltips.set("Repeat All").position(this.repeatButtonElement).container.textContent);
+            this.audio.loop = false;
+        } else {
+            this.repeatMode = "off";
+            this.repeatButtonElement.classList.remove("active");
+            this.repeatButtonElement.querySelector("i").className = "bi-repeat";
+            this.repeatButtonElement.setAttribute("ls-tooltip", LS.Tooltips.set("Repeat Off").position(this.repeatButtonElement).container.textContent);
+            this.audio.loop = false;
+        }
+    }
+
+    destroy() {
+        if(this.destroyed) return;
+        this.destroyed = true;
+
+        if(this.audio) {
+            this.audio.pause();
+            this.audio.src = "";
+            this.audio = null;
+        }
+
+        if(this.toolbarElement) {
+            this.toolbarElement.remove();
+            this.toolbarElement = null;
+        }
+
+        if(this.musicStatusElement) {
+            this.musicStatusElement.remove();
+            this.musicStatusElement = null;
+        }
+
+        this.currentDetails = null;
+    }
+}
+
 
 /**
  * Desktop class
@@ -2320,6 +2372,10 @@ class LiDesktop {
         this.musicPlayer = new MusicPlayer;
 
         this.isToolbarOpen = false;
+
+        shortcutManager.assign('GLOBAL_DESKTOP_OPEN_MENU', () => {
+            app.desktop.openToolbar("menu", true);
+        });
     }
 
     /**
@@ -2377,7 +2433,6 @@ class LiDesktop {
             getElement: () => LS.Create(".taskbar-clock{0:00}"),
             name: "Clock",
             description: "See the current time",
-            // panelItem: "clock",
 
             onInit(item) {
                 item.__updateInterval = setInterval(invokeAndReturn(() => {
@@ -2429,7 +2484,6 @@ class LiDesktop {
             element: LS.SelectOne("#toolbarLogin"),
             name: "Account",
             description: "View and edit your profile or log-in",
-            panelItem: "accounts",
             onOpen() {
                 app.loginTabs.set(app.isLoggedIn? "account": "default", true);
             }
@@ -2439,7 +2493,6 @@ class LiDesktop {
             element: LS.SelectOne("#toolbarApps"),
             name: "Apps",
             description: "View applications",
-            panelItem: "apps",
 
             onOpen() {
                 if(!kernel.applicationMenu.initialized) {
@@ -2452,14 +2505,12 @@ class LiDesktop {
             element: LS.SelectOne("#toolbarTheme"),
             name: "Theme",
             description: "Customize the site appearance",
-            panelItem: "themeButton"
         }],
 
         ["musicPlayer", {
             element: LS.SelectOne("#musicPlayer"),
             name: "Music Player",
             description: "Control music playback",
-            get panelItem() { return website.desktop.musicPlayer.musicStatusElement; },
 
             onOpen() {
                 if(!website.desktop.musicPlayer.initialized) website.desktop.musicPlayer.init();
@@ -2470,7 +2521,6 @@ class LiDesktop {
         //     element: LS.SelectOne("#toolbarAssistant"),
         //     name: "Assistant",
         //     description: "Open Assistant",
-        //     panelItem: "assistantButton",
         //     onOpen() {
         //         if(!window.__assistantLoading) {
         //             window._assistantCallback = null;
@@ -2493,8 +2543,7 @@ class LiDesktop {
         ["more", {
             element: LS.SelectOne("#toolbarMore"),
             name: "More",
-            description: "More options",
-            panelItem: "moreButton"
+            description: "More options"
         }]
     ])
 
@@ -2511,10 +2560,7 @@ class LiDesktop {
         const previousToolbar = app.currentToolbar && app.desktop.toolbars.get(app.currentToolbar);
         if(previousToolbar) {
             if(typeof previousToolbar.onClose === "function") previousToolbar.onClose();
-
-            if(previousToolbar.panelItem) {
-                this.eachButtonOfKind(app.currentToolbar, button => button.classList.remove("open"));
-            }
+            this.eachButtonOfKind(app.currentToolbar, button => button.classList.remove("open"));
         }
 
         if(typeof toolbar.onOpen === "function") toolbar.onOpen();
@@ -2548,18 +2594,20 @@ class LiDesktop {
         }
     }
 
-    closeToolbar() {
+    closeToolbar(immediate = false) {
         console.log("Closing toolbar");
         if(!app.isToolbarOpen) return;
 
         const toolbar = app.desktop.toolbars.get(app.currentToolbar);
-        LS.Animation.fadeOut(toolbar.element, "down");
+        if (immediate) {
+            toolbar.element.style.display = "none";
+        } else {
+            LS.Animation.fadeOut(toolbar.element, "down");
+        }
 
         if(toolbar) {
             if(typeof toolbar.onClose === "function") toolbar.onClose();
-            toolbar.panelItem instanceof HTMLElement? toolbar.panelItem: app.desktop.panelState.forEach(item => {
-                if(item.kind === app.currentToolbar) item.element.classList.remove("open");
-            });
+            this.eachButtonOfKind(app.currentToolbar, button => button.classList.remove("open"));
             app.currentToolbar = null;
         }
 
@@ -2586,9 +2634,6 @@ class LiDesktop {
     }
 
     showLoginToolbar(toggle = false) {
-        // const accountsButton = website.panelItems.get("accountsButton").element;
-        // accountsButton.focus();
-    
         setTimeout(() => {
             if(!toggle && app.isToolbarOpen && app.currentToolbar === "login") return;
 
@@ -2783,7 +2828,7 @@ class LiDesktop {
     }
 
     _welcome(){
-        this.closeToolbar();
+        this.closeToolbar(true);
         this.soundBox.play("system:startup");
         LS.Create("{Welcome to desktop mode}", {
     		style: "position: fixed; top: 50%; left: 50%; translate: -60% -50%; font-size: 4em; text-align: center; pointer-events: none; display: block; background: #0008; border-radius: 16px; padding: 4px 16px",
@@ -2822,120 +2867,90 @@ class LiDesktop {
     }
 }
 
+// WARNING: The following imports are just a stub, the actual build system is being worked on.
+
+
 /**
- * Promise helper
+ * Filesystem abstraction for lstv.space kernel/Linux.JS 2.0.
+ * 
+ * This is a Linux-like filesystem abstraction that aims to replicate the behavior of a typical Linux filesystem.
+ * It is a part of a larger project Linux.JS which aims to bring a lightweight Linux-like VM-free environment to the web.
  */
-class OpenerPromise {
-    loading(callback)   { if (callback) this._l = callback; return this; }
-    done(callback)      { if (callback) this._d = callback; return this; }
-    catch(callback)     { if (callback) this._c = callback; return this; }
-    finally(callback)   { if (callback) this._f = callback; return this; }
-    loadingState(state) { if (this._l) this._l(state); return this;      }
 
-    throw(error) {
-        if (this._c) this._c(error);
-        if (this._f) this._f();
-        return this;
-    }
 
-    resolve(instance) {
-        if (this._d) this._d(instance);
-        if (this._f) this._f();
-        return this;
-    }
+const DEFAULT_FS_DATA = [
+    ["/etc", {}],
+    ["/etc/os-release", { contents: `NAME="LinuxJS"\nVERSION="2.0"\nID="linuxjs"\nVARIANT="lsw+lide-web"\nPRETTY_NAME="LinuxJS 2.0 (lstv.space, GNU/Linux)\nSUPPORT_END=2027-09-8"\nHOME_URL=https://lstv.space\nDEFAULT_HOSTNAME=linuxjs\nANSI_COLOR="0;38;2;60;110;180"\nLOGO=linuxjs-logo-icon`, isFile: true }],
+    ["/etc/config.conf", { contents: "# Configuration file", isFile: true }],
+    ["/home/user", {}],
+    
+    ["/usr", {}],
+    ["/usr/bin", {}],
+    ["/usr/sbin", {}],
+    ["/usr/lib", {}],
+    ["/usr/lib/os-release", { isSymlink: true, contents: "/etc/os-release" }],
+    ["/usr/lib64", {}],
+    ["/bin",   { isSymlink: true, contents: "/usr/bin" }],
+    ["/sbin",  { isSymlink: true, contents: "/usr/sbin" }],
+    ["/lib",   { isSymlink: true, contents: "/usr/lib" }],
+    ["/lib64", { isSymlink: true, contents: "/usr/lib64" }],
 
-    dispose() {
-        this._l = null;
-        this._d = null;
-        this._c = null;
-        this._f = null;
-    }
-}
 
-class TmpFs {
-    fs = new Map;
-    encoder = new TextEncoder();
-    decoder = new TextDecoder();
+    ["/var", {}],
+    ["/var/log", {}],
+    ["/var/tmp", {}],
 
-    constructor(data) {
-        if(data) this.fs = new Map(data);
-    }
+    ["/tmp", {}],
+    ["/dev", {}],
+    ["/proc", {}],
+    ["/sys", {}],
+    ["/mnt", {}],
+    ["/media", {}],
+    ["/opt", {}],
+    ["/boot", {}],
+    ["/root", {}],
 
-    /**
-     * Takes normalized directory, returns file descriptor or error code.
-     * @param {*} ndir Directory to open
-     * @param {*} flags Open flags, see https://man7.org/linux/man-pages/man2/open.2.html
-     * @returns {*} Something to describe the file handle.
-     * 
-     * Error code constants: https://www.chromium.org/chromium-os/developer-library/reference/linux-constants/errnos/
-     */
-    open(ndir, flags) {
-        const data = this.fs.get(ndir);
-        if(!data) return RootFs.errno.ENOENT;
-        return { _fs: this, data };
-    }
+    ["/home/user/Documents", {}],
+    ["/home/user/Downloads", {}],
+    ["/home/user/Pictures", {}],
+    ["/home/user/Music", {}],
+    ["/home/user/Videos", {}],
+    ["/home/user/Desktop", {}],
+    ["/home/user/.config", {}],
+    ["/home/user/.local", {}],
+    ["/home/user/.cache", {}],
+    ["/home/user/.bashrc", { contents: "# Bash configuration file", isFile: true }],
+    ["/home/user/.profile", { contents: "# User profile configuration file", isFile: true }],
+    ["/home/user/.bash_history", { contents: "", isFile: true }],
 
-    /**
-     * Destroy a file descriptor/handle.
-     * @param {*} fd File descriptor to be closed.
-     */
-    close(fd) {
-        fd._fs = null;
-        fd.data = null;
-        fd.closed = true;
-    }
-
-    checkFd(fd, kind) {
-        if(!fd || !fd.data || fd.closed) throw new Error(RootFs.errno.EBADF);
-        if(kind === 1 &&  fd.data.isFile) throw new Error(RootFs.errno.ENOTDIR);
-        if(kind === 0 && !fd.data.isFile) throw new Error(RootFs.errno.EISDIR);
-    }
-
-    read(fd, first, nbytes, encoding) {
-        this.checkFd(fd, 0);
-
-        const data = fd.data;
-        return (first === 0 && nbytes === -1)? this._toEncoding(data.contents, encoding): this._toEncoding(data.contents.slice(first, first + nbytes), encoding);
-    }
-
-    write(fd, first, nbytes, encoding) {
-        this.checkFd(fd, 0);
-
-        const data = fd.data;
-        if(!data || !data.contents) throw "Invalid file handle";
-        return (first === 0 && nbytes === -1)? this._toEncoding(data.contents, encoding): this._toEncoding(data.contents.slice(first, first + nbytes), encoding);
-    }
-
-    stat(fd) {
-        this.checkFd(fd);
-
-        return {
-            dir: fd.data.isFile
-        }
-    }
-
-    mkdir(ndir, recursive) {
-        if(recursive) {}
-    }
-
-    _toEncoding(data, encoding) {
-        if(encoding === RootFs.ENCODING.utf8) return typeof data === "string"? data: this.decoder.decode(data);
-        if(typeof data === "string") {
-            return this.encoder.encode(data);
-        }
-        return data;
-    }
-}
+    ["/root", {}],
+    ["/root/.bashrc", { contents: "# Root Bash configuration file", isFile: true }],
+    ["/root/.profile", { contents: "# Root user profile configuration file", isFile: true }],
+    ["/root/.bash_history", { contents: "", isFile: true }],
+];
 
 /**
- * Root Filesystem base class
- * The base is always local but can sync to any backend.
+ * Root Filesystem base class.
+ * This doesn't implement any actual storage, but provides the interface and common functionality for different types of filesystems.
+ * It provides mounting, unmounting, higher-level operations for managing files and directories, error handling, and serves as a foundation for implementing filesystems.
  */
 class RootFs {
     static ENCODING = {
         "binary": 0,
         "utf8": 1,
     }
+
+    static O_RDONLY = 0x0000; // open for reading only
+    static O_WRONLY = 0x0001; // open for writing only
+    static O_RDWR   = 0x0002; // open for reading and writing
+    static O_ACCMODE = 0x0003; // mask for above modes
+
+    static O_CREAT  = 0x0200; // create if non-existent
+    static O_EXCL   = 0x0800; // error if already exists
+    static O_TRUNC  = 0x0400; // truncate to zero length
+    static O_APPEND = 0x0008; // append on each write
+
+    static __errCache;
 
     static errno = {
         EPERM: 0x01, // Operation not permitted
@@ -3083,11 +3098,97 @@ class RootFs {
         return this.__errCache.get(code);
     }
 
-    fs = new TmpFs;
-    mounts = new Map;
+    static PATH_SEPARATOR = "/";
+
+    // --- Utility methods for path manipulation ---
+
+    /**
+     * Normalize a path to a canonical form. This is useful for resolving relative paths, removing redundant slashes, and ensuring consistent path formatting.
+     * @param {*} path The path to normalize.
+     * @param {*} isAbsolute Whether the path is absolute (treats "example/" as an absolute path).
+     * @returns {*} The normalized path.
+     */
+    static normalize(path, isAbsolute = null) {
+        return LS.Util.normalizePath(path, isAbsolute);
+    }
+
+    static basename(path) {
+        const normalized = LS.Util.normalizePath(path);
+        const lastSepIndex = normalized.lastIndexOf(RootFs.PATH_SEPARATOR);
+        if (lastSepIndex === -1) {
+            return normalized;
+        }
+        return normalized.substring(lastSepIndex + 1);
+    }
+
+    static ensureTrailingSeparator(path, isAbsolute = null) {
+        const normalized = LS.Util.normalizePath(path, isAbsolute);
+        if (!normalized.endsWith(RootFs.PATH_SEPARATOR)) {
+            return normalized + RootFs.PATH_SEPARATOR;
+        }
+        return normalized;
+    }
+
+    /**
+     * Move up one directory level in a given path. Normalizes the path.
+     */
+    static up(path, levels = 1) {
+        const normalized = LS.Util.normalizePath(path);
+
+        let lI = path.length;
+
+        for (let i = 0; i < levels; i++) {
+            lI = normalized.lastIndexOf(RootFs.PATH_SEPARATOR, lI - 1);
+            if(lI === -1) return RootFs.PATH_SEPARATOR;
+        }
+
+        return normalized.substring(0, lI);
+    }
+
+    /**
+     * Join multiple path segments into a single normalized path.
+     * @param  {...string} parts Path segments to join.
+     * @returns {string} The joined and normalized path.
+     */
+    static join(...parts) {
+        return LS.Util.normalizePath(parts.join(RootFs.PATH_SEPARATOR));
+    }
+
+    // Mounts is an array of [mountPoint, fs] pairs.
+    #mounts = [];
 
     constructor(data) {
-        if(data) this.fs = new TmpFs(data);
+        this.mount(RootFs.PATH_SEPARATOR, new TmpFs(DEFAULT_FS_DATA));
+
+        if(data) {
+            for(const [mountPoint, fs] of data) {
+                this.mount(mountPoint, fs);
+            }
+        }
+    }
+
+    /**
+     * Mount a filesystem at a given mount point.
+     * @param {string} mountPoint The mount point where the filesystem will be mounted.
+     * @param {*} fs The filesystem to mount.
+     */
+    async mount(mountPoint, fs) {
+        mountPoint = RootFs.ensureTrailingSeparator(mountPoint, true);
+        this.#mounts.push([mountPoint, fs]);
+
+        // Sort mounts by length of mount point, descending
+        this.#mounts.sort((a, b) => b[0].length - a[0].length);
+    }
+
+    /**
+     * Unmount a filesystem from a given mount point.
+     * @param {string} mountPoint The mount point to unmount.
+     */
+    unmount(mountPoint) {
+        mountPoint = RootFs.ensureTrailingSeparator(mountPoint, true);
+        this.#mounts = this.#mounts.filter(([mp, fs]) => mp !== mountPoint);
+
+        // todo: also close all open file descriptors
     }
 
     /**
@@ -3102,11 +3203,13 @@ class RootFs {
      * @returns {*} fd
      */
     async open(dir, flags, absolutePath = true) {
-        dir = this.normalizePath(dir, absolutePath);
+        dir = RootFs.normalize(dir, absolutePath);
 
-        let usingFs = this.fs;
-        for(const [mp, fs] of this.mounts) {
-            if(dir.startsWith(mp)) {
+        // We assume that the mounts are sorted by length of mount point, descending, so the first match is the most specific one.
+        let usingFs = null;
+        const dirWithSep = RootFs.ensureTrailingSeparator(dir, true);
+        for(const [mp, fs] of this.#mounts) {
+            if(dirWithSep.startsWith(mp)) {
                 usingFs = fs;
                 break;
             }
@@ -3117,11 +3220,36 @@ class RootFs {
         return fd;
     }
 
+    /**
+     * Read from a file descriptor. If the file descriptor is invalid, an error will be thrown.
+     * @param {*} fd File descriptor to read from
+     * @param {*} first Offset to read from
+     * @param {*} nbytes Number of bytes to read
+     * @param {*} encoding ENUM RootFs.ENCODING or binary/utf8
+     * @param {*} close Whether to close the file descriptor after reading
+     * @returns {*} Data read
+     */
     async read(fd, first = 0, nbytes = -1, encoding = RootFs.ENCODING.utf8, close = true) {
         if(!fd || !fd._fs) throw new Error(RootFs.errno.EBADF);
         const data = await fd._fs.read(fd, first, nbytes, typeof encoding === "string"? RootFs.ENCODING[encoding]: encoding);
         if(close) fd._fs.close(fd);
         return data;
+    }
+
+    /**
+     * Write to a file descriptor. If the file descriptor is invalid, an error will be thrown.
+     * @param {*} fd File descriptor to write to
+     * @param {*} newData Data to write
+     * @param {*} first Offset to write at
+     * @param {*} nbytes Number of bytes to write
+     * @param {*} close Whether to close the file descriptor after writing
+     * @returns {*} Number of bytes written
+     */
+    async write(fd, newData, first = 0, nbytes = -1, close = true) {
+        if(!fd || !fd._fs) throw new Error(RootFs.errno.EBADF);
+        const nbytesWritten = await fd._fs.write(fd, newData, first, nbytes);
+        if(close) fd._fs.close(fd);
+        return nbytesWritten;
     }
 
     /**
@@ -3132,12 +3260,59 @@ class RootFs {
      * @param {*} options More read options
      * @returns {string|Uint8Array|ArrayBuffer} File content
      */
-    async readFile(dir, encoding, options) {
+    async readFile(dir, encoding, options = {}) {
         return await this.read(await this.open(dir), options.start ?? 0, options.nbytes ?? -1, encoding, options.close ?? true);
     }
 
-    normalizePath(path, isAbsolute = null) {
-        return LS.Util.normalizePath(path, isAbsolute);
+    /**
+     * A higher-level that writes data to a file at a given path. If the file doesn't exist, it will be created. If it exists, it will be truncated.
+     * @param {*} dir Path to the file to write
+     * @param {*} newData Data to write
+     * @param {*} options More write options
+     * @returns {*} Number of bytes written
+     */
+    async writeFile(dir, newData, options = {}) {
+        const fd = await this.open(dir, RootFs.O_WRONLY | RootFs.O_CREAT | RootFs.O_TRUNC);
+        return await this.write(fd, newData, options.start ?? 0, options.nbytes ?? -1, options.close ?? true);
+    }
+
+    async close(fd) {
+        if(!fd || !fd._fs) throw new Error(RootFs.errno.EBADF);
+        return await fd._fs.close(fd);
+    }
+
+    async exists(dir) {
+        try {
+            const fd = await this.open(dir, RootFs.O_RDONLY);
+            await this.close(fd);
+            return true;
+        } catch(e) {
+            if(e.message.startsWith(RootFs.errCode(RootFs.errno.ENOENT))) {
+                return false;
+            }
+            throw e;
+        }
+    }
+
+    async stat(dir) {
+        const fd = await this.open(dir, RootFs.O_RDONLY);
+        const data = fd._fs.stat(fd);
+        await this.close(fd);
+        return data;
+    }
+
+    async unlink(dir, options = {}) {
+        const fd = await this.open(dir, RootFs.O_WRONLY);
+        const result = await fd._fs.unlink(fd);
+        await this.close(fd);
+        return result;
+    }
+
+    async mkdir(dir, mode = 0o777) {
+        const fd = await this.open(dir, RootFs.O_WRONLY | RootFs.O_CREAT);
+        const result = await fd._fs.mkdir(fd, mode);
+        await this.close(fd);
+        return result;
     }
 
     /**
@@ -3145,13 +3320,923 @@ class RootFs {
      * @returns {RootFs}
      */
     static initRootFs(){
-        return new RootFs([
-            ["/etc/config.conf", { contents: "Hi", isFile: true }]
-        ]);
+        return new RootFs();
+    }
+
+    // todo
+    destroy() {
+        for(const [mp, fs] of this.#mounts) {
+            if(fs.destroy) fs.destroy();
+        }
+        this.#mounts = [];
     }
 }
 
-// --- SHARED STATE
+const encoder = new TextEncoder();
+const decoder = new TextDecoder();
+
+/**
+ * Temporary in-memory-only filesystem for testing and development.
+ * This is a simple implementation that uses a Map to store file data in memory.
+ */
+class TmpFs {
+    fs = new Map;
+
+    constructor(data) {
+        if(data) this.fs = new Map(data);
+    }
+
+    /**
+     * Takes normalized directory/path, returns file descriptor or error code.
+     *
+     * @param {*} ndir Path to open.
+     * @param {*} flags Open flags, see open(2).
+     * @param {*} mode Permissions used when O_CREAT creates a file.
+     * @returns {*} File descriptor or errno.
+     *
+     * Error code constants:
+     * https://www.chromium.org/chromium-os/developer-library/reference/linux-constants/errnos/
+     */
+    open(ndir, flags, mode = 0o666) {
+        let data = this.fs.get(ndir);
+
+        const accessMode = flags & RootFs.O_ACCMODE;
+        const canRead = accessMode === RootFs.O_RDONLY ||
+                        accessMode === RootFs.O_RDWR;
+        const canWrite = accessMode === RootFs.O_WRONLY ||
+                        accessMode === RootFs.O_RDWR;
+
+        if (!data) {
+            if (!(flags & RootFs.O_CREAT)) {
+                return RootFs.errno.ENOENT;
+            }
+
+            const now = Date.now();
+
+            data = {
+                isFile: true,
+                contents: new Uint8Array(0),
+                mode: mode,
+                uid: 0,
+                gid: 0,
+                atime: now,
+                mtime: now,
+                ctime: now
+            };
+
+            this.fs.set(ndir, data);
+        } else {
+            /*
+             * O_CREAT | O_EXCL must fail if the path already exists.
+             */
+            if ((flags & RootFs.O_CREAT) && (flags & RootFs.O_EXCL)) {
+                return RootFs.errno.EEXIST;
+            }
+        }
+
+        /*
+         * Directories can be opened, but only for reading/searching.
+         * Opening a directory for writing is an error.
+         */
+        if (!data.isFile && canWrite) {
+            return RootFs.errno.EISDIR;
+        }
+
+        /*
+         * O_TRUNC only applies to regular files opened for writing.
+         */
+        if ((flags & RootFs.O_TRUNC) && data.isFile && canWrite) {
+            data.contents = new Uint8Array(0);
+
+            const now = Date.now();
+            data.mtime = now;
+            data.ctime = now;
+        }
+
+        return {
+            _fs: this,
+            data,
+            flags,
+            offset: (flags & RootFs.O_APPEND) && data.isFile
+                ? data.contents.length
+                : 0,
+            closed: false,
+            readable: canRead,
+            writable: canWrite
+        };
+    }
+
+
+    /**
+     * Destroy a file descriptor/handle.
+     *
+     * @param {*} fd File descriptor to be closed.
+     * @returns {*} 0 on success or errno.
+     */
+    close(fd) {
+        if (!fd || fd.closed || !fd._fs) {
+            return RootFs.errno.EBADF;
+        }
+
+        fd._fs = null;
+        fd.data = null;
+        fd.closed = true;
+
+        return 0;
+    }
+
+
+    /**
+     * Validate a file descriptor.
+     *
+     * kind:
+     *   0 = regular file
+     *   1 = directory
+     *
+     * @param {*} fd File descriptor.
+     * @param {*} kind Expected object type.
+     */
+    checkFd(fd, kind) {
+        if (!fd || !fd._fs || !fd.data || fd.closed) {
+            throw new Error(RootFs.errno.EBADF);
+        }
+
+        if (kind === 1 && fd.data.isFile) {
+            throw new Error(RootFs.errno.ENOTDIR);
+        }
+
+        if (kind === 0 && !fd.data.isFile) {
+            throw new Error(RootFs.errno.EISDIR);
+        }
+    }
+
+
+    /**
+     * Read from a file.
+     *
+     * `first` is the byte/character offset to read from.
+     * `nbytes === -1` means read until EOF.
+     *
+     * @param {*} fd File descriptor.
+     * @param {*} first Offset.
+     * @param {*} nbytes Number of bytes/characters.
+     * @param {*} encoding Output encoding.
+     * @returns {*} Data.
+     */
+    read(fd, first, nbytes, encoding) {
+        this.checkFd(fd, 0);
+
+        if (!fd.readable) {
+            throw new Error(RootFs.errno.EBADF);
+        }
+
+        const data = fd.data;
+
+        if (first < 0) {
+            throw new Error(RootFs.errno.EINVAL);
+        }
+
+        if (first > data.contents.length) {
+            first = data.contents.length;
+        }
+
+        const end = nbytes === -1
+            ? data.contents.length
+            : Math.min(first + Math.max(0, nbytes), data.contents.length);
+
+        /*
+         * A successful read is an access to the file.
+         */
+        data.atime = Date.now();
+
+        const result = data.contents.slice(first, end);
+
+        /*
+         * If the descriptor has an offset, advance it.
+         */
+        fd.offset = end;
+
+        return this._toEncoding(result, encoding);
+    }
+
+
+    /**
+     * Write to a file.
+     *
+     * `first` is the offset to write at.
+     * `nbytes === -1` means write all of newData starting at `first`.
+     *
+     * O_APPEND causes the write to happen at EOF regardless of `first`.
+     *
+     * @param {*} fd File descriptor.
+     * @param {*} newData Data to write.
+     * @param {*} first Offset.
+     * @param {*} nbytes Number of bytes/characters.
+     * @returns {*} Number of bytes/characters written.
+     */
+    write(fd, newData, first, nbytes) {
+        this.checkFd(fd, 0);
+
+        if (!fd.writable) {
+            throw new Error(RootFs.errno.EBADF);
+        }
+
+        const data = fd.data;
+
+        /*
+         * Convert ArrayBuffer into Uint8Array.
+         */
+        if (data.contents instanceof ArrayBuffer) {
+            data.contents = new Uint8Array(data.contents);
+        }
+
+        /*
+         * O_APPEND ignores the supplied offset.
+         */
+        if (fd.flags & RootFs.O_APPEND) {
+            first = data.contents.length;
+        }
+
+        /*
+         * Use the descriptor offset if the caller didn't explicitly supply one.
+         */
+        if (first === undefined || first === null) {
+            first = fd.offset ?? 0;
+        }
+
+        if (first < 0) {
+            throw new Error(RootFs.errno.EINVAL);
+        }
+
+        /*
+         * Normalize input according to the file's representation.
+         */
+        if (data.contents instanceof Uint8Array) {
+            if (typeof newData === "string") {
+                newData = encoder.encode(newData);
+            }
+
+            if (!(newData instanceof Uint8Array)) {
+                if (newData instanceof ArrayBuffer) {
+                    newData = new Uint8Array(newData);
+                } else {
+                    throw new Error(RootFs.errno.EINVAL);
+                }
+            }
+
+            const available = newData.length - first;
+
+            if (nbytes === -1) {
+                nbytes = available;
+            }
+
+            if (nbytes < 0 || first > newData.length && nbytes !== 0) {
+                throw new Error(RootFs.errno.EINVAL);
+            }
+
+            if (nbytes === 0) {
+                return 0;
+            }
+
+            /*
+             * The source range is [first, first + nbytes).
+             */
+            const sourceEnd = Math.min(first + nbytes, newData.length);
+            const actualBytes = sourceEnd - first;
+
+            if (actualBytes <= 0) {
+                return 0;
+            }
+
+            const requiredLength = first + actualBytes;
+
+            if (requiredLength > data.contents.length) {
+                const newContents = new Uint8Array(requiredLength);
+
+                newContents.set(data.contents, 0);
+                newContents.set(newData.slice(first, sourceEnd), first);
+
+                data.contents = newContents;
+            } else {
+                data.contents.set(
+                    newData.slice(first, sourceEnd),
+                    first
+                );
+            }
+
+            fd.offset = first + actualBytes;
+
+            const now = Date.now();
+            data.mtime = now;
+            data.ctime = now;
+
+            return actualBytes;
+        }
+
+
+        if (typeof data.contents === "string") {
+            if (typeof newData !== "string") {
+                newData = decoder.decode(newData);
+            }
+
+            if (first > newData.length && nbytes !== 0) {
+                throw new Error(RootFs.errno.EINVAL);
+            }
+
+            if (nbytes === -1) {
+                nbytes = newData.length - first;
+            }
+
+            if (nbytes < 0) {
+                throw new Error(RootFs.errno.EINVAL);
+            }
+
+            if (nbytes === 0) {
+                return 0;
+            }
+
+            const sourceEnd = Math.min(first + nbytes, newData.length);
+            const actualBytes = sourceEnd - first;
+
+            if (actualBytes <= 0) {
+                return 0;
+            }
+
+            /*
+             * String files are treated as character-addressed.
+             * Writing beyond EOF creates the intervening space.
+             */
+            if (first > data.contents.length) {
+                data.contents =
+                    data.contents +
+                    "\0".repeat(first - data.contents.length);
+            }
+
+            data.contents =
+                data.contents.substring(0, first) +
+                newData.substring(first, sourceEnd) +
+                data.contents.substring(first + actualBytes);
+
+            fd.offset = first + actualBytes;
+
+            const now = Date.now();
+            data.mtime = now;
+            data.ctime = now;
+
+            return actualBytes;
+        }
+
+        throw new Error(RootFs.errno.EINVAL);
+    }
+
+
+    /**
+     * Return file metadata.
+     *
+     * @param {*} fd File descriptor.
+     * @returns {*} stat-like object.
+     */
+    stat(fd) {
+        this.checkFd(fd);
+
+        const data = fd.data;
+
+        const now = Date.now();
+
+        data.mtime ??= now;
+        data.ctime ??= now;
+        data.atime ??= now;
+
+        return {
+            size: data.contents instanceof Uint8Array
+                ? data.contents.byteLength
+                : data.contents.length,
+
+            mtime: data.mtime,
+            ctime: data.ctime,
+            atime: data.atime,
+
+            mode: data.mode ?? 0o644,
+            uid: data.uid ?? 0,
+            gid: data.gid ?? 0,
+
+            isFile: data.isFile,
+            isDirectory: !data.isFile,
+
+            isSymbolicLink: data.isSymlink ?? false,
+            isBlockDevice: data.isBlockDevice ?? false,
+            isCharacterDevice: data.isCharacterDevice ?? false,
+            isFIFO: data.isFIFO ?? false,
+            isSocket: data.isSocket ?? false
+        };
+    }
+
+    unlink(fd) {
+        this.checkFd(fd);
+
+        const data = fd.data;
+
+        if (!data.isFile) {
+            return RootFs.errno.EISDIR;
+        }
+
+        this.fs.delete(fd.path);
+
+        return 0;
+    }
+
+    mkdir(ndir, recursive, mode = 0o755, uid = 0, gid = 0) {
+        if (this.fs.has(ndir)) {
+            return RootFs.errno.EEXIST;
+        }
+
+        if (!recursive) {
+            const parent = LS.Util.dirname(ndir);
+            if (!this.fs.has(parent)) {
+                return RootFs.errno.ENOENT;
+            }
+        }
+
+        // TODO: must create all intermediate directories and check for existing files in the path
+
+        const now = Date.now();
+
+        this.fs.set(ndir, {
+            isFile: false,
+            mode: mode,
+            uid: uid,
+            gid: gid,
+            atime: now,
+            mtime: now,
+            ctime: now
+        });
+
+        return 0;
+    }
+
+    _toEncoding(data, encoding) {
+        if(encoding === RootFs.ENCODING.utf8) return typeof data === "string"? data: decoder.decode(data);
+        if(typeof data === "string") {
+            return encoder.encode(data);
+        }
+        return data;
+    }
+
+    destroy() {
+        this.fs.clear();
+    }
+}
+
+/**
+ * An in-memory zip-based filesystem.
+ * Stores data in a zip format in memory, supports compression, can be easily loaded/saved and patched.
+ */
+class MemFs {}
+
+/**
+ * Very simple localStorage-based filesystem for small amounts of data.
+ */
+class LocalStorageFs extends TmpFs {}
+
+/**
+ * Remote cloud filesystem.
+ */
+class RemoteFs {}
+
+/**
+ * IndexedDB-based filesystem for local browser storage.
+ */
+class IndexedDbFs {}
+
+/**
+ * Node.js-based filesystem for direct host-machine storage.
+ */
+class NodeFs {}
+
+/**
+ * WASM filesystem (to be implemented)
+ */
+class WasmFs {}
+
+/**
+ * RQvFS filesystem (to be implemented)
+ */
+class RqvFs {}
+
+const operators = [
+    ";;&",
+    "<<<",
+    "<<-",
+    "&>>",
+    ">>",
+    "<<",
+    "&&",
+    "||",
+    ";;",
+    ";&",
+    "&>",
+    ">&",
+    "<&",
+    ">|",
+    "<>",
+    "|",
+    "&",
+    ";",
+    ">",
+    "<",
+    "(",
+    ")",
+    "{",
+    "}"
+];
+    
+/**
+ * LinuxJS bash interpreter.
+ */
+function tokenizeBash(code) {
+    const tokens = [];
+
+    let i = 0;
+    let word = "";
+    let wordStart = -1;
+
+    function startWord() {
+        if (wordStart === -1) {
+            wordStart = i;
+        }
+    }
+
+    function flushWord() {
+        if (word.length === 0) {
+            wordStart = -1;
+            return;
+        }
+
+        tokens.push({
+            type: "word",
+            value: word,
+            start: wordStart,
+            end: i
+        });
+
+        word = "";
+        wordStart = -1;
+    }
+
+    function add(value) {
+        startWord();
+        word += value;
+    }
+
+    function isWhitespace(c) {
+        return c === " " ||
+               c === "\t" ||
+               c === "\r" ||
+               c === "\n";
+    }
+
+    function readOperator() {
+        for (const operator of operators) {
+            if (code.startsWith(operator, i)) {
+                return operator;
+            }
+        }
+
+        return null;
+    }
+
+    function readSingleQuote() {
+        startWord();
+
+        const start = i++;
+        let value = "'";
+
+        while (i < code.length) {
+            const c = code[i++];
+
+            value += c;
+
+            if (c === "'") {
+                break;
+            }
+        }
+
+        word += value;
+
+        return i - start;
+    }
+
+    function readDoubleQuote() {
+        startWord();
+
+        word += code[i++]; // "
+
+        while (i < code.length) {
+            const c = code[i];
+
+            if (c === '"') {
+                word += c;
+                i++;
+                return;
+            }
+
+            if (c === "\\") {
+                word += c;
+                i++;
+
+                if (i < code.length) {
+                    word += code[i++];
+                }
+
+                continue;
+            }
+
+            if (c === "$") {
+                readExpansion();
+                continue;
+            }
+
+            word += c;
+            i++;
+        }
+    }
+
+    function readExpansion() {
+        startWord();
+
+        // $((...))
+        if (code.startsWith("$((", i)) {
+            const start = i;
+
+            i += 3;
+            let depth = 1;
+
+            while (i < code.length && depth > 0) {
+                if (code.startsWith("((", i)) {
+                    depth++;
+                    i += 2;
+                    continue;
+                }
+
+                if (code.startsWith("))", i)) {
+                    depth--;
+                    i += 2;
+                    continue;
+                }
+
+                if (code[i] === "\\") {
+                    i += 2;
+                    continue;
+                }
+
+                i++;
+            }
+
+            word += code.slice(start, i);
+            return;
+        }
+
+        // $(...)
+        if (code.startsWith("$(", i)) {
+            const start = i;
+
+            i += 2;
+            let depth = 1;
+            let quote = null;
+
+            while (i < code.length && depth > 0) {
+                const c = code[i];
+
+                if (quote === "'") {
+                    i++;
+
+                    if (c === "'") {
+                        quote = null;
+                    }
+
+                    continue;
+                }
+
+                if (quote === '"') {
+                    if (c === "\\") {
+                        i += 2;
+                        continue;
+                    }
+
+                    i++;
+
+                    if (c === '"') {
+                        quote = null;
+                    }
+
+                    continue;
+                }
+
+                if (c === "'" || c === '"') {
+                    quote = c;
+                    i++;
+                    continue;
+                }
+
+                if (c === "\\") {
+                    i += 2;
+                    continue;
+                }
+
+                if (c === "(") {
+                    depth++;
+                } else if (c === ")") {
+                    depth--;
+                }
+
+                i++;
+            }
+
+            word += code.slice(start, i);
+            return;
+        }
+
+        // ${...}
+        if (code.startsWith("${", i)) {
+            const start = i;
+
+            i += 2;
+            let depth = 1;
+
+            while (i < code.length && depth > 0) {
+                if (code[i] === "{") {
+                    depth++;
+                } else if (code[i] === "}") {
+                    depth--;
+                }
+
+                i++;
+            }
+
+            word += code.slice(start, i);
+            return;
+        }
+
+        // $?, $!, $#, $@, $*, $$, $-, $0-$9
+        if (
+            i + 1 < code.length &&
+            "$?!#@*$-0123456789".includes(code[i + 1])
+        ) {
+            word += code.slice(i, i + 2);
+            i += 2;
+            return;
+        }
+
+        // $VARIABLE
+        if (
+            i + 1 < code.length &&
+            /[A-Za-z_]/.test(code[i + 1])
+        ) {
+            const start = i++;
+
+            while (
+                i < code.length &&
+                /[A-Za-z0-9_]/.test(code[i])
+            ) {
+                i++;
+            }
+
+            word += code.slice(start, i);
+            return;
+        }
+
+        // Bare $
+        word += "$";
+        i++;
+    }
+
+    while (i < code.length) {
+        const c = code[i];
+
+        // Whitespace terminates a word.
+        if (isWhitespace(c)) {
+            flushWord();
+
+            if (c === "\n") {
+                tokens.push({
+                    type: "newline",
+                    value: "\n",
+                    start: i,
+                    end: i + 1
+                });
+            }
+
+            i++;
+            continue;
+        }
+
+        // Comment.
+        // A # inside a word is ordinary text.
+        if (c === "#" && word.length === 0) {
+            const start = i;
+
+            while (
+                i < code.length &&
+                code[i] !== "\n"
+            ) {
+                i++;
+            }
+
+            tokens.push({
+                type: "comment",
+                value: code.slice(start, i),
+                start,
+                end: i
+            });
+
+            continue;
+        }
+
+        // Single quoted string.
+        if (c === "'") {
+            readSingleQuote();
+            continue;
+        }
+
+        // Double quoted string.
+        if (c === '"') {
+            readDoubleQuote();
+            continue;
+        }
+
+        // Backslash escape.
+        if (c === "\\") {
+            startWord();
+
+            word += c;
+            i++;
+
+            if (i < code.length) {
+                word += code[i++];
+            }
+
+            continue;
+        }
+
+        // Expansion.
+        if (c === "$") {
+            readExpansion();
+            continue;
+        }
+
+        // Shell operator.
+        const operator = readOperator();
+
+        if (operator) {
+            flushWord();
+
+            tokens.push({
+                type: "operator",
+                value: operator,
+                start: i,
+                end: i + operator.length
+            });
+
+            i += operator.length;
+            continue;
+        }
+
+        // Ordinary character.
+        add(c);
+        i++;
+    }
+
+    flushWord();
+
+    return tokens;
+}
+
+/**
+ * Quick interpreter. This is not a full bash parser.
+ */
+function simpleShell(code) {
+    const c = [];
+
+    const tokens = tokenizeBash(code);
+    for (const token of tokens) {
+        if (token.type === "comment") continue;
+        if (token.type === "word") c.push(token.value);
+
+        if(c.length === 1) {
+            
+        }
+    }
+}
+
+window.tokenizeBash = tokenizeBash;
+
+/**
+ * GlitterShell interpreter.
+ */
+// tba// WARNING: The following imports are just a stub, the actual build system is being worked on.
+
+// Misc constants
+const DEFAULT_PROFILE = "/~/assets/image/default.svg";
 
 /**
  * Shared website object.
@@ -3626,7 +4711,7 @@ const app = {
         const switchEl = document.querySelector("#desktopModeSwitch");
         if(switchEl) {
             switchEl.querySelector("input").checked = value;
-            if(value) switchEl.querySelector("ls-box").remove();
+            if(value) switchEl.querySelector("ls-box")?.remove?.();
         }
     },
 
@@ -3685,26 +4770,42 @@ const app = {
      * @returns {boolean} - True if the capability is available, false otherwise.
      */
     hasCapability(capability) {
+        // -- Desktop capabilities
         if(capability === "desktop") return !!app.desktop;
         if(capability === "system-sounds") return app.desktop && app.desktop.soundBox !== null;
-        if(capability === "shell") return true; // todo
+        if(capability === "windows") return app.desktop && app.desktop.windowManager !== null;
+        if(capability === "cloud-user") return location.protocol === "https:"; // todo
+        if(capability === "command-palette") return app.desktop && app.desktop.commandPalette !== null; // todo
+        if(capability === "notifications") return false; // todo
+
+        // -- System capabilities
         if(capability === "filesystem") return true; // todo
-        // if(capability === "notifications") return ;
+        if(capability === "shell") return true; // todo
+
+        // -- Web APIs
         if(capability === "clipboard") return !!navigator.clipboard;
         if(capability === "css-scroll-animations") return CSS.supports('animation-timeline: scroll()') && CSS.supports('animation-range: 0% 100%');
-        if(capability === "windows") return app.desktop && app.desktop.windowManager !== null;
-        if(capability === "native") return location.protocol !== "https:" && location.protocol !== "http:" && location.protocol !== "file:";
-        if(capability === "cloud-user") return location.protocol === "https:"; // todo
         if(capability === "gpu") return true; // todo
+        if(capability === "midi") return navigator.requestMIDIAccess !== undefined;
+        if(capability === "webaudio") return typeof AudioContext !== "undefined" || typeof webkitAudioContext !== "undefined";
+        if(capability === "webgpu") return typeof navigator.gpu !== "undefined";
+        if(capability === "webxr") return typeof navigator.xr !== "undefined";
+        if(capability === "webassembly") return typeof WebAssembly !== "undefined";
+        if(capability === "webgl") return typeof WebGLRenderingContext !== "undefined";
+        if(capability === "webgl2") return typeof WebGL2RenderingContext !== "undefined";
+        if(capability === "webvr") return typeof navigator.getVRDisplays !== "undefined";
+
+        // -- Other
+        if(capability === "native") return location.protocol !== "https:" && location.protocol !== "http:" && location.protocol !== "file:";
         if(capability === "vulkan") return false; // todo
         if(capability === "opengl") return false; // todo
         if(capability === "crystaline") return false; // todo
         if(capability === "glitter") return false; // todo
-        if(capability === "csuite-toolkit") return false; // todo
+        if(capability === "ls-lisk") return false; // todo
         if(capability === "lsgio") return true; // todo
-        if(capability === "midi") return navigator.requestMIDIAccess !== undefined;
-        if(capability === "command-palette") return app.desktop && app.desktop.commandPalette !== null; // todo
-        return kernel.hasCapability(capability);
+        if(capability === "http-proxy") return ""; // todo
+        if(capability === "network-proxy") return ""; // todo
+        return false;
     }
 }
 
@@ -3712,8 +4813,9 @@ app.events = new LS.EventEmitter(app);
 globalThis.website = app; // I just can't decide. I think I will keep app due to the app getting more integrated beyond a simple website.
 globalThis.app = app;
 
+if(isBeta) window.kernel = kernel // Debug only!
 
-// --- MAIN
+// WARNING: The following imports are just a stub, the actual build system is being worked on.
 
 /**
  * Kernel class
@@ -4007,7 +5109,7 @@ const kernel = new class Kernel extends LS.Context {
         });
 
         // Temporary
-        if(window.__windowManagerTarget) appElement.append(window.__windowManagerTarget);
+        if(window.__windowManagerTarget) appElement.append(window.__windowManagerTarget.children[0]);
 
         for(const manifest of BUILTIN_APPS) {
             this.appManifests.set(manifest.id, manifest);
@@ -4131,7 +5233,7 @@ const kernel = new class Kernel extends LS.Context {
             app.container.style.display = "flex";
             app.emit("dom-ready");
 
-            this.shortcutManager.register(['ctrl+shift+p', 'ctrl+k'], () => {
+            this.shortcutManager.assign("GLOBAL_OPEN_COMMAND_PALETTE", () => {
                 if(!app.hasCapability("command-palette")) return;
                 app.desktop.openPalette();
             });
@@ -4527,10 +5629,6 @@ const kernel = new class Kernel extends LS.Context {
         }
 
         this.loadUserList();
-
-        // There should never be a situation where accountsButton doesn't exist, yet it has happened to me. How..
-        // const accountsButton = website.panelItems.get("accountsButton").element;
-        // if (accountsButton) accountsButton.disabled = false;
 
         app.events.emit("user-changed", [ isLoggedIn, this.userFragment ]);
         app.events.completed("user-loaded");
@@ -5025,11 +6123,6 @@ const kernel = new class Kernel extends LS.Context {
     warn()  { this.logger.warn(...arguments);  }
     error() { this.logger.error(...arguments); }
 
-    hasCapability(capability) {
-        // tba
-        return false;
-    }
-
     destroy() {
         if(this.destroyed) return;
         for(const context of this.contexts.values()) {
@@ -5059,6 +6152,36 @@ const kernel = new class Kernel extends LS.Context {
     }
 }
 
-window.kernel = kernel
+
+/**
+ * Promise helper
+ */
+class OpenerPromise {
+    loading(callback)   { if (callback) this._l = callback; return this; }
+    done(callback)      { if (callback) this._d = callback; return this; }
+    catch(callback)     { if (callback) this._c = callback; return this; }
+    finally(callback)   { if (callback) this._f = callback; return this; }
+    loadingState(state) { if (this._l) this._l(state); return this;      }
+
+    throw(error) {
+        if (this._c) this._c(error);
+        if (this._f) this._f();
+        return this;
+    }
+
+    resolve(instance) {
+        if (this._d) this._d(instance);
+        if (this._f) this._f();
+        return this;
+    }
+
+    dispose() {
+        this._l = null;
+        this._d = null;
+        this._c = null;
+        this._f = null;
+    }
+}
+
 
 } catch (e) { console.error("Fatal error during app initialization:", e); globalThis.__loadError() }

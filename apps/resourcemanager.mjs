@@ -17,7 +17,7 @@ class ResourceMonitor extends website.ContentContext {
         });
 
         // This will throw and self destruct if not available
-        this.#kernelPromise = this.requestKernelAccess("Kernel access is required to list and manage apps & resources.");
+        this.#kernelPromise = this.requestKernelAccess("Access is required to list and manage apps & resources.");
 
         // Virtualized process list
         this.treeView = new LS.Tree({

@@ -7,3 +7,6 @@ backend
 static/simple-uploader.html
 
 .well-known
+
+# tmp while testing
+wallpapers
