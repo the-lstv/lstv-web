@@ -1,6 +1,6 @@
 // WARNING: The following imports are just a stub, the actual build system is being worked on.
 import { TmpFs, RootFs } from "./fs.mjs";
-import { LiDesktop, MusicPlayer } from "./desktop.mjs";
+import { LiDesktop, MediaPlayer } from "./desktop.mjs";
 import { LoggerContext, AssetManager, ContentContext, Viewport, Thread } from "./commons.mjs";
 import { app } from "./shared.mjs";
 import { kernel } from "./kernel.mjs";

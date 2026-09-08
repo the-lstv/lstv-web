@@ -1,46 +1,77 @@
 // WARNING: The following imports are just a stub, the actual build system is being worked on.
 import { TmpFs, RootFs } from "./fs.mjs";
 import { SoundBox } from "./soundbox.mjs";
-import { LiDesktop, MusicPlayer } from "./desktop.mjs";
+import { LiDesktop, MediaPlayer } from "./desktop.mjs";
 import { LoggerContext, AssetManager, ContentContext, Viewport, Thread } from "./commons.mjs";
 import { app } from "./shared.mjs";
+import { Environment } from "./environment.mjs";
+import { Enums } from "./enums.mjs";
 
 /**
  * Kernel class
  * Main application kernel, handles global state, navigation, authentication, and content contexts.
  */
 const kernel = new class Kernel extends LS.Context {
+    isKernel = true;
     version = KERNEL_VERSION;
 
-    contexts = new Map();
-    viewports = new Map();
+    fileSystem = new RootFs();
+
+    threads =     new Set();
+    MAX_THREADS = (navigator.hardwareConcurrency || 4) * 2;
+
+    // simulate some syscalls (uh, well, as methods).
+    // these are more of functionality abstractions than something that could be used to emulate syscalls.
+    // these should not be needed much but provide some helpful information.
+    sys = {
+        async read(fd, out, nbytes) {
+            const data = await this.fileSystem.read(fd, 0, nbytes, RootFs.ENCODING.binary);
+
+            // we can't access pointers with JS so we try writing to a typed array
+            if(out && out.set) {
+                out.set(data);
+            }
+        },
+
+        async write(fd, data, nbytes) {
+            // likewise, we can't just read memory so we assume data is a typed array
+            return await this.fileSystem.write(fd, data, 0, nbytes);
+        },
+
+        async open(filename, flags, mode) {
+            return await this.fileSystem.open(filename, flags);
+        },
+
+        uname(utsname = {}) {
+            utsname.sysname  = "LinuxJS";
+            utsname.nodename = "linuxjs";
+            utsname.release  = KERNEL_VERSION + ".lsw13";
+            utsname.version  = "#ls-web Tue Sep 8 08:42:36 UTC 2026";
+            utsname.machine  = "js";
+            return utsname;
+        }
+    }
+
+    contexts =     new Map();
+    viewports =    new Map();
     applications = new Map();
-    pageCache = new Map();
+    pageCache =    new Map();
 
-    aliasMap = new Map();
-
-    threads = new Set();
-
-    fileSystem = RootFs.initRootFs();
-
-    shortcutManager = shortcutManager;
+    aliasMap =     new Map();
 
     appManifests = new Map();
+
+    environment =  null;
 
     queryParams = LS.Util.parseURLParams();
     userFragment = LS.Reactive.wrap("user", {});
 
     SPAExtensions = new LS.SPA.Matcher();
 
-    MAX_THREADS = (navigator.hardwareConcurrency || 4) * 2;
-
-    scheduler = new class Scheduler {
-        constructor() {
-        }
-    }
+    // scheduler = new class Scheduler {}
 
     /**
-     * Auth manager
+     * Auth/user provider
      */
     auth = new class Auth extends LS.EventEmitter {
         #iframeURL = null;
@@ -289,6 +320,8 @@ const kernel = new class Kernel extends LS.Context {
         super('kernel');
         this.logger = new LoggerContext("kernel");
 
+        this.environment = new Environment(this);
+
         const appElement = LS.SelectOrCreate('#app');
         const vpElement = LS.SelectOrCreate('#viewport');
 
@@ -379,8 +412,10 @@ const kernel = new class Kernel extends LS.Context {
         this.auth.on("account-switched", (reason, from, to) => {
 
         });
-
+        
         this.addExternalEventListener(document, 'DOMContentLoaded', () => {
+            this.environment.init();
+
             app.container = this.container = document.getElementById('app');
             app.viewportElement = this.viewportElement = this.viewport.target;
 
@@ -412,8 +447,8 @@ const kernel = new class Kernel extends LS.Context {
                 window.__init = null;
             }
 
-            app.desktop.initPanel();
-            this.#setupAuth();
+            // app.desktop.initPanel();
+            // this.#setupAuth();
             this.loadUser();
 
             // Display content
@@ -421,7 +456,7 @@ const kernel = new class Kernel extends LS.Context {
             app.container.style.display = "flex";
             app.emit("dom-ready");
 
-            this.shortcutManager.assign("GLOBAL_OPEN_COMMAND_PALETTE", () => {
+            shortcutManager.assign("GLOBAL_OPEN_COMMAND_PALETTE", () => {
                 if(!app.hasCapability("command-palette")) return;
                 app.desktop.openPalette();
             });
@@ -609,6 +644,16 @@ const kernel = new class Kernel extends LS.Context {
         this.ttl_scripting = Date.now() - scriptingLoadTime;
     }
 
+    *listResources() {
+        for(const context of this.contexts.values()) {
+            yield context;
+        }
+
+        for(const thread of this.threads.values()) {
+            yield thread;
+        }
+    }
+
     /**
      * Registers a new viewport (target area for content)
      * @param {*} name Unique name of the viewport
@@ -755,50 +800,6 @@ const kernel = new class Kernel extends LS.Context {
         }
     }
 
-    async loadUserList() {
-        const accounts = await this.auth.listAccounts();
-        app.accounts = accounts && accounts.accounts || [];
-
-        const list = app.desktop.toolbars.get("login").element.querySelector(".accounts-list");
-        list.innerHTML = "";
-
-        for (const account of app.accounts) {
-            const item = LS.Create("button", { class: 'account-item elevated loading-right', tabindex: 0, inner: [
-                app.views.getProfilePictureView(account.pfp, [ 32 ]),
-                { tag: "span", class: 'account-username', textContent: account.username }
-            ]});
-
-            if(accounts && accounts.activeAccountId === account.id) {
-                item.classList.add("active");
-            }
-
-            item.onclick = () => {
-                item.setAttribute("state", "loading");
-                this.auth.switchAccount(account.id).then(() => {
-                    this.loadUser().then(() => {
-                        item.removeAttribute("state");
-                    });
-                }).catch(error => {
-                    if(error.code === 401) {
-                        app.loginTabs.set("login");
-                        app.loginTabs.element.querySelector("#username").value = account.username;
-                        app.loginTabs.element.querySelector(".error-message").textContent = "Session expired for this account, please log in again.";
-                        const p = app.loginTabs.element.querySelector("#password");
-                        p.value = "";
-                        p.focus();
-                        return;
-                    }
-
-                    LS.Toast.show("Failed to switch account: " + (error.message || error.error || "Unknown error"), { accent: "red" });
-                });
-            };
-
-            list.appendChild(item);
-        }
-
-        app.events.emit("user-list-updated", [ app.accounts ]);
-    }
-
     async loadUser() {
         this.log("Loading user data");
 
@@ -815,8 +816,6 @@ const kernel = new class Kernel extends LS.Context {
         } else {
             this.userFragment.__bind.swapObject({});
         }
-
-        this.loadUserList();
 
         app.events.emit("user-changed", [ isLoggedIn, this.userFragment ]);
         app.events.completed("user-loaded");
@@ -859,7 +858,7 @@ const kernel = new class Kernel extends LS.Context {
         this.__pingsInitialized = true;
 
         const PING_URL = '/check-in';
-        const SESSION_ID = app.utils.generateIdentifier(); // True random ID
+        const SESSION_ID = LS.Misc.uuidv4(); // True random ID
         let current_interval = 15000, first = true;
 
         const sendPing = (beacon = false) => {
@@ -949,226 +948,8 @@ const kernel = new class Kernel extends LS.Context {
         sendPing();
     }
 
-
-    applicationMenu = new class ApplicationMenu extends LS.Context {
-        constructor() {
-            super("Application Menu");
-            this.initialized = false;
-        }
-
-        init() {
-            if(this.initialized) return;
-            this.initialized = true;
-
-            const container = app.desktop.toolbars.get("apps").element;
-            this.appListElement = container.querySelector(".app-list");
-
-            kernel.on("application-installed", (manifest) => {
-                this.addApplicationEntry(manifest);
-            });
-
-            // Load existing apps
-            for(const manifest of kernel.appManifests.values()) {
-                this.addApplicationEntry(manifest);
-            }
-        }
-
-        /**
-         * Add an application entry to the application menu.
-         * @param {*} manifest 
-         */
-        addApplicationEntry(manifest) {
-            const appId = manifest.id;
-            if(!appId) return;
-
-            const appButton = LS.Create({
-                class: "app-list-item",
-
-                inner: [
-                    app.views.getAppIconView(manifest, [64]),
-                    LS.Create('span', { class: 'app-name text-overflow-nowrap', textContent: manifest.name || appId })
-                ],
-
-                onclick: () => {
-                    if(manifest.external) {
-                        if(typeof manifest.link !== "string" || !manifest.link) {
-                            LS.Toast.show("This application does not have a valid link.", { accent: "red" });
-                            return;
-                        }
-
-                        window.open(manifest.link, "_blank", "noopener");
-                        app.desktop.closeToolbar();
-                        return;
-                    }
-
-                    kernel.openApplication(manifest, { source: "appMenu" })
-                        .loading(() => {
-                            appButton.setAttribute("state", "loading");
-                        })
-                        .done((instance) => {
-                            instance.open?.();
-                            app.desktop.closeToolbar();
-                        })
-                        .catch(error => {
-                            LS.Toast.show("Failed to open application: " + error.message, { accent: "red" });
-                            console.error("Failed to open application:", error);
-                        })
-                        .finally(() => {
-                            appButton.removeAttribute("state");
-                        });
-                }
-            });
-
-            this.appListElement.appendChild(appButton);
-        }
-    }
-
-    #setupAuth() {
-        LS.SelectOrCreate("#logOutButton").addEventListener("click", function (){
-            kernel.auth.logout(() => {
-                LS.Toast.show("Logged out successfully.", {
-                    timeout: 2000
-                });
-
-                app.desktop.closeToolbar();
-                kernel.loadUser();
-                app.loginTabs.set("default");
-            });
-        });
-
-        function clearLoginError() {
-            const view = app.loginTabs.currentElement();
-            if (!view) return;
-
-            const errorMessage = view.querySelector(".error-message");
-            if (errorMessage) errorMessage.textContent = "";
-
-            const offendingElement = view.querySelector("input[aria-invalid='true']");
-            if (offendingElement) {
-                offendingElement.removeAttribute("aria-invalid");
-                offendingElement.removeAttribute("ls-accent");
-            }
-        }
-
-        function displayLoginError(message, offendingElement) {
-            if (offendingElement) {
-                offendingElement.setAttribute("aria-invalid", "true");
-                offendingElement.setAttribute("ls-accent", "red");
-            }
-
-            const errorMessage = app.loginTabs.currentElement().querySelector(".error-message");
-            if (errorMessage) errorMessage.textContent = message;
-        }
-
-        function redirectAfterLogin() {
-            const redirect = kernel.queryParams.continue || ((location.pathname.startsWith("/login") || location.pathname.startsWith("/sign-up"))? "/": null);
-            if (redirect) {
-                location.replace(redirect);
-                return;
-            }
-
-            // Update user without reloading
-            kernel.loadUser().then(() => {
-                app.desktop.closeToolbar();
-                app.loginTabs.set("default");
-            });
-        }
-
-        document.forms["loginForm"].addEventListener("submit", (event) => {
-            event.preventDefault();
-            clearLoginError();
-            const username = LS.SelectOne("#username").value;
-            const password = LS.SelectOne("#password").value;
-
-            if (!username || !password) {
-                displayLoginError("Username and password are required", LS.SelectOne(!username? "#username" : "#password"));
-                return;
-            }
-
-            this.auth.login(username, password, (error, result) => {
-                if (error) {
-                    displayLoginError(error.message || error.error || "An error occurred while logging in");
-                    return;
-                }
-
-                redirectAfterLogin();
-            });
-
-            return false;
-        });
-
-        document.forms["registerForm"].addEventListener("submit", (event) => {
-            event.preventDefault();
-            clearLoginError();
-            document.forms["registerStep2Form"].querySelector("input").focus();
-            app.loginTabs.set('register-step2');
-
-            return false;
-        });
-
-        document.forms["registerStep2Form"].addEventListener("submit", (event) => {
-            event.preventDefault();
-            clearLoginError();
-            const email = LS.SelectOne("#regEmail").value;
-            const username = LS.SelectOne("#regUsername").value.toLowerCase();
-            const password = LS.SelectOne("#regPassword").value;
-            const displayName = event.target.querySelector("input[name='displayname']").value;
-
-            if (!email || !username || !password) {
-                app.loginTabs.set('register');
-                displayLoginError("All fields are required");
-                return;
-            }
-
-            this.auth.register({ email, username, password, displayname: displayName || null }, (error, result) => {
-                if (error) {
-                    app.loginTabs.set('register');
-                    console.log(error, (error.code === 4 || error.code === 5)? LS.SelectOne("#regEmail"): (error.code === 3 || error.code === 6)? LS.SelectOne("#regUsername"): error.code === 7? LS.SelectOne("#regPassword"): null);
-                    
-                    displayLoginError(error.message || error.error || "An error occurred while signing up", (error.code === 4 || error.code === 5)? LS.SelectOne("#regEmail"): (error.code === 3 || error.code === 6)? LS.SelectOne("#regUsername"): error.code === 6? LS.SelectOne("#regPassword"): null);
-                    return;
-                }
-
-                redirectAfterLogin();
-            });
-  
-            return false;
-        });
-
-        app.loginTabs.on("changed", (tab, old) => {
-            const view = app.loginTabs.currentElement();
-            const oldElement = app.loginTabs.tabs.get(old)?.element;
-
-            clearLoginError();
-
-            view.style.transition = (!app.isToolbarOpen || !oldElement)? "none" : "";
-
-            LS.Animation.slideInToggle(view, oldElement);
-
-            setTimeout(() => {
-                LS.SelectOne("#toolbarLogin").style.height = view.offsetHeight + "px";
-            });
-        });
-
-        app.loginTabs.set(location.pathname.startsWith("/login") ? "login" : location.pathname.startsWith("/sign-up") ?  "register" : "default");
-
-        LS.SelectOne("#randomPassword").addEventListener("click", function (){
-            const password = app.utils.generateSecurePassword(12);
-            LS.SelectOne("#regPassword").value = password;
-            LS.SelectOne("#regPassword").dispatchEvent(new Event("input"));
-            alert("Your generated password: " + password);
-        });
-
-        LS.SelectOne("#randomUsername").addEventListener("click", function (){
-            const username = app.utils.generateUsername();
-            LS.SelectOne("#regUsername").value = username.toLowerCase();
-            LS.SelectOne("#regUsername").dispatchEvent(new Event("input"));
-            LS.SelectOne("#displayname").value = username;
-        });
-    }
-
     /**
-     * Load the application with the given manifest.
+     * Load an application from the given manifest.
      * @param {*} manifest 
      */
     async loadApplication(manifest) {
@@ -1229,16 +1010,6 @@ const kernel = new class Kernel extends LS.Context {
         AppClass.manifest = manifest;
     }
 
-    *listResources() {
-        for(const context of this.contexts.values()) {
-            yield context;
-        }
-
-        for(const thread of this.threads.values()) {
-            yield thread;
-        }
-    }
-
     /**
      * Instantiate an application by its ID.
      * @param {string} appId 
@@ -1246,21 +1017,26 @@ const kernel = new class Kernel extends LS.Context {
      * @returns {LS.Context}
      */
     instantiateApplication(appId, options = {}) {
-        const AppClass = kernel.applications.get(appId);
-        if (!AppClass) throw new Error("Application not found: " + appId);
+        const appConstructor = kernel.applications.get(appId);
+        if (!appConstructor) throw new Error("Application not found: " + appId);
         this.log("Instantiating application:", appId);
 
-        // ! fix (this is not the right way to link)
-        this._appInstantiationContext = {
-            appId,
-            manifest: this.appManifests.get(appId) || AppClass.manifest || null,
-            options
-        };
-
+        // ! fix (this is not the best way to link)
         try {
-            return new AppClass(options);
+            appConstructor._appInstantiationContext = {
+                appId,
+                manifest: this.appManifests.get(appId) || appConstructor.manifest || null,
+                options
+            };
+
+            const app = new appConstructor(options);
+            app.instantiationContext = appConstructor._appInstantiationContext;
+            return app;
+        } catch(e) {
+            // todo
+            throw e;
         } finally {
-            this._appInstantiationContext = null;
+            appConstructor._appInstantiationContext = null;
         }
     }
 
@@ -1370,5 +1146,7 @@ class OpenerPromise {
         this._f = null;
     }
 }
+
+if(isBeta) window.kernel = kernel // Debug only!
 
 export { kernel };

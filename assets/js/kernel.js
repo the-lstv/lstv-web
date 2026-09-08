@@ -75,14 +75,22 @@ const BUILTIN_APPS = [
         "version": "1.0.0",
         "main": "media-center.mjs"
     },
-    // {
-    //     "name": "Media Player",
-    //     "id": "media-center",
-    //     "icon": "5fe6243a90ae967a.webp",
-    //     "description": "Play all of your media.",
-    //     "version": "1.0.0",
-    //     "main": "media-player.mjs"
-    // },
+    {
+        "name": "Media Player",
+        "id": "media-player",
+        "icon": "5fe6243a90ae967a.webp",
+        "description": "Play your media.",
+        "version": "1.0.0",
+        "main": "media-player.mjs"
+    },
+    {
+        "name": "Music Player",
+        "id": "music-player",
+        "icon": "901fb7f3abda204f.svg",
+        "description": "Play music, the pretty way!",
+        "version": "1.0.0",
+        "main": "music-player.mjs"
+    },
     {
         "name": "File Manager",
         "id": "file-manager",
@@ -201,8 +209,10 @@ Document.prototype.write = Document.prototype.writeln = function() {
 // This is to help catch bad code before it causes leaks.
 // Not needed in production, but can be useful during development, eg. if I forget to correctly isolate something.
 // Why am I writing comments that nobody will read.
+
 // LS.Context.debugEnforceContextSafety();
 // LS.Context.debugWarnContextSafety();
+
 const setTimeout = LS.Context.setTimeout;
 const setInterval = LS.Context.setInterval;
 const clearTimeout = LS.Context.clearTimeout;
@@ -211,12 +221,9 @@ const requestAnimationFrame = LS.Context.requestAnimationFrame;
 const queueMicrotask = LS.Context.queueMicrotask;
 const fetch = LS.Context.fetch;
 
-function invokeAndReturn(f) {
-    f();
-    return f;
-}// WARNING: The following imports are just a stub, the actual build system is being worked on.
+function invokeAndReturn(f) { f(); return f }// WARNING: The following imports are just a stub, the actual build system is being worked on.
 
-// --- CLASSES
+// --- COMMON CLASSES
 
 /**
  * LoggerContext class
@@ -649,7 +656,7 @@ class ContentContext extends LS.View {
     }
 
     createWindow(options) {
-        const appContext = kernel._appInstantiationContext;
+        const appContext = this.instantiationContext || this.constructor._appInstantiationContext;
         const manifestWindowOptions = appContext?.manifest?.windowOptions && typeof appContext.manifest.windowOptions === "object" ? appContext.manifest.windowOptions : null;
         const appOpenWindowOptions = appContext?.options?.windowOptions && typeof appContext.options.windowOptions === "object" ? appContext.options.windowOptions : null;
 
@@ -1653,6 +1660,182 @@ class Thread extends LS.EventEmitter {
     }
 }
 
+/**
+ * Linux enums.
+ */
+
+class Enums  {
+    static O_RDONLY = 0x0000; // open for reading only
+    static O_WRONLY = 0x0001; // open for writing only
+    static O_RDWR   = 0x0002; // open for reading and writing
+    static O_ACCMODE = 0x0003; // mask for above modes
+
+    static O_CREAT  = 0x0200; // create if non-existent
+    static O_EXCL   = 0x0800; // error if already exists
+    static O_TRUNC  = 0x0400; // truncate to zero length
+    static O_APPEND = 0x0008; // append on each write
+
+    static S_IFMT   = 0o170000  /* type mask */
+
+    static S_IFSOCK = 0o140000  /* socket */
+    static S_IFLNK  = 0o120000  /* symbolic link */
+    static S_IFREG  = 0o100000  /* regular file */
+    static S_IFIFO  = 0o010000  /* FIFO */
+    static S_IFCHR  = 0o020000  /* character device */
+    static S_IFDIR  = 0o040000  /* directory */
+    static S_IFBLK  = 0o060000  /* block device */
+
+    static PERMS = 0o07777;
+
+    static __errCache;
+
+    static errno = {
+        EPERM: 0x01, // Operation not permitted
+        ENOENT: 0x02, // No such file or directory
+        ESRCH: 0x03, // No such process
+        EINTR: 0x04, // Interrupted system call
+        EIO: 0x05, // Input/output error
+        ENXIO: 0x06, // No such device or address
+        E2BIG: 0x07, // Argument list too long
+        ENOEXEC: 0x08, // Exec format error
+        EBADF: 0x09, // Bad file descriptor
+        ECHILD: 0x0a, // No child processes
+        EAGAIN: 0x0b, // Resource temporarily unavailable
+        EWOULDBLOCK: 0x0b, // (Same value as EAGAIN) Resource temporarily unavailable
+        ENOMEM: 0x0c, // Cannot allocate memory
+        EACCES: 0x0d, // Permission denied
+        EFAULT: 0x0e, // Bad address
+        ENOTBLK: 0x0f, // Block device required
+        EBUSY: 0x10, // Device or resource busy
+        EEXIST: 0x11, // File exists
+        EXDEV: 0x12, // Invalid cross-device link
+        ENODEV: 0x13, // No such device
+        ENOTDIR: 0x14, // Not a directory
+        EISDIR: 0x15, // Is a directory
+        EINVAL: 0x16, // Invalid argument
+        ENFILE: 0x17, // Too many open files in system
+        EMFILE: 0x18, // Too many open files
+        ENOTTY: 0x19, // Inappropriate ioctl for device
+        ETXTBSY: 0x1a, // Text file busy
+        EFBIG: 0x1b, // File too large
+        ENOSPC: 0x1c, // No space left on device
+        ESPIPE: 0x1d, // Illegal seek
+        EROFS: 0x1e, // Read-only file system
+        EMLINK: 0x1f, // Too many links
+        EPIPE: 0x20, // Broken pipe
+        EDOM: 0x21, // Numerical argument out of domain
+        ERANGE: 0x22, // Numerical result out of range
+        EDEADLK: 0x23, // Resource deadlock avoided
+        EDEADLOCK: 0x23, // (Same value as EDEADLK) Resource deadlock avoided
+        ENAMETOOLONG: 0x24, // File name too long
+        ENOLCK: 0x25, // No locks available
+        ENOSYS: 0x26, // Function not implemented
+        ENOTEMPTY: 0x27, // Directory not empty
+        ELOOP: 0x28, // Too many levels of symbolic links
+
+        ENOMSG: 0x2a, // No message of desired type
+        EIDRM: 0x2b, // Identifier removed
+        ECHRNG: 0x2c, // Channel number out of range
+        EL2NSYNC: 0x2d, // Level 2 not synchronized
+        EL3HLT: 0x2e, // Level 3 halted
+        EL3RST: 0x2f, // Level 3 reset
+        ELNRNG: 0x30, // Link number out of range
+        EUNATCH: 0x31, // Protocol driver not attached
+        ENOCSI: 0x32, // No CSI structure available
+        EL2HLT: 0x33, // Level 2 halted
+        EBADE: 0x34, // Invalid exchange
+        EBADR: 0x35, // Invalid request descriptor
+        EXFULL: 0x36, // Exchange full
+        ENOANO: 0x37, // No anode
+        EBADRQC: 0x38, // Invalid request code
+        EBADSLT: 0x39, // Invalid slot
+
+        EBFONT: 0x3b, // Bad font file format
+        ENOSTR: 0x3c, // Device not a stream
+        ENODATA: 0x3d, // No data available
+        ETIME: 0x3e, // Timer expired
+        ENOSR: 0x3f, // Out of streams resources
+        ENONET: 0x40, // Machine is not on the network
+        ENOPKG: 0x41, // Package not installed
+        EREMOTE: 0x42, // Object is remote
+        ENOLINK: 0x43, // Link has been severed
+        EADV: 0x44, // Advertise error
+        ESRMNT: 0x45, // Srmount error
+        ECOMM: 0x46, // Communication error on send
+        EPROTO: 0x47, // Protocol error
+        EMULTIHOP: 0x48, // Multihop attempted
+        EDOTDOT: 0x49, // RFS specific error
+        EBADMSG: 0x4a, // Bad message
+        EOVERFLOW: 0x4b, // Value too large for defined data type
+        ENOTUNIQ: 0x4c, // Name not unique on network
+        EBADFD: 0x4d, // File descriptor in bad state
+        EREMCHG: 0x4e, // Remote address changed
+        ELIBACC: 0x4f, // Can not access a needed shared library
+        ELIBBAD: 0x50, // Accessing a corrupted shared library
+        ELIBSCN: 0x51, // .lib section in a.out corrupted
+        ELIBMAX: 0x52, // Attempting to link in too many shared libraries
+        ELIBEXEC: 0x53, // Cannot exec a shared library directly
+        EILSEQ: 0x54, // Invalid or incomplete multibyte or wide character
+        ERESTART: 0x55, // Interrupted system call should be restarted
+        ESTRPIPE: 0x56, // Streams pipe error
+        EUSERS: 0x57, // Too many users
+        ENOTSOCK: 0x58, // Socket operation on non-socket
+        EDESTADDRREQ: 0x59, // Destination address required
+        EMSGSIZE: 0x5a, // Message too long
+        EPROTOTYPE: 0x5b, // Protocol wrong type for socket
+        ENOPROTOOPT: 0x5c, // Protocol not available
+        EPROTONOSUPPORT: 0x5d, // Protocol not supported
+        ESOCKTNOSUPPORT: 0x5e, // Socket type not supported
+        EOPNOTSUPP: 0x5f, // Operation not supported
+        ENOTSUP: 0x5f, // (Same value as EOPNOTSUPP) Operation not supported
+        EPFNOSUPPORT: 0x60, // Protocol family not supported
+        EAFNOSUPPORT: 0x61, // Address family not supported by protocol
+        EADDRINUSE: 0x62, // Address already in use
+        EADDRNOTAVAIL: 0x63, // Cannot assign requested address
+        ENETDOWN: 0x64, // Network is down
+        ENETUNREACH: 0x65, // Network is unreachable
+        ENETRESET: 0x66, // Network dropped connection on reset
+        ECONNABORTED: 0x67, // Software caused connection abort
+        ECONNRESET: 0x68, // Connection reset by peer
+        ENOBUFS: 0x69, // No buffer space available
+        EISCONN: 0x6a, // Transport endpoint is already connected
+        ENOTCONN: 0x6b, // Transport endpoint is not connected
+        ESHUTDOWN: 0x6c, // Cannot send after transport endpoint shutdown
+        ETOOMANYREFS: 0x6d, // Too many references: cannot splice
+        ETIMEDOUT: 0x6e, // Connection timed out
+        ECONNREFUSED: 0x6f, // Connection refused
+        EHOSTDOWN: 0x70, // Host is down
+        EHOSTUNREACH: 0x71, // No route to host
+        EALREADY: 0x72, // Operation already in progress
+        EINPROGRESS: 0x73, // Operation now in progress
+        ESTALE: 0x74, // Stale file handle
+        EUCLEAN: 0x75, // Structure needs cleaning
+        ENOTNAM: 0x76, // Not a XENIX named type file
+        ENAVAIL: 0x77, // No XENIX semaphores available
+        EISNAM: 0x78, // Is a named type file
+        EREMOTEIO: 0x79, // Remote I/O error
+        EDQUOT: 0x7a, // Disk quota exceeded
+        ENOMEDIUM: 0x7b, // No medium found
+        EMEDIUMTYPE: 0x7c, // Wrong medium type
+        ECANCELED: 0x7d, // Operation canceled
+        ENOKEY: 0x7e, // Required key not available
+        EKEYEXPIRED: 0x7f, // Key has expired
+        EKEYREVOKED: 0x80, // Key has been revoked
+        EKEYREJECTED: 0x81, // Key was rejected by service
+        EOWNERDEAD: 0x82, // Owner died
+        ENOTRECOVERABLE: 0x83, // State not recoverable
+        ERFKILL: 0x84, // Operation not possible due to RF-kill
+        EHWPOISON: 0x85, // Memory page has hardware error
+    };
+
+    static errCode(code) {
+        if(!this.__errCache) {
+            this.__errCache = new Map(Object.entries(this.errno).map(v => v.reverse()));
+        }
+        return this.__errCache.get(code);
+    }
+}
+
 // WARNING: The following imports are just a stub, the actual build system is being worked on.
 
 /**
@@ -2108,7 +2291,7 @@ class SoundBoxThread {
 /**
  * Media player class
  */
-class MusicPlayer {
+class MediaPlayer {
     constructor() {
         this.toolbarElement = LS.SelectOrCreate("#musicPlayer");
         this.initialized = false;
@@ -2348,6 +2531,10 @@ class LiDesktop {
     version = "1.0.0-alpha";
     codeName = "Based on LiDE 12 Hiroki";
 
+    /**
+     * This constructor constitutes starting a new desktop session.
+     * @param {*} options Options
+     */
     constructor(options) {
         this.windowManager = LS.WindowManager;
 
@@ -2369,12 +2556,21 @@ class LiDesktop {
         this.ToolbarStackRef = { close() { app.desktop.closeToolbar() } };
 
         // Initialize music player (for global media controls, and it is also a player on it's own.)
-        this.musicPlayer = new MusicPlayer;
+        this.musicPlayer = new MediaPlayer;
 
         this.isToolbarOpen = false;
 
         shortcutManager.assign('GLOBAL_DESKTOP_OPEN_MENU', () => {
             app.desktop.openToolbar("menu", true);
+        });
+
+        kernel.environment.setEnv("XDG_CURRENT_DESKTOP", this.constructor.name);
+
+        this.#setupAuth();
+
+        // watch for user changes
+        kernel.on("user-changed", (isLoggedIn, fragment) => {
+            this.loadUserList();
         });
     }
 
@@ -2495,8 +2691,8 @@ class LiDesktop {
             description: "View applications",
 
             onOpen() {
-                if(!kernel.applicationMenu.initialized) {
-                    kernel.applicationMenu.init();
+                if(!app.desktop.applicationMenu.initialized) {
+                    app.desktop.applicationMenu.init();
                 }
             }
         }],
@@ -2827,6 +3023,269 @@ class LiDesktop {
         }
     }
 
+    // todo: move to desktop
+    async loadUserList() {
+        const accounts = await this.auth.listAccounts();
+        app.accounts = accounts && accounts.accounts || [];
+
+        const list = app.desktop.toolbars.get("login").element.querySelector(".accounts-list");
+        list.innerHTML = "";
+
+        for (const account of app.accounts) {
+            const item = LS.Create("button", { class: 'account-item elevated loading-right', tabindex: 0, inner: [
+                app.views.getProfilePictureView(account.pfp, [ 32 ]),
+                { tag: "span", class: 'account-username', textContent: account.username }
+            ]});
+
+            if(accounts && accounts.activeAccountId === account.id) {
+                item.classList.add("active");
+            }
+
+            item.onclick = () => {
+                item.setAttribute("state", "loading");
+                this.auth.switchAccount(account.id).then(() => {
+                    this.loadUser().then(() => {
+                        item.removeAttribute("state");
+                    });
+                }).catch(error => {
+                    if(error.code === 401) {
+                        app.loginTabs.set("login");
+                        app.loginTabs.element.querySelector("#username").value = account.username;
+                        app.loginTabs.element.querySelector(".error-message").textContent = "Session expired for this account, please log in again.";
+                        const p = app.loginTabs.element.querySelector("#password");
+                        p.value = "";
+                        p.focus();
+                        return;
+                    }
+
+                    LS.Toast.show("Failed to switch account: " + (error.message || error.error || "Unknown error"), { accent: "red" });
+                });
+            };
+
+            list.appendChild(item);
+        }
+
+        app.events.emit("user-list-updated", [ app.accounts ]);
+    }
+
+    // todo: move to desktop
+    #setupAuth() {
+        LS.SelectOrCreate("#logOutButton").addEventListener("click", function (){
+            kernel.auth.logout(() => {
+                LS.Toast.show("Logged out successfully.", {
+                    timeout: 2000
+                });
+
+                app.desktop.closeToolbar();
+                kernel.loadUser();
+                app.loginTabs.set("default");
+            });
+        });
+
+        function clearLoginError() {
+            const view = app.loginTabs.currentElement();
+            if (!view) return;
+
+            const errorMessage = view.querySelector(".error-message");
+            if (errorMessage) errorMessage.textContent = "";
+
+            const offendingElement = view.querySelector("input[aria-invalid='true']");
+            if (offendingElement) {
+                offendingElement.removeAttribute("aria-invalid");
+                offendingElement.removeAttribute("ls-accent");
+            }
+        }
+
+        function displayLoginError(message, offendingElement) {
+            if (offendingElement) {
+                offendingElement.setAttribute("aria-invalid", "true");
+                offendingElement.setAttribute("ls-accent", "red");
+            }
+
+            const errorMessage = app.loginTabs.currentElement().querySelector(".error-message");
+            if (errorMessage) errorMessage.textContent = message;
+        }
+
+        function redirectAfterLogin() {
+            const redirect = kernel.queryParams.continue || ((location.pathname.startsWith("/login") || location.pathname.startsWith("/sign-up"))? "/": null);
+            if (redirect) {
+                location.replace(redirect);
+                return;
+            }
+
+            // Update user without reloading
+            kernel.loadUser().then(() => {
+                app.desktop.closeToolbar();
+                app.loginTabs.set("default");
+            });
+        }
+
+        document.forms["loginForm"].addEventListener("submit", (event) => {
+            event.preventDefault();
+            clearLoginError();
+            const username = LS.SelectOne("#username").value;
+            const password = LS.SelectOne("#password").value;
+
+            if (!username || !password) {
+                displayLoginError("Username and password are required", LS.SelectOne(!username? "#username" : "#password"));
+                return;
+            }
+
+            this.auth.login(username, password, (error, result) => {
+                if (error) {
+                    displayLoginError(error.message || error.error || "An error occurred while logging in");
+                    return;
+                }
+
+                redirectAfterLogin();
+            });
+
+            return false;
+        });
+
+        document.forms["registerForm"].addEventListener("submit", (event) => {
+            event.preventDefault();
+            clearLoginError();
+            document.forms["registerStep2Form"].querySelector("input").focus();
+            app.loginTabs.set('register-step2');
+
+            return false;
+        });
+
+        document.forms["registerStep2Form"].addEventListener("submit", (event) => {
+            event.preventDefault();
+            clearLoginError();
+            const email = LS.SelectOne("#regEmail").value;
+            const username = LS.SelectOne("#regUsername").value.toLowerCase();
+            const password = LS.SelectOne("#regPassword").value;
+            const displayName = event.target.querySelector("input[name='displayname']").value;
+
+            if (!email || !username || !password) {
+                app.loginTabs.set('register');
+                displayLoginError("All fields are required");
+                return;
+            }
+
+            this.auth.register({ email, username, password, displayname: displayName || null }, (error, result) => {
+                if (error) {
+                    app.loginTabs.set('register');
+                    console.log(error, (error.code === 4 || error.code === 5)? LS.SelectOne("#regEmail"): (error.code === 3 || error.code === 6)? LS.SelectOne("#regUsername"): error.code === 7? LS.SelectOne("#regPassword"): null);
+                    
+                    displayLoginError(error.message || error.error || "An error occurred while signing up", (error.code === 4 || error.code === 5)? LS.SelectOne("#regEmail"): (error.code === 3 || error.code === 6)? LS.SelectOne("#regUsername"): error.code === 6? LS.SelectOne("#regPassword"): null);
+                    return;
+                }
+
+                redirectAfterLogin();
+            });
+  
+            return false;
+        });
+
+        app.loginTabs.on("changed", (tab, old) => {
+            const view = app.loginTabs.currentElement();
+            const oldElement = app.loginTabs.tabs.get(old)?.element;
+
+            clearLoginError();
+
+            view.style.transition = (!app.isToolbarOpen || !oldElement)? "none" : "";
+
+            LS.Animation.slideInToggle(view, oldElement);
+
+            setTimeout(() => {
+                LS.SelectOne("#toolbarLogin").style.height = view.offsetHeight + "px";
+            });
+        });
+
+        app.loginTabs.set(location.pathname.startsWith("/login") ? "login" : location.pathname.startsWith("/sign-up") ?  "register" : "default");
+
+        LS.SelectOne("#randomPassword").addEventListener("click", function (){
+            const password = app.utils.generateSecurePassword(12);
+            LS.SelectOne("#regPassword").value = password;
+            LS.SelectOne("#regPassword").dispatchEvent(new Event("input"));
+            alert("Your generated password: " + password);
+        });
+
+        LS.SelectOne("#randomUsername").addEventListener("click", function (){
+            const username = app.utils.generateUsername();
+            LS.SelectOne("#regUsername").value = username.toLowerCase();
+            LS.SelectOne("#regUsername").dispatchEvent(new Event("input"));
+            LS.SelectOne("#displayname").value = username;
+        });
+    }
+
+    applicationMenu = new class ApplicationMenu extends LS.Context {
+        constructor() {
+            super("Application Menu");
+            this.initialized = false;
+        }
+
+        init() {
+            if(this.initialized) return;
+            this.initialized = true;
+
+            const container = app.desktop.toolbars.get("apps").element;
+            this.appListElement = container.querySelector(".app-list");
+
+            kernel.on("application-installed", (manifest) => {
+                this.addApplicationEntry(manifest);
+            });
+
+            // Load existing apps
+            for(const manifest of kernel.appManifests.values()) {
+                this.addApplicationEntry(manifest);
+            }
+        }
+
+        /**
+         * Add an application entry to the application menu.
+         * @param {*} manifest 
+         */
+        addApplicationEntry(manifest) {
+            const appId = manifest.id;
+            if(!appId) return;
+
+            const appButton = LS.Create({
+                class: "app-list-item",
+
+                inner: [
+                    app.views.getAppIconView(manifest, [64]),
+                    LS.Create('span', { class: 'app-name text-overflow-nowrap', textContent: manifest.name || appId })
+                ],
+
+                onclick: () => {
+                    if(manifest.external) {
+                        if(typeof manifest.link !== "string" || !manifest.link) {
+                            LS.Toast.show("This application does not have a valid link.", { accent: "red" });
+                            return;
+                        }
+
+                        window.open(manifest.link, "_blank", "noopener");
+                        app.desktop.closeToolbar();
+                        return;
+                    }
+
+                    kernel.openApplication(manifest, { source: "appMenu" })
+                        .loading(() => {
+                            appButton.setAttribute("state", "loading");
+                        })
+                        .done((instance) => {
+                            instance.open?.();
+                            app.desktop.closeToolbar();
+                        })
+                        .catch(error => {
+                            LS.Toast.show("Failed to open application: " + error.message, { accent: "red" });
+                            console.error("Failed to open application:", error);
+                        })
+                        .finally(() => {
+                            appButton.removeAttribute("state");
+                        });
+                }
+            });
+
+            this.appListElement.appendChild(appButton);
+        }
+    }
+
     _welcome(){
         this.closeToolbar(true);
         this.soundBox.play("system:startup");
@@ -2845,6 +3304,9 @@ class LiDesktop {
         });
     }
 
+    /**
+     * This constitutes ending the desktop session.
+     */
     destroy() {
         // If we used the shared WM, we should reset it back instead of just deleting it.
         const replacingWM = this.windowManager === LS.WindowManager;
@@ -2870,6 +3332,82 @@ class LiDesktop {
 // WARNING: The following imports are just a stub, the actual build system is being worked on.
 
 
+class Stat {
+    mode = Enums.S_IFREG | 0o644;
+    size = -1;
+    atimeMs = 0;
+    mtimeMs = 0;
+    ctimeMs = 0;
+    uid = 0;
+    gid = 0;
+
+    constructor(mode) {
+        this.mode = mode;
+    }
+
+    get type() {
+        return this.mode & Enums.S_IFMT;
+    }
+
+    get isFile() {
+        return this.type === Enums.S_IFREG;
+    }
+
+    get isDirectory() {
+        return this.type === Enums.S_IFDIR;
+    }
+
+    get isSymlink() {
+        return this.type === Enums.S_IFLNK;
+    }
+
+    get isBlockDevice() {
+        return this.type === Enums.S_IFBLK;
+    }
+
+    get isCharacterDevice() {
+        return this.type === Enums.S_IFCHR;
+    }
+
+    get isFIFO() {
+        return this.type === Enums.S_IFIFO;
+    }
+
+    get isSocket() {
+        return this.type === Enums.S_IFSOCK;
+    }
+
+    get permissions() {
+        // todo: check if this is valid
+        return this.mode & Enums.PERMS;
+    }
+
+    get perms() {
+        const mode = this.mode;
+        return {
+            owner: {
+                read:  !!(mode & 0o400),
+                write: !!(mode & 0o200),
+                exec:  !!(mode & 0o100),
+            },
+            group: {
+                read:  !!(mode & 0o040),
+                write: !!(mode & 0o020),
+                exec:  !!(mode & 0o010),
+            },
+            other: {
+                read:  !!(mode & 0o004),
+                write: !!(mode & 0o002),
+                exec:  !!(mode & 0o001),
+            },
+        
+            setuid:  !!(mode & 0o4000),
+            setgid:  !!(mode & 0o2000),
+            sticky:  !!(mode & 0o1000),
+        }
+    }
+}
+
 /**
  * Filesystem abstraction for lstv.space kernel/Linux.JS 2.0.
  * 
@@ -2877,24 +3415,23 @@ class LiDesktop {
  * It is a part of a larger project Linux.JS which aims to bring a lightweight Linux-like VM-free environment to the web.
  */
 
-
 const DEFAULT_FS_DATA = [
+    ["/", {}],
     ["/etc", {}],
-    ["/etc/os-release", { contents: `NAME="LinuxJS"\nVERSION="2.0"\nID="linuxjs"\nVARIANT="lsw+lide-web"\nPRETTY_NAME="LinuxJS 2.0 (lstv.space, GNU/Linux)\nSUPPORT_END=2027-09-8"\nHOME_URL=https://lstv.space\nDEFAULT_HOSTNAME=linuxjs\nANSI_COLOR="0;38;2;60;110;180"\nLOGO=linuxjs-logo-icon`, isFile: true }],
-    ["/etc/config.conf", { contents: "# Configuration file", isFile: true }],
+    ["/etc/os-release", { contents: `NAME="LinuxJS"\nVERSION="2.0"\nID="linuxjs"\nVARIANT="lsw+lide-web"\nPRETTY_NAME="LinuxJS 2.0 (lstv.space, GNU/Linux)\nSUPPORT_END=2027-09-8"\nHOME_URL=https://lstv.space\nDEFAULT_HOSTNAME=linuxjs\nANSI_COLOR="0;38;2;60;110;180"\nLOGO=linuxjs-logo-icon`, mode: Enums.S_IFREG | 0o644 }],
+    ["/etc/config.conf", { contents: "# Configuration file", mode: Enums.S_IFREG | 0o644 }],
     ["/home/user", {}],
     
     ["/usr", {}],
     ["/usr/bin", {}],
     ["/usr/sbin", {}],
     ["/usr/lib", {}],
-    ["/usr/lib/os-release", { isSymlink: true, contents: "/etc/os-release" }],
+    ["/usr/lib/os-release", { mode: Enums.S_IFLNK | 0o644, contents: "/etc/os-release" }],
     ["/usr/lib64", {}],
-    ["/bin",   { isSymlink: true, contents: "/usr/bin" }],
-    ["/sbin",  { isSymlink: true, contents: "/usr/sbin" }],
-    ["/lib",   { isSymlink: true, contents: "/usr/lib" }],
-    ["/lib64", { isSymlink: true, contents: "/usr/lib64" }],
-
+    ["/bin",   { mode: Enums.S_IFLNK | 0o644, contents: "/usr/bin"   }],
+    ["/sbin",  { mode: Enums.S_IFLNK | 0o644, contents: "/usr/sbin"  }],
+    ["/lib",   { mode: Enums.S_IFLNK | 0o644, contents: "/usr/lib"   }],
+    ["/lib64", { mode: Enums.S_IFLNK | 0o644, contents: "/usr/lib64" }],
 
     ["/var", {}],
     ["/var/log", {}],
@@ -2919,14 +3456,14 @@ const DEFAULT_FS_DATA = [
     ["/home/user/.config", {}],
     ["/home/user/.local", {}],
     ["/home/user/.cache", {}],
-    ["/home/user/.bashrc", { contents: "# Bash configuration file", isFile: true }],
-    ["/home/user/.profile", { contents: "# User profile configuration file", isFile: true }],
-    ["/home/user/.bash_history", { contents: "", isFile: true }],
+    ["/home/user/.bashrc", { contents: "# Bash configuration file", mode: Enums.S_IFREG | 0o644 }],
+    ["/home/user/.profile", { contents: "# User profile configuration file", mode: Enums.S_IFREG | 0o644 }],
+    ["/home/user/.bash_history", { contents: "", mode: Enums.S_IFREG | 0o644 }],
 
     ["/root", {}],
-    ["/root/.bashrc", { contents: "# Root Bash configuration file", isFile: true }],
-    ["/root/.profile", { contents: "# Root user profile configuration file", isFile: true }],
-    ["/root/.bash_history", { contents: "", isFile: true }],
+    ["/root/.bashrc", { contents: "# Root Bash configuration file", mode: Enums.S_IFREG | 0o644 }],
+    ["/root/.profile", { contents: "# Root user profile configuration file", mode: Enums.S_IFREG | 0o644 }],
+    ["/root/.bash_history", { contents: "", mode: Enums.S_IFREG | 0o644 }],
 ];
 
 /**
@@ -2936,184 +3473,96 @@ const DEFAULT_FS_DATA = [
  */
 class RootFs {
     static ENCODING = {
-        "binary": 0,
-        "utf8": 1,
-    }
-
-    static O_RDONLY = 0x0000; // open for reading only
-    static O_WRONLY = 0x0001; // open for writing only
-    static O_RDWR   = 0x0002; // open for reading and writing
-    static O_ACCMODE = 0x0003; // mask for above modes
-
-    static O_CREAT  = 0x0200; // create if non-existent
-    static O_EXCL   = 0x0800; // error if already exists
-    static O_TRUNC  = 0x0400; // truncate to zero length
-    static O_APPEND = 0x0008; // append on each write
-
-    static __errCache;
-
-    static errno = {
-        EPERM: 0x01, // Operation not permitted
-        ENOENT: 0x02, // No such file or directory
-        ESRCH: 0x03, // No such process
-        EINTR: 0x04, // Interrupted system call
-        EIO: 0x05, // Input/output error
-        ENXIO: 0x06, // No such device or address
-        E2BIG: 0x07, // Argument list too long
-        ENOEXEC: 0x08, // Exec format error
-        EBADF: 0x09, // Bad file descriptor
-        ECHILD: 0x0a, // No child processes
-        EAGAIN: 0x0b, // Resource temporarily unavailable
-        EWOULDBLOCK: 0x0b, // (Same value as EAGAIN) Resource temporarily unavailable
-        ENOMEM: 0x0c, // Cannot allocate memory
-        EACCES: 0x0d, // Permission denied
-        EFAULT: 0x0e, // Bad address
-        ENOTBLK: 0x0f, // Block device required
-        EBUSY: 0x10, // Device or resource busy
-        EEXIST: 0x11, // File exists
-        EXDEV: 0x12, // Invalid cross-device link
-        ENODEV: 0x13, // No such device
-        ENOTDIR: 0x14, // Not a directory
-        EISDIR: 0x15, // Is a directory
-        EINVAL: 0x16, // Invalid argument
-        ENFILE: 0x17, // Too many open files in system
-        EMFILE: 0x18, // Too many open files
-        ENOTTY: 0x19, // Inappropriate ioctl for device
-        ETXTBSY: 0x1a, // Text file busy
-        EFBIG: 0x1b, // File too large
-        ENOSPC: 0x1c, // No space left on device
-        ESPIPE: 0x1d, // Illegal seek
-        EROFS: 0x1e, // Read-only file system
-        EMLINK: 0x1f, // Too many links
-        EPIPE: 0x20, // Broken pipe
-        EDOM: 0x21, // Numerical argument out of domain
-        ERANGE: 0x22, // Numerical result out of range
-        EDEADLK: 0x23, // Resource deadlock avoided
-        EDEADLOCK: 0x23, // (Same value as EDEADLK) Resource deadlock avoided
-        ENAMETOOLONG: 0x24, // File name too long
-        ENOLCK: 0x25, // No locks available
-        ENOSYS: 0x26, // Function not implemented
-        ENOTEMPTY: 0x27, // Directory not empty
-        ELOOP: 0x28, // Too many levels of symbolic links
-
-        ENOMSG: 0x2a, // No message of desired type
-        EIDRM: 0x2b, // Identifier removed
-        ECHRNG: 0x2c, // Channel number out of range
-        EL2NSYNC: 0x2d, // Level 2 not synchronized
-        EL3HLT: 0x2e, // Level 3 halted
-        EL3RST: 0x2f, // Level 3 reset
-        ELNRNG: 0x30, // Link number out of range
-        EUNATCH: 0x31, // Protocol driver not attached
-        ENOCSI: 0x32, // No CSI structure available
-        EL2HLT: 0x33, // Level 2 halted
-        EBADE: 0x34, // Invalid exchange
-        EBADR: 0x35, // Invalid request descriptor
-        EXFULL: 0x36, // Exchange full
-        ENOANO: 0x37, // No anode
-        EBADRQC: 0x38, // Invalid request code
-        EBADSLT: 0x39, // Invalid slot
-
-        EBFONT: 0x3b, // Bad font file format
-        ENOSTR: 0x3c, // Device not a stream
-        ENODATA: 0x3d, // No data available
-        ETIME: 0x3e, // Timer expired
-        ENOSR: 0x3f, // Out of streams resources
-        ENONET: 0x40, // Machine is not on the network
-        ENOPKG: 0x41, // Package not installed
-        EREMOTE: 0x42, // Object is remote
-        ENOLINK: 0x43, // Link has been severed
-        EADV: 0x44, // Advertise error
-        ESRMNT: 0x45, // Srmount error
-        ECOMM: 0x46, // Communication error on send
-        EPROTO: 0x47, // Protocol error
-        EMULTIHOP: 0x48, // Multihop attempted
-        EDOTDOT: 0x49, // RFS specific error
-        EBADMSG: 0x4a, // Bad message
-        EOVERFLOW: 0x4b, // Value too large for defined data type
-        ENOTUNIQ: 0x4c, // Name not unique on network
-        EBADFD: 0x4d, // File descriptor in bad state
-        EREMCHG: 0x4e, // Remote address changed
-        ELIBACC: 0x4f, // Can not access a needed shared library
-        ELIBBAD: 0x50, // Accessing a corrupted shared library
-        ELIBSCN: 0x51, // .lib section in a.out corrupted
-        ELIBMAX: 0x52, // Attempting to link in too many shared libraries
-        ELIBEXEC: 0x53, // Cannot exec a shared library directly
-        EILSEQ: 0x54, // Invalid or incomplete multibyte or wide character
-        ERESTART: 0x55, // Interrupted system call should be restarted
-        ESTRPIPE: 0x56, // Streams pipe error
-        EUSERS: 0x57, // Too many users
-        ENOTSOCK: 0x58, // Socket operation on non-socket
-        EDESTADDRREQ: 0x59, // Destination address required
-        EMSGSIZE: 0x5a, // Message too long
-        EPROTOTYPE: 0x5b, // Protocol wrong type for socket
-        ENOPROTOOPT: 0x5c, // Protocol not available
-        EPROTONOSUPPORT: 0x5d, // Protocol not supported
-        ESOCKTNOSUPPORT: 0x5e, // Socket type not supported
-        EOPNOTSUPP: 0x5f, // Operation not supported
-        ENOTSUP: 0x5f, // (Same value as EOPNOTSUPP) Operation not supported
-        EPFNOSUPPORT: 0x60, // Protocol family not supported
-        EAFNOSUPPORT: 0x61, // Address family not supported by protocol
-        EADDRINUSE: 0x62, // Address already in use
-        EADDRNOTAVAIL: 0x63, // Cannot assign requested address
-        ENETDOWN: 0x64, // Network is down
-        ENETUNREACH: 0x65, // Network is unreachable
-        ENETRESET: 0x66, // Network dropped connection on reset
-        ECONNABORTED: 0x67, // Software caused connection abort
-        ECONNRESET: 0x68, // Connection reset by peer
-        ENOBUFS: 0x69, // No buffer space available
-        EISCONN: 0x6a, // Transport endpoint is already connected
-        ENOTCONN: 0x6b, // Transport endpoint is not connected
-        ESHUTDOWN: 0x6c, // Cannot send after transport endpoint shutdown
-        ETOOMANYREFS: 0x6d, // Too many references: cannot splice
-        ETIMEDOUT: 0x6e, // Connection timed out
-        ECONNREFUSED: 0x6f, // Connection refused
-        EHOSTDOWN: 0x70, // Host is down
-        EHOSTUNREACH: 0x71, // No route to host
-        EALREADY: 0x72, // Operation already in progress
-        EINPROGRESS: 0x73, // Operation now in progress
-        ESTALE: 0x74, // Stale file handle
-        EUCLEAN: 0x75, // Structure needs cleaning
-        ENOTNAM: 0x76, // Not a XENIX named type file
-        ENAVAIL: 0x77, // No XENIX semaphores available
-        EISNAM: 0x78, // Is a named type file
-        EREMOTEIO: 0x79, // Remote I/O error
-        EDQUOT: 0x7a, // Disk quota exceeded
-        ENOMEDIUM: 0x7b, // No medium found
-        EMEDIUMTYPE: 0x7c, // Wrong medium type
-        ECANCELED: 0x7d, // Operation canceled
-        ENOKEY: 0x7e, // Required key not available
-        EKEYEXPIRED: 0x7f, // Key has expired
-        EKEYREVOKED: 0x80, // Key has been revoked
-        EKEYREJECTED: 0x81, // Key was rejected by service
-        EOWNERDEAD: 0x82, // Owner died
-        ENOTRECOVERABLE: 0x83, // State not recoverable
-        ERFKILL: 0x84, // Operation not possible due to RF-kill
-        EHWPOISON: 0x85, // Memory page has hardware error
-    };
-
-    static errCode(code) {
-        if(!this.__errCache) {
-            this.__errCache = new Map(Object.entries(this.errno).map(v => v.reverse()));
-        }
-        return this.__errCache.get(code);
+        binary: 0,
+        utf8: 1,
     }
 
     static PATH_SEPARATOR = "/";
+    static PATH_SEPARATOR_CODE = 47;
 
     // --- Utility methods for path manipulation ---
 
     /**
      * Normalize a path to a canonical form. This is useful for resolving relative paths, removing redundant slashes, and ensuring consistent path formatting.
-     * @param {*} path The path to normalize.
-     * @param {*} isAbsolute Whether the path is absolute (treats "example/" as an absolute path).
-     * @returns {*} The normalized path.
+     * @param {string} path The path to normalize.
+     * @param {boolean|null} isAbsolute Optional. If true, the returned path will be absolute (starting with /). If false, it will be relative. If null, it will be inferred from the input path.
+     * @param {boolean} allowExit If true, relative paths can go outside of their directory. If false, they can't.
+     * @param {boolean} returnParts If true, returns an array of path parts instead of a string.
+     * @returns {string|Array<string>} The normalized path.
+     * 
+     * Also this implementation is 2x to 4x faster than the previous one in LinuxJS :P
      */
-    static normalize(path, isAbsolute = null) {
-        return LS.Util.normalizePath(path, isAbsolute);
+    static normalize(path, isAbsolute = null, allowExit = true, returnParts = false) {
+        const parts = [];
+        const len = path.length;        
+
+        const fc = path.charCodeAt(0);
+        if (isAbsolute === null) isAbsolute = fc === this.PATH_SEPARATOR_CODE || fc === 92;
+        
+        if(len === 0) {
+            return returnParts? parts: (isAbsolute? this.PATH_SEPARATOR: ".");
+        }
+        
+        let cleanParts = 0;
+        let sStart = 0, seqBroken = false;
+        for (let i = 0; i < len; i++) {
+            const char = path.charCodeAt(i);
+
+            const isSeparator = char === this.PATH_SEPARATOR_CODE || char === 92;
+            const isEnd = !isSeparator && (i === len - 1);
+
+            if (isSeparator || isEnd) {
+                if (isEnd) {
+                    if (char !== 46) seqBroken = true;
+                    i++;
+                }
+
+                const dCount = i - sStart;
+                if (!seqBroken && (isAbsolute || !allowExit || dCount === 1 || cleanParts > 0)) {
+                    // Go up ("..")
+                    if(dCount === 2) {
+                        parts.pop();
+                        cleanParts--
+                    }
+
+                    // Otherwise do nothing
+                } else if (dCount > 0) {
+                    parts.push(path.slice(sStart, i));
+                    if(seqBroken) cleanParts++;
+                }
+
+                sStart = i + 1;
+                seqBroken = false;
+                continue;
+            }
+
+            if (char !== 46) seqBroken = true;
+        }
+
+        if(returnParts) return parts;
+
+        if(parts.length === 0) {
+            return isAbsolute? this.PATH_SEPARATOR: ".";
+        }
+
+        const normalizedPath = parts.join('/');
+        return isAbsolute ? '/' + normalizedPath : normalizedPath;
+    }
+
+    /**
+     * Helper to normalize and split a path into segments.
+     * Same as normalize(path, .., true);
+     * @param {string} path Path to split.
+     * @param {boolean|null} isAbsolute Same as normalize
+     * @param {boolean} allowExit Same as normalize
+     * @returns {Array<string>} Path segments as an array.
+     */
+    static splitPath(path, isAbsolute = null, allowExit = true) {
+        return RootFs.normalize(path, isAbsolute, allowExit, true);
     }
 
     static basename(path) {
-        const normalized = LS.Util.normalizePath(path);
+        const normalized = RootFs.normalize(path);
         const lastSepIndex = normalized.lastIndexOf(RootFs.PATH_SEPARATOR);
         if (lastSepIndex === -1) {
             return normalized;
@@ -3121,8 +3570,17 @@ class RootFs {
         return normalized.substring(lastSepIndex + 1);
     }
 
-    static ensureTrailingSeparator(path, isAbsolute = null) {
-        const normalized = LS.Util.normalizePath(path, isAbsolute);
+    static dirname(path) {
+        const normalized = RootFs.normalize(path);
+        const lastSepIndex = normalized.lastIndexOf(RootFs.PATH_SEPARATOR);
+        if (lastSepIndex === -1) {
+            return normalized;
+        }
+        return normalized.substring(0, lastSepIndex);
+    }
+
+    static ensureTrailing(path, isAbsolute = null) {
+        const normalized = RootFs.normalize(path, isAbsolute);
         if (!normalized.endsWith(RootFs.PATH_SEPARATOR)) {
             return normalized + RootFs.PATH_SEPARATOR;
         }
@@ -3133,7 +3591,7 @@ class RootFs {
      * Move up one directory level in a given path. Normalizes the path.
      */
     static up(path, levels = 1) {
-        const normalized = LS.Util.normalizePath(path);
+        const normalized = RootFs.normalize(path);
 
         let lI = path.length;
 
@@ -3151,7 +3609,35 @@ class RootFs {
      * @returns {string} The joined and normalized path.
      */
     static join(...parts) {
-        return LS.Util.normalizePath(parts.join(RootFs.PATH_SEPARATOR));
+        return RootFs.normalize(parts.join(RootFs.PATH_SEPARATOR));
+    }
+
+    /**
+     * Joins relative paths with an absolute base path without allowing the relative path to escape outside of the base directory.
+     * @param {*} base Base path
+     * @param  {...any} parts Parts to join
+     * @returns {string} Merged path
+     * 
+     * @example
+     * RootFs.joinSafe("/home/user", "../../dir/../hello.txt"); // -> /home/user/hello.txt
+     */
+    static joinSafe(base, ...parts) {
+        // absolute=true
+        base = RootFs.normalize(base, true);
+
+        // absolute=false, allowExit=false
+        return base + (base.endsWith(RootFs.PATH_SEPARATOR)? "": RootFs.PATH_SEPARATOR) + RootFs.normalize(parts.join(RootFs.PATH_SEPARATOR), false, false);
+    }
+
+    /**
+     * Approximately convert a windows path to a unix-style path (replace \ with /, remove drive letter, and I guess replaces C:/users with /home).
+     */
+    static win32toUnix(path) {
+        const normalized = RootFs.normalize(path, true, true, true);
+        const firstIsDriveLetter = normalized[0]?.length === 2 && normalized[0][1] === ":";
+        if(firstIsDriveLetter) normalized.shift();
+        if(normalized[0].toLowerCase() === "users") normalized[0] = "home";
+        return (firstIsDriveLetter? RootFs.PATH_SEPARATOR: "") + normalized.join(RootFs.PATH_SEPARATOR);
     }
 
     // Mounts is an array of [mountPoint, fs] pairs.
@@ -3171,13 +3657,26 @@ class RootFs {
      * Mount a filesystem at a given mount point.
      * @param {string} mountPoint The mount point where the filesystem will be mounted.
      * @param {*} fs The filesystem to mount.
+     * @returns {number} Error code if mount failed.
      */
     async mount(mountPoint, fs) {
-        mountPoint = RootFs.ensureTrailingSeparator(mountPoint, true);
+        mountPoint = RootFs.ensureTrailing(mountPoint, true);
+
+        if(mountPoint !== "/") {
+            try {
+                let stat = await this.stat(mountPoint);
+                if(stat.isFile) return Enums.errno.ENOTDIR;
+            } catch(e) {
+                console.log(e);
+                return typeof e === "number"? e: -1;
+            }
+        }
+
         this.#mounts.push([mountPoint, fs]);
 
         // Sort mounts by length of mount point, descending
         this.#mounts.sort((a, b) => b[0].length - a[0].length);
+        return true;
     }
 
     /**
@@ -3185,10 +3684,21 @@ class RootFs {
      * @param {string} mountPoint The mount point to unmount.
      */
     unmount(mountPoint) {
-        mountPoint = RootFs.ensureTrailingSeparator(mountPoint, true);
+        mountPoint = RootFs.ensureTrailing(mountPoint, true);
         this.#mounts = this.#mounts.filter(([mp, fs]) => mp !== mountPoint);
 
         // todo: also close all open file descriptors
+    }
+
+    /**
+     * Returns a list of mounts and their types
+     * @returns {Array}
+     */
+    lsmount(){
+        return this.#mounts.map(([a, b]) => [a, {
+            type: b?.name || b?.constructor?.fsType || b?.constructor?.name,
+            size: b?.size || -1
+        }]);
     }
 
     /**
@@ -3207,7 +3717,7 @@ class RootFs {
 
         // We assume that the mounts are sorted by length of mount point, descending, so the first match is the most specific one.
         let usingFs = null;
-        const dirWithSep = RootFs.ensureTrailingSeparator(dir, true);
+        const dirWithSep = RootFs.ensureTrailing(dir, true);
         for(const [mp, fs] of this.#mounts) {
             if(dirWithSep.startsWith(mp)) {
                 usingFs = fs;
@@ -3216,7 +3726,7 @@ class RootFs {
         }
 
         const fd = await usingFs.open(dir, flags);
-        if(!fd || typeof fd === "number") throw new Error(RootFs.errCode(fd) + " when opening path: " + dir);
+        if(!fd || typeof fd === "number") throw new Error(Enums.errCode(fd) + " when opening path: " + dir);
         return fd;
     }
 
@@ -3230,7 +3740,7 @@ class RootFs {
      * @returns {*} Data read
      */
     async read(fd, first = 0, nbytes = -1, encoding = RootFs.ENCODING.utf8, close = true) {
-        if(!fd || !fd._fs) throw new Error(RootFs.errno.EBADF);
+        if(!fd || !fd._fs) throw new Error(Enums.errno.EBADF);
         const data = await fd._fs.read(fd, first, nbytes, typeof encoding === "string"? RootFs.ENCODING[encoding]: encoding);
         if(close) fd._fs.close(fd);
         return data;
@@ -3246,7 +3756,7 @@ class RootFs {
      * @returns {*} Number of bytes written
      */
     async write(fd, newData, first = 0, nbytes = -1, close = true) {
-        if(!fd || !fd._fs) throw new Error(RootFs.errno.EBADF);
+        if(!fd || !fd._fs) throw new Error(Enums.errno.EBADF);
         const nbytesWritten = await fd._fs.write(fd, newData, first, nbytes);
         if(close) fd._fs.close(fd);
         return nbytesWritten;
@@ -3272,22 +3782,22 @@ class RootFs {
      * @returns {*} Number of bytes written
      */
     async writeFile(dir, newData, options = {}) {
-        const fd = await this.open(dir, RootFs.O_WRONLY | RootFs.O_CREAT | RootFs.O_TRUNC);
+        const fd = await this.open(dir, Enums.O_WRONLY | Enums.O_CREAT | Enums.O_TRUNC);
         return await this.write(fd, newData, options.start ?? 0, options.nbytes ?? -1, options.close ?? true);
     }
 
     async close(fd) {
-        if(!fd || !fd._fs) throw new Error(RootFs.errno.EBADF);
+        if(!fd || !fd._fs) throw new Error(Enums.errno.EBADF);
         return await fd._fs.close(fd);
     }
 
     async exists(dir) {
         try {
-            const fd = await this.open(dir, RootFs.O_RDONLY);
+            const fd = await this.open(dir, Enums.O_RDONLY);
             await this.close(fd);
             return true;
         } catch(e) {
-            if(e.message.startsWith(RootFs.errCode(RootFs.errno.ENOENT))) {
+            if(e.message.startsWith(Enums.errCode(Enums.errno.ENOENT))) {
                 return false;
             }
             throw e;
@@ -3295,21 +3805,30 @@ class RootFs {
     }
 
     async stat(dir) {
-        const fd = await this.open(dir, RootFs.O_RDONLY);
-        const data = fd._fs.stat(fd);
+        const stat = new Stat;
+        const fd = await this.open(dir, Enums.O_RDONLY);
+        fd._fs.stat(fd, stat);
         await this.close(fd);
-        return data;
+        return stat;
+    }
+
+    async fileType(dir){
+        const stat = {};
+        const fd = await this.open(dir, Enums.O_RDONLY);
+        fd._fs.stat(fd, stat);
+        await this.close(fd);
+        return stat.mode & Enums.S_IFMT;
     }
 
     async unlink(dir, options = {}) {
-        const fd = await this.open(dir, RootFs.O_WRONLY);
+        const fd = await this.open(dir, Enums.O_WRONLY);
         const result = await fd._fs.unlink(fd);
         await this.close(fd);
         return result;
     }
 
     async mkdir(dir, mode = 0o777) {
-        const fd = await this.open(dir, RootFs.O_WRONLY | RootFs.O_CREAT);
+        const fd = await this.open(dir, Enums.O_WRONLY | Enums.O_CREAT);
         const result = await fd._fs.mkdir(fd, mode);
         await this.close(fd);
         return result;
@@ -3351,31 +3870,31 @@ class TmpFs {
      *
      * @param {*} ndir Path to open.
      * @param {*} flags Open flags, see open(2).
-     * @param {*} mode Permissions used when O_CREAT creates a file.
+     * @param {*} mode File type and permissions used when using O_CREAT. For example, Enums.S_IFREG | 0o644 to create a file, etc.
      * @returns {*} File descriptor or errno.
      *
      * Error code constants:
      * https://www.chromium.org/chromium-os/developer-library/reference/linux-constants/errnos/
      */
-    open(ndir, flags, mode = 0o666) {
+    open(ndir, flags, mode = Enums.S_IFREG | 0o644) {
         let data = this.fs.get(ndir);
 
-        const accessMode = flags & RootFs.O_ACCMODE;
-        const canRead = accessMode === RootFs.O_RDONLY ||
-                        accessMode === RootFs.O_RDWR;
-        const canWrite = accessMode === RootFs.O_WRONLY ||
-                        accessMode === RootFs.O_RDWR;
+        const accessMode = flags & Enums.O_ACCMODE;
+        const canRead =  accessMode === Enums.O_RDONLY ||
+                         accessMode === Enums.O_RDWR;
+        const canWrite = accessMode === Enums.O_WRONLY ||
+                         accessMode === Enums.O_RDWR;
+
+        const createFile = (flags & Enums.O_CREAT);
 
         if (!data) {
-            if (!(flags & RootFs.O_CREAT)) {
-                return RootFs.errno.ENOENT;
+            if (!createFile) {
+                return Enums.errno.ENOENT;
             }
 
             const now = Date.now();
 
             data = {
-                isFile: true,
-                contents: new Uint8Array(0),
                 mode: mode,
                 uid: 0,
                 gid: 0,
@@ -3389,8 +3908,8 @@ class TmpFs {
             /*
              * O_CREAT | O_EXCL must fail if the path already exists.
              */
-            if ((flags & RootFs.O_CREAT) && (flags & RootFs.O_EXCL)) {
-                return RootFs.errno.EEXIST;
+            if (createFile && (flags & Enums.O_EXCL)) {
+                return Enums.errno.EEXIST;
             }
         }
 
@@ -3399,13 +3918,13 @@ class TmpFs {
          * Opening a directory for writing is an error.
          */
         if (!data.isFile && canWrite) {
-            return RootFs.errno.EISDIR;
+            return Enums.errno.EISDIR;
         }
 
         /*
          * O_TRUNC only applies to regular files opened for writing.
          */
-        if ((flags & RootFs.O_TRUNC) && data.isFile && canWrite) {
+        if ((flags & Enums.O_TRUNC) && data.isFile && canWrite) {
             data.contents = new Uint8Array(0);
 
             const now = Date.now();
@@ -3417,7 +3936,7 @@ class TmpFs {
             _fs: this,
             data,
             flags,
-            offset: (flags & RootFs.O_APPEND) && data.isFile
+            offset: (flags & Enums.O_APPEND) && data.isFile
                 ? data.contents.length
                 : 0,
             closed: false,
@@ -3435,7 +3954,7 @@ class TmpFs {
      */
     close(fd) {
         if (!fd || fd.closed || !fd._fs) {
-            return RootFs.errno.EBADF;
+            return Enums.errno.EBADF;
         }
 
         fd._fs = null;
@@ -3458,15 +3977,15 @@ class TmpFs {
      */
     checkFd(fd, kind) {
         if (!fd || !fd._fs || !fd.data || fd.closed) {
-            throw new Error(RootFs.errno.EBADF);
+            throw new Error(Enums.errno.EBADF);
         }
 
         if (kind === 1 && fd.data.isFile) {
-            throw new Error(RootFs.errno.ENOTDIR);
+            throw new Error(Enums.errno.ENOTDIR);
         }
 
         if (kind === 0 && !fd.data.isFile) {
-            throw new Error(RootFs.errno.EISDIR);
+            throw new Error(Enums.errno.EISDIR);
         }
     }
 
@@ -3487,13 +4006,13 @@ class TmpFs {
         this.checkFd(fd, 0);
 
         if (!fd.readable) {
-            throw new Error(RootFs.errno.EBADF);
+            throw new Error(Enums.errno.EBADF);
         }
 
         const data = fd.data;
 
         if (first < 0) {
-            throw new Error(RootFs.errno.EINVAL);
+            throw new Error(Enums.errno.EINVAL);
         }
 
         if (first > data.contents.length) {
@@ -3538,7 +4057,7 @@ class TmpFs {
         this.checkFd(fd, 0);
 
         if (!fd.writable) {
-            throw new Error(RootFs.errno.EBADF);
+            throw new Error(Enums.errno.EBADF);
         }
 
         const data = fd.data;
@@ -3553,7 +4072,7 @@ class TmpFs {
         /*
          * O_APPEND ignores the supplied offset.
          */
-        if (fd.flags & RootFs.O_APPEND) {
+        if (fd.flags & Enums.O_APPEND) {
             first = data.contents.length;
         }
 
@@ -3565,7 +4084,7 @@ class TmpFs {
         }
 
         if (first < 0) {
-            throw new Error(RootFs.errno.EINVAL);
+            throw new Error(Enums.errno.EINVAL);
         }
 
         /*
@@ -3580,7 +4099,7 @@ class TmpFs {
                 if (newData instanceof ArrayBuffer) {
                     newData = new Uint8Array(newData);
                 } else {
-                    throw new Error(RootFs.errno.EINVAL);
+                    throw new Error(Enums.errno.EINVAL);
                 }
             }
 
@@ -3591,7 +4110,7 @@ class TmpFs {
             }
 
             if (nbytes < 0 || first > newData.length && nbytes !== 0) {
-                throw new Error(RootFs.errno.EINVAL);
+                throw new Error(Enums.errno.EINVAL);
             }
 
             if (nbytes === 0) {
@@ -3640,7 +4159,7 @@ class TmpFs {
             }
 
             if (first > newData.length && nbytes !== 0) {
-                throw new Error(RootFs.errno.EINVAL);
+                throw new Error(Enums.errno.EINVAL);
             }
 
             if (nbytes === -1) {
@@ -3648,7 +4167,7 @@ class TmpFs {
             }
 
             if (nbytes < 0) {
-                throw new Error(RootFs.errno.EINVAL);
+                throw new Error(Enums.errno.EINVAL);
             }
 
             if (nbytes === 0) {
@@ -3686,7 +4205,7 @@ class TmpFs {
             return actualBytes;
         }
 
-        throw new Error(RootFs.errno.EINVAL);
+        throw new Error(Enums.errno.EINVAL);
     }
 
 
@@ -3696,39 +4215,30 @@ class TmpFs {
      * @param {*} fd File descriptor.
      * @returns {*} stat-like object.
      */
-    stat(fd) {
+    stat(fd, out) {
         this.checkFd(fd);
-
         const data = fd.data;
 
         const now = Date.now();
-
         data.mtime ??= now;
         data.ctime ??= now;
         data.atime ??= now;
+        data.mode  ??= Enums.S_IFDIR | 0o755;
 
-        return {
-            size: data.contents instanceof Uint8Array
-                ? data.contents.byteLength
-                : data.contents.length,
+        out.size = !data.contents? 0:
+                   data.contents instanceof Uint8Array
+                 ? data.contents.byteLength
+                 : data.contents.length;
 
-            mtime: data.mtime,
-            ctime: data.ctime,
-            atime: data.atime,
+        out.mode =    data.mode;
 
-            mode: data.mode ?? 0o644,
-            uid: data.uid ?? 0,
-            gid: data.gid ?? 0,
+        out.mtimeMs = data.mtime;
+        out.ctimeMs = data.ctime;
+        out.atimeMs = data.atime;
 
-            isFile: data.isFile,
-            isDirectory: !data.isFile,
-
-            isSymbolicLink: data.isSymlink ?? false,
-            isBlockDevice: data.isBlockDevice ?? false,
-            isCharacterDevice: data.isCharacterDevice ?? false,
-            isFIFO: data.isFIFO ?? false,
-            isSocket: data.isSocket ?? false
-        };
+        out.uid =     data.uid ?? 0;
+        out.gid =     data.gid ?? 0;
+        return out;
     }
 
     unlink(fd) {
@@ -3737,7 +4247,7 @@ class TmpFs {
         const data = fd.data;
 
         if (!data.isFile) {
-            return RootFs.errno.EISDIR;
+            return Enums.errno.EISDIR;
         }
 
         this.fs.delete(fd.path);
@@ -3747,13 +4257,13 @@ class TmpFs {
 
     mkdir(ndir, recursive, mode = 0o755, uid = 0, gid = 0) {
         if (this.fs.has(ndir)) {
-            return RootFs.errno.EEXIST;
+            return Enums.errno.EEXIST;
         }
 
         if (!recursive) {
-            const parent = LS.Util.dirname(ndir);
+            const parent = RootFs.dirname(ndir);
             if (!this.fs.has(parent)) {
-                return RootFs.errno.ENOENT;
+                return Enums.errno.ENOENT;
             }
         }
 
@@ -3821,419 +4331,7 @@ class WasmFs {}
 /**
  * RQvFS filesystem (to be implemented)
  */
-class RqvFs {}
-
-const operators = [
-    ";;&",
-    "<<<",
-    "<<-",
-    "&>>",
-    ">>",
-    "<<",
-    "&&",
-    "||",
-    ";;",
-    ";&",
-    "&>",
-    ">&",
-    "<&",
-    ">|",
-    "<>",
-    "|",
-    "&",
-    ";",
-    ">",
-    "<",
-    "(",
-    ")",
-    "{",
-    "}"
-];
-    
-/**
- * LinuxJS bash interpreter.
- */
-function tokenizeBash(code) {
-    const tokens = [];
-
-    let i = 0;
-    let word = "";
-    let wordStart = -1;
-
-    function startWord() {
-        if (wordStart === -1) {
-            wordStart = i;
-        }
-    }
-
-    function flushWord() {
-        if (word.length === 0) {
-            wordStart = -1;
-            return;
-        }
-
-        tokens.push({
-            type: "word",
-            value: word,
-            start: wordStart,
-            end: i
-        });
-
-        word = "";
-        wordStart = -1;
-    }
-
-    function add(value) {
-        startWord();
-        word += value;
-    }
-
-    function isWhitespace(c) {
-        return c === " " ||
-               c === "\t" ||
-               c === "\r" ||
-               c === "\n";
-    }
-
-    function readOperator() {
-        for (const operator of operators) {
-            if (code.startsWith(operator, i)) {
-                return operator;
-            }
-        }
-
-        return null;
-    }
-
-    function readSingleQuote() {
-        startWord();
-
-        const start = i++;
-        let value = "'";
-
-        while (i < code.length) {
-            const c = code[i++];
-
-            value += c;
-
-            if (c === "'") {
-                break;
-            }
-        }
-
-        word += value;
-
-        return i - start;
-    }
-
-    function readDoubleQuote() {
-        startWord();
-
-        word += code[i++]; // "
-
-        while (i < code.length) {
-            const c = code[i];
-
-            if (c === '"') {
-                word += c;
-                i++;
-                return;
-            }
-
-            if (c === "\\") {
-                word += c;
-                i++;
-
-                if (i < code.length) {
-                    word += code[i++];
-                }
-
-                continue;
-            }
-
-            if (c === "$") {
-                readExpansion();
-                continue;
-            }
-
-            word += c;
-            i++;
-        }
-    }
-
-    function readExpansion() {
-        startWord();
-
-        // $((...))
-        if (code.startsWith("$((", i)) {
-            const start = i;
-
-            i += 3;
-            let depth = 1;
-
-            while (i < code.length && depth > 0) {
-                if (code.startsWith("((", i)) {
-                    depth++;
-                    i += 2;
-                    continue;
-                }
-
-                if (code.startsWith("))", i)) {
-                    depth--;
-                    i += 2;
-                    continue;
-                }
-
-                if (code[i] === "\\") {
-                    i += 2;
-                    continue;
-                }
-
-                i++;
-            }
-
-            word += code.slice(start, i);
-            return;
-        }
-
-        // $(...)
-        if (code.startsWith("$(", i)) {
-            const start = i;
-
-            i += 2;
-            let depth = 1;
-            let quote = null;
-
-            while (i < code.length && depth > 0) {
-                const c = code[i];
-
-                if (quote === "'") {
-                    i++;
-
-                    if (c === "'") {
-                        quote = null;
-                    }
-
-                    continue;
-                }
-
-                if (quote === '"') {
-                    if (c === "\\") {
-                        i += 2;
-                        continue;
-                    }
-
-                    i++;
-
-                    if (c === '"') {
-                        quote = null;
-                    }
-
-                    continue;
-                }
-
-                if (c === "'" || c === '"') {
-                    quote = c;
-                    i++;
-                    continue;
-                }
-
-                if (c === "\\") {
-                    i += 2;
-                    continue;
-                }
-
-                if (c === "(") {
-                    depth++;
-                } else if (c === ")") {
-                    depth--;
-                }
-
-                i++;
-            }
-
-            word += code.slice(start, i);
-            return;
-        }
-
-        // ${...}
-        if (code.startsWith("${", i)) {
-            const start = i;
-
-            i += 2;
-            let depth = 1;
-
-            while (i < code.length && depth > 0) {
-                if (code[i] === "{") {
-                    depth++;
-                } else if (code[i] === "}") {
-                    depth--;
-                }
-
-                i++;
-            }
-
-            word += code.slice(start, i);
-            return;
-        }
-
-        // $?, $!, $#, $@, $*, $$, $-, $0-$9
-        if (
-            i + 1 < code.length &&
-            "$?!#@*$-0123456789".includes(code[i + 1])
-        ) {
-            word += code.slice(i, i + 2);
-            i += 2;
-            return;
-        }
-
-        // $VARIABLE
-        if (
-            i + 1 < code.length &&
-            /[A-Za-z_]/.test(code[i + 1])
-        ) {
-            const start = i++;
-
-            while (
-                i < code.length &&
-                /[A-Za-z0-9_]/.test(code[i])
-            ) {
-                i++;
-            }
-
-            word += code.slice(start, i);
-            return;
-        }
-
-        // Bare $
-        word += "$";
-        i++;
-    }
-
-    while (i < code.length) {
-        const c = code[i];
-
-        // Whitespace terminates a word.
-        if (isWhitespace(c)) {
-            flushWord();
-
-            if (c === "\n") {
-                tokens.push({
-                    type: "newline",
-                    value: "\n",
-                    start: i,
-                    end: i + 1
-                });
-            }
-
-            i++;
-            continue;
-        }
-
-        // Comment.
-        // A # inside a word is ordinary text.
-        if (c === "#" && word.length === 0) {
-            const start = i;
-
-            while (
-                i < code.length &&
-                code[i] !== "\n"
-            ) {
-                i++;
-            }
-
-            tokens.push({
-                type: "comment",
-                value: code.slice(start, i),
-                start,
-                end: i
-            });
-
-            continue;
-        }
-
-        // Single quoted string.
-        if (c === "'") {
-            readSingleQuote();
-            continue;
-        }
-
-        // Double quoted string.
-        if (c === '"') {
-            readDoubleQuote();
-            continue;
-        }
-
-        // Backslash escape.
-        if (c === "\\") {
-            startWord();
-
-            word += c;
-            i++;
-
-            if (i < code.length) {
-                word += code[i++];
-            }
-
-            continue;
-        }
-
-        // Expansion.
-        if (c === "$") {
-            readExpansion();
-            continue;
-        }
-
-        // Shell operator.
-        const operator = readOperator();
-
-        if (operator) {
-            flushWord();
-
-            tokens.push({
-                type: "operator",
-                value: operator,
-                start: i,
-                end: i + operator.length
-            });
-
-            i += operator.length;
-            continue;
-        }
-
-        // Ordinary character.
-        add(c);
-        i++;
-    }
-
-    flushWord();
-
-    return tokens;
-}
-
-/**
- * Quick interpreter. This is not a full bash parser.
- */
-function simpleShell(code) {
-    const c = [];
-
-    const tokens = tokenizeBash(code);
-    for (const token of tokens) {
-        if (token.type === "comment") continue;
-        if (token.type === "word") c.push(token.value);
-
-        if(c.length === 1) {
-            
-        }
-    }
-}
-
-window.tokenizeBash = tokenizeBash;
-
-/**
- * GlitterShell interpreter.
- */
-// tba// WARNING: The following imports are just a stub, the actual build system is being worked on.
+class RqvFs {}// WARNING: The following imports are just a stub, the actual build system is being worked on.
 
 // Misc constants
 const DEFAULT_PROFILE = "/~/assets/image/default.svg";
@@ -4255,7 +4353,7 @@ const app = {
 
     // Create new instance of the desktop env.
     // If desktop mode is disabled, the desktop can skip some features, things like the login prompt, and run in a website-only mode.
-    desktop: new LiDesktop({ limited: !isDesktopModeEnabledAtStartup }),
+    desktop,
 
     // Constants
     loaded: true,
@@ -4509,10 +4607,6 @@ const app = {
      * Utility functions
      */
     utils: {
-        generateIdentifier(){
-            return crypto.getRandomValues(new Uint32Array(1))[0].toString(36) + Date.now().toString(36);
-        },
-
         basicMarkDown(text) {
             text = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
@@ -4549,6 +4643,7 @@ const app = {
                     return pre + '<ul>' + items.map(item => '<li>' + item + '</li>').join('') + '</ul>';
                 }
             );
+
             // Ordered lists
             text = text.replace(
                 /(^|\n)((?:\s*\d+\.\s[^\n]+\n?)+)/g,
@@ -4619,6 +4714,10 @@ const app = {
                 password += charset[array[i] % charset.length];
             }
             return password;
+        },
+
+        generateInsecurePassword() {
+            return "password";
         }
     },
 
@@ -4813,7 +4912,43 @@ app.events = new LS.EventEmitter(app);
 globalThis.website = app; // I just can't decide. I think I will keep app due to the app getting more integrated beyond a simple website.
 globalThis.app = app;
 
-if(isBeta) window.kernel = kernel // Debug only!
+/**
+ * Environment loader.
+ */
+
+class Environment {
+    // Global environment variables
+    env = {}
+
+    #k;
+
+    setEnv(n, v) {
+        this.env[n] = v;
+    }
+
+    async resolvePath(k, pathv = this.#k.env.PATH) {
+        for(const s of pathv.split(":")) {
+            const rd = await this.#k.fileSystem.readDir(s);
+            for(const ent of rd) if(k === ent) return RootFs.join(s, ent);
+        }
+        return null;
+    }
+
+    constructor(k) {
+        // if(!(k instanceof Kernel)) throw new Error("Invalid instance of Kernel provided");
+        if(!k.isKernel) throw new Error("Invalid instance of Kernel provided");
+
+        this.#k = k;
+
+        this.setEnv("SHELL", "/bin/bash");
+        this.setEnv("HOSTNAME", k.sys.uname().nodename);
+        this.setEnv("PATH", "/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin");
+    }
+
+    init() {
+        app.desktop = new LiDesktop({ limited: !isDesktopModeEnabledAtStartup });
+    }
+}
 
 // WARNING: The following imports are just a stub, the actual build system is being worked on.
 
@@ -4822,37 +4957,66 @@ if(isBeta) window.kernel = kernel // Debug only!
  * Main application kernel, handles global state, navigation, authentication, and content contexts.
  */
 const kernel = new class Kernel extends LS.Context {
+    isKernel = true;
     version = KERNEL_VERSION;
 
-    contexts = new Map();
-    viewports = new Map();
+    fileSystem = new RootFs();
+
+    threads =     new Set();
+    MAX_THREADS = (navigator.hardwareConcurrency || 4) * 2;
+
+    // simulate some syscalls (uh, well, as methods).
+    // these are more of functionality abstractions than something that could be used to emulate syscalls.
+    // these should not be needed much but provide some helpful information.
+    sys = {
+        async read(fd, out, nbytes) {
+            const data = await this.fileSystem.read(fd, 0, nbytes, RootFs.ENCODING.binary);
+
+            // we can't access pointers with JS so we try writing to a typed array
+            if(out && out.set) {
+                out.set(data);
+            }
+        },
+
+        async write(fd, data, nbytes) {
+            // likewise, we can't just read memory so we assume data is a typed array
+            return await this.fileSystem.write(fd, data, 0, nbytes);
+        },
+
+        async open(filename, flags, mode) {
+            return await this.fileSystem.open(filename, flags);
+        },
+
+        uname(utsname = {}) {
+            utsname.sysname  = "LinuxJS";
+            utsname.nodename = "linuxjs";
+            utsname.release  = KERNEL_VERSION + ".lsw13";
+            utsname.version  = "#ls-web Tue Sep 8 08:42:36 UTC 2026";
+            utsname.machine  = "js";
+            return utsname;
+        }
+    }
+
+    contexts =     new Map();
+    viewports =    new Map();
     applications = new Map();
-    pageCache = new Map();
+    pageCache =    new Map();
 
-    aliasMap = new Map();
-
-    threads = new Set();
-
-    fileSystem = RootFs.initRootFs();
-
-    shortcutManager = shortcutManager;
+    aliasMap =     new Map();
 
     appManifests = new Map();
+
+    environment =  null;
 
     queryParams = LS.Util.parseURLParams();
     userFragment = LS.Reactive.wrap("user", {});
 
     SPAExtensions = new LS.SPA.Matcher();
 
-    MAX_THREADS = (navigator.hardwareConcurrency || 4) * 2;
-
-    scheduler = new class Scheduler {
-        constructor() {
-        }
-    }
+    // scheduler = new class Scheduler {}
 
     /**
-     * Auth manager
+     * Auth/user provider
      */
     auth = new class Auth extends LS.EventEmitter {
         #iframeURL = null;
@@ -5101,6 +5265,8 @@ const kernel = new class Kernel extends LS.Context {
         super('kernel');
         this.logger = new LoggerContext("kernel");
 
+        this.environment = new Environment(this);
+
         const appElement = LS.SelectOrCreate('#app');
         const vpElement = LS.SelectOrCreate('#viewport');
 
@@ -5191,8 +5357,10 @@ const kernel = new class Kernel extends LS.Context {
         this.auth.on("account-switched", (reason, from, to) => {
 
         });
-
+        
         this.addExternalEventListener(document, 'DOMContentLoaded', () => {
+            this.environment.init();
+
             app.container = this.container = document.getElementById('app');
             app.viewportElement = this.viewportElement = this.viewport.target;
 
@@ -5224,8 +5392,8 @@ const kernel = new class Kernel extends LS.Context {
                 window.__init = null;
             }
 
-            app.desktop.initPanel();
-            this.#setupAuth();
+            // app.desktop.initPanel();
+            // this.#setupAuth();
             this.loadUser();
 
             // Display content
@@ -5233,7 +5401,7 @@ const kernel = new class Kernel extends LS.Context {
             app.container.style.display = "flex";
             app.emit("dom-ready");
 
-            this.shortcutManager.assign("GLOBAL_OPEN_COMMAND_PALETTE", () => {
+            shortcutManager.assign("GLOBAL_OPEN_COMMAND_PALETTE", () => {
                 if(!app.hasCapability("command-palette")) return;
                 app.desktop.openPalette();
             });
@@ -5421,6 +5589,16 @@ const kernel = new class Kernel extends LS.Context {
         this.ttl_scripting = Date.now() - scriptingLoadTime;
     }
 
+    *listResources() {
+        for(const context of this.contexts.values()) {
+            yield context;
+        }
+
+        for(const thread of this.threads.values()) {
+            yield thread;
+        }
+    }
+
     /**
      * Registers a new viewport (target area for content)
      * @param {*} name Unique name of the viewport
@@ -5567,50 +5745,6 @@ const kernel = new class Kernel extends LS.Context {
         }
     }
 
-    async loadUserList() {
-        const accounts = await this.auth.listAccounts();
-        app.accounts = accounts && accounts.accounts || [];
-
-        const list = app.desktop.toolbars.get("login").element.querySelector(".accounts-list");
-        list.innerHTML = "";
-
-        for (const account of app.accounts) {
-            const item = LS.Create("button", { class: 'account-item elevated loading-right', tabindex: 0, inner: [
-                app.views.getProfilePictureView(account.pfp, [ 32 ]),
-                { tag: "span", class: 'account-username', textContent: account.username }
-            ]});
-
-            if(accounts && accounts.activeAccountId === account.id) {
-                item.classList.add("active");
-            }
-
-            item.onclick = () => {
-                item.setAttribute("state", "loading");
-                this.auth.switchAccount(account.id).then(() => {
-                    this.loadUser().then(() => {
-                        item.removeAttribute("state");
-                    });
-                }).catch(error => {
-                    if(error.code === 401) {
-                        app.loginTabs.set("login");
-                        app.loginTabs.element.querySelector("#username").value = account.username;
-                        app.loginTabs.element.querySelector(".error-message").textContent = "Session expired for this account, please log in again.";
-                        const p = app.loginTabs.element.querySelector("#password");
-                        p.value = "";
-                        p.focus();
-                        return;
-                    }
-
-                    LS.Toast.show("Failed to switch account: " + (error.message || error.error || "Unknown error"), { accent: "red" });
-                });
-            };
-
-            list.appendChild(item);
-        }
-
-        app.events.emit("user-list-updated", [ app.accounts ]);
-    }
-
     async loadUser() {
         this.log("Loading user data");
 
@@ -5627,8 +5761,6 @@ const kernel = new class Kernel extends LS.Context {
         } else {
             this.userFragment.__bind.swapObject({});
         }
-
-        this.loadUserList();
 
         app.events.emit("user-changed", [ isLoggedIn, this.userFragment ]);
         app.events.completed("user-loaded");
@@ -5671,7 +5803,7 @@ const kernel = new class Kernel extends LS.Context {
         this.__pingsInitialized = true;
 
         const PING_URL = '/check-in';
-        const SESSION_ID = app.utils.generateIdentifier(); // True random ID
+        const SESSION_ID = LS.Misc.uuidv4(); // True random ID
         let current_interval = 15000, first = true;
 
         const sendPing = (beacon = false) => {
@@ -5761,226 +5893,8 @@ const kernel = new class Kernel extends LS.Context {
         sendPing();
     }
 
-
-    applicationMenu = new class ApplicationMenu extends LS.Context {
-        constructor() {
-            super("Application Menu");
-            this.initialized = false;
-        }
-
-        init() {
-            if(this.initialized) return;
-            this.initialized = true;
-
-            const container = app.desktop.toolbars.get("apps").element;
-            this.appListElement = container.querySelector(".app-list");
-
-            kernel.on("application-installed", (manifest) => {
-                this.addApplicationEntry(manifest);
-            });
-
-            // Load existing apps
-            for(const manifest of kernel.appManifests.values()) {
-                this.addApplicationEntry(manifest);
-            }
-        }
-
-        /**
-         * Add an application entry to the application menu.
-         * @param {*} manifest 
-         */
-        addApplicationEntry(manifest) {
-            const appId = manifest.id;
-            if(!appId) return;
-
-            const appButton = LS.Create({
-                class: "app-list-item",
-
-                inner: [
-                    app.views.getAppIconView(manifest, [64]),
-                    LS.Create('span', { class: 'app-name text-overflow-nowrap', textContent: manifest.name || appId })
-                ],
-
-                onclick: () => {
-                    if(manifest.external) {
-                        if(typeof manifest.link !== "string" || !manifest.link) {
-                            LS.Toast.show("This application does not have a valid link.", { accent: "red" });
-                            return;
-                        }
-
-                        window.open(manifest.link, "_blank", "noopener");
-                        app.desktop.closeToolbar();
-                        return;
-                    }
-
-                    kernel.openApplication(manifest, { source: "appMenu" })
-                        .loading(() => {
-                            appButton.setAttribute("state", "loading");
-                        })
-                        .done((instance) => {
-                            instance.open?.();
-                            app.desktop.closeToolbar();
-                        })
-                        .catch(error => {
-                            LS.Toast.show("Failed to open application: " + error.message, { accent: "red" });
-                            console.error("Failed to open application:", error);
-                        })
-                        .finally(() => {
-                            appButton.removeAttribute("state");
-                        });
-                }
-            });
-
-            this.appListElement.appendChild(appButton);
-        }
-    }
-
-    #setupAuth() {
-        LS.SelectOrCreate("#logOutButton").addEventListener("click", function (){
-            kernel.auth.logout(() => {
-                LS.Toast.show("Logged out successfully.", {
-                    timeout: 2000
-                });
-
-                app.desktop.closeToolbar();
-                kernel.loadUser();
-                app.loginTabs.set("default");
-            });
-        });
-
-        function clearLoginError() {
-            const view = app.loginTabs.currentElement();
-            if (!view) return;
-
-            const errorMessage = view.querySelector(".error-message");
-            if (errorMessage) errorMessage.textContent = "";
-
-            const offendingElement = view.querySelector("input[aria-invalid='true']");
-            if (offendingElement) {
-                offendingElement.removeAttribute("aria-invalid");
-                offendingElement.removeAttribute("ls-accent");
-            }
-        }
-
-        function displayLoginError(message, offendingElement) {
-            if (offendingElement) {
-                offendingElement.setAttribute("aria-invalid", "true");
-                offendingElement.setAttribute("ls-accent", "red");
-            }
-
-            const errorMessage = app.loginTabs.currentElement().querySelector(".error-message");
-            if (errorMessage) errorMessage.textContent = message;
-        }
-
-        function redirectAfterLogin() {
-            const redirect = kernel.queryParams.continue || ((location.pathname.startsWith("/login") || location.pathname.startsWith("/sign-up"))? "/": null);
-            if (redirect) {
-                location.replace(redirect);
-                return;
-            }
-
-            // Update user without reloading
-            kernel.loadUser().then(() => {
-                app.desktop.closeToolbar();
-                app.loginTabs.set("default");
-            });
-        }
-
-        document.forms["loginForm"].addEventListener("submit", (event) => {
-            event.preventDefault();
-            clearLoginError();
-            const username = LS.SelectOne("#username").value;
-            const password = LS.SelectOne("#password").value;
-
-            if (!username || !password) {
-                displayLoginError("Username and password are required", LS.SelectOne(!username? "#username" : "#password"));
-                return;
-            }
-
-            this.auth.login(username, password, (error, result) => {
-                if (error) {
-                    displayLoginError(error.message || error.error || "An error occurred while logging in");
-                    return;
-                }
-
-                redirectAfterLogin();
-            });
-
-            return false;
-        });
-
-        document.forms["registerForm"].addEventListener("submit", (event) => {
-            event.preventDefault();
-            clearLoginError();
-            document.forms["registerStep2Form"].querySelector("input").focus();
-            app.loginTabs.set('register-step2');
-
-            return false;
-        });
-
-        document.forms["registerStep2Form"].addEventListener("submit", (event) => {
-            event.preventDefault();
-            clearLoginError();
-            const email = LS.SelectOne("#regEmail").value;
-            const username = LS.SelectOne("#regUsername").value.toLowerCase();
-            const password = LS.SelectOne("#regPassword").value;
-            const displayName = event.target.querySelector("input[name='displayname']").value;
-
-            if (!email || !username || !password) {
-                app.loginTabs.set('register');
-                displayLoginError("All fields are required");
-                return;
-            }
-
-            this.auth.register({ email, username, password, displayname: displayName || null }, (error, result) => {
-                if (error) {
-                    app.loginTabs.set('register');
-                    console.log(error, (error.code === 4 || error.code === 5)? LS.SelectOne("#regEmail"): (error.code === 3 || error.code === 6)? LS.SelectOne("#regUsername"): error.code === 7? LS.SelectOne("#regPassword"): null);
-                    
-                    displayLoginError(error.message || error.error || "An error occurred while signing up", (error.code === 4 || error.code === 5)? LS.SelectOne("#regEmail"): (error.code === 3 || error.code === 6)? LS.SelectOne("#regUsername"): error.code === 6? LS.SelectOne("#regPassword"): null);
-                    return;
-                }
-
-                redirectAfterLogin();
-            });
-  
-            return false;
-        });
-
-        app.loginTabs.on("changed", (tab, old) => {
-            const view = app.loginTabs.currentElement();
-            const oldElement = app.loginTabs.tabs.get(old)?.element;
-
-            clearLoginError();
-
-            view.style.transition = (!app.isToolbarOpen || !oldElement)? "none" : "";
-
-            LS.Animation.slideInToggle(view, oldElement);
-
-            setTimeout(() => {
-                LS.SelectOne("#toolbarLogin").style.height = view.offsetHeight + "px";
-            });
-        });
-
-        app.loginTabs.set(location.pathname.startsWith("/login") ? "login" : location.pathname.startsWith("/sign-up") ?  "register" : "default");
-
-        LS.SelectOne("#randomPassword").addEventListener("click", function (){
-            const password = app.utils.generateSecurePassword(12);
-            LS.SelectOne("#regPassword").value = password;
-            LS.SelectOne("#regPassword").dispatchEvent(new Event("input"));
-            alert("Your generated password: " + password);
-        });
-
-        LS.SelectOne("#randomUsername").addEventListener("click", function (){
-            const username = app.utils.generateUsername();
-            LS.SelectOne("#regUsername").value = username.toLowerCase();
-            LS.SelectOne("#regUsername").dispatchEvent(new Event("input"));
-            LS.SelectOne("#displayname").value = username;
-        });
-    }
-
     /**
-     * Load the application with the given manifest.
+     * Load an application from the given manifest.
      * @param {*} manifest 
      */
     async loadApplication(manifest) {
@@ -6041,16 +5955,6 @@ const kernel = new class Kernel extends LS.Context {
         AppClass.manifest = manifest;
     }
 
-    *listResources() {
-        for(const context of this.contexts.values()) {
-            yield context;
-        }
-
-        for(const thread of this.threads.values()) {
-            yield thread;
-        }
-    }
-
     /**
      * Instantiate an application by its ID.
      * @param {string} appId 
@@ -6058,21 +5962,26 @@ const kernel = new class Kernel extends LS.Context {
      * @returns {LS.Context}
      */
     instantiateApplication(appId, options = {}) {
-        const AppClass = kernel.applications.get(appId);
-        if (!AppClass) throw new Error("Application not found: " + appId);
+        const appConstructor = kernel.applications.get(appId);
+        if (!appConstructor) throw new Error("Application not found: " + appId);
         this.log("Instantiating application:", appId);
 
-        // ! fix (this is not the right way to link)
-        this._appInstantiationContext = {
-            appId,
-            manifest: this.appManifests.get(appId) || AppClass.manifest || null,
-            options
-        };
-
+        // ! fix (this is not the best way to link)
         try {
-            return new AppClass(options);
+            appConstructor._appInstantiationContext = {
+                appId,
+                manifest: this.appManifests.get(appId) || appConstructor.manifest || null,
+                options
+            };
+
+            const app = new appConstructor(options);
+            app.instantiationContext = appConstructor._appInstantiationContext;
+            return app;
+        } catch(e) {
+            // todo
+            throw e;
         } finally {
-            this._appInstantiationContext = null;
+            appConstructor._appInstantiationContext = null;
         }
     }
 
@@ -6182,6 +6091,8 @@ class OpenerPromise {
         this._f = null;
     }
 }
+
+if(isBeta) window.kernel = kernel // Debug only!
 
 
 } catch (e) { console.error("Fatal error during app initialization:", e); globalThis.__loadError() }

@@ -3,7 +3,7 @@
 // WARNING: The following imports are just a stub, the actual build system is being worked on.
 import { TmpFs, RootFs } from "./fs.mjs";
 import { SoundBox } from "./soundbox.mjs";
-import { LiDesktop, MusicPlayer } from "./desktop.mjs";
+import { LiDesktop, MediaPlayer } from "./desktop.mjs";
 import { LoggerContext, AssetManager, ContentContext, Viewport, Thread } from "./commons.mjs";
 import { app } from "./shared.mjs";
 import { kernel } from "./kernel.mjs";
@@ -69,14 +69,22 @@ const BUILTIN_APPS = [
         "version": "1.0.0",
         "main": "media-center.mjs"
     },
-    // {
-    //     "name": "Media Player",
-    //     "id": "media-center",
-    //     "icon": "5fe6243a90ae967a.webp",
-    //     "description": "Play all of your media.",
-    //     "version": "1.0.0",
-    //     "main": "media-player.mjs"
-    // },
+    {
+        "name": "Media Player",
+        "id": "media-player",
+        "icon": "5fe6243a90ae967a.webp",
+        "description": "Play your media.",
+        "version": "1.0.0",
+        "main": "media-player.mjs"
+    },
+    {
+        "name": "Music Player",
+        "id": "music-player",
+        "icon": "901fb7f3abda204f.svg",
+        "description": "Play music, the pretty way!",
+        "version": "1.0.0",
+        "main": "music-player.mjs"
+    },
     {
         "name": "File Manager",
         "id": "file-manager",
@@ -195,8 +203,10 @@ Document.prototype.write = Document.prototype.writeln = function() {
 // This is to help catch bad code before it causes leaks.
 // Not needed in production, but can be useful during development, eg. if I forget to correctly isolate something.
 // Why am I writing comments that nobody will read.
+
 // LS.Context.debugEnforceContextSafety();
 // LS.Context.debugWarnContextSafety();
+
 const setTimeout = LS.Context.setTimeout;
 const setInterval = LS.Context.setInterval;
 const clearTimeout = LS.Context.clearTimeout;
@@ -205,7 +215,4 @@ const requestAnimationFrame = LS.Context.requestAnimationFrame;
 const queueMicrotask = LS.Context.queueMicrotask;
 const fetch = LS.Context.fetch;
 
-function invokeAndReturn(f) {
-    f();
-    return f;
-}
+function invokeAndReturn(f) { f(); return f }

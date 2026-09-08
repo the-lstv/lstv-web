@@ -1,10 +1,87 @@
 // WARNING: The following imports are just a stub, the actual build system is being worked on.
 import { SoundBox } from "./soundbox.mjs";
-import { LiDesktop, MusicPlayer } from "./desktop.mjs";
+import { LiDesktop, MediaPlayer } from "./desktop.mjs";
 import { LoggerContext, AssetManager, ContentContext, Viewport, Thread } from "./commons.mjs";
 import { app } from "./shared.mjs";
 import { kernel } from "./kernel.mjs";
+import { Enums } from "./enums.mjs";
 
+
+class Stat {
+    mode = Enums.S_IFREG | 0o644;
+    size = -1;
+    atimeMs = 0;
+    mtimeMs = 0;
+    ctimeMs = 0;
+    uid = 0;
+    gid = 0;
+
+    constructor(mode) {
+        this.mode = mode;
+    }
+
+    get type() {
+        return this.mode & Enums.S_IFMT;
+    }
+
+    get isFile() {
+        return this.type === Enums.S_IFREG;
+    }
+
+    get isDirectory() {
+        return this.type === Enums.S_IFDIR;
+    }
+
+    get isSymlink() {
+        return this.type === Enums.S_IFLNK;
+    }
+
+    get isBlockDevice() {
+        return this.type === Enums.S_IFBLK;
+    }
+
+    get isCharacterDevice() {
+        return this.type === Enums.S_IFCHR;
+    }
+
+    get isFIFO() {
+        return this.type === Enums.S_IFIFO;
+    }
+
+    get isSocket() {
+        return this.type === Enums.S_IFSOCK;
+    }
+
+    get permissions() {
+        // todo: check if this is valid
+        return this.mode & Enums.PERMS;
+    }
+
+    get perms() {
+        const mode = this.mode;
+        return {
+            owner: {
+                read:  !!(mode & 0o400),
+                write: !!(mode & 0o200),
+                exec:  !!(mode & 0o100),
+            },
+            group: {
+                read:  !!(mode & 0o040),
+                write: !!(mode & 0o020),
+                exec:  !!(mode & 0o010),
+            },
+            other: {
+                read:  !!(mode & 0o004),
+                write: !!(mode & 0o002),
+                exec:  !!(mode & 0o001),
+            },
+        
+            setuid:  !!(mode & 0o4000),
+            setgid:  !!(mode & 0o2000),
+            sticky:  !!(mode & 0o1000),
+        }
+    }
+}
 
 /**
  * Filesystem abstraction for lstv.space kernel/Linux.JS 2.0.
@@ -13,24 +90,23 @@ import { kernel } from "./kernel.mjs";
  * It is a part of a larger project Linux.JS which aims to bring a lightweight Linux-like VM-free environment to the web.
  */
 
-
 const DEFAULT_FS_DATA = [
+    ["/", {}],
     ["/etc", {}],
-    ["/etc/os-release", { contents: `NAME="LinuxJS"\nVERSION="2.0"\nID="linuxjs"\nVARIANT="lsw+lide-web"\nPRETTY_NAME="LinuxJS 2.0 (lstv.space, GNU/Linux)\nSUPPORT_END=2027-09-8"\nHOME_URL=https://lstv.space\nDEFAULT_HOSTNAME=linuxjs\nANSI_COLOR="0;38;2;60;110;180"\nLOGO=linuxjs-logo-icon`, isFile: true }],
-    ["/etc/config.conf", { contents: "# Configuration file", isFile: true }],
+    ["/etc/os-release", { contents: `NAME="LinuxJS"\nVERSION="2.0"\nID="linuxjs"\nVARIANT="lsw+lide-web"\nPRETTY_NAME="LinuxJS 2.0 (lstv.space, GNU/Linux)\nSUPPORT_END=2027-09-8"\nHOME_URL=https://lstv.space\nDEFAULT_HOSTNAME=linuxjs\nANSI_COLOR="0;38;2;60;110;180"\nLOGO=linuxjs-logo-icon`, mode: Enums.S_IFREG | 0o644 }],
+    ["/etc/config.conf", { contents: "# Configuration file", mode: Enums.S_IFREG | 0o644 }],
     ["/home/user", {}],
     
     ["/usr", {}],
     ["/usr/bin", {}],
     ["/usr/sbin", {}],
     ["/usr/lib", {}],
-    ["/usr/lib/os-release", { isSymlink: true, contents: "/etc/os-release" }],
+    ["/usr/lib/os-release", { mode: Enums.S_IFLNK | 0o644, contents: "/etc/os-release" }],
     ["/usr/lib64", {}],
-    ["/bin",   { isSymlink: true, contents: "/usr/bin" }],
-    ["/sbin",  { isSymlink: true, contents: "/usr/sbin" }],
-    ["/lib",   { isSymlink: true, contents: "/usr/lib" }],
-    ["/lib64", { isSymlink: true, contents: "/usr/lib64" }],
-
+    ["/bin",   { mode: Enums.S_IFLNK | 0o644, contents: "/usr/bin"   }],
+    ["/sbin",  { mode: Enums.S_IFLNK | 0o644, contents: "/usr/sbin"  }],
+    ["/lib",   { mode: Enums.S_IFLNK | 0o644, contents: "/usr/lib"   }],
+    ["/lib64", { mode: Enums.S_IFLNK | 0o644, contents: "/usr/lib64" }],
 
     ["/var", {}],
     ["/var/log", {}],
@@ -55,14 +131,14 @@ const DEFAULT_FS_DATA = [
     ["/home/user/.config", {}],
     ["/home/user/.local", {}],
     ["/home/user/.cache", {}],
-    ["/home/user/.bashrc", { contents: "# Bash configuration file", isFile: true }],
-    ["/home/user/.profile", { contents: "# User profile configuration file", isFile: true }],
-    ["/home/user/.bash_history", { contents: "", isFile: true }],
+    ["/home/user/.bashrc", { contents: "# Bash configuration file", mode: Enums.S_IFREG | 0o644 }],
+    ["/home/user/.profile", { contents: "# User profile configuration file", mode: Enums.S_IFREG | 0o644 }],
+    ["/home/user/.bash_history", { contents: "", mode: Enums.S_IFREG | 0o644 }],
 
     ["/root", {}],
-    ["/root/.bashrc", { contents: "# Root Bash configuration file", isFile: true }],
-    ["/root/.profile", { contents: "# Root user profile configuration file", isFile: true }],
-    ["/root/.bash_history", { contents: "", isFile: true }],
+    ["/root/.bashrc", { contents: "# Root Bash configuration file", mode: Enums.S_IFREG | 0o644 }],
+    ["/root/.profile", { contents: "# Root user profile configuration file", mode: Enums.S_IFREG | 0o644 }],
+    ["/root/.bash_history", { contents: "", mode: Enums.S_IFREG | 0o644 }],
 ];
 
 /**
@@ -72,184 +148,96 @@ const DEFAULT_FS_DATA = [
  */
 class RootFs {
     static ENCODING = {
-        "binary": 0,
-        "utf8": 1,
-    }
-
-    static O_RDONLY = 0x0000; // open for reading only
-    static O_WRONLY = 0x0001; // open for writing only
-    static O_RDWR   = 0x0002; // open for reading and writing
-    static O_ACCMODE = 0x0003; // mask for above modes
-
-    static O_CREAT  = 0x0200; // create if non-existent
-    static O_EXCL   = 0x0800; // error if already exists
-    static O_TRUNC  = 0x0400; // truncate to zero length
-    static O_APPEND = 0x0008; // append on each write
-
-    static __errCache;
-
-    static errno = {
-        EPERM: 0x01, // Operation not permitted
-        ENOENT: 0x02, // No such file or directory
-        ESRCH: 0x03, // No such process
-        EINTR: 0x04, // Interrupted system call
-        EIO: 0x05, // Input/output error
-        ENXIO: 0x06, // No such device or address
-        E2BIG: 0x07, // Argument list too long
-        ENOEXEC: 0x08, // Exec format error
-        EBADF: 0x09, // Bad file descriptor
-        ECHILD: 0x0a, // No child processes
-        EAGAIN: 0x0b, // Resource temporarily unavailable
-        EWOULDBLOCK: 0x0b, // (Same value as EAGAIN) Resource temporarily unavailable
-        ENOMEM: 0x0c, // Cannot allocate memory
-        EACCES: 0x0d, // Permission denied
-        EFAULT: 0x0e, // Bad address
-        ENOTBLK: 0x0f, // Block device required
-        EBUSY: 0x10, // Device or resource busy
-        EEXIST: 0x11, // File exists
-        EXDEV: 0x12, // Invalid cross-device link
-        ENODEV: 0x13, // No such device
-        ENOTDIR: 0x14, // Not a directory
-        EISDIR: 0x15, // Is a directory
-        EINVAL: 0x16, // Invalid argument
-        ENFILE: 0x17, // Too many open files in system
-        EMFILE: 0x18, // Too many open files
-        ENOTTY: 0x19, // Inappropriate ioctl for device
-        ETXTBSY: 0x1a, // Text file busy
-        EFBIG: 0x1b, // File too large
-        ENOSPC: 0x1c, // No space left on device
-        ESPIPE: 0x1d, // Illegal seek
-        EROFS: 0x1e, // Read-only file system
-        EMLINK: 0x1f, // Too many links
-        EPIPE: 0x20, // Broken pipe
-        EDOM: 0x21, // Numerical argument out of domain
-        ERANGE: 0x22, // Numerical result out of range
-        EDEADLK: 0x23, // Resource deadlock avoided
-        EDEADLOCK: 0x23, // (Same value as EDEADLK) Resource deadlock avoided
-        ENAMETOOLONG: 0x24, // File name too long
-        ENOLCK: 0x25, // No locks available
-        ENOSYS: 0x26, // Function not implemented
-        ENOTEMPTY: 0x27, // Directory not empty
-        ELOOP: 0x28, // Too many levels of symbolic links
-
-        ENOMSG: 0x2a, // No message of desired type
-        EIDRM: 0x2b, // Identifier removed
-        ECHRNG: 0x2c, // Channel number out of range
-        EL2NSYNC: 0x2d, // Level 2 not synchronized
-        EL3HLT: 0x2e, // Level 3 halted
-        EL3RST: 0x2f, // Level 3 reset
-        ELNRNG: 0x30, // Link number out of range
-        EUNATCH: 0x31, // Protocol driver not attached
-        ENOCSI: 0x32, // No CSI structure available
-        EL2HLT: 0x33, // Level 2 halted
-        EBADE: 0x34, // Invalid exchange
-        EBADR: 0x35, // Invalid request descriptor
-        EXFULL: 0x36, // Exchange full
-        ENOANO: 0x37, // No anode
-        EBADRQC: 0x38, // Invalid request code
-        EBADSLT: 0x39, // Invalid slot
-
-        EBFONT: 0x3b, // Bad font file format
-        ENOSTR: 0x3c, // Device not a stream
-        ENODATA: 0x3d, // No data available
-        ETIME: 0x3e, // Timer expired
-        ENOSR: 0x3f, // Out of streams resources
-        ENONET: 0x40, // Machine is not on the network
-        ENOPKG: 0x41, // Package not installed
-        EREMOTE: 0x42, // Object is remote
-        ENOLINK: 0x43, // Link has been severed
-        EADV: 0x44, // Advertise error
-        ESRMNT: 0x45, // Srmount error
-        ECOMM: 0x46, // Communication error on send
-        EPROTO: 0x47, // Protocol error
-        EMULTIHOP: 0x48, // Multihop attempted
-        EDOTDOT: 0x49, // RFS specific error
-        EBADMSG: 0x4a, // Bad message
-        EOVERFLOW: 0x4b, // Value too large for defined data type
-        ENOTUNIQ: 0x4c, // Name not unique on network
-        EBADFD: 0x4d, // File descriptor in bad state
-        EREMCHG: 0x4e, // Remote address changed
-        ELIBACC: 0x4f, // Can not access a needed shared library
-        ELIBBAD: 0x50, // Accessing a corrupted shared library
-        ELIBSCN: 0x51, // .lib section in a.out corrupted
-        ELIBMAX: 0x52, // Attempting to link in too many shared libraries
-        ELIBEXEC: 0x53, // Cannot exec a shared library directly
-        EILSEQ: 0x54, // Invalid or incomplete multibyte or wide character
-        ERESTART: 0x55, // Interrupted system call should be restarted
-        ESTRPIPE: 0x56, // Streams pipe error
-        EUSERS: 0x57, // Too many users
-        ENOTSOCK: 0x58, // Socket operation on non-socket
-        EDESTADDRREQ: 0x59, // Destination address required
-        EMSGSIZE: 0x5a, // Message too long
-        EPROTOTYPE: 0x5b, // Protocol wrong type for socket
-        ENOPROTOOPT: 0x5c, // Protocol not available
-        EPROTONOSUPPORT: 0x5d, // Protocol not supported
-        ESOCKTNOSUPPORT: 0x5e, // Socket type not supported
-        EOPNOTSUPP: 0x5f, // Operation not supported
-        ENOTSUP: 0x5f, // (Same value as EOPNOTSUPP) Operation not supported
-        EPFNOSUPPORT: 0x60, // Protocol family not supported
-        EAFNOSUPPORT: 0x61, // Address family not supported by protocol
-        EADDRINUSE: 0x62, // Address already in use
-        EADDRNOTAVAIL: 0x63, // Cannot assign requested address
-        ENETDOWN: 0x64, // Network is down
-        ENETUNREACH: 0x65, // Network is unreachable
-        ENETRESET: 0x66, // Network dropped connection on reset
-        ECONNABORTED: 0x67, // Software caused connection abort
-        ECONNRESET: 0x68, // Connection reset by peer
-        ENOBUFS: 0x69, // No buffer space available
-        EISCONN: 0x6a, // Transport endpoint is already connected
-        ENOTCONN: 0x6b, // Transport endpoint is not connected
-        ESHUTDOWN: 0x6c, // Cannot send after transport endpoint shutdown
-        ETOOMANYREFS: 0x6d, // Too many references: cannot splice
-        ETIMEDOUT: 0x6e, // Connection timed out
-        ECONNREFUSED: 0x6f, // Connection refused
-        EHOSTDOWN: 0x70, // Host is down
-        EHOSTUNREACH: 0x71, // No route to host
-        EALREADY: 0x72, // Operation already in progress
-        EINPROGRESS: 0x73, // Operation now in progress
-        ESTALE: 0x74, // Stale file handle
-        EUCLEAN: 0x75, // Structure needs cleaning
-        ENOTNAM: 0x76, // Not a XENIX named type file
-        ENAVAIL: 0x77, // No XENIX semaphores available
-        EISNAM: 0x78, // Is a named type file
-        EREMOTEIO: 0x79, // Remote I/O error
-        EDQUOT: 0x7a, // Disk quota exceeded
-        ENOMEDIUM: 0x7b, // No medium found
-        EMEDIUMTYPE: 0x7c, // Wrong medium type
-        ECANCELED: 0x7d, // Operation canceled
-        ENOKEY: 0x7e, // Required key not available
-        EKEYEXPIRED: 0x7f, // Key has expired
-        EKEYREVOKED: 0x80, // Key has been revoked
-        EKEYREJECTED: 0x81, // Key was rejected by service
-        EOWNERDEAD: 0x82, // Owner died
-        ENOTRECOVERABLE: 0x83, // State not recoverable
-        ERFKILL: 0x84, // Operation not possible due to RF-kill
-        EHWPOISON: 0x85, // Memory page has hardware error
-    };
-
-    static errCode(code) {
-        if(!this.__errCache) {
-            this.__errCache = new Map(Object.entries(this.errno).map(v => v.reverse()));
-        }
-        return this.__errCache.get(code);
+        binary: 0,
+        utf8: 1,
     }
 
     static PATH_SEPARATOR = "/";
+    static PATH_SEPARATOR_CODE = 47;
 
     // --- Utility methods for path manipulation ---
 
     /**
      * Normalize a path to a canonical form. This is useful for resolving relative paths, removing redundant slashes, and ensuring consistent path formatting.
-     * @param {*} path The path to normalize.
-     * @param {*} isAbsolute Whether the path is absolute (treats "example/" as an absolute path).
-     * @returns {*} The normalized path.
+     * @param {string} path The path to normalize.
+     * @param {boolean|null} isAbsolute Optional. If true, the returned path will be absolute (starting with /). If false, it will be relative. If null, it will be inferred from the input path.
+     * @param {boolean} allowExit If true, relative paths can go outside of their directory. If false, they can't.
+     * @param {boolean} returnParts If true, returns an array of path parts instead of a string.
+     * @returns {string|Array<string>} The normalized path.
+     * 
+     * Also this implementation is 2x to 4x faster than the previous one in LinuxJS :P
      */
-    static normalize(path, isAbsolute = null) {
-        return LS.Util.normalizePath(path, isAbsolute);
+    static normalize(path, isAbsolute = null, allowExit = true, returnParts = false) {
+        const parts = [];
+        const len = path.length;        
+
+        const fc = path.charCodeAt(0);
+        if (isAbsolute === null) isAbsolute = fc === this.PATH_SEPARATOR_CODE || fc === 92;
+        
+        if(len === 0) {
+            return returnParts? parts: (isAbsolute? this.PATH_SEPARATOR: ".");
+        }
+        
+        let cleanParts = 0;
+        let sStart = 0, seqBroken = false;
+        for (let i = 0; i < len; i++) {
+            const char = path.charCodeAt(i);
+
+            const isSeparator = char === this.PATH_SEPARATOR_CODE || char === 92;
+            const isEnd = !isSeparator && (i === len - 1);
+
+            if (isSeparator || isEnd) {
+                if (isEnd) {
+                    if (char !== 46) seqBroken = true;
+                    i++;
+                }
+
+                const dCount = i - sStart;
+                if (!seqBroken && (isAbsolute || !allowExit || dCount === 1 || cleanParts > 0)) {
+                    // Go up ("..")
+                    if(dCount === 2) {
+                        parts.pop();
+                        cleanParts--
+                    }
+
+                    // Otherwise do nothing
+                } else if (dCount > 0) {
+                    parts.push(path.slice(sStart, i));
+                    if(seqBroken) cleanParts++;
+                }
+
+                sStart = i + 1;
+                seqBroken = false;
+                continue;
+            }
+
+            if (char !== 46) seqBroken = true;
+        }
+
+        if(returnParts) return parts;
+
+        if(parts.length === 0) {
+            return isAbsolute? this.PATH_SEPARATOR: ".";
+        }
+
+        const normalizedPath = parts.join('/');
+        return isAbsolute ? '/' + normalizedPath : normalizedPath;
+    }
+
+    /**
+     * Helper to normalize and split a path into segments.
+     * Same as normalize(path, .., true);
+     * @param {string} path Path to split.
+     * @param {boolean|null} isAbsolute Same as normalize
+     * @param {boolean} allowExit Same as normalize
+     * @returns {Array<string>} Path segments as an array.
+     */
+    static splitPath(path, isAbsolute = null, allowExit = true) {
+        return RootFs.normalize(path, isAbsolute, allowExit, true);
     }
 
     static basename(path) {
-        const normalized = LS.Util.normalizePath(path);
+        const normalized = RootFs.normalize(path);
         const lastSepIndex = normalized.lastIndexOf(RootFs.PATH_SEPARATOR);
         if (lastSepIndex === -1) {
             return normalized;
@@ -257,8 +245,17 @@ class RootFs {
         return normalized.substring(lastSepIndex + 1);
     }
 
-    static ensureTrailingSeparator(path, isAbsolute = null) {
-        const normalized = LS.Util.normalizePath(path, isAbsolute);
+    static dirname(path) {
+        const normalized = RootFs.normalize(path);
+        const lastSepIndex = normalized.lastIndexOf(RootFs.PATH_SEPARATOR);
+        if (lastSepIndex === -1) {
+            return normalized;
+        }
+        return normalized.substring(0, lastSepIndex);
+    }
+
+    static ensureTrailing(path, isAbsolute = null) {
+        const normalized = RootFs.normalize(path, isAbsolute);
         if (!normalized.endsWith(RootFs.PATH_SEPARATOR)) {
             return normalized + RootFs.PATH_SEPARATOR;
         }
@@ -269,7 +266,7 @@ class RootFs {
      * Move up one directory level in a given path. Normalizes the path.
      */
     static up(path, levels = 1) {
-        const normalized = LS.Util.normalizePath(path);
+        const normalized = RootFs.normalize(path);
 
         let lI = path.length;
 
@@ -287,7 +284,35 @@ class RootFs {
      * @returns {string} The joined and normalized path.
      */
     static join(...parts) {
-        return LS.Util.normalizePath(parts.join(RootFs.PATH_SEPARATOR));
+        return RootFs.normalize(parts.join(RootFs.PATH_SEPARATOR));
+    }
+
+    /**
+     * Joins relative paths with an absolute base path without allowing the relative path to escape outside of the base directory.
+     * @param {*} base Base path
+     * @param  {...any} parts Parts to join
+     * @returns {string} Merged path
+     * 
+     * @example
+     * RootFs.joinSafe("/home/user", "../../dir/../hello.txt"); // -> /home/user/hello.txt
+     */
+    static joinSafe(base, ...parts) {
+        // absolute=true
+        base = RootFs.normalize(base, true);
+
+        // absolute=false, allowExit=false
+        return base + (base.endsWith(RootFs.PATH_SEPARATOR)? "": RootFs.PATH_SEPARATOR) + RootFs.normalize(parts.join(RootFs.PATH_SEPARATOR), false, false);
+    }
+
+    /**
+     * Approximately convert a windows path to a unix-style path (replace \ with /, remove drive letter, and I guess replaces C:/users with /home).
+     */
+    static win32toUnix(path) {
+        const normalized = RootFs.normalize(path, true, true, true);
+        const firstIsDriveLetter = normalized[0]?.length === 2 && normalized[0][1] === ":";
+        if(firstIsDriveLetter) normalized.shift();
+        if(normalized[0].toLowerCase() === "users") normalized[0] = "home";
+        return (firstIsDriveLetter? RootFs.PATH_SEPARATOR: "") + normalized.join(RootFs.PATH_SEPARATOR);
     }
 
     // Mounts is an array of [mountPoint, fs] pairs.
@@ -307,13 +332,26 @@ class RootFs {
      * Mount a filesystem at a given mount point.
      * @param {string} mountPoint The mount point where the filesystem will be mounted.
      * @param {*} fs The filesystem to mount.
+     * @returns {number} Error code if mount failed.
      */
     async mount(mountPoint, fs) {
-        mountPoint = RootFs.ensureTrailingSeparator(mountPoint, true);
+        mountPoint = RootFs.ensureTrailing(mountPoint, true);
+
+        if(mountPoint !== "/") {
+            try {
+                let stat = await this.stat(mountPoint);
+                if(stat.isFile) return Enums.errno.ENOTDIR;
+            } catch(e) {
+                console.log(e);
+                return typeof e === "number"? e: -1;
+            }
+        }
+
         this.#mounts.push([mountPoint, fs]);
 
         // Sort mounts by length of mount point, descending
         this.#mounts.sort((a, b) => b[0].length - a[0].length);
+        return true;
     }
 
     /**
@@ -321,10 +359,21 @@ class RootFs {
      * @param {string} mountPoint The mount point to unmount.
      */
     unmount(mountPoint) {
-        mountPoint = RootFs.ensureTrailingSeparator(mountPoint, true);
+        mountPoint = RootFs.ensureTrailing(mountPoint, true);
         this.#mounts = this.#mounts.filter(([mp, fs]) => mp !== mountPoint);
 
         // todo: also close all open file descriptors
+    }
+
+    /**
+     * Returns a list of mounts and their types
+     * @returns {Array}
+     */
+    lsmount(){
+        return this.#mounts.map(([a, b]) => [a, {
+            type: b?.name || b?.constructor?.fsType || b?.constructor?.name,
+            size: b?.size || -1
+        }]);
     }
 
     /**
@@ -343,7 +392,7 @@ class RootFs {
 
         // We assume that the mounts are sorted by length of mount point, descending, so the first match is the most specific one.
         let usingFs = null;
-        const dirWithSep = RootFs.ensureTrailingSeparator(dir, true);
+        const dirWithSep = RootFs.ensureTrailing(dir, true);
         for(const [mp, fs] of this.#mounts) {
             if(dirWithSep.startsWith(mp)) {
                 usingFs = fs;
@@ -352,7 +401,7 @@ class RootFs {
         }
 
         const fd = await usingFs.open(dir, flags);
-        if(!fd || typeof fd === "number") throw new Error(RootFs.errCode(fd) + " when opening path: " + dir);
+        if(!fd || typeof fd === "number") throw new Error(Enums.errCode(fd) + " when opening path: " + dir);
         return fd;
     }
 
@@ -366,7 +415,7 @@ class RootFs {
      * @returns {*} Data read
      */
     async read(fd, first = 0, nbytes = -1, encoding = RootFs.ENCODING.utf8, close = true) {
-        if(!fd || !fd._fs) throw new Error(RootFs.errno.EBADF);
+        if(!fd || !fd._fs) throw new Error(Enums.errno.EBADF);
         const data = await fd._fs.read(fd, first, nbytes, typeof encoding === "string"? RootFs.ENCODING[encoding]: encoding);
         if(close) fd._fs.close(fd);
         return data;
@@ -382,7 +431,7 @@ class RootFs {
      * @returns {*} Number of bytes written
      */
     async write(fd, newData, first = 0, nbytes = -1, close = true) {
-        if(!fd || !fd._fs) throw new Error(RootFs.errno.EBADF);
+        if(!fd || !fd._fs) throw new Error(Enums.errno.EBADF);
         const nbytesWritten = await fd._fs.write(fd, newData, first, nbytes);
         if(close) fd._fs.close(fd);
         return nbytesWritten;
@@ -408,22 +457,22 @@ class RootFs {
      * @returns {*} Number of bytes written
      */
     async writeFile(dir, newData, options = {}) {
-        const fd = await this.open(dir, RootFs.O_WRONLY | RootFs.O_CREAT | RootFs.O_TRUNC);
+        const fd = await this.open(dir, Enums.O_WRONLY | Enums.O_CREAT | Enums.O_TRUNC);
         return await this.write(fd, newData, options.start ?? 0, options.nbytes ?? -1, options.close ?? true);
     }
 
     async close(fd) {
-        if(!fd || !fd._fs) throw new Error(RootFs.errno.EBADF);
+        if(!fd || !fd._fs) throw new Error(Enums.errno.EBADF);
         return await fd._fs.close(fd);
     }
 
     async exists(dir) {
         try {
-            const fd = await this.open(dir, RootFs.O_RDONLY);
+            const fd = await this.open(dir, Enums.O_RDONLY);
             await this.close(fd);
             return true;
         } catch(e) {
-            if(e.message.startsWith(RootFs.errCode(RootFs.errno.ENOENT))) {
+            if(e.message.startsWith(Enums.errCode(Enums.errno.ENOENT))) {
                 return false;
             }
             throw e;
@@ -431,21 +480,30 @@ class RootFs {
     }
 
     async stat(dir) {
-        const fd = await this.open(dir, RootFs.O_RDONLY);
-        const data = fd._fs.stat(fd);
+        const stat = new Stat;
+        const fd = await this.open(dir, Enums.O_RDONLY);
+        fd._fs.stat(fd, stat);
         await this.close(fd);
-        return data;
+        return stat;
+    }
+
+    async fileType(dir){
+        const stat = {};
+        const fd = await this.open(dir, Enums.O_RDONLY);
+        fd._fs.stat(fd, stat);
+        await this.close(fd);
+        return stat.mode & Enums.S_IFMT;
     }
 
     async unlink(dir, options = {}) {
-        const fd = await this.open(dir, RootFs.O_WRONLY);
+        const fd = await this.open(dir, Enums.O_WRONLY);
         const result = await fd._fs.unlink(fd);
         await this.close(fd);
         return result;
     }
 
     async mkdir(dir, mode = 0o777) {
-        const fd = await this.open(dir, RootFs.O_WRONLY | RootFs.O_CREAT);
+        const fd = await this.open(dir, Enums.O_WRONLY | Enums.O_CREAT);
         const result = await fd._fs.mkdir(fd, mode);
         await this.close(fd);
         return result;
@@ -487,31 +545,31 @@ class TmpFs {
      *
      * @param {*} ndir Path to open.
      * @param {*} flags Open flags, see open(2).
-     * @param {*} mode Permissions used when O_CREAT creates a file.
+     * @param {*} mode File type and permissions used when using O_CREAT. For example, Enums.S_IFREG | 0o644 to create a file, etc.
      * @returns {*} File descriptor or errno.
      *
      * Error code constants:
      * https://www.chromium.org/chromium-os/developer-library/reference/linux-constants/errnos/
      */
-    open(ndir, flags, mode = 0o666) {
+    open(ndir, flags, mode = Enums.S_IFREG | 0o644) {
         let data = this.fs.get(ndir);
 
-        const accessMode = flags & RootFs.O_ACCMODE;
-        const canRead = accessMode === RootFs.O_RDONLY ||
-                        accessMode === RootFs.O_RDWR;
-        const canWrite = accessMode === RootFs.O_WRONLY ||
-                        accessMode === RootFs.O_RDWR;
+        const accessMode = flags & Enums.O_ACCMODE;
+        const canRead =  accessMode === Enums.O_RDONLY ||
+                         accessMode === Enums.O_RDWR;
+        const canWrite = accessMode === Enums.O_WRONLY ||
+                         accessMode === Enums.O_RDWR;
+
+        const createFile = (flags & Enums.O_CREAT);
 
         if (!data) {
-            if (!(flags & RootFs.O_CREAT)) {
-                return RootFs.errno.ENOENT;
+            if (!createFile) {
+                return Enums.errno.ENOENT;
             }
 
             const now = Date.now();
 
             data = {
-                isFile: true,
-                contents: new Uint8Array(0),
                 mode: mode,
                 uid: 0,
                 gid: 0,
@@ -525,8 +583,8 @@ class TmpFs {
             /*
              * O_CREAT | O_EXCL must fail if the path already exists.
              */
-            if ((flags & RootFs.O_CREAT) && (flags & RootFs.O_EXCL)) {
-                return RootFs.errno.EEXIST;
+            if (createFile && (flags & Enums.O_EXCL)) {
+                return Enums.errno.EEXIST;
             }
         }
 
@@ -535,13 +593,13 @@ class TmpFs {
          * Opening a directory for writing is an error.
          */
         if (!data.isFile && canWrite) {
-            return RootFs.errno.EISDIR;
+            return Enums.errno.EISDIR;
         }
 
         /*
          * O_TRUNC only applies to regular files opened for writing.
          */
-        if ((flags & RootFs.O_TRUNC) && data.isFile && canWrite) {
+        if ((flags & Enums.O_TRUNC) && data.isFile && canWrite) {
             data.contents = new Uint8Array(0);
 
             const now = Date.now();
@@ -553,7 +611,7 @@ class TmpFs {
             _fs: this,
             data,
             flags,
-            offset: (flags & RootFs.O_APPEND) && data.isFile
+            offset: (flags & Enums.O_APPEND) && data.isFile
                 ? data.contents.length
                 : 0,
             closed: false,
@@ -571,7 +629,7 @@ class TmpFs {
      */
     close(fd) {
         if (!fd || fd.closed || !fd._fs) {
-            return RootFs.errno.EBADF;
+            return Enums.errno.EBADF;
         }
 
         fd._fs = null;
@@ -594,15 +652,15 @@ class TmpFs {
      */
     checkFd(fd, kind) {
         if (!fd || !fd._fs || !fd.data || fd.closed) {
-            throw new Error(RootFs.errno.EBADF);
+            throw new Error(Enums.errno.EBADF);
         }
 
         if (kind === 1 && fd.data.isFile) {
-            throw new Error(RootFs.errno.ENOTDIR);
+            throw new Error(Enums.errno.ENOTDIR);
         }
 
         if (kind === 0 && !fd.data.isFile) {
-            throw new Error(RootFs.errno.EISDIR);
+            throw new Error(Enums.errno.EISDIR);
         }
     }
 
@@ -623,13 +681,13 @@ class TmpFs {
         this.checkFd(fd, 0);
 
         if (!fd.readable) {
-            throw new Error(RootFs.errno.EBADF);
+            throw new Error(Enums.errno.EBADF);
         }
 
         const data = fd.data;
 
         if (first < 0) {
-            throw new Error(RootFs.errno.EINVAL);
+            throw new Error(Enums.errno.EINVAL);
         }
 
         if (first > data.contents.length) {
@@ -674,7 +732,7 @@ class TmpFs {
         this.checkFd(fd, 0);
 
         if (!fd.writable) {
-            throw new Error(RootFs.errno.EBADF);
+            throw new Error(Enums.errno.EBADF);
         }
 
         const data = fd.data;
@@ -689,7 +747,7 @@ class TmpFs {
         /*
          * O_APPEND ignores the supplied offset.
          */
-        if (fd.flags & RootFs.O_APPEND) {
+        if (fd.flags & Enums.O_APPEND) {
             first = data.contents.length;
         }
 
@@ -701,7 +759,7 @@ class TmpFs {
         }
 
         if (first < 0) {
-            throw new Error(RootFs.errno.EINVAL);
+            throw new Error(Enums.errno.EINVAL);
         }
 
         /*
@@ -716,7 +774,7 @@ class TmpFs {
                 if (newData instanceof ArrayBuffer) {
                     newData = new Uint8Array(newData);
                 } else {
-                    throw new Error(RootFs.errno.EINVAL);
+                    throw new Error(Enums.errno.EINVAL);
                 }
             }
 
@@ -727,7 +785,7 @@ class TmpFs {
             }
 
             if (nbytes < 0 || first > newData.length && nbytes !== 0) {
-                throw new Error(RootFs.errno.EINVAL);
+                throw new Error(Enums.errno.EINVAL);
             }
 
             if (nbytes === 0) {
@@ -776,7 +834,7 @@ class TmpFs {
             }
 
             if (first > newData.length && nbytes !== 0) {
-                throw new Error(RootFs.errno.EINVAL);
+                throw new Error(Enums.errno.EINVAL);
             }
 
             if (nbytes === -1) {
@@ -784,7 +842,7 @@ class TmpFs {
             }
 
             if (nbytes < 0) {
-                throw new Error(RootFs.errno.EINVAL);
+                throw new Error(Enums.errno.EINVAL);
             }
 
             if (nbytes === 0) {
@@ -822,7 +880,7 @@ class TmpFs {
             return actualBytes;
         }
 
-        throw new Error(RootFs.errno.EINVAL);
+        throw new Error(Enums.errno.EINVAL);
     }
 
 
@@ -832,39 +890,30 @@ class TmpFs {
      * @param {*} fd File descriptor.
      * @returns {*} stat-like object.
      */
-    stat(fd) {
+    stat(fd, out) {
         this.checkFd(fd);
-
         const data = fd.data;
 
         const now = Date.now();
-
         data.mtime ??= now;
         data.ctime ??= now;
         data.atime ??= now;
+        data.mode  ??= Enums.S_IFDIR | 0o755;
 
-        return {
-            size: data.contents instanceof Uint8Array
-                ? data.contents.byteLength
-                : data.contents.length,
+        out.size = !data.contents? 0:
+                   data.contents instanceof Uint8Array
+                 ? data.contents.byteLength
+                 : data.contents.length;
 
-            mtime: data.mtime,
-            ctime: data.ctime,
-            atime: data.atime,
+        out.mode =    data.mode;
 
-            mode: data.mode ?? 0o644,
-            uid: data.uid ?? 0,
-            gid: data.gid ?? 0,
+        out.mtimeMs = data.mtime;
+        out.ctimeMs = data.ctime;
+        out.atimeMs = data.atime;
 
-            isFile: data.isFile,
-            isDirectory: !data.isFile,
-
-            isSymbolicLink: data.isSymlink ?? false,
-            isBlockDevice: data.isBlockDevice ?? false,
-            isCharacterDevice: data.isCharacterDevice ?? false,
-            isFIFO: data.isFIFO ?? false,
-            isSocket: data.isSocket ?? false
-        };
+        out.uid =     data.uid ?? 0;
+        out.gid =     data.gid ?? 0;
+        return out;
     }
 
     unlink(fd) {
@@ -873,7 +922,7 @@ class TmpFs {
         const data = fd.data;
 
         if (!data.isFile) {
-            return RootFs.errno.EISDIR;
+            return Enums.errno.EISDIR;
         }
 
         this.fs.delete(fd.path);
@@ -883,13 +932,13 @@ class TmpFs {
 
     mkdir(ndir, recursive, mode = 0o755, uid = 0, gid = 0) {
         if (this.fs.has(ndir)) {
-            return RootFs.errno.EEXIST;
+            return Enums.errno.EEXIST;
         }
 
         if (!recursive) {
-            const parent = LS.Util.dirname(ndir);
+            const parent = RootFs.dirname(ndir);
             if (!this.fs.has(parent)) {
-                return RootFs.errno.ENOENT;
+                return Enums.errno.ENOENT;
             }
         }
 

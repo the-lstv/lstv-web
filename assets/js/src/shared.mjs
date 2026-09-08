@@ -1,7 +1,7 @@
 // WARNING: The following imports are just a stub, the actual build system is being worked on.
 import { TmpFs, RootFs } from "./fs.mjs";
 import { SoundBox } from "./soundbox.mjs";
-import { LiDesktop, MusicPlayer } from "./desktop.mjs";
+import { LiDesktop, MediaPlayer } from "./desktop.mjs";
 import { LoggerContext, AssetManager, ContentContext, Viewport, Thread } from "./commons.mjs";
 import { kernel } from "./kernel.mjs";
 
@@ -25,7 +25,7 @@ const app = {
 
     // Create new instance of the desktop env.
     // If desktop mode is disabled, the desktop can skip some features, things like the login prompt, and run in a website-only mode.
-    desktop: new LiDesktop({ limited: !isDesktopModeEnabledAtStartup }),
+    desktop,
 
     // Constants
     loaded: true,
@@ -279,10 +279,6 @@ const app = {
      * Utility functions
      */
     utils: {
-        generateIdentifier(){
-            return crypto.getRandomValues(new Uint32Array(1))[0].toString(36) + Date.now().toString(36);
-        },
-
         basicMarkDown(text) {
             text = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
@@ -319,6 +315,7 @@ const app = {
                     return pre + '<ul>' + items.map(item => '<li>' + item + '</li>').join('') + '</ul>';
                 }
             );
+
             // Ordered lists
             text = text.replace(
                 /(^|\n)((?:\s*\d+\.\s[^\n]+\n?)+)/g,
@@ -389,6 +386,10 @@ const app = {
                 password += charset[array[i] % charset.length];
             }
             return password;
+        },
+
+        generateInsecurePassword() {
+            return "password";
         }
     },
 
@@ -582,7 +583,5 @@ const app = {
 app.events = new LS.EventEmitter(app);
 globalThis.website = app; // I just can't decide. I think I will keep app due to the app getting more integrated beyond a simple website.
 globalThis.app = app;
-
-if(isBeta) window.kernel = kernel // Debug only!
 
 export { app };

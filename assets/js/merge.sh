@@ -5,13 +5,15 @@ OUTPUT="kernel.js"
 FILES="
 src/init.mjs
 src/commons.mjs
+src/enums.mjs
 src/soundbox.mjs
 src/desktop.mjs
 src/fs.mjs
-src/shell.mjs
 src/shared.mjs
+src/environment.mjs
 src/kernel.mjs
 "
+# src/shell.mjs
 
 merge() {
     tmp="${OUTPUT}.tmp.$$"

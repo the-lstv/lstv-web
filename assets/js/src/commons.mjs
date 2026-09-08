@@ -1,11 +1,11 @@
 // WARNING: The following imports are just a stub, the actual build system is being worked on.
 import { TmpFs, RootFs } from "./fs.mjs";
 import { SoundBox } from "./soundbox.mjs";
-import { LiDesktop, MusicPlayer } from "./desktop.mjs";
+import { LiDesktop, MediaPlayer } from "./desktop.mjs";
 import { app } from "./shared.mjs";
 import { kernel } from "./kernel.mjs";
 
-// --- CLASSES
+// --- COMMON CLASSES
 
 /**
  * LoggerContext class
@@ -438,7 +438,7 @@ class ContentContext extends LS.View {
     }
 
     createWindow(options) {
-        const appContext = kernel._appInstantiationContext;
+        const appContext = this.instantiationContext || this.constructor._appInstantiationContext;
         const manifestWindowOptions = appContext?.manifest?.windowOptions && typeof appContext.manifest.windowOptions === "object" ? appContext.manifest.windowOptions : null;
         const appOpenWindowOptions = appContext?.options?.windowOptions && typeof appContext.options.windowOptions === "object" ? appContext.options.windowOptions : null;
 
@@ -1442,4 +1442,4 @@ class Thread extends LS.EventEmitter {
     }
 }
 
-export { LoggerContext, AssetManager, ContentContext, Viewport, Thread };
+export { LoggerContext, ContentContext, Viewport, Thread, AssetManager };

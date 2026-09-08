@@ -8,7 +8,7 @@ import { kernel } from "./kernel.mjs";
 /**
  * Media player class
  */
-class MusicPlayer {
+class MediaPlayer {
     constructor() {
         this.toolbarElement = LS.SelectOrCreate("#musicPlayer");
         this.initialized = false;
@@ -248,6 +248,10 @@ class LiDesktop {
     version = "1.0.0-alpha";
     codeName = "Based on LiDE 12 Hiroki";
 
+    /**
+     * This constructor constitutes starting a new desktop session.
+     * @param {*} options Options
+     */
     constructor(options) {
         this.windowManager = LS.WindowManager;
 
@@ -269,12 +273,21 @@ class LiDesktop {
         this.ToolbarStackRef = { close() { app.desktop.closeToolbar() } };
 
         // Initialize music player (for global media controls, and it is also a player on it's own.)
-        this.musicPlayer = new MusicPlayer;
+        this.musicPlayer = new MediaPlayer;
 
         this.isToolbarOpen = false;
 
         shortcutManager.assign('GLOBAL_DESKTOP_OPEN_MENU', () => {
             app.desktop.openToolbar("menu", true);
+        });
+
+        kernel.environment.setEnv("XDG_CURRENT_DESKTOP", this.constructor.name);
+
+        this.#setupAuth();
+
+        // watch for user changes
+        kernel.on("user-changed", (isLoggedIn, fragment) => {
+            this.loadUserList();
         });
     }
 
@@ -395,8 +408,8 @@ class LiDesktop {
             description: "View applications",
 
             onOpen() {
-                if(!kernel.applicationMenu.initialized) {
-                    kernel.applicationMenu.init();
+                if(!app.desktop.applicationMenu.initialized) {
+                    app.desktop.applicationMenu.init();
                 }
             }
         }],
@@ -727,6 +740,269 @@ class LiDesktop {
         }
     }
 
+    // todo: move to desktop
+    async loadUserList() {
+        const accounts = await this.auth.listAccounts();
+        app.accounts = accounts && accounts.accounts || [];
+
+        const list = app.desktop.toolbars.get("login").element.querySelector(".accounts-list");
+        list.innerHTML = "";
+
+        for (const account of app.accounts) {
+            const item = LS.Create("button", { class: 'account-item elevated loading-right', tabindex: 0, inner: [
+                app.views.getProfilePictureView(account.pfp, [ 32 ]),
+                { tag: "span", class: 'account-username', textContent: account.username }
+            ]});
+
+            if(accounts && accounts.activeAccountId === account.id) {
+                item.classList.add("active");
+            }
+
+            item.onclick = () => {
+                item.setAttribute("state", "loading");
+                this.auth.switchAccount(account.id).then(() => {
+                    this.loadUser().then(() => {
+                        item.removeAttribute("state");
+                    });
+                }).catch(error => {
+                    if(error.code === 401) {
+                        app.loginTabs.set("login");
+                        app.loginTabs.element.querySelector("#username").value = account.username;
+                        app.loginTabs.element.querySelector(".error-message").textContent = "Session expired for this account, please log in again.";
+                        const p = app.loginTabs.element.querySelector("#password");
+                        p.value = "";
+                        p.focus();
+                        return;
+                    }
+
+                    LS.Toast.show("Failed to switch account: " + (error.message || error.error || "Unknown error"), { accent: "red" });
+                });
+            };
+
+            list.appendChild(item);
+        }
+
+        app.events.emit("user-list-updated", [ app.accounts ]);
+    }
+
+    // todo: move to desktop
+    #setupAuth() {
+        LS.SelectOrCreate("#logOutButton").addEventListener("click", function (){
+            kernel.auth.logout(() => {
+                LS.Toast.show("Logged out successfully.", {
+                    timeout: 2000
+                });
+
+                app.desktop.closeToolbar();
+                kernel.loadUser();
+                app.loginTabs.set("default");
+            });
+        });
+
+        function clearLoginError() {
+            const view = app.loginTabs.currentElement();
+            if (!view) return;
+
+            const errorMessage = view.querySelector(".error-message");
+            if (errorMessage) errorMessage.textContent = "";
+
+            const offendingElement = view.querySelector("input[aria-invalid='true']");
+            if (offendingElement) {
+                offendingElement.removeAttribute("aria-invalid");
+                offendingElement.removeAttribute("ls-accent");
+            }
+        }
+
+        function displayLoginError(message, offendingElement) {
+            if (offendingElement) {
+                offendingElement.setAttribute("aria-invalid", "true");
+                offendingElement.setAttribute("ls-accent", "red");
+            }
+
+            const errorMessage = app.loginTabs.currentElement().querySelector(".error-message");
+            if (errorMessage) errorMessage.textContent = message;
+        }
+
+        function redirectAfterLogin() {
+            const redirect = kernel.queryParams.continue || ((location.pathname.startsWith("/login") || location.pathname.startsWith("/sign-up"))? "/": null);
+            if (redirect) {
+                location.replace(redirect);
+                return;
+            }
+
+            // Update user without reloading
+            kernel.loadUser().then(() => {
+                app.desktop.closeToolbar();
+                app.loginTabs.set("default");
+            });
+        }
+
+        document.forms["loginForm"].addEventListener("submit", (event) => {
+            event.preventDefault();
+            clearLoginError();
+            const username = LS.SelectOne("#username").value;
+            const password = LS.SelectOne("#password").value;
+
+            if (!username || !password) {
+                displayLoginError("Username and password are required", LS.SelectOne(!username? "#username" : "#password"));
+                return;
+            }
+
+            this.auth.login(username, password, (error, result) => {
+                if (error) {
+                    displayLoginError(error.message || error.error || "An error occurred while logging in");
+                    return;
+                }
+
+                redirectAfterLogin();
+            });
+
+            return false;
+        });
+
+        document.forms["registerForm"].addEventListener("submit", (event) => {
+            event.preventDefault();
+            clearLoginError();
+            document.forms["registerStep2Form"].querySelector("input").focus();
+            app.loginTabs.set('register-step2');
+
+            return false;
+        });
+
+        document.forms["registerStep2Form"].addEventListener("submit", (event) => {
+            event.preventDefault();
+            clearLoginError();
+            const email = LS.SelectOne("#regEmail").value;
+            const username = LS.SelectOne("#regUsername").value.toLowerCase();
+            const password = LS.SelectOne("#regPassword").value;
+            const displayName = event.target.querySelector("input[name='displayname']").value;
+
+            if (!email || !username || !password) {
+                app.loginTabs.set('register');
+                displayLoginError("All fields are required");
+                return;
+            }
+
+            this.auth.register({ email, username, password, displayname: displayName || null }, (error, result) => {
+                if (error) {
+                    app.loginTabs.set('register');
+                    console.log(error, (error.code === 4 || error.code === 5)? LS.SelectOne("#regEmail"): (error.code === 3 || error.code === 6)? LS.SelectOne("#regUsername"): error.code === 7? LS.SelectOne("#regPassword"): null);
+                    
+                    displayLoginError(error.message || error.error || "An error occurred while signing up", (error.code === 4 || error.code === 5)? LS.SelectOne("#regEmail"): (error.code === 3 || error.code === 6)? LS.SelectOne("#regUsername"): error.code === 6? LS.SelectOne("#regPassword"): null);
+                    return;
+                }
+
+                redirectAfterLogin();
+            });
+  
+            return false;
+        });
+
+        app.loginTabs.on("changed", (tab, old) => {
+            const view = app.loginTabs.currentElement();
+            const oldElement = app.loginTabs.tabs.get(old)?.element;
+
+            clearLoginError();
+
+            view.style.transition = (!app.isToolbarOpen || !oldElement)? "none" : "";
+
+            LS.Animation.slideInToggle(view, oldElement);
+
+            setTimeout(() => {
+                LS.SelectOne("#toolbarLogin").style.height = view.offsetHeight + "px";
+            });
+        });
+
+        app.loginTabs.set(location.pathname.startsWith("/login") ? "login" : location.pathname.startsWith("/sign-up") ?  "register" : "default");
+
+        LS.SelectOne("#randomPassword").addEventListener("click", function (){
+            const password = app.utils.generateSecurePassword(12);
+            LS.SelectOne("#regPassword").value = password;
+            LS.SelectOne("#regPassword").dispatchEvent(new Event("input"));
+            alert("Your generated password: " + password);
+        });
+
+        LS.SelectOne("#randomUsername").addEventListener("click", function (){
+            const username = app.utils.generateUsername();
+            LS.SelectOne("#regUsername").value = username.toLowerCase();
+            LS.SelectOne("#regUsername").dispatchEvent(new Event("input"));
+            LS.SelectOne("#displayname").value = username;
+        });
+    }
+
+    applicationMenu = new class ApplicationMenu extends LS.Context {
+        constructor() {
+            super("Application Menu");
+            this.initialized = false;
+        }
+
+        init() {
+            if(this.initialized) return;
+            this.initialized = true;
+
+            const container = app.desktop.toolbars.get("apps").element;
+            this.appListElement = container.querySelector(".app-list");
+
+            kernel.on("application-installed", (manifest) => {
+                this.addApplicationEntry(manifest);
+            });
+
+            // Load existing apps
+            for(const manifest of kernel.appManifests.values()) {
+                this.addApplicationEntry(manifest);
+            }
+        }
+
+        /**
+         * Add an application entry to the application menu.
+         * @param {*} manifest 
+         */
+        addApplicationEntry(manifest) {
+            const appId = manifest.id;
+            if(!appId) return;
+
+            const appButton = LS.Create({
+                class: "app-list-item",
+
+                inner: [
+                    app.views.getAppIconView(manifest, [64]),
+                    LS.Create('span', { class: 'app-name text-overflow-nowrap', textContent: manifest.name || appId })
+                ],
+
+                onclick: () => {
+                    if(manifest.external) {
+                        if(typeof manifest.link !== "string" || !manifest.link) {
+                            LS.Toast.show("This application does not have a valid link.", { accent: "red" });
+                            return;
+                        }
+
+                        window.open(manifest.link, "_blank", "noopener");
+                        app.desktop.closeToolbar();
+                        return;
+                    }
+
+                    kernel.openApplication(manifest, { source: "appMenu" })
+                        .loading(() => {
+                            appButton.setAttribute("state", "loading");
+                        })
+                        .done((instance) => {
+                            instance.open?.();
+                            app.desktop.closeToolbar();
+                        })
+                        .catch(error => {
+                            LS.Toast.show("Failed to open application: " + error.message, { accent: "red" });
+                            console.error("Failed to open application:", error);
+                        })
+                        .finally(() => {
+                            appButton.removeAttribute("state");
+                        });
+                }
+            });
+
+            this.appListElement.appendChild(appButton);
+        }
+    }
+
     _welcome(){
         this.closeToolbar(true);
         this.soundBox.play("system:startup");
@@ -745,6 +1021,9 @@ class LiDesktop {
         });
     }
 
+    /**
+     * This constitutes ending the desktop session.
+     */
     destroy() {
         // If we used the shared WM, we should reset it back instead of just deleting it.
         const replacingWM = this.windowManager === LS.WindowManager;
@@ -767,4 +1046,4 @@ class LiDesktop {
     }
 }
 
-export { LiDesktop, MusicPlayer };
+export { LiDesktop, MediaPlayer };
