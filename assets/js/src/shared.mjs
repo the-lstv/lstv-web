@@ -7,14 +7,51 @@ import { kernel } from "./kernel.mjs";
 
 // Misc constants
 const DEFAULT_PROFILE = "/~/assets/image/default.svg";
+const isDesktopModeEnabledAtStartup = localStorage.getItem("desktopMode") === "true";
 
 /**
+ * Environment loader.
+ */
+class Environment {
+    // Global environment variables
+    env = {}
+
+    #k;
+
+    setEnv(n, v) {
+        this.env[n] = v;
+    }
+
+    async resolvePath(k, pathv = this.#k.env.PATH) {
+        for(const s of pathv.split(":")) {
+            const rd = await this.#k.fileSystem.readDir(s);
+            for(const ent of rd) if(k === ent) return RootFs.join(s, ent);
+        }
+        return null;
+    }
+
+    constructor(k) {
+        // if(!(k instanceof Kernel)) throw new Error("Invalid instance of Kernel provided");
+        if(!k.isKernel) throw new Error("Invalid instance of Kernel provided");
+
+        this.#k = k;
+
+        this.setEnv("SHELL", "/bin/bash");
+        this.setEnv("HOSTNAME", k.sys.uname().nodename);
+        this.setEnv("PATH", "/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin");
+    }
+
+    init() {
+        app.desktop = new LiDesktop({ limited: !isDesktopModeEnabledAtStartup });
+    }
+}
+
+/**
+ * <lstv.space>
  * Shared website object.
  * Utilities and constants related to the site as a whole.
  * This is global and accessible by 3rd party code, nothing sensitive or potentially vulnerable should be exposed.
  */
-const isDesktopModeEnabledAtStartup = localStorage.getItem("desktopMode") === "true";
-
 const app = {
     // Utils
     LoggerContext,
@@ -584,4 +621,4 @@ app.events = new LS.EventEmitter(app);
 globalThis.website = app; // I just can't decide. I think I will keep app due to the app getting more integrated beyond a simple website.
 globalThis.app = app;
 
-export { app };
+export { Environment, app };

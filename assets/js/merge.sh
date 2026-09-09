@@ -10,7 +10,6 @@ src/soundbox.mjs
 src/desktop.mjs
 src/fs.mjs
 src/shared.mjs
-src/environment.mjs
 src/kernel.mjs
 "
 # src/shell.mjs

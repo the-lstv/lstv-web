@@ -3,30 +3,45 @@
  */
 
 class Enums  {
-    static O_RDONLY = 0x0000; // open for reading only
-    static O_WRONLY = 0x0001; // open for writing only
-    static O_RDWR   = 0x0002; // open for reading and writing
-    static O_ACCMODE = 0x0003; // mask for above modes
+    /**
+     * @see https://man7.org/linux/man-pages/man2/open.2.html
+     * @see https://sites.uclouvain.be/SystInfo/usr/include/bits/fcntl.h.html
+     */
+    static O_ACCMODE  = 0o0003; // access mode mask
 
-    static O_CREAT  = 0x0200; // create if non-existent
-    static O_EXCL   = 0x0800; // error if already exists
-    static O_TRUNC  = 0x0400; // truncate to zero length
-    static O_APPEND = 0x0008; // append on each write
+    static O_RDONLY   = 0o0000; // open for reading only
+    static O_WRONLY   = 0o0001; // open for writing only
+    static O_RDWR     = 0o0002; // open for reading and writing
 
-    static S_IFMT   = 0o170000  /* type mask */
+    static O_CREAT    = 0o0100; // create file if it does not exist
+    static O_EXCL     = 0o0200; // exclusive creation
+    static O_NOCTTY   = 0o0400; // do not assign controlling terminal
+    static O_TRUNC    = 0o1000; // truncate file to zero length
+    static O_APPEND   = 0o2000; // append on each write
+    static O_NONBLOCK = 0o4000; // non-blocking mode
+    static O_NDELAY   = 0o4000; // non-blocking mode (same as O_NONBLOCK)
+    static O_SYNC     = 0o10000; // synchronous writes
+    static O_FSYNC    = 0o10000; // synchronous writes (same as O_SYNC)
+    static O_ASYNC    = 0o20000; // asynchronous I/O
 
-    static S_IFSOCK = 0o140000  /* socket */
-    static S_IFLNK  = 0o120000  /* symbolic link */
-    static S_IFREG  = 0o100000  /* regular file */
-    static S_IFIFO  = 0o010000  /* FIFO */
-    static S_IFCHR  = 0o020000  /* character device */
-    static S_IFDIR  = 0o040000  /* directory */
-    static S_IFBLK  = 0o060000  /* block device */
+    static S_IFMT   = 0o170000; /* type mask */
+
+    static S_IFSOCK = 0o140000; /* socket */
+    static S_IFLNK  = 0o120000; /* symbolic link */
+    static S_IFREG  = 0o100000; /* regular file */
+    static S_IFIFO  = 0o010000; /* FIFO */
+    static S_IFCHR  = 0o020000; /* character device */
+    static S_IFDIR  = 0o040000; /* directory */
+    static S_IFBLK  = 0o060000; /* block device */
 
     static PERMS = 0o07777;
 
-    static __errCache;
+    // --- Non-standard flags specific to Linux.js only
+    static XO_STATONLY = 0x0001;
 
+    /**
+     * @see https://man7.org/linux/man-pages/man3/errno.3.html
+     */
     static errno = {
         EPERM: 0x01, // Operation not permitted
         ENOENT: 0x02, // No such file or directory
@@ -166,6 +181,7 @@ class Enums  {
         EHWPOISON: 0x85, // Memory page has hardware error
     };
 
+    static __errCache;
     static errCode(code) {
         if(!this.__errCache) {
             this.__errCache = new Map(Object.entries(this.errno).map(v => v.reverse()));

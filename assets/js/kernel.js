@@ -1665,30 +1665,45 @@ class Thread extends LS.EventEmitter {
  */
 
 class Enums  {
-    static O_RDONLY = 0x0000; // open for reading only
-    static O_WRONLY = 0x0001; // open for writing only
-    static O_RDWR   = 0x0002; // open for reading and writing
-    static O_ACCMODE = 0x0003; // mask for above modes
+    /**
+     * @see https://man7.org/linux/man-pages/man2/open.2.html
+     * @see https://sites.uclouvain.be/SystInfo/usr/include/bits/fcntl.h.html
+     */
+    static O_ACCMODE  = 0o0003; // access mode mask
 
-    static O_CREAT  = 0x0200; // create if non-existent
-    static O_EXCL   = 0x0800; // error if already exists
-    static O_TRUNC  = 0x0400; // truncate to zero length
-    static O_APPEND = 0x0008; // append on each write
+    static O_RDONLY   = 0o0000; // open for reading only
+    static O_WRONLY   = 0o0001; // open for writing only
+    static O_RDWR     = 0o0002; // open for reading and writing
 
-    static S_IFMT   = 0o170000  /* type mask */
+    static O_CREAT    = 0o0100; // create file if it does not exist
+    static O_EXCL     = 0o0200; // exclusive creation
+    static O_NOCTTY   = 0o0400; // do not assign controlling terminal
+    static O_TRUNC    = 0o1000; // truncate file to zero length
+    static O_APPEND   = 0o2000; // append on each write
+    static O_NONBLOCK = 0o4000; // non-blocking mode
+    static O_NDELAY   = 0o4000; // non-blocking mode (same as O_NONBLOCK)
+    static O_SYNC     = 0o10000; // synchronous writes
+    static O_FSYNC    = 0o10000; // synchronous writes (same as O_SYNC)
+    static O_ASYNC    = 0o20000; // asynchronous I/O
 
-    static S_IFSOCK = 0o140000  /* socket */
-    static S_IFLNK  = 0o120000  /* symbolic link */
-    static S_IFREG  = 0o100000  /* regular file */
-    static S_IFIFO  = 0o010000  /* FIFO */
-    static S_IFCHR  = 0o020000  /* character device */
-    static S_IFDIR  = 0o040000  /* directory */
-    static S_IFBLK  = 0o060000  /* block device */
+    static S_IFMT   = 0o170000; /* type mask */
+
+    static S_IFSOCK = 0o140000; /* socket */
+    static S_IFLNK  = 0o120000; /* symbolic link */
+    static S_IFREG  = 0o100000; /* regular file */
+    static S_IFIFO  = 0o010000; /* FIFO */
+    static S_IFCHR  = 0o020000; /* character device */
+    static S_IFDIR  = 0o040000; /* directory */
+    static S_IFBLK  = 0o060000; /* block device */
 
     static PERMS = 0o07777;
 
-    static __errCache;
+    // --- Non-standard flags specific to Linux.js only
+    static XO_STATONLY = 0x0001;
 
+    /**
+     * @see https://man7.org/linux/man-pages/man3/errno.3.html
+     */
     static errno = {
         EPERM: 0x01, // Operation not permitted
         ENOENT: 0x02, // No such file or directory
@@ -1828,6 +1843,7 @@ class Enums  {
         EHWPOISON: 0x85, // Memory page has hardware error
     };
 
+    static __errCache;
     static errCode(code) {
         if(!this.__errCache) {
             this.__errCache = new Map(Object.entries(this.errno).map(v => v.reverse()));
@@ -3330,19 +3346,96 @@ class LiDesktop {
 }
 
 // WARNING: The following imports are just a stub, the actual build system is being worked on.
+// import { SoundBox } from "./soundbox.mjs";
+// import { LiDesktop, MediaPlayer } from "./desktop.mjs";
+// import { LoggerContext, AssetManager, ContentContext, Viewport, Thread } from "./commons.mjs";
+// import { app } from "./shared.mjs";
+// import { kernel } from "./kernel.mjs";
 
+/**
+ * Performant & full-featured filesystem abstraction for Linux.JS 2.0/lstv.space kernel.
+ * @copyright admin@lstv.space
+ * 
+ * This is a Linux-like filesystem abstraction that aims to replicate the behavior of a typical Linux filesystem.
+ * It is a part of a larger project which aims to bring a lightweight Linux environment to the web, but can be used standalone to get a FS API.
+ * It comes with it's own optimized filesystem and path utilities.
+ * 
+ * 
+ * Supports Linux-compatible enums, permissions, symlinks, sockets, etc. and a rich selection of various backends.
+ * Currently supported backends:
+ * - TmpFs: Very fast in-memory storage. All features supported. Likely as light as an in-memory fs can get.
+ * - IndexedDbFs: Persistent browser storage via IndexedDB. Note: hardlink support is wip.
+ * - MemFs: In-memory archive format storage (supports compression, patching, fast state backup/restore, and instantly mounting a system image without touching any physical files with near-zero memory cost, good for temporary environments.) Note: hardlink support is wip.
+ * - LocalStorageFs: LocalStorage/SessionStorage-backed storage. Note: hardlink support is wip.
+ * - NodeFs: Host filesystem passthrough for virtually any native filesystem (Node.js only)
+ * - RemoteFs: Remote connection via network to another instance (ws/http)
+ * - WasmXFs: (Work in progress), virtual low-level filesystem inspired by XFS specifically for WASM applications.
+ * - Other backends are very possible too. Perhaps the new browser file API could be supported.
+ * 
+ * Misc backends:
+ * - JSFS: Mounts any JavaScript/JSON object as a (readonly) filesystem. Not sure about the use of this but you will find something.
+ * - NullFs: Storage that sends all your writes to the void. Simple as that.
+ * - jszfs: Read-only FS compatible with the old Linux.JS 1.0 virtual filesystem.
+ * 
+ * @example
+ * const rootFs = new RootFs();
+ * 
+ * // Mount something as the root
+ * rootFs.mount("/", new TmpFs({ data: TmpFs.basicLinuxFs() }));
+ * 
+ * console.log("Root directory: ", await rootFs.stat("/"));
+ * 
+ * const fd = await rootFs.open("/etc/os-release", Enums.O_RDONLY);
+ * console.log(await rootFs.read(fd, 0, -1, RootFs.ENCODING.utf8));
+ * fd.close();
+ * 
+ * const fd2 = await rootFs.open("/root/hello.txt", Enums.O_WRONLY | Enums.O_CREAT, Enums.S_IFREG | 0o644);
+ * await rootFs.write(fd2, "Hello world");
+ * fd2.close();
+ * 
+ * // Higher-level APIs are also available for easier use.
+ * console.log(await rootFs.readFile(RootFs.join("/root", "hello.txt"), "utf8"));
+ * 
+ * // & of course cleanup is quite simple.
+ * // For TmpFs/MemFs only: delete everything in the memory cache instantly.
+ * rootFs.destroyStateAtMount("/");
+ * rootFs.unmount("/");
+ * rootFs.destroy(); // This also unmounts everything.
+ * 
+ * // There are also some filesystem-dependent extra non-standard flags.
+ * // They are separated from regular flags, but can enhance performance, such as Enums.XO_STATONLY which avoids opening a fd when fetching stats of a file or Enums.XO_JS_STRING that can work directly with cached JS strings in some filesystems to avoid encoding/decoding.
+ * // Usually RootFs decides those automatically so you should avoid using them directly unless you know they are suported and won't break access.
+ */
 
-class Stat {
+/**
+ * File stats object
+ */
+class Stats {
     mode = Enums.S_IFREG | 0o644;
-    size = -1;
-    atimeMs = 0;
-    mtimeMs = 0;
-    ctimeMs = 0;
-    uid = 0;
-    gid = 0;
+
+    uid = 0; // File owner
+    gid = 0; // File group
+
+    atimeMs = 0;     // Last time the file was accessed
+    mtimeMs = 0;     // Last time the file was modified
+    ctimeMs = 0;     // Last time the file was either created or its metadata were modified (usually the creation date)
+    birthtimeMs = 0; // Time the date was actually created (not always supported).
+
+    size = -1;       // Size in bytes
+    blocks = -1;     // Number of blocks allocated
+    blksize = -1;    // FS Block size
+    ino = -1;        // Inode number
+
+    dev = 0;         // Device the file is stored on
+    rdev = 0;        // Device identifier if the file is a device
+    nlink = 1;       // Number of hard links to this file
 
     constructor(mode) {
         this.mode = mode;
+    }
+
+    static typeOf(mode) {
+        return mode & Enums.S_IFMT;
     }
 
     get type() {
@@ -3382,7 +3475,7 @@ class Stat {
         return this.mode & Enums.PERMS;
     }
 
-    get perms() {
+    getPerms() {
         const mode = this.mode;
         return {
             owner: {
@@ -3408,26 +3501,26 @@ class Stat {
     }
 }
 
-/**
- * Filesystem abstraction for lstv.space kernel/Linux.JS 2.0.
- * 
- * This is a Linux-like filesystem abstraction that aims to replicate the behavior of a typical Linux filesystem.
- * It is a part of a larger project Linux.JS which aims to bring a lightweight Linux-like VM-free environment to the web.
- */
-
 const DEFAULT_FS_DATA = [
     ["/", {}],
     ["/etc", {}],
     ["/etc/os-release", { contents: `NAME="LinuxJS"\nVERSION="2.0"\nID="linuxjs"\nVARIANT="lsw+lide-web"\nPRETTY_NAME="LinuxJS 2.0 (lstv.space, GNU/Linux)\nSUPPORT_END=2027-09-8"\nHOME_URL=https://lstv.space\nDEFAULT_HOSTNAME=linuxjs\nANSI_COLOR="0;38;2;60;110;180"\nLOGO=linuxjs-logo-icon`, mode: Enums.S_IFREG | 0o644 }],
     ["/etc/config.conf", { contents: "# Configuration file", mode: Enums.S_IFREG | 0o644 }],
-    ["/home/user", {}],
-    
+
     ["/usr", {}],
     ["/usr/bin", {}],
     ["/usr/sbin", {}],
+
     ["/usr/lib", {}],
     ["/usr/lib/os-release", { mode: Enums.S_IFLNK | 0o644, contents: "/etc/os-release" }],
+
     ["/usr/lib64", {}],
+
+    ["/usr/share", {}],
+    ["/usr/share/xsessions", {}],
+    ["/usr/share/wayland-sessions", {}],
+    ["/usr/share/lidm-web-sessions", {}],
+
     ["/bin",   { mode: Enums.S_IFLNK | 0o644, contents: "/usr/bin"   }],
     ["/sbin",  { mode: Enums.S_IFLNK | 0o644, contents: "/usr/sbin"  }],
     ["/lib",   { mode: Enums.S_IFLNK | 0o644, contents: "/usr/lib"   }],
@@ -3437,16 +3530,20 @@ const DEFAULT_FS_DATA = [
     ["/var/log", {}],
     ["/var/tmp", {}],
 
-    ["/tmp", {}],
-    ["/dev", {}],
-    ["/proc", {}],
-    ["/sys", {}],
-    ["/mnt", {}],
+    ["/tmp", {}],  // This will be overridden by a TmpFs mount
+    ["/dev", {}],  // This will be overridden by a TmpFs mount
+    ["/proc", {}], // This will be overridden by a ProcFs mount
+    ["/sys", {}],  // This will be overridden by a SysFs mount
+    ["/run", {}],  // This will be overridden by a SysFs mount
+    ["/mnt", {}],  // This will be overridden by a TmpFs mount
+
     ["/media", {}],
     ["/opt", {}],
     ["/boot", {}],
     ["/root", {}],
 
+    ["/home", {}],
+    ["/home/user", {}],
     ["/home/user/Documents", {}],
     ["/home/user/Downloads", {}],
     ["/home/user/Pictures", {}],
@@ -3494,7 +3591,7 @@ class RootFs {
      */
     static normalize(path, isAbsolute = null, allowExit = true, returnParts = false) {
         const parts = [];
-        const len = path.length;        
+        const len = path.length;
 
         const fc = path.charCodeAt(0);
         if (isAbsolute === null) isAbsolute = fc === this.PATH_SEPARATOR_CODE || fc === 92;
@@ -3579,21 +3676,24 @@ class RootFs {
         return normalized.substring(0, lastSepIndex);
     }
 
-    static ensureTrailing(path, isAbsolute = null) {
-        const normalized = RootFs.normalize(path, isAbsolute);
-        if (!normalized.endsWith(RootFs.PATH_SEPARATOR)) {
-            return normalized + RootFs.PATH_SEPARATOR;
+    static ensureTrailing(npath, isAbsolute = null, normalize = true) {
+        npath = RootFs.normalize(npath, isAbsolute);
+        if (!npath.endsWith(RootFs.PATH_SEPARATOR)) {
+            return npath + RootFs.PATH_SEPARATOR;
         }
-        return normalized;
+        return npath;
     }
 
     /**
-     * Move up one directory level in a given path. Normalizes the path.
+     * Move up x directory levels in a given path. Normalizes the path
+     * @param {string} path Path
+     * @param {number} [levels=1] How many levels to go up
      */
     static up(path, levels = 1) {
         const normalized = RootFs.normalize(path);
 
         let lI = path.length;
+        if(lI < 0) return "/";
 
         for (let i = 0; i < levels; i++) {
             lI = normalized.lastIndexOf(RootFs.PATH_SEPARATOR, lI - 1);
@@ -3627,6 +3727,40 @@ class RootFs {
 
         // absolute=false, allowExit=false
         return base + (base.endsWith(RootFs.PATH_SEPARATOR)? "": RootFs.PATH_SEPARATOR) + RootFs.normalize(parts.join(RootFs.PATH_SEPARATOR), false, false);
+    }
+
+    static parseOpenFlagsString(str) {
+        if(typeof str === "number") return str;
+        if(typeof str !== "string" || str.length > 3) throw new TypeError(`Invalid open flag: ${str}`);
+
+        let i = 0;
+
+        switch (str[0]) {
+            case "r":
+                i |= str[1] === "+" ? Enums.O_RDWR : Enums.O_RDONLY;
+                break;
+    
+            case "w":
+                i |= Enums.O_WRONLY | Enums.O_CREAT | Enums.O_TRUNC;
+                break;
+    
+            case "a":
+                i |= Enums.O_WRONLY | Enums.O_CREAT | Enums.O_APPEND;
+                break;
+    
+            default:
+                throw new TypeError(`Invalid open flag: ${str}`);
+        }
+    
+        if (str.includes("+")) {
+            i &= ~Enums.O_WRONLY;
+            i |= Enums.O_RDWR;
+        }
+
+        if (str.includes("x")) i |= Enums.O_EXCL;
+        if (str.includes("s")) i |= Enums.O_SYNC;
+    
+        return i;
     }
 
     /**
@@ -3712,22 +3846,25 @@ class RootFs {
      * 
      * @returns {*} fd
      */
-    async open(dir, flags, absolutePath = true) {
+    async open(dir, flags = Enums.O_RDONLY, mode = 0, extraFlags = 0, extraData = undefined, absolutePath = true) {
         dir = RootFs.normalize(dir, absolutePath);
 
-        // We assume that the mounts are sorted by length of mount point, descending, so the first match is the most specific one.
-        let usingFs = null;
-        const dirWithSep = RootFs.ensureTrailing(dir, true);
-        for(const [mp, fs] of this.#mounts) {
-            if(dirWithSep.startsWith(mp)) {
-                usingFs = fs;
-                break;
+        if(typeof flags === "string") {
+            flags = RootFs.parseOpenFlagsString(flags);
+        }
+
+        // Mounts are sorted by length of mount point, descending.
+        const dirWithSep = RootFs.ensureTrailing(dir, null, false);
+        for(const ent of this.#mounts) {
+            if(dirWithSep.startsWith(ent[0])) {
+                const fs = ent[1];
+                const fd = await fs.open(dir, flags, mode, extraFlags, extraData);
+                if(!fd || typeof fd === "number") throw new Error(Enums.errCode(fd) + " when opening path: " + dir);
+                return fd;
             }
         }
 
-        const fd = await usingFs.open(dir, flags);
-        if(!fd || typeof fd === "number") throw new Error(Enums.errCode(fd) + " when opening path: " + dir);
-        return fd;
+        throw new Error("No filesystem available to satisfy request");
     }
 
     /**
@@ -3805,19 +3942,12 @@ class RootFs {
     }
 
     async stat(dir) {
-        const stat = new Stat;
-        const fd = await this.open(dir, Enums.O_RDONLY);
+        const stat = new Stats;
+        const fd = await this.open(dir, Enums.O_RDONLY, null, Enums.XO_STATONLY, stat);
+        if(fd === stat) return stat; // ""fast stat"" via the special flag
         fd._fs.stat(fd, stat);
         await this.close(fd);
         return stat;
-    }
-
-    async fileType(dir){
-        const stat = {};
-        const fd = await this.open(dir, Enums.O_RDONLY);
-        fd._fs.stat(fd, stat);
-        await this.close(fd);
-        return stat.mode & Enums.S_IFMT;
     }
 
     async unlink(dir, options = {}) {
@@ -3859,6 +3989,8 @@ const decoder = new TextDecoder();
  * This is a simple implementation that uses a Map to store file data in memory.
  */
 class TmpFs {
+    static fsType = "TmpFs";
+
     fs = new Map;
 
     constructor(data) {
@@ -3872,12 +4004,16 @@ class TmpFs {
      * @param {*} flags Open flags, see open(2).
      * @param {*} mode File type and permissions used when using O_CREAT. For example, Enums.S_IFREG | 0o644 to create a file, etc.
      * @returns {*} File descriptor or errno.
-     *
-     * Error code constants:
-     * https://www.chromium.org/chromium-os/developer-library/reference/linux-constants/errnos/
+     * 
+     * dir, flags, mode, extraFlags, extraData
      */
-    open(ndir, flags, mode = Enums.S_IFREG | 0o644) {
+    open(ndir, flags, mode = Enums.S_IFREG | 0o644, extraFlags = 0, extraData = undefined) {
         let data = this.fs.get(ndir);
+
+        if(extraFlags & Enums.XO_STATONLY) {
+            if (!data) return Enums.errno.ENOENT;
+            return this.stat({ data }, extraData ?? {}, true);
+        }
 
         const accessMode = flags & Enums.O_ACCMODE;
         const canRead =  accessMode === Enums.O_RDONLY ||
@@ -3892,18 +4028,7 @@ class TmpFs {
                 return Enums.errno.ENOENT;
             }
 
-            const now = Date.now();
-
-            data = {
-                mode: mode,
-                uid: 0,
-                gid: 0,
-                atime: now,
-                mtime: now,
-                ctime: now
-            };
-
-            this.fs.set(ndir, data);
+            this.create(ndir, mode);
         } else {
             /*
              * O_CREAT | O_EXCL must fail if the path already exists.
@@ -3936,6 +4061,7 @@ class TmpFs {
             _fs: this,
             data,
             flags,
+            ndir,
             offset: (flags & Enums.O_APPEND) && data.isFile
                 ? data.contents.length
                 : 0,
@@ -3989,6 +4115,35 @@ class TmpFs {
         }
     }
 
+    create(ndir, mode, uid = 0, gid = 0) {
+        const now = Date.now();
+
+        data = {
+            mode,
+            uid,
+            gid,
+            atime: now,
+            mtime: now,
+            ctime: now,
+            birthtime: now
+        };
+
+        this.fs.set(ndir, data);
+        return 0;
+    }
+
+    /**
+     * Helper to create a directory, not an official hook
+     * todo: recurse & check parents
+     */
+    mkdir(ndir, perms = 0o755, recursive = false, uid = 0, gid = 0) {
+        if (this.fs.has(ndir)) {
+            return Enums.errno.EEXIST;
+        }
+
+        this.create(ndir, Enums.S_IFDIR | perms, uid, gid);
+        return 0;
+    }
 
     /**
      * Read from a file.
@@ -4215,14 +4370,15 @@ class TmpFs {
      * @param {*} fd File descriptor.
      * @returns {*} stat-like object.
      */
-    stat(fd, out) {
-        this.checkFd(fd);
+    stat(fd, out, ncheck = false) {
+        if(!ncheck) this.checkFd(fd);
         const data = fd.data;
 
         const now = Date.now();
         data.mtime ??= now;
         data.ctime ??= now;
         data.atime ??= now;
+        data.birthtime ??= now;
         data.mode  ??= Enums.S_IFDIR | 0o755;
 
         out.size = !data.contents? 0:
@@ -4241,46 +4397,21 @@ class TmpFs {
         return out;
     }
 
-    unlink(fd) {
+    /**
+     * In the case of this fs the file gets simply dereferenced from memory since we aren't really linking anything but using JS objects.
+     * Todo: ...
+     * 
+     * @param {*} fd File descriptor.
+     * @returns {number} Zero on success, errno enum on error.
+     */
+    unlink(ndir) {
         this.checkFd(fd);
 
-        const data = fd.data;
-
-        if (!data.isFile) {
+        if (Stats.typeOf(fd.data.mode)) {
             return Enums.errno.EISDIR;
         }
 
-        this.fs.delete(fd.path);
-
-        return 0;
-    }
-
-    mkdir(ndir, recursive, mode = 0o755, uid = 0, gid = 0) {
-        if (this.fs.has(ndir)) {
-            return Enums.errno.EEXIST;
-        }
-
-        if (!recursive) {
-            const parent = RootFs.dirname(ndir);
-            if (!this.fs.has(parent)) {
-                return Enums.errno.ENOENT;
-            }
-        }
-
-        // TODO: must create all intermediate directories and check for existing files in the path
-
-        const now = Date.now();
-
-        this.fs.set(ndir, {
-            isFile: false,
-            mode: mode,
-            uid: uid,
-            gid: gid,
-            atime: now,
-            mtime: now,
-            ctime: now
-        });
-
+        this.fs.delete(fd.ndir);
         return 0;
     }
 
@@ -4331,18 +4462,57 @@ class WasmFs {}
 /**
  * RQvFS filesystem (to be implemented)
  */
-class RqvFs {}// WARNING: The following imports are just a stub, the actual build system is being worked on.
+class RqvFs {}
+
+// WARNING: The following imports are just a stub, the actual build system is being worked on.
 
 // Misc constants
 const DEFAULT_PROFILE = "/~/assets/image/default.svg";
+const isDesktopModeEnabledAtStartup = localStorage.getItem("desktopMode") === "true";
 
 /**
+ * Environment loader.
+ */
+class Environment {
+    // Global environment variables
+    env = {}
+
+    #k;
+
+    setEnv(n, v) {
+        this.env[n] = v;
+    }
+
+    async resolvePath(k, pathv = this.#k.env.PATH) {
+        for(const s of pathv.split(":")) {
+            const rd = await this.#k.fileSystem.readDir(s);
+            for(const ent of rd) if(k === ent) return RootFs.join(s, ent);
+        }
+        return null;
+    }
+
+    constructor(k) {
+        // if(!(k instanceof Kernel)) throw new Error("Invalid instance of Kernel provided");
+        if(!k.isKernel) throw new Error("Invalid instance of Kernel provided");
+
+        this.#k = k;
+
+        this.setEnv("SHELL", "/bin/bash");
+        this.setEnv("HOSTNAME", k.sys.uname().nodename);
+        this.setEnv("PATH", "/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin");
+    }
+
+    init() {
+        app.desktop = new LiDesktop({ limited: !isDesktopModeEnabledAtStartup });
+    }
+}
+
+/**
+ * <lstv.space>
  * Shared website object.
  * Utilities and constants related to the site as a whole.
  * This is global and accessible by 3rd party code, nothing sensitive or potentially vulnerable should be exposed.
  */
-const isDesktopModeEnabledAtStartup = localStorage.getItem("desktopMode") === "true";
-
 const app = {
     // Utils
     LoggerContext,
@@ -4911,44 +5081,6 @@ const app = {
 app.events = new LS.EventEmitter(app);
 globalThis.website = app; // I just can't decide. I think I will keep app due to the app getting more integrated beyond a simple website.
 globalThis.app = app;
-
-/**
- * Environment loader.
- */
-
-class Environment {
-    // Global environment variables
-    env = {}
-
-    #k;
-
-    setEnv(n, v) {
-        this.env[n] = v;
-    }
-
-    async resolvePath(k, pathv = this.#k.env.PATH) {
-        for(const s of pathv.split(":")) {
-            const rd = await this.#k.fileSystem.readDir(s);
-            for(const ent of rd) if(k === ent) return RootFs.join(s, ent);
-        }
-        return null;
-    }
-
-    constructor(k) {
-        // if(!(k instanceof Kernel)) throw new Error("Invalid instance of Kernel provided");
-        if(!k.isKernel) throw new Error("Invalid instance of Kernel provided");
-
-        this.#k = k;
-
-        this.setEnv("SHELL", "/bin/bash");
-        this.setEnv("HOSTNAME", k.sys.uname().nodename);
-        this.setEnv("PATH", "/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin");
-    }
-
-    init() {
-        app.desktop = new LiDesktop({ limited: !isDesktopModeEnabledAtStartup });
-    }
-}
 
 // WARNING: The following imports are just a stub, the actual build system is being worked on.
 
