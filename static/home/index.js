@@ -438,11 +438,11 @@ class ProfileHandler extends LS.Context {
     }
 
     disableButtons() {
-        this.confirmButtons.getAll("button").forEach(button => button.attrAssign("disabled"));
+        this.confirmButtons.querySelectorAll("button").forEach(button => button.attrAssign("disabled"));
     }
 
     enableButtons() {
-        this.confirmButtons.getAll("button").forEach(button => button.removeAttribute("disabled"));
+        this.confirmButtons.querySelectorAll("button").forEach(button => button.removeAttribute("disabled"));
     }
 }
 

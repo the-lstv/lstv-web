@@ -61,6 +61,9 @@ const kernel = new class Kernel extends LS.Context {
 
     appManifests = new Map();
 
+    /**
+     * @type {Environment}
+     */
     environment =  null;
 
     queryParams = LS.Util.parseURLParams();
@@ -329,9 +332,6 @@ const kernel = new class Kernel extends LS.Context {
             kernel: this
         });
 
-        // Temporary
-        if(window.__windowManagerTarget) appElement.append(window.__windowManagerTarget.children[0]);
-
         for(const manifest of BUILTIN_APPS) {
             this.appManifests.set(manifest.id, manifest);
         }
@@ -447,8 +447,6 @@ const kernel = new class Kernel extends LS.Context {
                 window.__init = null;
             }
 
-            // app.desktop.initPanel();
-            // this.#setupAuth();
             this.loadUser();
 
             // Display content

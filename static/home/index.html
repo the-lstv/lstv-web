@@ -33,21 +33,33 @@
                 </div>
 
                 <span .sidebar-menu-category-title>Account</span>
-
                 <div .grouped-buttons>
                     <a .ls-button .elevated href="/home/account" data-tab-id="account"><i .bi-person-fill /><span>Account</span></a>
                     <a .ls-button .elevated href="/home/profile" data-tab-id="profile"><i .bi-person-badge /><span>Profile</span></a>
                 </div>
 
-                <span .sidebar-menu-category-title>Applications</span>
+                <span .sidebar-menu-category-title>Customization</span>
+                <div .grouped-buttons>
+                    <a .ls-button .elevated href="/home/appearance" data-tab-id="appearance"><i .bi-palette-fill /><span>Appearance</span></a>
+                    <a .ls-button .elevated href="/home/shortcuts" data-tab-id="shortcuts"><i .bi-keyboard-fill /><span>Keyboard shortcuts</span></a>
+                    <a .ls-button .elevated href="/home/desktop" data-tab-id="desktop"><i .bi-display-fill /><span>Desktop</span></a>
+                </div>
+
+                <span .sidebar-menu-category-title>Linked applications</span>
                 <div .grouped-buttons>
                     <a .ls-button .elevated href="/home/apps" data-tab-id="apps"><i .bi-app-indicator /><span>Apps</span></a>
                 </div>
+
+                <span .sidebar-menu-category-title>Linked devices</span>
+                <div .grouped-buttons>
+                    <a .ls-button .elevated href="/home/devices" data-tab-id="devices"><i .bi-phone-fill /><span>Devices</span></a>
+                </div>
                 
-                <span .sidebar-menu-category-title>Developers</span>
+                <span .sidebar-menu-category-title>For developers</span>
                 <div .grouped-buttons>
                     <a .ls-button .elevated href="/home/applications" data-tab-id="applications"><i .bi-app /><span>Applications</span></a>
-                    <a .ls-button .elevated href="/home/sub-users" data-tab-id="sub-users"><i .bi-robot /><span>Bot accounts</span></a>
+                    <a .ls-button .elevated href="/home/sub-users" data-tab-id="sub-users"><i .bi-robot /><span>Sub-accounts</span></a>
+                    <a .ls-button .elevated href="/home/vm" data-tab-id="vm"><i .bi-cpu-fill /><span>Virtual Machine</span></a>
                     <a .ls-button .elevated href="/home/keys" data-tab-id="keys"><i .bi-key-fill /><span>API Keys</span></a>
                     <a .ls-button .elevated href="/home/api" data-tab-id="api"><i .bi-file-earmark-text /><span>API Documentation</span></a>
                 </div>
@@ -226,16 +238,20 @@
                             </label>
                         </ls-div>
 
-                        <ls-div .margin-v-xlarge>
-                            <h3>Mature Content</h3>
-                            <span .settings-subtext>If your profile media or content contains mature content, you must check this. Your profile will be hidden from some people. Remember to see our ToS to see what's allowed.</span>
-
+                        <details .margin-v-xlarge style="margin-bottom: 100px">
+                            <summary><h3 style="margin: 0; display: inline">Mature Content</h3></summary>
+                            <span .settings-subtext>You must check the following if your profile or content, including links, contain any mature content (such as sexual content, nudity, or explicit language). Otherwise, you risk an action being taken against your account. Your profile will be hidden from some people based on their settings.</span>
+                            
                             <label .ls-checkbox>
                                 <input type="checkbox" id="mature-content" name="mature-content" {{ editingUser.mature_content }}>
                                 My profile contains mature content
                                 <span />
                             </label>
-                        </ls-div>
+
+                            <hr>
+
+                            <span .settings-subtext>We welcome free and open expression, as long as: 1) it doesn't violate any moral or legal standards, 2) it doesn't solicit abuse, and 3) it doesn't cause damage to others. See our Terms of Service for more information. Be aware that we may remove any content that violates our policies without notice. By checking this box, you confirm that you are at least 18 years old.</span>
+                        </details>
                     </div>
 
                     <div>
@@ -269,7 +285,7 @@
                 </div>
             </ls-tab>
 
-            <ls-tab tab-id="apps" tab-title="Applications">
+            <ls-tab tab-id="apps" tab-title="Linked applications">
                 You currently don't have any connected applications.
             </ls-tab>
 

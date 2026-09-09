@@ -71,7 +71,7 @@ class MediaPlayer {
         };
 
         this.musicStatusElement.onclick = () => {
-            app.desktop.openToolbar("musicPlayer", true);
+            this.openToolbar("musicPlayer", true);
         };
 
         this.musicStatusElement.style.display = "none";
@@ -242,8 +242,10 @@ class MediaPlayer {
  * Desktop class
  * Represents the virtual desktop environment and its components.
  * It does not manage or access windows or their content (that is done by LS.WindowManager & kernel) or any other system features.
+ * 
+ * TODO: clean up and refactor this class
  */
-class LiDesktop {
+class LiDesktop extends LS.Context {
     name = "lide-web";
     version = "1.0.0-alpha";
     codeName = "Based on LiDE 12 Hiroki";
@@ -253,7 +255,22 @@ class LiDesktop {
      * @param {*} options Options
      */
     constructor(options) {
-        this.windowManager = LS.WindowManager;
+        super();
+
+        this.windowManager = new LS.WindowManager({
+            target: LS.SelectOrCreate('#app')
+        });
+
+        this.addExternalEventListener(this.windowManager, "window-created", (event) => this.updateTaskbars());
+        this.addExternalEventListener(this.windowManager, "window-closed", (event) => this.updateTaskbars());
+
+        if(!options.limited) {
+            this.windowManager.topOffset = 0;
+            this.windowManager.bottomOffset = 42;
+        } else {
+            this.windowManager.topOffset = 50;
+            this.windowManager.bottomOffset = 0;
+        }
 
         // System sounds
         const base = "/assets/audio/system/sfx/";
@@ -270,7 +287,7 @@ class LiDesktop {
         }, null, "system");
 
         // Enables closing toolbars via esc
-        this.ToolbarStackRef = { close() { app.desktop.closeToolbar() } };
+        this.ToolbarStackRef = { close() { this.closeToolbar() } };
 
         // Initialize music player (for global media controls, and it is also a player on it's own.)
         this.musicPlayer = new MediaPlayer;
@@ -278,7 +295,7 @@ class LiDesktop {
         this.isToolbarOpen = false;
 
         shortcutManager.assign('GLOBAL_DESKTOP_OPEN_MENU', () => {
-            app.desktop.openToolbar("menu", true);
+            this.openToolbar("menu", true);
         });
 
         kernel.environment.setEnv("XDG_CURRENT_DESKTOP", this.constructor.name);
@@ -289,6 +306,11 @@ class LiDesktop {
         kernel.on("user-changed", (isLoggedIn, fragment) => {
             this.loadUserList();
         });
+
+        this.menuElement = null;
+        this.menuInitialized = false;
+
+        this.initPanel();
     }
 
     /**
@@ -299,9 +321,9 @@ class LiDesktop {
     panelState = []
 
     static panelComponents = new Map([
-        ["accounts", { label: "Account", showIcon: false, buttonLabel: { class: "accountsButton", inner: [{ reactive: "user.username ?? 'Log-In'" }, { class: "profile-picture-preview", inner: { tag: "i", class: "bi-person-fill" } }] }, description: "View and edit your profile or log-in", icon: "bi-person-fill", onClick: () => app.desktop.openToolbar("login") }],
+        ["accounts", { label: "Account", showIcon: false, buttonLabel: { class: "accountsButton", inner: [{ reactive: "user.username ?? 'Log-In'" }, { class: "profile-picture-preview", inner: { tag: "i", class: "bi-person-fill" } }] }, description: "View and edit your profile or log-in", icon: "bi-person-fill", onClick() { this.openToolbar("login") } }],
 
-        ["apps", { label: "Apps", tooltip: "Applications", description: "View applications", icon: "bi-grid-fill", onClick() { app.desktop.openToolbar("apps", true) } }],
+        ["apps", { label: "Apps", tooltip: "Applications", description: "View applications", icon: "bi-grid-fill", onClick() { this.openToolbar("apps", true) } }],
 
         // ["assistant", { showLabel: false, label: "Assistant", description: "Open Assistant", icon: "bi-stars", onClick() {
         //     website.desktop.openToolbar("assistant", true);
@@ -309,7 +331,7 @@ class LiDesktop {
 
         ["theme", { buttonLabel: { tag: "i", class: "bi-palette-fill" }, label: "Customize", description: "Customize the site appearance", icon: 'bi-' + (LS.Color.theme === "dark" ? "moon-stars" : "sun") + "-fill",
             onClick() {
-                app.desktop.openToolbar("theme", true);
+                this.openToolbar("theme", true);
             },
 
             onceInit() {
@@ -338,8 +360,8 @@ class LiDesktop {
                 return;
             }
 
-            app.desktop.closeToolbar();
-            app.desktop.openPalette();
+            this.closeToolbar();
+            this.openPalette();
         }}],
 
         ["clock", {
@@ -366,7 +388,7 @@ class LiDesktop {
         ["taskbar", {
             getElement: () => LS.Create(".taskbar"),
             name: "Taskbar",
-            description: "See open applications",
+            description: "See open applications"
         }],
 
         ["website-header", {
@@ -408,8 +430,8 @@ class LiDesktop {
             description: "View applications",
 
             onOpen() {
-                if(!app.desktop.applicationMenu.initialized) {
-                    app.desktop.applicationMenu.init();
+                if(!this.menuInitialized) {
+                    this.initMenu();
                 }
             }
         }],
@@ -462,32 +484,32 @@ class LiDesktop {
 
     openToolbar(name, toggle = false) {
         console.log("Opening toolbar:", name, "Toggle:", toggle);
-        if(app.currentToolbar == name && app.isToolbarOpen) {
-            if(toggle) app.desktop.closeToolbar();
+        if(app.currentToolbar == name && this.isToolbarOpen) {
+            if(toggle) this.closeToolbar();
             return;
         }
 
-        const toolbar = app.desktop.toolbars.get(name);
+        const toolbar = this.toolbars.get(name);
         if(!toolbar) return;
 
-        const previousToolbar = app.currentToolbar && app.desktop.toolbars.get(app.currentToolbar);
+        const previousToolbar = app.currentToolbar && this.toolbars.get(app.currentToolbar);
         if(previousToolbar) {
             if(typeof previousToolbar.onClose === "function") previousToolbar.onClose();
             this.eachButtonOfKind(app.currentToolbar, button => button.classList.remove("open"));
         }
 
-        if(typeof toolbar.onOpen === "function") toolbar.onOpen();
+        if(typeof toolbar.onOpen === "function") toolbar.onOpen.call(this);
 
         // TODO: this is incredibly ass
         toolbar.element.classList.add("open");
-        for(const tb of app.desktop.toolbars.values()) {
+        for(const tb of this.toolbars.values()) {
             if(tb !== toolbar) tb.element.classList.remove("open");
         }
 
-        if (app.isToolbarOpen) LS.Animation.slideInToggle(toolbar.element, previousToolbar?.element || null);
-        if (!app.isToolbarOpen) LS.Animation.fadeIn(toolbar.element, "up");
+        if (this.isToolbarOpen) LS.Animation.slideInToggle(toolbar.element, previousToolbar?.element || null);
+        if (!this.isToolbarOpen) LS.Animation.fadeIn(toolbar.element, "up");
 
-        app.isToolbarOpen = true;
+        this.isToolbarOpen = true;
         app.currentToolbar = name;
         app.quickEmit("toolbar-open", name);
         kernel.viewport.target.classList.add("shade");
@@ -499,8 +521,7 @@ class LiDesktop {
     }
 
     eachButtonOfKind(kind, callback) {
-        for(const item of app.desktop.panelState) {
-            console.log(kind, item.kind);
+        for(const item of this.panelState) {
             if(item.kind === kind && item.element instanceof HTMLElement) {
                 callback(item.element);
             }
@@ -509,9 +530,9 @@ class LiDesktop {
 
     closeToolbar(immediate = false) {
         console.log("Closing toolbar");
-        if(!app.isToolbarOpen) return;
+        if(!this.isToolbarOpen) return;
 
-        const toolbar = app.desktop.toolbars.get(app.currentToolbar);
+        const toolbar = this.toolbars.get(app.currentToolbar);
         if (immediate) {
             toolbar.element.style.display = "none";
         } else {
@@ -524,7 +545,7 @@ class LiDesktop {
             app.currentToolbar = null;
         }
 
-        app.isToolbarOpen = false;
+        this.isToolbarOpen = false;
         app.quickEmit("toolbar-close");
         kernel.viewport.target.classList.remove("shade");
         LS.Stack.remove(this.ToolbarStackRef);
@@ -548,9 +569,9 @@ class LiDesktop {
 
     showLoginToolbar(toggle = false) {
         setTimeout(() => {
-            if(!toggle && app.isToolbarOpen && app.currentToolbar === "login") return;
+            if(!toggle && this.isToolbarOpen && app.currentToolbar === "login") return;
 
-            app.desktop.openToolbar("login", toggle);
+            this.openToolbar("login", toggle);
 
             if(!app.isLoggedIn) setTimeout(() => {
                 LS.SelectOne("#loginPopup")?.querySelector("button,input")?.focus();
@@ -561,7 +582,7 @@ class LiDesktop {
     initPanel() {
         const moreButton = LS.SelectOrCreate("#moreButton");
         moreButton.addEventListener("click", () => {
-            app.desktop.openToolbar("more", true);
+            this.openToolbar("more", true);
         });
 
         this.frameScheduler = new LS.Util.FrameScheduler(() => {
@@ -587,21 +608,38 @@ class LiDesktop {
 
         this.frameScheduler.schedule();
 
-        window.addEventListener("resize", this.__resizeHandler = () => {
+        this.addExternalEventListener(window, "resize", () => {
             this.frameScheduler.schedule();
         });
 
         if(window.visualViewport) {
-            window.visualViewport.addEventListener("resize", () => {
+            this.addExternalEventListener(window.visualViewport, "resize", () => {
                 this.frameScheduler.schedule();
             });
         }
 
         app.collapseItems = this.frameScheduler;
 
-        kernel.addExternalEventListener(document, "pointerdown", (event) => {
-            if (app.isToolbarOpen && !event.target.closest("#toolbars,.toolbar-button")) app.desktop.closeToolbar();
+        console.log("Desktop panel initialized");
+        this.addExternalEventListener(document, "pointerdown", (event) => {
+            if (this.isToolbarOpen && !event.target.closest("#toolbars,.toolbar-button")) this.closeToolbar();
         }, { passive: true });
+    }
+
+    initMenu() {
+        const container = this.toolbars.get("apps").element;
+        this.menuElement = container.querySelector(".app-list");
+
+        kernel.on("application-installed", (manifest) => {
+            this.addApplicationEntry(manifest);
+        });
+
+        // Load existing apps
+        for(const manifest of kernel.appManifests.values()) {
+            this.addApplicationEntry(manifest);
+        }
+
+        this.menuInitialized = true;
     }
 
     updatePanelLayout() {
@@ -620,7 +658,7 @@ class LiDesktop {
         let frag, menuFrag;
 
         let takenSpace = 0;
-        for(const item of app.desktop.panelState) {
+        for(const item of this.panelState) {
             const component = LiDesktop.panelComponents.get(item.kind);
             if(!component) continue;
 
@@ -639,7 +677,7 @@ class LiDesktop {
                     item.element = LS.Create("button.toolbar-button.pill.elevated[aria-label='" + component.description + "']", {
                         tooltip: component.tooltip || component.label,
                         inner: component.showLabel !== false? [icon, { tag: "span", inner: buttonLabel, class: typeof buttonLabel === "string" ? "label" : "" }]: icon,
-                        onclick: component.onClick || null
+                        onclick: component.onClick.bind(this) || null
                     });
                     
                     // Browser layout rendering is an absolutely incompetent piece of crap
@@ -653,14 +691,14 @@ class LiDesktop {
                 frag.appendChild(item.element);
                 if(typeof component.onceInit === "function" && !component.__initialized) {
                     try {
-                        component.onceInit(item);
+                        component.onceInit.call(this, item);
                         component.__initialized = true;
                     } catch(e) { console.error(e) }
                 }
 
                 if(typeof component.onInit === "function") {
                     try {
-                        component.onInit(item);
+                        component.onInit.call(this, item);
                     } catch(e) { console.error(e) }
                 }
             }
@@ -681,7 +719,7 @@ class LiDesktop {
         // }
 
         let hasCollapsedItems = false;
-        // for (const item of app.desktop.panelState) {
+        // for (const item of this.panelState) {
         //     if(!item.element) continue;
         //     const detached = item.element.classList.contains("detached");
 
@@ -721,8 +759,38 @@ class LiDesktop {
         moreButton.style.display = (availableSpace + moreButtonClientWidth) < takenSpace ? "inline-flex" : "none";
 
         // Close the toolbar if no items are collapsed and it's currently open
-        if (!hasCollapsedItems && app.isToolbarOpen && app.currentToolbar === "more") {
-            app.desktop.closeToolbar();
+        if (!hasCollapsedItems && this.isToolbarOpen && app.currentToolbar === "more") {
+            this.closeToolbar();
+        }
+    }
+
+    updateTaskbars() {
+        for(const item of this.panelState) {
+            if(item.kind === "taskbar" && item.element) {
+                const taskbar = item.element;
+                taskbar.replaceChildren();
+
+                for(const window of this.windowManager.windows) {
+                    const button = LS.Create("button.taskbar-window-button", {
+                        inner: [
+                            { tag: "i", class: "bi-window" },
+                            { tag: "span", class: "taskbar-window-title text-overflow-nowrap", innerText: window.title }
+                        ],
+                        onclick() {
+                            if(window.suspended) {
+                                window.restore();
+                            } else {
+                                window.minimize();
+                            }
+                        }
+                    });
+
+                    if(window.suspended) button.classList.add("minimized");
+                    if(window.isFocused) button.classList.add("focused");
+
+                    taskbar.appendChild(button);
+                }
+            }
         }
     }
 
@@ -742,10 +810,10 @@ class LiDesktop {
 
     // todo: move to desktop
     async loadUserList() {
-        const accounts = await this.auth.listAccounts();
+        const accounts = await kernel.auth.listAccounts();
         app.accounts = accounts && accounts.accounts || [];
 
-        const list = app.desktop.toolbars.get("login").element.querySelector(".accounts-list");
+        const list = this.toolbars.get("login").element.querySelector(".accounts-list");
         list.innerHTML = "";
 
         for (const account of app.accounts) {
@@ -760,7 +828,7 @@ class LiDesktop {
 
             item.onclick = () => {
                 item.setAttribute("state", "loading");
-                this.auth.switchAccount(account.id).then(() => {
+                kernel.auth.switchAccount(account.id).then(() => {
                     this.loadUser().then(() => {
                         item.removeAttribute("state");
                     });
@@ -787,13 +855,13 @@ class LiDesktop {
 
     // todo: move to desktop
     #setupAuth() {
-        LS.SelectOrCreate("#logOutButton").addEventListener("click", function (){
+        LS.SelectOrCreate("#logOutButton").addEventListener("click", () => {
             kernel.auth.logout(() => {
                 LS.Toast.show("Logged out successfully.", {
                     timeout: 2000
                 });
 
-                app.desktop.closeToolbar();
+                this.closeToolbar();
                 kernel.loadUser();
                 app.loginTabs.set("default");
             });
@@ -823,6 +891,7 @@ class LiDesktop {
             if (errorMessage) errorMessage.textContent = message;
         }
 
+        const self = this;
         function redirectAfterLogin() {
             const redirect = kernel.queryParams.continue || ((location.pathname.startsWith("/login") || location.pathname.startsWith("/sign-up"))? "/": null);
             if (redirect) {
@@ -832,7 +901,7 @@ class LiDesktop {
 
             // Update user without reloading
             kernel.loadUser().then(() => {
-                app.desktop.closeToolbar();
+                self.closeToolbar();
                 app.loginTabs.set("default");
             });
         }
@@ -848,7 +917,7 @@ class LiDesktop {
                 return;
             }
 
-            this.auth.login(username, password, (error, result) => {
+            kernel.auth.login(username, password, (error, result) => {
                 if (error) {
                     displayLoginError(error.message || error.error || "An error occurred while logging in");
                     return;
@@ -883,7 +952,7 @@ class LiDesktop {
                 return;
             }
 
-            this.auth.register({ email, username, password, displayname: displayName || null }, (error, result) => {
+            kernel.auth.register({ email, username, password, displayname: displayName || null }, (error, result) => {
                 if (error) {
                     app.loginTabs.set('register');
                     console.log(error, (error.code === 4 || error.code === 5)? LS.SelectOne("#regEmail"): (error.code === 3 || error.code === 6)? LS.SelectOne("#regUsername"): error.code === 7? LS.SelectOne("#regPassword"): null);
@@ -904,7 +973,7 @@ class LiDesktop {
 
             clearLoginError();
 
-            view.style.transition = (!app.isToolbarOpen || !oldElement)? "none" : "";
+            view.style.transition = (!this.isToolbarOpen || !oldElement)? "none" : "";
 
             LS.Animation.slideInToggle(view, oldElement);
 
@@ -930,77 +999,53 @@ class LiDesktop {
         });
     }
 
-    applicationMenu = new class ApplicationMenu extends LS.Context {
-        constructor() {
-            super("Application Menu");
-            this.initialized = false;
-        }
+    /**
+     * Add an application entry to the application menu.
+     * @param {*} manifest 
+     */
+    addApplicationEntry(manifest) {
+        const appId = manifest.id;
+        if(!appId) return;
 
-        init() {
-            if(this.initialized) return;
-            this.initialized = true;
+        const appButton = LS.Create({
+            class: "app-list-item",
 
-            const container = app.desktop.toolbars.get("apps").element;
-            this.appListElement = container.querySelector(".app-list");
+            inner: [
+                app.views.getAppIconView(manifest, [64]),
+                LS.Create('span', { class: 'app-name text-overflow-nowrap', textContent: manifest.name || appId })
+            ],
 
-            kernel.on("application-installed", (manifest) => {
-                this.addApplicationEntry(manifest);
-            });
-
-            // Load existing apps
-            for(const manifest of kernel.appManifests.values()) {
-                this.addApplicationEntry(manifest);
-            }
-        }
-
-        /**
-         * Add an application entry to the application menu.
-         * @param {*} manifest 
-         */
-        addApplicationEntry(manifest) {
-            const appId = manifest.id;
-            if(!appId) return;
-
-            const appButton = LS.Create({
-                class: "app-list-item",
-
-                inner: [
-                    app.views.getAppIconView(manifest, [64]),
-                    LS.Create('span', { class: 'app-name text-overflow-nowrap', textContent: manifest.name || appId })
-                ],
-
-                onclick: () => {
-                    if(manifest.external) {
-                        if(typeof manifest.link !== "string" || !manifest.link) {
-                            LS.Toast.show("This application does not have a valid link.", { accent: "red" });
-                            return;
-                        }
-
-                        window.open(manifest.link, "_blank", "noopener");
-                        app.desktop.closeToolbar();
+            onclick: () => {
+                if(manifest.external) {
+                    if(typeof manifest.link !== "string" || !manifest.link) {
+                        LS.Toast.show("This application does not have a valid link.", { accent: "red" });
                         return;
                     }
 
-                    kernel.openApplication(manifest, { source: "appMenu" })
-                        .loading(() => {
-                            appButton.setAttribute("state", "loading");
-                        })
-                        .done((instance) => {
-                            instance.open?.();
-                            app.desktop.closeToolbar();
-                        })
-                        .catch(error => {
-                            LS.Toast.show("Failed to open application: " + error.message, { accent: "red" });
-                            console.error("Failed to open application:", error);
-                        })
-                        .finally(() => {
-                            appButton.removeAttribute("state");
-                        });
+                    window.open(manifest.link, "_blank", "noopener");
+                    this.closeToolbar();
+                    return;
                 }
-            });
 
-            this.appListElement.appendChild(appButton);
-        }
+                kernel.openApplication(manifest, { source: "appMenu" })
+                    .loading(() => {
+                        appButton.setAttribute("state", "loading");
+                    })
+                    .done((instance) => {
+                        instance.open?.();
+                        this.closeToolbar();
+                    })
+                    .catch(error => {
+                        LS.Toast.show("Failed to open application: " + error.message, { accent: "red" });
+                        console.error("Failed to open application:", error);
+                    })
+                    .finally(() => {
+                        appButton.removeAttribute("state");
+                    });
+            }
+        });
+
+        this.menuElement.appendChild(appButton);
     }
 
     _welcome(){
@@ -1026,7 +1071,7 @@ class LiDesktop {
      */
     destroy() {
         // If we used the shared WM, we should reset it back instead of just deleting it.
-        const replacingWM = this.windowManager === LS.WindowManager;
+        const replacingWM = this.windowManager === LS.WindowManager.default;
         this.windowManager.destroy(replacingWM);
         this.windowManager = null;
 
@@ -1041,7 +1086,6 @@ class LiDesktop {
             this.frameScheduler = null;
         }
 
-        window.removeEventListener("resize", this.__resizeHandler);
         this.toolbars.clear();
     }
 }

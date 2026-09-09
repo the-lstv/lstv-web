@@ -39,8 +39,7 @@ html, body {
         border: none;
         border-top: 1px solid var(--surface-2);
 
-        background: color-mix(var(--background), transparent 20%);
-        backdrop-filter: blur(20px);
+        background: var(--background);
     }
 
     .headerTitle, .headerButtons .label {
@@ -49,6 +48,13 @@ html, body {
 
     #desktop {
         display: block;
+    }
+}
+
+body:not(.low-performance-mode).lsweb-desktop-mode {
+    #primaryPanel {
+        background: color-mix(in oklab, var(--background), transparent 20%);
+        backdrop-filter: blur(16px);
     }
 }
 
@@ -72,6 +78,11 @@ html, body {
 .taskbar-clock {
     display: flex;
     align-items: center;
+}
+
+.taskbar {
+    display: flex;
+    gap: 8px;
 }
 
 a > * {
@@ -520,10 +531,6 @@ main#viewport::after {
     }
 }
 
-#toolbarApps {
-    width: 350px;
-}
-
 #loginPopup {
     padding: 36px 30px;
 }
@@ -933,7 +940,7 @@ main > div {
     max-width: 650px;
     padding: 0 10px;
     margin: 0 auto;
-    z-index: 1000;
+    z-index: 5000;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -958,6 +965,7 @@ main > div {
 
 .terminal-line {
     white-space: pre-wrap;
+    user-select: text;
 }
 
 .terminal-line:hover {
@@ -1340,7 +1348,7 @@ main > div {
     content: "";
     position: absolute;
     inset: 5px;
-    background: linear-gradient(color-mix(in oklab,var(--background) 45%,transparent 100%), var(--background) 80%);
+    background: linear-gradient(color-mix(in oklab, var(--background) 45%,transparent 100%), var(--background) 80%);
     border-radius: var(--border-radius-xlarge);
     pointer-events: none;
 }
@@ -1685,9 +1693,10 @@ ls-text-input.has-textarea {
     font-weight: 400 !important;
 }
 
-
-
 #toolbarApps {
+    width: 350px;
+    overflow: hidden;
+
     .app-list {
         display: grid;
         grid-template-columns: repeat(3, 1fr);

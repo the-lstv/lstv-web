@@ -485,9 +485,6 @@ const app = {
         document.body.classList.toggle("lsweb-desktop-mode", value);
 
         if(value) {
-            LS.WindowManager.topOffset = 0;
-            LS.WindowManager.bottomOffset = 42;
-
             app.desktop.panelState = [
                 { kind: "apps" },
                 { kind: "accounts" },
@@ -501,9 +498,6 @@ const app = {
             // todo
             app.desktop._welcome();
         } else {
-            LS.WindowManager.topOffset = 50;
-            LS.WindowManager.bottomOffset = 0;
-
             app.desktop.panelState = [
                 { kind: "website-header" },
                 { kind: "spacer" },

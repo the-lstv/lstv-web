@@ -2117,10 +2117,10 @@ function init(kernel, desktop, LoggerContext) {
 
     desktop.commandPalette.register([
         {
-            name: "kernel-info",
-            alias: ["kernel-version", "version"],
+            name: "fetch",
+            alias: ["kernel-info", "kernel-version", "version"],
             icon: 'bi-cpu-fill',
-            description: "Show kernel information",
+            description: "Show information about system and environment",
             async onCalled() {
                 terminalOutput.appendChild(LS.Create({
                     innerHTML: `<img src="/~/assets/image/kernel-icons/${kernel.version.split(".")[0]}x.png" width="180" style="position:absolute;top:20px"><svg xmlns="http://www.w3.org/2000/svg" width="200" height="180" viewBox="0 0 200 180" fill="none">
@@ -2132,19 +2132,42 @@ function init(kernel, desktop, LoggerContext) {
                     style: 'margin:auto;display:flex;justify-content:center;position:relative'
                 }));
 
+                const uname = await kernel.sys.uname();
+                const rootMount = kernel?.fileSystem?.lsmount?.()?.find(m => m[0] === "/")?.[1];
+
                 terminalWriter.log(
                     `%clstv.space%c kernel`,
                     "color:var(--accent);font-weight:bold;font-size:1.2em",
                     "color:inherit;font-weight:bold;font-size:1.2em"
                 );
                 terminalWriter.log(
-                    `%cVersion:%c ${kernel.version} (${ckMeta.codename})`,
+                    `%cKernel:%c ${uname.sysname} ${uname.release} (${ckMeta.codename})`,
                     "color:var(--accent);font-weight:bold", "color:inherit"
                 );
                 terminalWriter.log(
                     `%cLS version:%c ${LS.version}`,
                     "color:var(--accent);font-weight:bold", "color:inherit"
                 );
+                if(rootMount) {
+                    terminalWriter.log(
+                        `%cDisk (/):%c ${rootMount.size > -1? Math.round(rootMount.size / 1024 / 1024): "0"}MB / ${rootMount.size > -1? Math.round(rootMount.size / 1024 / 1024): "0"}MB (${Math.round((rootMount.used || -1) / (rootMount.size || 1) * 100)}%) - ${rootMount.type || "Unknown"}`,
+                        "color:var(--accent);font-weight:bold", "color:inherit"
+                    );
+                }
+                if(app.desktop) {
+                    terminalWriter.log(
+                        `%cDesktop:%c ${app.desktop.name || "Unknown"} ${app.desktop.version}`,
+                        "color:var(--accent);font-weight:bold", "color:inherit"
+                    );
+                    // terminalWriter.log(
+                    //     `%cWindow Manager:%c LS.WindowManager`, // well hm
+                    //     "color:var(--accent);font-weight:bold", "color:inherit"
+                    // );
+                    terminalWriter.log(
+                        `%cWindows:%c ${app.desktop.windowManager.windows.size}`,
+                        "color:var(--accent);font-weight:bold", "color:inherit"
+                    );
+                }
                 terminalWriter.log(
                     `%cViewports:%c ${kernel.viewports.size}`,
                     "color:var(--accent);font-weight:bold", "color:inherit"
@@ -2154,11 +2177,7 @@ function init(kernel, desktop, LoggerContext) {
                     "color:var(--accent);font-weight:bold", "color:inherit"
                 );
                 terminalWriter.log(
-                    `%cThreads:%c ${kernel.threads.size} / ${kernel.MAX_THREADS}`,
-                    "color:var(--accent);font-weight:bold", "color:inherit"
-                );
-                terminalWriter.log(
-                    `%cWindows:%c ${LS.WindowManager.windows.size}`,
+                    `%cThreads:%c ${kernel.threads.size + 1} / ${kernel.MAX_THREADS}`, // +1 for main thread
                     "color:var(--accent);font-weight:bold", "color:inherit"
                 );
                 terminalWriter.log(
@@ -2398,6 +2417,16 @@ function init(kernel, desktop, LoggerContext) {
             inputs: [
                 { name: "text", type: "string", description: "Text to echo" }
             ]
+        },
+
+        {
+            name: "version-info",
+            icon: "bi-info-circle",
+            description: "Get copyable version information",
+            async onCalled() {
+                const uname = await kernel.sys.uname();
+                terminalWriter.log(`${uname.sysname} ${uname.release} LS:${LS.version} DE:${app.desktop?.name} (${ckMeta.codename})`);
+            }
         },
 
         {

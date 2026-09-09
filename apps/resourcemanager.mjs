@@ -116,8 +116,8 @@ class ResourceMonitor extends website.ContentContext {
         this.frameScheduler.limitFPS(15);
 
         // Listen to kernel events
-        this.addExternalEventListener(this.#kernel, "context-created", () => this.#scheduleRefresh());
-        this.addExternalEventListener(this.#kernel, "context-updated", () => this.#scheduleRefresh());
+        this.addExternalEventListener(this.#kernel, "context-created",   () => this.#scheduleRefresh());
+        this.addExternalEventListener(this.#kernel, "context-updated",   () => this.#scheduleRefresh());
         this.addExternalEventListener(this.#kernel, "context-destroyed", () => this.#scheduleRefresh());
 
         this.window = this.createWindow({

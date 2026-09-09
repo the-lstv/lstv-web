@@ -1,11 +1,22 @@
 
 # PRIVACY POLICY
 
-Last updated: January 4, 2026
+Last updated: September 10, 2026
 
 At LSTV, we are committed to protecting your privacy and ensuring transparency in how we handle your personal information. This Privacy Policy explains how we collect, use, store, share, and protect your personal information when you use our extensive platform of online and offline services, including but not limited to our websites, mobile applications, events, consultations, and related services.
 
-> LSTV always respects your privacy. We do not use cookies and do not share any data with 3rd parties without your consent. There are also no ads from external providers and tracking on our platform ❤️
+
+<br>
+
+<strong>We always respect your privacy.</strong>
+We do not use any cookies and never share any of your personal data with 3rd parties without your consent.
+
+There is also no tracking or invasive ads on our platform ❤️
+
+lstv.space is a passion project commited to providing a genuine and trustworthy experience for our users, not motivated by sole profit.
+
+<br>
+---
 
 ## 1. Information We Collect:
 
@@ -23,8 +34,9 @@ At LSTV, we are committed to protecting your privacy and ensuring transparency i
 - Technical data (IP address, browser type, device information, operating system)
 - Usage data (pages visited, time spent, feature usage)
 - Anonymized performance and diagnostic information (load times, software version, memory usage, errors)
+- Hovered/clicked external site links when link preview is enabled through our API to provide the preview (this is fully anonymous and only stored temporarily for cache, however.)
 
-You may opt out of certain types of automatic data collection at any time. To do so, open the Command Palette in our site and run the following command: `settings privacy statistics false`. Once this setting is applied, we will stop collecting non-essential automatic data. The only information that will continue to be collected is the total time spent on the site, which is required for basic service operation and performance monitoring.
+You may opt out of some types of automatic data collection at any time. To do so, use the Command Palette on our website (Open by pressing Ctrl+Shift+P/Ctrl+K or the navigation panel button) and paste the following command: `settings privacy statistics false`. Once this setting is applied, we will stop collecting non-essential automatic data. The only information that will continue to be collected is the total time spent on the site, which is required for basic service operation (eg. periodic update checks) and performance monitoring.
 
 ### 1.3 Information from Third Parties:
 - Social media platforms (when you connect your accounts)
@@ -74,7 +86,9 @@ You have the right to:
 - Opt-out of marketing communications
 - Control cookie settings
 
-To exercise these rights, please contact us using the information provided below.
+To exercise these rights, please contact us using the information provided below (section 15, Contact Information).
+
+Email: admin&#64;lstv.space
 
 ## 7. Data Security:
 We implement comprehensive security measures including encryption, access controls, secure servers, regular security assessments, and employee training. However, no method of transmission or storage is 100% secure. We will notify you of any material data breaches as required by applicable laws.
@@ -103,10 +117,16 @@ This Privacy Policy is governed by the laws of Czechia. Any disputes will be res
 ## 15. Contact Information:
 For privacy-related questions, concerns, or to exercise your rights, please contact us:
 
-Email: admin@lstv.space  
-Data Protection Officer: admin@lstv.space  
+Email: admin&#64;lstv.space
+Data Protection Officer: admin&#64;lstv.space
 
 For EU residents, you also have the right to lodge a complaint with your local supervisory authority.
 
+In case the email address provided above is not working, you may also try to contact us via Townhall (https://lstv.space/chat/user/admin) or via our official community Discord server (https://discord.gg/jQm9yGKCEC).
+
 ## 16. Accessibility:
 We are committed to ensuring this Privacy Policy is accessible to all users. If you need this policy in an alternative format, please contact us. On the official website, we provide a plain HTML copy of this text as well.
+
+---
+
+Also see our Terms of Service ([https://lstv.space/tos](https://lstv.space/tos)).

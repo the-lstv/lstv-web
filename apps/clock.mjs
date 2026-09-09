@@ -356,7 +356,7 @@ class ClockApp extends website.ContentContext {
     }
 
     .clock-app {
-        background: color-mix(var(--background), transparent 40%);
+        background: color-mix(in oklab, var(--background), transparent 40%);
         backdrop-filter: blur(8px);
     }
 }

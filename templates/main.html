@@ -23,8 +23,6 @@
             autoAccent: true
         };
 
-        window.__windowManagerTarget = document.createElement("div");
-
         window.website = {
             /**
              * Requests scoped access. This is required to access the website APIs.
@@ -46,12 +44,25 @@
             errorBox.style.display = 'flex';
         };
 
-        window.LOW_PERFORMANCE_MODE = localStorage.getItem("LOW_PERFORMANCE_MODE") === "true";
+        Object.defineProperty(window, "LOW_PERFORMANCE_MODE", {
+            get() {
+                return localStorage.getItem("LOW_PERFORMANCE_MODE") === "true";
+            },
+
+            set(value) {
+                localStorage.setItem("LOW_PERFORMANCE_MODE", value ? "true" : "false");
+                document.body.classList.toggle("low-performance-mode", value);
+                // location.reload();
+            }
+        });
+
 
         window.addEventListener("DOMContentLoaded", () => {
             if(!window.LS || !window.website?.loaded) {
                 window.__loadError();
             }
+
+            window.LOW_PERFORMANCE_MODE = localStorage.getItem("LOW_PERFORMANCE_MODE") === "true";
         });
     </script>
 
@@ -279,183 +290,8 @@
 
         <div #desktop hidden>
             <div #wallpaper>
-                <img src="/assets/image/wallpapers/test1.png" alt="Wallpaper" />
+                <img src="/assets/image/wallpapers/test1.png" alt="Wallpaper">
             </div>
-            <!-- <style>
-                body {
-    color: var(--on-accent);
-    overflow: hidden;
-    margin: 0;
-    padding: 0;
-    position: fixed;
-    inset: 0;
-    --font: "JetBrains Mono", monospace;
-}
-
-#wallpaperContainer > :is(img, video) {
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    filter: brightness(0.6);
-}
-
-#desktop {
-    position: fixed;
-    inset: 0;
-    z-index: 5;
-    display: flex;
-}
-
-#desktop > .column {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    height: 100%;
-    overflow: hidden;
-}
-
-.column.center-v {
-    justify-content: center;
-}
-
-.column.center-h {
-    align-items: center;
-}
-
-#typer {
-    position: fixed;
-    top: 57px;
-    left: 70px;
-    display: flex;
-    align-items: center;
-    height: 50px;
-}
-
-#typer span {
-    font-size: 24px;
-    padding: 0 25px;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    position: relative;
-}
-
-#typer-caret {
-    animation: pulse .4s infinite ease-in-out;
-}
-
-@keyframes pulse {
-    0% {
-        opacity: 1;
-    }
-
-    100% {
-        opacity: 0.6;
-    }
-}
-
-#typer span::before {
-    content: "";
-    border: 1px solid var(--accent);
-    transform: skewX(-24deg);
-    position: absolute;
-    inset: 0;
-}
-
-#quote-of-the-day {
-    position: fixed;
-    left: 50%;
-    transform: translateX(-50%);
-    top: 85px;
-    font-size: large;
-    opacity: 80%;
-}
-
-.video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.video-wrapper {
-    overflow: hidden;
-    /* position: relative; */
-    position: absolute;
-    width: 360px;
-    height: 203px;
-    left: 3050px;
-    top: 480px;
-}
-
-widget-stats {
-    border-bottom: 2px solid;
-    border-left: 2px solid;
-    border-radius: 0 0 0 12px;
-}
-
-#progressWidgets {
-    border-top: 2px solid;
-    border-right: 2px solid;
-    border-radius: 0 12px 0 0;
-    text-align: center;
-    padding-top: 20px !important;
-    padding-bottom: 0 !important;
-}
-
-widget-stats, #progressWidgets {
-    padding: 16px 18px;
-    backdrop-filter: none;
-    border-color: color-mix(in oklab, transparent 100%, var(--accent-70) 90%);
-    width: 360px;
-}
-            </style>
-            <div id="effects">
-                <div id="typer">
-                    <img src="./assets/logo.svg" height="30" class="margin-right-xlarge">
-
-                    <span>Loading, please wait.</span>
-            
-                    <svg id="typer-caret" xmlns="http://www.w3.org/2000/svg" width="34" height="51" viewBox="0 0 34 51" fill="none">
-                        <path d="M11.0373 50L32 1L22.9627 1L2 50H11.0373Z" fill="var(--accent-40)" stroke="url(#paint0_linear_8288_13)"
-                            stroke-opacity="0.4" stroke-width="2" />
-                        <defs>
-                            <linearGradient id="paint0_linear_8288_13" x1="1419.08" y1="66.7705" x2="-35.7331" y2="66.7705"
-                                gradientUnits="userSpaceOnUse">
-                                <stop stop-color="var(--accent-40)" stop-opacity="0" />
-                                <stop offset="1" stop-color="var(--accent-80)" />
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                </div>
-            </div>
-
-            <span id="quote-of-the-day"></span>
-
-            <div class="column">
-
-            </div>
-
-            <div class="column center-v">
-
-                <div id="clock-container">
-                    <div id="clock">
-                        <p class="date"></p>
-                        <p class="time"></p>
-                    </div>
-                </div>
-
-            </div>
-
-            <div class="column margin-right-xlarge margin-top-xlarge" style="align-items: flex-end">
-                <widget-stats width="360px" class="margin-bottom-xlarge"></widget-stats>
-                <ls-div id="progressWidgets">
-                    <widget-progress metric="cpu" label="CPU Usage"></widget-progress>
-                    <widget-progress metric="memory" max="memoryTotal" label="RAM Usage"></widget-progress>
-                </ls-div>
-            </div> -->
         </div>
 
         <main #viewport>

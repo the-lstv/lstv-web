@@ -455,7 +455,12 @@ class ContentContext extends LS.View {
             ...(options || {})
         };
 
-        const win = new LS.Window(mergedOptions);
+        if(!app.desktop || !app.desktop.windowManager) {
+            // technically we could use the global window manager, but we throw to be safe since it's likely not intended.
+            throw new Error("Desktop window manager is not available. Cannot create window.");
+        }
+
+        const win = app.desktop.windowManager.createWindow(mergedOptions);
         win.set(this);
 
         this.render(this.container).then(() => {

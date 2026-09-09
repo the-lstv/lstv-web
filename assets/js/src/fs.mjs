@@ -27,7 +27,8 @@ import { Enums } from "./enums.mjs";
  * - Other backends are very possible too. Perhaps the new browser file API could be supported.
  * 
  * Misc backends:
- * - JSFS: Mounts any JavaScript/JSON object as a (readonly) filesystem. Not sure about the use of this but you will find something.
+ * - ProcFs: A virtual filesystem that provides process and system information (/proc in Linux).
+ * - SysFs: A virtual filesystem that provides system information (/sys in Linux).
  * - NullFs: Storage that sends all your writes to the void. Simple as that.
  * - jszfs: Read-only FS compatible with the old Linux.JS 1.0 virtual filesystem.
  * 
@@ -73,7 +74,7 @@ class Stats {
     atimeMs = 0;     // Last time the file was accessed
     mtimeMs = 0;     // Last time the file was modified
     ctimeMs = 0;     // Last time the file was either created or its metadata were modified (usually the creation date)
-    birthtimeMs = 0; // Time the date was actually created (not always supported).
+    birthtimeMs = 0; // First time the entry was actually created (though not always supported).
 
     size = -1;       // Size in bytes
     blocks = -1;     // Number of blocks allocated
@@ -155,18 +156,58 @@ class Stats {
     }
 }
 
+/**
+ * Default filesystem starting-point for a LinuxJS 2.0/lstv.space environment.
+ * This is a basic filesystem structure with essential directories and a default user.
+ * You can use it to initialize a TmpFs or MemFs instance, or use as a base for patches for custom distributions.
+ */
 const DEFAULT_FS_DATA = [
     ["/", {}],
+
     ["/etc", {}],
     ["/etc/os-release", { contents: `NAME="LinuxJS"\nVERSION="2.0"\nID="linuxjs"\nVARIANT="lsw+lide-web"\nPRETTY_NAME="LinuxJS 2.0 (lstv.space, GNU/Linux)\nSUPPORT_END=2027-09-8"\nHOME_URL=https://lstv.space\nDEFAULT_HOSTNAME=linuxjs\nANSI_COLOR="0;38;2;60;110;180"\nLOGO=linuxjs-logo-icon`, mode: Enums.S_IFREG | 0o644 }],
     ["/etc/config.conf", { contents: "# Configuration file", mode: Enums.S_IFREG | 0o644 }],
+    ["/etc/hostname", {
+        contents: "linuxjs\n",
+        mode: Enums.S_IFREG | 0o644
+    }],
+
+    ["/etc/hosts", {
+        contents: `127.0.0.1 localhost\n127.0.1.1 linuxjs\n::1 localhost ip6-localhost ip6-loopback\n`,
+        mode: Enums.S_IFREG | 0o644
+    }],
+
+    ["/etc/passwd", {
+        contents: `root:x:0:0:root:/root:/bin/bash\nuser:x:1000:1000:user:/home/user:/bin/bash`,
+        mode: Enums.S_IFREG | 0o644
+    }],
+
+    ["/etc/group", {
+        contents: `root:x:0:\nusers:x:1000:user`,
+        mode: Enums.S_IFREG | 0o644
+    }],
+
+    ["/etc/shadow", {
+        contents: "",
+        mode: Enums.S_IFREG | 0o600
+    }],
+
+    ["/etc/shells", {
+        contents: `/bin/sh\n/bin/bash\n/bin/lsh`,
+        mode: Enums.S_IFREG | 0o644
+    }],
+
+    ["/etc/fstab", {
+        contents: "",
+        mode: Enums.S_IFREG | 0o644
+    }],
 
     ["/usr", {}],
     ["/usr/bin", {}],
     ["/usr/sbin", {}],
 
     ["/usr/lib", {}],
-    ["/usr/lib/os-release", { mode: Enums.S_IFLNK | 0o644, contents: "/etc/os-release" }],
+    ["/usr/lib/os-release", { mode: Enums.S_IFLNK | 0o777, contents: "/etc/os-release" }],
 
     ["/usr/lib64", {}],
 
@@ -175,26 +216,41 @@ const DEFAULT_FS_DATA = [
     ["/usr/share/wayland-sessions", {}],
     ["/usr/share/lidm-web-sessions", {}],
 
-    ["/bin",   { mode: Enums.S_IFLNK | 0o644, contents: "/usr/bin"   }],
-    ["/sbin",  { mode: Enums.S_IFLNK | 0o644, contents: "/usr/sbin"  }],
-    ["/lib",   { mode: Enums.S_IFLNK | 0o644, contents: "/usr/lib"   }],
-    ["/lib64", { mode: Enums.S_IFLNK | 0o644, contents: "/usr/lib64" }],
+    ["/usr/local", {}],
+    ["/usr/local/bin", {}],
+    ["/usr/local/lib", {}],
+    ["/usr/local/share", {}],
+
+    ["/var/cache", {}],
+    ["/var/lib", {}],
+    ["/var/spool", {}],
+
+    ["/etc/default", {}],
+    ["/etc/init.d", {}],
+    ["/etc/network", {}],
+    ["/etc/systemd", {}],
+
+    ["/bin",   { mode: Enums.S_IFLNK | 0o777, contents: "/usr/bin"   }],
+    ["/sbin",  { mode: Enums.S_IFLNK | 0o777, contents: "/usr/sbin"  }],
+    ["/lib",   { mode: Enums.S_IFLNK | 0o777, contents: "/usr/lib"   }],
+    ["/lib64", { mode: Enums.S_IFLNK | 0o777, contents: "/usr/lib64" }],
 
     ["/var", {}],
     ["/var/log", {}],
     ["/var/tmp", {}],
+    ["/var/run", { mode: Enums.S_IFLNK | 0o777, contents: "/run" }],
 
     ["/tmp", {}],  // This will be overridden by a TmpFs mount
     ["/dev", {}],  // This will be overridden by a TmpFs mount
+    ["/run", {}],  // This will be overridden by a TmpFs mount
     ["/proc", {}], // This will be overridden by a ProcFs mount
     ["/sys", {}],  // This will be overridden by a SysFs mount
-    ["/run", {}],  // This will be overridden by a SysFs mount
-    ["/mnt", {}],  // This will be overridden by a TmpFs mount
+
+    ["/mnt", {}],
 
     ["/media", {}],
     ["/opt", {}],
     ["/boot", {}],
-    ["/root", {}],
 
     ["/home", {}],
     ["/home/user", {}],
@@ -431,8 +487,20 @@ class RootFs {
     // Mounts is an array of [mountPoint, fs] pairs.
     #mounts = [];
 
-    constructor(data) {
-        this.mount(RootFs.PATH_SEPARATOR, new TmpFs(DEFAULT_FS_DATA));
+    /**
+     * Create a new RootFs instance.
+     * @param {Array} data An array of [mountPoint, fs] pairs to initialize the filesystem with.
+     * @param {boolean} mountRoot Whether to mount the root TmpFs filesystems.
+     */
+    constructor(data, mountRoot = true) {
+        if(mountRoot) {
+            this.mount(RootFs.PATH_SEPARATOR, new TmpFs(DEFAULT_FS_DATA));
+            this.mount("/tmp", new TmpFs());
+            this.mount("/dev", new TmpFs());
+            this.mount("/run", new TmpFs([["/lock", {}]]));
+            this.mount("/proc", new ProcFs());
+            this.mount("/sys",  new SysFs());
+        }
 
         if(data) {
             for(const [mountPoint, fs] of data) {
@@ -1114,8 +1182,71 @@ class NodeFs {}
 class WasmFs {}
 
 /**
- * RQvFS filesystem (to be implemented)
+ * ProcFs, a virtual filesystem that provides information about processes and system resources.
  */
-class RqvFs {}
+class ProcFs {}
 
-export { Stats, RootFs, DEFAULT_FS_DATA, TmpFs, MemFs, NodeFs, LocalStorageFs }
+/**
+ * SysFs, a virtual filesystem that provides information about the system and kernel.
+ */
+class SysFs {}
+
+/**
+ * NullFs, a virtual filesystem that discards all data written to it
+ * Allows to obtain a file descriptor for any path for whatever reason.
+ * Yeah I am also not sure why this is useful but it sure does break all the benchmarks! World's fastest filesystem!
+ */
+class NullFs {
+    static fsType = "NullFs";
+
+    open(ndir, flags, mode = Enums.S_IFREG | 0o644, extraFlags = 0, extraData = undefined) {
+        // This fs accepts opening whatever file you throw at it with whatever type you want.
+        // It doesn't actually store anything, so it doesn't care about the path.
+        return {
+            _fs: this,
+            data: { mode },
+            flags,
+            ndir,
+            offset: 0,
+            closed: false,
+            readable: true,
+            writable: true
+        };
+    }
+
+    // Noop
+    read(fd, first, nbytes, encoding) {
+        return encoding === RootFs.ENCODING.utf8 ? "" : new Uint8Array(0);
+    }
+
+    // Noop
+    write(fd, newData, first, nbytes) {
+        return nbytes; // pretend we wrote everything
+    }
+
+    stat(fd, out, ncheck = false) {
+        if(!ncheck) {
+            if (!fd || !fd._fs || !fd.data || fd.closed) {
+                throw new Error(Enums.errno.EBADF);
+            }
+        }
+
+        out.size = 0;
+        out.mode = fd.data.mode ?? Enums.S_IFREG | 0o644;
+        out.mtimeMs = Date.now();
+        out.ctimeMs = Date.now();
+        out.atimeMs = Date.now();
+        out.uid = 0;
+        out.gid = 0;
+        return out;
+    }
+
+    close(fd) {
+        fd._fs = null;
+        fd.data = null;
+        fd.closed = true;
+        return 0;
+    }
+}
+
+export { Stats, RootFs, DEFAULT_FS_DATA, TmpFs, MemFs, NodeFs, LocalStorageFs, RemoteFs, IndexedDbFs, WasmFs, ProcFs, SysFs, NullFs }
