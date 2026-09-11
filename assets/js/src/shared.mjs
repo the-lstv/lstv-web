@@ -4,18 +4,42 @@ import { SoundBox } from "./soundbox.mjs";
 import { LiDesktop, MediaPlayer } from "./desktop.mjs";
 import { LoggerContext, AssetManager, ContentContext, Viewport, Thread } from "./commons.mjs";
 import { kernel } from "./kernel.mjs";
+import { Enums } from "./enums.mjs";
 
 // Misc constants
 const DEFAULT_PROFILE = "/~/assets/image/default.svg";
 const isDesktopModeEnabledAtStartup = localStorage.getItem("desktopMode") === "true";
 
+const isNode = typeof module !== "undefined";
+
 /**
  * Environment loader.
+ * This class presents various OS functionalities (imagine it kind of like systemctl).
+ * 
+ * Provides the job of:
+ * - fstab (reads & executes /etc/fstab on init())
+ * - login (user credintals / authentication)
+ * 
+ * User management:
+ * - useradd
+ * - usermod
+ * - userdel
+ * - groupadd
+ * - groupmod
+ * - groupdel
+ * Note that the above does not implement them as commands;
+ * that's up to the distribution, which can use the same implementations.
+ * 
+ * Configuration:
+ * - config management (login.defs, config.conf, ...)
+ * - session management
+ * - desktop loading
  */
 class Environment {
     // Global environment variables
     env = {}
 
+    // Temporary ref
     #k;
 
     setEnv(n, v) {
@@ -31,26 +55,253 @@ class Environment {
     }
 
     constructor(k) {
-        // if(!(k instanceof Kernel)) throw new Error("Invalid instance of Kernel provided");
+        // if(!(k instanceof LinuxJsKernel)) throw new Error("Invalid instance of Kernel provided");
         if(!k.isKernel) throw new Error("Invalid instance of Kernel provided");
 
         this.#k = k;
+        this.#k.once("destroy", () => {
+            this.destroy();
+        });
 
-        this.setEnv("SHELL", "/bin/bash");
+        // Export default env variables
+        // this.setEnv("SHELL", "/bin/bash"); // based on user
         this.setEnv("HOSTNAME", k.sys.uname().nodename);
         this.setEnv("PATH", "/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin");
     }
 
-    init() {
+    async init() {
+        // Mount drives/filesystems in fstab
+        await this.initFsTab();
+
+        // // Read configuration files
+        // const cfg    = await this.#k.fileSystem.readFile("/etc/config.conf", "utf8");
+
+        // // Parse config
+        // const parsed = AtriumParser.parse(cfg, { asLookupTable: true })
+        // AtriumParser.configTools(parsed);
+
+        // const groups  = await this.#k.fileSystem.readFile("/etc/group"       , "utf8");
+        // const shells = await this.#k.fileSystem.readFile("/etc/shells"      , "utf8");
+        // const hosts  = await this.#k.fileSystem.readFile("/etc/hosts"       , "utf8");
+
+        // Initialize desktop
         app.desktop = new LiDesktop({ limited: !isDesktopModeEnabledAtStartup });
+    }
+
+    async getUsers(passwd = null) {
+        if(typeof passwd !== "string") passwd = await this.#k.fileSystem.readFile("/etc/passwd", "utf8");
+
+        return passwd.split("\n").filter(Boolean).map(v => {
+            const [username, password, uid, gid, comment, home, shell] = v.split(":");
+            return {
+                username,
+                password,
+                uid,
+                gid,
+                comment,
+                home,
+                shell
+            }
+        });
+    }
+
+    async useradd(options) {
+        const username = options.username;
+        if(!username) {
+            throw new Error("Invalid username");
+        }
+        
+        const users = await this.getUsers();
+        if(users.find(user => user.username === username)) {
+            throw new Error("User with this username already exists");
+        }
+
+        // placeholder: todo: read from cfg
+        const min = 1000;
+        const max = 10000;
+
+        // First free UID
+        const uid = users
+            .map(({ uid }) => uid)
+            .filter(uid => uid >= min)
+            .sort((a, b) => a - b)
+            .reduce((candidate, uid) => uid === candidate ? candidate + 1 : candidate, min);
+
+        if(uid >= max) {
+            throw new Error("Max UID has been reached");
+        }
+
+        const home = RootFs.normalize(options.homeDir || `${options.baseDir || "/home"}/${username}`, true);
+
+        // Create home directory
+        // TODO: init user files & set uid/gid perms
+        if(options.noCreateHome !== true) {
+            await this.#k.fileSystem.mkdir(home);
+        }
+
+        // todo
+        const gid = options.gid ?? uid;
+        // if(options.noCreateGroup !== true) {
+        //     await this.groupadd({ name: username, gid: uid });
+        // }
+
+        const passwd = [username, options.plainPassword || "x", uid, gid, options.comment, home, options.shell];
+
+        // Write to passwd
+        this.#k.fileSystem.appendFile("/etc/passwd", "\n" + passwd.join(":"));
+
+        if(!options.plainPassword) {
+            const hash = ""; // todo
+
+            // user, hash, lastChange, minAge, maxAge, warningPeriod, inactivityPeriod, expiration
+            const shadow = [username, hash, Math.floor(Date.now() / 86400000), 0, 0, 0, 0, 0];
+    
+            // Write to shadow
+            this.#k.fileSystem.appendFile("/etc/passwd", "\n" + shadow.join(":"));
+        }
+    }
+
+    /**
+     * User auth. Use to authenticate an user.
+     * Supports /etc/passwd & /etc/shadow
+     * 
+     * todo: password age warning
+     * (implement lastChange, minAge, maxAge, warningPeriod, inactivityPeriod, expiration)
+     * 
+     * @see https://www.man7.org/linux/man-pages/man8/pam_unix.8.html
+     * 
+     * @param {string} username Username to authenticate
+     * @param {*} credintals Credintals (password)
+     * @returns {object|boolean} User object on success, false if wrong credintals
+     * @throws {Error} Error while authenticating
+     */
+    async authenticate(username, credintals) {
+        const users = await this.getUsers();
+        const user = users.find(user => user.username === username);
+
+        if(!user) throw new Error("User '" + username + "' not found");
+
+        if(user.password === "x") {
+            const shadowF = await this.#k.fileSystem.readFile("/etc/shadow", "utf8");
+            let shadow = shadowF.split("\n").find(e => e.startsWith(username) + ":");
+
+            if(!shadow) throw new Error("User '" + username + "' has no entry in /etc/shadow");
+            
+            shadow = shadow.split(":");
+            let [_, hash, lastChange, minAge, maxAge, warningPeriod, inactivityPeriod, expiration] = shadow;
+            if(!hash) throw new Error("User '" + username + "' has no hash entry in /etc/shadow");
+            
+            const alg = hash.slice(0, hash.indexOf("$", 1));
+            if(!alg) throw new Error("User '" + username + "' has invalid hash entry in /etc/shadow");
+
+            hash = hash.slice(alg.length);
+
+            /**
+             * Implementing all the hash algorithms is not very practical on the client-side.
+             * We can use the Node.js builtins but still the exact support is not quite complete.
+             * 
+             * Currently, the browser version only implements SHA-512, if provided.
+             * Yescrypt support is possible thanks to thynson/yescrypt-js and will eventually be implemented along other algorithms.
+             * 
+             * WARNING: The sha265 & sha512 implementation here is not currently complete/accurate to the Linux crypt() implementation.
+             * It is sufficient for this kind of authentication & remote authentication is handled by a 3rd party provider which is why it is not the highest priority.
+             */
+            switch(alg) {
+                // MD5
+                case "$1$":
+                    if(isNode) {
+                        return require("crypto")
+                        .createHash("md5")
+                        .update(credintals)
+                        .digest("hex") === hash? user: false;
+                    }
+                    throw new Error("clientside md5 support is planned");
+
+                // bcrypt
+                case "$2b$":
+                    throw new Error("bcrypt support is planned");
+
+                // SHA-256
+                case "$5$":
+                    if(isNode) {
+                        return require("sha256")
+                        .createHash("md5")
+                        .update(credintals)
+                        .digest("hex") === hash? user: false;
+                    }
+                    throw new Error("clientside SHA-256-crypt support is planned");
+
+                // SHA-512
+                case "$6$":
+                    if(isNode) {
+                        return require("sha512")
+                        .createHash("md5")
+                        .update(credintals)
+                        .digest("hex") === hash? user: false;
+                    }
+                    return (window.sha512? sha512(credintals): null) === hash? user: false;
+
+                // yescrypt
+                case "$y$":
+                    // https://github.com/thynson/yescrypt-js
+                    throw new Error("Yescrypt support is planned");
+                    break;
+            }
+
+            throw new Error("User '" + username + "' has a password stored in an unsupported hash type (" + alg + ")");
+        }
+
+        this.#k.warn("User " + username + " has plain-text password.")
+
+        // Purposefully waste CPU cycles when using plain auth
+        let burn = Date.now() + 2000;
+        while(Date.now() < burn) {}
+
+        return user.password === credintals;
+    }
+
+    async initFsTab(fstab = null) {
+        if(typeof fstab !== "string") fstab = await this.#k.fileSystem.readFile("/etc/fstab", "utf8");
+
+        for(let line of fstab.split("\n")) {
+            line = line.trim();
+            if(!line || line[0] === "#") continue;
+
+            // Device <source> Path <mount-point> FsType <filesystem-type> Options <options> Whether to dump <dump> fsck order <fsck-order>
+            let [source, mp, fst, options, dump, order] = line.split(" ").filter(Boolean).map(s => s.replaceAll("\\040", " "));
+
+            if(options) options = options.split(",");
+
+            if(!order) {
+                this.#k.error("Can't mount fstab entry: entry '" + line + "' is invalid.");
+                continue;
+            }
+
+            const fs = RootFs.fsTypes[fst];
+
+            if(typeof fs !== "function") {
+                this.#k.error("Can't mount fstab entry: filesystem '" + fst + "' is invalid.");
+                
+                if(options.indexOf("nofail") === -1) {
+                    throw new Error;
+                } else continue;
+            }
+
+            this.#k.fileSystem.mount(mp, new fs(source, options, dump, order));
+        }
+    }
+
+    destroy() {
+        this.#k = null;
     }
 }
 
 /**
  * <lstv.space>
  * Shared website object.
- * Utilities and constants related to the site as a whole.
- * This is global and accessible by 3rd party code, nothing sensitive or potentially vulnerable should be exposed.
+ * Specific utilities and constants related to the website as a whole.
+ * 
+ * !!! This is global and accessible by any 3rd party code, nothing sensitive or potentially vulnerable can be exposed.
  */
 const app = {
     // Utils
@@ -62,7 +313,7 @@ const app = {
 
     // Create new instance of the desktop env.
     // If desktop mode is disabled, the desktop can skip some features, things like the login prompt, and run in a website-only mode.
-    desktop,
+    desktop: null,
 
     // Constants
     loaded: true,
@@ -484,36 +735,9 @@ const app = {
         localStorage.setItem("desktopMode", value? "true": "false");
         document.body.classList.toggle("lsweb-desktop-mode", value);
 
-        if(value) {
-            app.desktop.panelState = [
-                { kind: "apps" },
-                { kind: "accounts" },
-                { kind: "taskbar" },
-                { kind: "spacer" },
-                { kind: "clock" },
-                { kind: "theme" },
-                { kind: "commandPalette" },
-            ];
-
-            // todo
-            app.desktop._welcome();
-        } else {
-            app.desktop.panelState = [
-                { kind: "website-header" },
-                { kind: "spacer" },
-                { kind: "accounts" },
-                { kind: "apps" },
-                { kind: "theme" },
-                { kind: "commandPalette" },
-            ];
-        }
-
-        app.desktop.updatePanelLayout();
-
-        const switchEl = document.querySelector("#desktopModeSwitch");
-        if(switchEl) {
-            switchEl.querySelector("input").checked = value;
-            if(value) switchEl.querySelector("ls-box")?.remove?.();
+        if(app.desktop) {
+            console.log(app.desktop);
+            app.desktop.setDesktopMode(value);
         }
     },
 

@@ -9,6 +9,8 @@ src/enums.mjs
 src/soundbox.mjs
 src/desktop.mjs
 src/fs.mjs
+src/sha512.mjs
+src/atrium.mjs
 src/shared.mjs
 src/kernel.mjs
 "

@@ -37,7 +37,9 @@ class Enums  {
     static PERMS = 0o07777;
 
     // --- Non-standard flags specific to Linux.js only
-    static XO_STATONLY = 0x0001;
+    static XO_STATONLY     = 0b0001;
+    static XO_IGNORE_NO_FS = 0b0010;
+    static XO_READ_DIR     = 0b0100;
 
     /**
      * @see https://man7.org/linux/man-pages/man3/errno.3.html

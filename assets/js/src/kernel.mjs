@@ -15,7 +15,7 @@ const kernel = new class Kernel extends LS.Context {
     isKernel = true;
     version = KERNEL_VERSION;
 
-    fileSystem = new RootFs();
+    fileSystem = new RootFs(true);
 
     threads =     new Set();
     MAX_THREADS = (navigator.hardwareConcurrency || 4) * 2;
@@ -321,6 +321,16 @@ const kernel = new class Kernel extends LS.Context {
      */
     constructor() {
         super('kernel');
+
+        // Create a temporary filesystem
+        this.fileSystem.mount(RootFs.PATH_SEPARATOR, (new TmpFs()).setData(DEFAULT_FS_DATA));
+        this.fileSystem.mount("/tmp", new TmpFs());
+        this.fileSystem.mount("/dev", new TmpFs());
+        this.fileSystem.mount("/run", (new TmpFs()).setData([["/lock", {}]]));
+        this.fileSystem.mount("/proc", new ProcFs());
+        this.fileSystem.mount("/sys",  new SysFs());
+        // (root can be then swapped with any other mount)
+
         this.logger = new LoggerContext("kernel");
 
         this.environment = new Environment(this);

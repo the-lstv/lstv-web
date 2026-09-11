@@ -167,38 +167,52 @@ const DEFAULT_FS_DATA = [
     ["/etc", {}],
     ["/etc/os-release", { contents: `NAME="LinuxJS"\nVERSION="2.0"\nID="linuxjs"\nVARIANT="lsw+lide-web"\nPRETTY_NAME="LinuxJS 2.0 (lstv.space, GNU/Linux)\nSUPPORT_END=2027-09-8"\nHOME_URL=https://lstv.space\nDEFAULT_HOSTNAME=linuxjs\nANSI_COLOR="0;38;2;60;110;180"\nLOGO=linuxjs-logo-icon`, mode: Enums.S_IFREG | 0o644 }],
     ["/etc/config.conf", { contents: "# Configuration file", mode: Enums.S_IFREG | 0o644 }],
+
+    // Hostname
     ["/etc/hostname", {
         contents: "linuxjs\n",
         mode: Enums.S_IFREG | 0o644
     }],
 
+    // Hosts
     ["/etc/hosts", {
         contents: `127.0.0.1 localhost\n127.0.1.1 linuxjs\n::1 localhost ip6-localhost ip6-loopback\n`,
         mode: Enums.S_IFREG | 0o644
     }],
 
+    // Users
     ["/etc/passwd", {
         contents: `root:x:0:0:root:/root:/bin/bash\nuser:x:1000:1000:user:/home/user:/bin/bash`,
         mode: Enums.S_IFREG | 0o644
     }],
 
-    ["/etc/group", {
-        contents: `root:x:0:\nusers:x:1000:user`,
-        mode: Enums.S_IFREG | 0o644
-    }],
-
+    // Hashes
     ["/etc/shadow", {
         contents: "",
         mode: Enums.S_IFREG | 0o600
     }],
 
+    // Groups
+    ["/etc/group", {
+        contents: `root:x:0:\nusers:x:1000:user`,
+        mode: Enums.S_IFREG | 0o644
+    }],
+
+    // Enabled shells
     ["/etc/shells", {
         contents: `/bin/sh\n/bin/bash\n/bin/lsh`,
         mode: Enums.S_IFREG | 0o644
     }],
 
+    // Mounts
     ["/etc/fstab", {
         contents: "",
+        mode: Enums.S_IFREG | 0o644
+    }],
+
+    // Login defs
+    ["/etc/login.defs", {
+        contents: "UID_MIN 1000\nUID_MAX 60000\nSYS_UID_MIN 201\nSYS_UID_MAX 999\nGID_MIN 1000\nGID_MAX 60000\nSYS_GID_MIN 201\nSYS_GID_MAX 999\nCREATE_HOME yes\nENCRYPT_METHOD SHA512",
         mode: Enums.S_IFREG | 0o644
     }],
 
@@ -290,7 +304,7 @@ class RootFs {
     // --- Utility methods for path manipulation ---
 
     /**
-     * Normalize a path to a canonical form. This is useful for resolving relative paths, removing redundant slashes, and ensuring consistent path formatting.
+     * Normalize a path to a canonical form.
      * @param {string} path The path to normalize.
      * @param {boolean|null} isAbsolute Optional. If true, the returned path will be absolute (starting with /). If false, it will be relative. If null, it will be inferred from the input path.
      * @param {boolean} allowExit If true, relative paths can go outside of their directory. If false, they can't.
@@ -366,6 +380,34 @@ class RootFs {
      */
     static splitPath(path, isAbsolute = null, allowExit = true) {
         return RootFs.normalize(path, isAbsolute, allowExit, true);
+    }
+
+    /**
+     * Convert bytesize to a readable string.
+     */
+    static toHuman(size, decimals = 0) {
+        if (size < 0 || !Number.isFinite(size)) {
+            return String(size);
+        }
+
+        if (size === 0) {
+            return `0`;
+        }
+
+        if (size < 1024) {
+            return `${size} B`;
+        }
+
+        const units = ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB'];
+        let value = size;
+        let unit = -1;
+
+        while (value >= 1024 && unit < units.length - 1) {
+            value /= 1024;
+            unit++;
+        }
+
+        return value.toFixed(decimals) + " " + units[unit];
     }
 
     static basename(path) {
@@ -489,25 +531,13 @@ class RootFs {
 
     /**
      * Create a new RootFs instance.
-     * @param {Array} data An array of [mountPoint, fs] pairs to initialize the filesystem with.
-     * @param {boolean} mountRoot Whether to mount the root TmpFs filesystems.
+     * @param {boolean} tmpFs Whether to mount the root TmpFs filesystems and others.
      */
-    constructor(data, mountRoot = true) {
-        if(mountRoot) {
-            this.mount(RootFs.PATH_SEPARATOR, new TmpFs(DEFAULT_FS_DATA));
-            this.mount("/tmp", new TmpFs());
-            this.mount("/dev", new TmpFs());
-            this.mount("/run", new TmpFs([["/lock", {}]]));
-            this.mount("/proc", new ProcFs());
-            this.mount("/sys",  new SysFs());
-        }
-
-        if(data) {
-            for(const [mountPoint, fs] of data) {
-                this.mount(mountPoint, fs);
-            }
-        }
+    constructor(tmpFs = true) {
+        this._tmpRoot = tmpFs;
     }
+
+    static fsTypes = {}
 
     /**
      * Mount a filesystem at a given mount point.
@@ -520,13 +550,25 @@ class RootFs {
 
         if(mountPoint !== "/") {
             try {
-                let stat = await this.stat(mountPoint);
-                if(stat.isFile) return Enums.errno.ENOTDIR;
+                let stat = await this.stat(mountPoint, Enums.XO_STATONLY | Enums.XO_IGNORE_NO_FS);
+                if(stat !== -1) {
+                    if(stat.isFile) return Enums.errno.ENOTDIR;
+                }
             } catch(e) {
                 console.log(e);
                 return typeof e === "number"? e: -1;
             }
+        } else if(this._tmpRoot) {
+            // Unmount the default root
+            await this.unmount("/");
         }
+
+        // Technically, Linux allows you to mount the same path multiple times...
+        // for(const [mp, fs] of this.#mounts) {
+        //     if(mountPoint === mp) {
+        //         throw new Error("Can't mount: directory \"" + mountPoint + "\" is already mounted");
+        //     }
+        // }
 
         this.#mounts.push([mountPoint, fs]);
 
@@ -539,7 +581,7 @@ class RootFs {
      * Unmount a filesystem from a given mount point.
      * @param {string} mountPoint The mount point to unmount.
      */
-    unmount(mountPoint) {
+    async unmount(mountPoint) {
         mountPoint = RootFs.ensureTrailing(mountPoint, true);
         this.#mounts = this.#mounts.filter(([mp, fs]) => mp !== mountPoint);
 
@@ -550,10 +592,12 @@ class RootFs {
      * Returns a list of mounts and their types
      * @returns {Array}
      */
-    lsmount(){
+    lsmount(__includeFsRef = false){
         return this.#mounts.map(([a, b]) => [a, {
             type: b?.name || b?.constructor?.fsType || b?.constructor?.name,
-            size: b?.size || -1
+            size: b?.size ?? -1,
+            used: b?.used ?? -1,
+            ... __includeFsRef? {__fs: b}: null
         }]);
     }
 
@@ -578,15 +622,27 @@ class RootFs {
         // Mounts are sorted by length of mount point, descending.
         const dirWithSep = RootFs.ensureTrailing(dir, null, false);
         for(const ent of this.#mounts) {
-            if(dirWithSep.startsWith(ent[0])) {
-                const fs = ent[1];
+            const mp = ent[0];
+            const fs = ent[1];
+
+            if(dirWithSep.startsWith(mp)) {
+                dir = "/" + dir.slice(mp.length); // Remove mountpoint from directory
                 const fd = await fs.open(dir, flags, mode, extraFlags, extraData);
                 if(!fd || typeof fd === "number") throw new Error(Enums.errCode(fd) + " when opening path: " + dir);
                 return fd;
             }
         }
 
-        throw new Error("No filesystem available to satisfy request");
+        if(!(extraFlags & Enums.XO_IGNORE_NO_FS))
+            throw new Error("No filesystem available to satisfy request");
+        else return -1;
+    }
+
+    async readDir(dir, extraFlags = Enums.XO_READ_DIR, close = true) {
+        const fd = await this.open(dir, Enums.O_RDONLY, null, extraFlags);
+        const data = await fd._fs.readDir(fd, extraFlags);
+        if(close) fd._fs.close(fd);
+        return data;
     }
 
     /**
@@ -630,7 +686,8 @@ class RootFs {
      * @returns {string|Uint8Array|ArrayBuffer} File content
      */
     async readFile(dir, encoding, options = {}) {
-        return await this.read(await this.open(dir), options.start ?? 0, options.nbytes ?? -1, encoding, options.close ?? true);
+        const fd = await this.open(dir);
+        return await this.read(fd, options.start ?? 0, options.nbytes ?? -1, encoding, options.close ?? true);
     }
 
     /**
@@ -642,6 +699,11 @@ class RootFs {
      */
     async writeFile(dir, newData, options = {}) {
         const fd = await this.open(dir, Enums.O_WRONLY | Enums.O_CREAT | Enums.O_TRUNC);
+        return await this.write(fd, newData, options.start ?? 0, options.nbytes ?? -1, options.close ?? true);
+    }
+
+    async appendFile(dir, newData, options = {}) {
+        const fd = await this.open(dir, Enums.O_WRONLY | Enums.O_APPEND | Enums.O_CREAT);
         return await this.write(fd, newData, options.start ?? 0, options.nbytes ?? -1, options.close ?? true);
     }
 
@@ -663,9 +725,15 @@ class RootFs {
         }
     }
 
-    async stat(dir) {
+    async stat(dir, extraFlags = Enums.XO_STATONLY) {
         const stat = new Stats;
-        const fd = await this.open(dir, Enums.O_RDONLY, null, Enums.XO_STATONLY, stat);
+        const fd = await this.open(dir, Enums.O_RDONLY, null, extraFlags, stat);
+
+        if(fd < 0) {
+            if(extraFlags & Enums.XO_IGNORE_NO_FS) return -1;
+            throw new Error(Enums.errno.EBADF);
+        }
+
         if(fd === stat) return stat; // ""fast stat"" via the special flag
         fd._fs.stat(fd, stat);
         await this.close(fd);
@@ -686,14 +754,6 @@ class RootFs {
         return result;
     }
 
-    /**
-     * Creates a new empty rootfs state.
-     * @returns {RootFs}
-     */
-    static initRootFs(){
-        return new RootFs();
-    }
-
     // todo
     destroy() {
         for(const [mp, fs] of this.#mounts) {
@@ -711,12 +771,38 @@ const decoder = new TextDecoder();
  * This is a simple implementation that uses a Map to store file data in memory.
  */
 class TmpFs {
-    static fsType = "TmpFs";
+    static fsType = "tmpfs";
 
     fs = new Map;
 
-    constructor(data) {
-        if(data) this.fs = new Map(data);
+    // This is currently more of just a hint
+    size = 1024 * 1024 * 64;
+
+    get used() {
+        // todo
+        let total = 0;
+        for(const [dir, ent] of this.fs.entries()) {
+            const size = ((ent?.contents) && (ent.contents.length || ent.contents.byteSize)) || 0;
+            total += size;
+            total += dir.length + 512; // ~estimate 512B for metadata
+        }
+        return total;
+    }
+
+    constructor(source, options, dump, order) {
+        // Root
+        this.fs.set("/", {
+            mode: Enums.S_IFDIR | 0o555
+        });
+    }
+
+    // Applicable only to TmpFs
+    // Warning: ndir must already be correctly normalized.
+    setData(data) {
+        for(const [ndir, entry] of data) {
+            this.fs.set(ndir, entry);
+        }
+        return this;
     }
 
     /**
@@ -736,6 +822,9 @@ class TmpFs {
             if (!data) return Enums.errno.ENOENT;
             return this.stat({ data }, extraData ?? {}, true);
         }
+
+        const type = Stats.typeOf(data? data.mode: mode);
+        const isFile = type !== Enums.S_IFDIR;
 
         const accessMode = flags & Enums.O_ACCMODE;
         const canRead =  accessMode === Enums.O_RDONLY ||
@@ -764,14 +853,14 @@ class TmpFs {
          * Directories can be opened, but only for reading/searching.
          * Opening a directory for writing is an error.
          */
-        if (!data.isFile && canWrite) {
+        if (!isFile && canWrite) {
             return Enums.errno.EISDIR;
         }
 
         /*
          * O_TRUNC only applies to regular files opened for writing.
          */
-        if ((flags & Enums.O_TRUNC) && data.isFile && canWrite) {
+        if ((flags & Enums.O_TRUNC) && isFile && canWrite) {
             data.contents = new Uint8Array(0);
 
             const now = Date.now();
@@ -784,7 +873,7 @@ class TmpFs {
             data,
             flags,
             ndir,
-            offset: (flags & Enums.O_APPEND) && data.isFile
+            offset: (flags & Enums.O_APPEND) && isFile
                 ? data.contents.length
                 : 0,
             closed: false,
@@ -828,11 +917,14 @@ class TmpFs {
             throw new Error(Enums.errno.EBADF);
         }
 
-        if (kind === 1 && fd.data.isFile) {
+        const type = Stats.typeOf(fd.data.mode);
+        const isFile = type !== Enums.S_IFDIR;
+
+        if (kind === 1 && isFile) {
             throw new Error(Enums.errno.ENOTDIR);
         }
 
-        if (kind === 0 && !fd.data.isFile) {
+        if (kind === 0 && !isFile) {
             throw new Error(Enums.errno.EISDIR);
         }
     }
@@ -840,7 +932,7 @@ class TmpFs {
     create(ndir, mode, uid = 0, gid = 0) {
         const now = Date.now();
 
-        data = {
+        const data = {
             mode,
             uid,
             gid,
@@ -915,6 +1007,14 @@ class TmpFs {
         return this._toEncoding(result, encoding);
     }
 
+    readDir(fd, extraFlags) {
+        this.checkFd(fd, 1);
+
+        const data = fd.data;
+        // idk.
+        return [];
+    }
+
 
     /**
      * Write to a file.
@@ -954,7 +1054,7 @@ class TmpFs {
         }
 
         /*
-         * Use the descriptor offset if the caller didn't explicitly supply one.
+         * sldkfjklsdjl
          */
         if (first === undefined || first === null) {
             first = fd.offset ?? 0;
@@ -963,6 +1063,25 @@ class TmpFs {
         if (first < 0) {
             throw new Error(Enums.errno.EINVAL);
         }
+
+        if (nbytes === -1) {
+            nbytes = newData.length;
+        }
+
+        if (nbytes === 0) {
+            return 0;
+        }
+
+        if(data.contents === undefined) {
+            if(typeof newData === "string") {
+                data.contents = "";
+            } else {
+                data.contents = new Uint8Array;
+            }
+        }
+
+        const writeSize = Math.min(nbytes, newData.length);
+        const actualBytes = first; // todo
 
         /*
          * Normalize input according to the file's representation.
@@ -973,35 +1092,7 @@ class TmpFs {
             }
 
             if (!(newData instanceof Uint8Array)) {
-                if (newData instanceof ArrayBuffer) {
-                    newData = new Uint8Array(newData);
-                } else {
-                    throw new Error(Enums.errno.EINVAL);
-                }
-            }
-
-            const available = newData.length - first;
-
-            if (nbytes === -1) {
-                nbytes = available;
-            }
-
-            if (nbytes < 0 || first > newData.length && nbytes !== 0) {
                 throw new Error(Enums.errno.EINVAL);
-            }
-
-            if (nbytes === 0) {
-                return 0;
-            }
-
-            /*
-             * The source range is [first, first + nbytes).
-             */
-            const sourceEnd = Math.min(first + nbytes, newData.length);
-            const actualBytes = sourceEnd - first;
-
-            if (actualBytes <= 0) {
-                return 0;
             }
 
             const requiredLength = first + actualBytes;
@@ -1027,59 +1118,33 @@ class TmpFs {
             data.ctime = now;
 
             return actualBytes;
-        }
-
-
-        if (typeof data.contents === "string") {
+        } else if (typeof data.contents === "string") {
             if (typeof newData !== "string") {
                 newData = decoder.decode(newData);
             }
 
-            if (first > newData.length && nbytes !== 0) {
-                throw new Error(Enums.errno.EINVAL);
-            }
-
-            if (nbytes === -1) {
-                nbytes = newData.length - first;
-            }
-
-            if (nbytes < 0) {
-                throw new Error(Enums.errno.EINVAL);
-            }
-
-            if (nbytes === 0) {
-                return 0;
-            }
-
-            const sourceEnd = Math.min(first + nbytes, newData.length);
-            const actualBytes = sourceEnd - first;
-
-            if (actualBytes <= 0) {
-                return 0;
-            }
-
             /*
-             * String files are treated as character-addressed.
-             * Writing beyond EOF creates the intervening space.
+             * Important: Writing beyond EOF appends for string files.
              */
-            if (first > data.contents.length) {
+
+            // console.log(first, data.contents, newData, writeSize, actualBytes)
+
+            if(first === 0) {
+                data.contents = writeSize === newData.length? newData: newData.substring(0, writeSize);
+            } else {
                 data.contents =
-                    data.contents +
-                    "\0".repeat(first - data.contents.length);
+                    data.contents.substring(0, first) +
+                    newData.substring(0, writeSize) +
+                    data.contents.substring(first + writeSize);
             }
 
-            data.contents =
-                data.contents.substring(0, first) +
-                newData.substring(first, sourceEnd) +
-                data.contents.substring(first + actualBytes);
-
-            fd.offset = first + actualBytes;
+            fd.offset = first + writeSize;
 
             const now = Date.now();
             data.mtime = now;
             data.ctime = now;
 
-            return actualBytes;
+            return writeSize;
         }
 
         throw new Error(Enums.errno.EINVAL);
@@ -1126,10 +1191,10 @@ class TmpFs {
      * @param {*} fd File descriptor.
      * @returns {number} Zero on success, errno enum on error.
      */
-    unlink(ndir) {
+    unlink(fd) {
         this.checkFd(fd);
 
-        if (Stats.typeOf(fd.data.mode)) {
+        if (Stats.typeOf(fd.data.mode) === Enums.S_IFDIR) {
             return Enums.errno.EISDIR;
         }
 
@@ -1154,42 +1219,58 @@ class TmpFs {
  * An in-memory zip-based filesystem.
  * Stores data in a zip format in memory, supports compression, can be easily loaded/saved and patched.
  */
-class MemFs {}
+class MemFs {
+    static fsType = "memfs";
+}
 
 /**
  * Very simple localStorage-based filesystem for small amounts of data.
  */
-class LocalStorageFs extends TmpFs {}
+class LocalStorageFs extends TmpFs {
+    static fsType = "localfs";
+}
 
 /**
  * Remote cloud filesystem.
  */
-class RemoteFs {}
+class RemoteFs {
+    static fsType = "remotefs";
+}
 
 /**
  * IndexedDB-based filesystem for local browser storage.
  */
-class IndexedDbFs {}
+class IndexedDbFs {
+    static fsType = "indexeddbfs";
+}
 
 /**
  * Node.js-based filesystem for direct host-machine storage.
  */
-class NodeFs {}
+class NodeFs {
+    static fsType = "nodefs";
+}
 
 /**
  * WASM filesystem (to be implemented)
  */
-class WasmFs {}
+class WasmFs {
+    static fsType = "wasmfs";
+}
 
 /**
  * ProcFs, a virtual filesystem that provides information about processes and system resources.
  */
-class ProcFs {}
+class ProcFs {
+    static fsType = "proc";
+}
 
 /**
  * SysFs, a virtual filesystem that provides information about the system and kernel.
  */
-class SysFs {}
+class SysFs {
+    static fsType = "sys";
+}
 
 /**
  * NullFs, a virtual filesystem that discards all data written to it
@@ -1197,7 +1278,7 @@ class SysFs {}
  * Yeah I am also not sure why this is useful but it sure does break all the benchmarks! World's fastest filesystem!
  */
 class NullFs {
-    static fsType = "NullFs";
+    static fsType = "nullfs";
 
     open(ndir, flags, mode = Enums.S_IFREG | 0o644, extraFlags = 0, extraData = undefined) {
         // This fs accepts opening whatever file you throw at it with whatever type you want.
@@ -1247,6 +1328,12 @@ class NullFs {
         fd.closed = true;
         return 0;
     }
+}
+
+// Register fs types
+for(const fs of [TmpFs, MemFs, NodeFs, LocalStorageFs, RemoteFs, IndexedDbFs, WasmFs, ProcFs, SysFs, NullFs]) {
+    if(!fs.fsType) continue;
+    RootFs.fsTypes[fs.fsType] = fs;
 }
 
 export { Stats, RootFs, DEFAULT_FS_DATA, TmpFs, MemFs, NodeFs, LocalStorageFs, RemoteFs, IndexedDbFs, WasmFs, ProcFs, SysFs, NullFs }

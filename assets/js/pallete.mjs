@@ -2133,7 +2133,9 @@ function init(kernel, desktop, LoggerContext) {
                 }));
 
                 const uname = await kernel.sys.uname();
-                const rootMount = kernel?.fileSystem?.lsmount?.()?.find(m => m[0] === "/")?.[1];
+                const rootMount = kernel?.fileSystem?.lsmount?.()?.at(-1)?.[1];
+
+                const t = (kernel?.fileSystem?.constructor?.toHuman) || (v=>v);
 
                 terminalWriter.log(
                     `%clstv.space%c kernel`,
@@ -2150,7 +2152,7 @@ function init(kernel, desktop, LoggerContext) {
                 );
                 if(rootMount) {
                     terminalWriter.log(
-                        `%cDisk (/):%c ${rootMount.size > -1? Math.round(rootMount.size / 1024 / 1024): "0"}MB / ${rootMount.size > -1? Math.round(rootMount.size / 1024 / 1024): "0"}MB (${Math.round((rootMount.used || -1) / (rootMount.size || 1) * 100)}%) - ${rootMount.type || "Unknown"}`,
+                        `%cDisk (/):%c ${t(rootMount.used, 1)} / ${t(rootMount.size)} (${Math.round((rootMount.used || -1) / (rootMount.size || 1) * 100)}%) - ${rootMount.type || "Unknown"}`,
                         "color:var(--accent);font-weight:bold", "color:inherit"
                     );
                 }

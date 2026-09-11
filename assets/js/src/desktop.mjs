@@ -264,14 +264,6 @@ class LiDesktop extends LS.Context {
         this.addExternalEventListener(this.windowManager, "window-created", (event) => this.updateTaskbars());
         this.addExternalEventListener(this.windowManager, "window-closed", (event) => this.updateTaskbars());
 
-        if(!options.limited) {
-            this.windowManager.topOffset = 0;
-            this.windowManager.bottomOffset = 42;
-        } else {
-            this.windowManager.topOffset = 50;
-            this.windowManager.bottomOffset = 0;
-        }
-
         // System sounds
         const base = "/assets/audio/system/sfx/";
         this.soundBox = new SoundBox({
@@ -311,6 +303,46 @@ class LiDesktop extends LS.Context {
         this.menuInitialized = false;
 
         this.initPanel();
+    }
+
+    setDesktopMode(limited) {
+        if(limited) {
+            this.windowManager.topOffset = 0;
+            this.windowManager.bottomOffset = 42;
+
+            this.panelState = [
+                { kind: "apps" },
+                { kind: "accounts" },
+                { kind: "taskbar" },
+                { kind: "spacer" },
+                { kind: "clock" },
+                { kind: "theme" },
+                { kind: "commandPalette" },
+            ];
+
+            // todo
+            this._welcome();
+        } else {
+            this.windowManager.topOffset = 50;
+            this.windowManager.bottomOffset = 0;
+
+            this.panelState = [
+                { kind: "website-header" },
+                { kind: "spacer" },
+                { kind: "accounts" },
+                { kind: "apps" },
+                { kind: "theme" },
+                { kind: "commandPalette" },
+            ];
+        }
+
+        this.updatePanelLayout();
+
+        const switchEl = document.querySelector("#desktopModeSwitch");
+        if(switchEl) {
+            switchEl.querySelector("input").checked = limited;
+            if(limited) switchEl.querySelector("ls-box")?.remove?.();
+        }
     }
 
     /**
