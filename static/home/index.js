@@ -605,7 +605,7 @@ website.register(document.currentScript, class extends LS.Context {
                 LS.Create("button", {
                     textContent: "Log in",
                     class: "pill",
-                    onclick: () => website.showLoginToolbar()
+                    onclick: () => website.desktop.showLoginToolbar()
                 })
             ]
         }), this.panelContent], null, {

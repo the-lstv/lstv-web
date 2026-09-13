@@ -63,9 +63,12 @@ class Environment {
             this.destroy();
         });
 
+        // First process (0)
+        this.proc = new Process();
+
         // Export default env variables
         // this.setEnv("SHELL", "/bin/bash"); // based on user
-        this.setEnv("HOSTNAME", k.sys.uname().nodename);
+        this.setEnv("HOSTNAME", this.proc.uname().nodename);
         this.setEnv("PATH", "/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin");
     }
 
@@ -737,7 +740,7 @@ const app = {
 
         if(app.desktop) {
             console.log(app.desktop);
-            app.desktop.setDesktopMode(value);
+            app.desktop.setDesktopMode(!value);
         }
     },
 

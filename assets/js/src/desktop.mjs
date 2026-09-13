@@ -273,7 +273,7 @@ class LiDesktop extends LS.Context {
                 "notification": { src: base + "notification.mp3" },
                 "error":        { src: base + "error.mp3", fallback: ["system:notification"] },
                 "success":      { src: base + "success.mp3" },
-                "startup":      { src: base + "startup_1.wav" },
+                "startup":      { src: base + "startup.ogg" },
                 "timer":        { src: base + "timer.mp3", fallback: ["system:notification"] },
             }
         }, null, "system");
@@ -290,7 +290,7 @@ class LiDesktop extends LS.Context {
             this.openToolbar("menu", true);
         });
 
-        kernel.environment.setEnv("XDG_CURRENT_DESKTOP", this.constructor.name);
+        kernel.env.setEnv("XDG_CURRENT_DESKTOP", this.constructor.name);
 
         this.#setupAuth();
 
@@ -302,11 +302,23 @@ class LiDesktop extends LS.Context {
         this.menuElement = null;
         this.menuInitialized = false;
 
-        this.initPanel();
+        this.initPanel(options);
     }
 
     setDesktopMode(limited) {
         if(limited) {
+            this.windowManager.topOffset = 50;
+            this.windowManager.bottomOffset = 0;
+
+            this.panelState = [
+                { kind: "website-header" },
+                { kind: "spacer" },
+                { kind: "accounts" },
+                { kind: "apps" },
+                { kind: "theme" },
+                { kind: "commandPalette" },
+            ];
+        } else {
             this.windowManager.topOffset = 0;
             this.windowManager.bottomOffset = 42;
 
@@ -322,26 +334,14 @@ class LiDesktop extends LS.Context {
 
             // todo
             this._welcome();
-        } else {
-            this.windowManager.topOffset = 50;
-            this.windowManager.bottomOffset = 0;
-
-            this.panelState = [
-                { kind: "website-header" },
-                { kind: "spacer" },
-                { kind: "accounts" },
-                { kind: "apps" },
-                { kind: "theme" },
-                { kind: "commandPalette" },
-            ];
         }
 
         this.updatePanelLayout();
 
         const switchEl = document.querySelector("#desktopModeSwitch");
         if(switchEl) {
-            switchEl.querySelector("input").checked = limited;
-            if(limited) switchEl.querySelector("ls-box")?.remove?.();
+            switchEl.querySelector("input").checked = !limited;
+            if(!limited) switchEl.querySelector("ls-box")?.remove?.();
         }
     }
 
@@ -611,7 +611,7 @@ class LiDesktop extends LS.Context {
         }, 0);
     }
 
-    initPanel() {
+    initPanel(options) {
         const moreButton = LS.SelectOrCreate("#moreButton");
         moreButton.addEventListener("click", () => {
             this.openToolbar("more", true);
@@ -637,6 +637,8 @@ class LiDesktop extends LS.Context {
                 app.container.style.display = "flex";
             }
         });
+
+        this.setDesktopMode(options?.limited);
 
         this.frameScheduler.schedule();
 
@@ -788,7 +790,8 @@ class LiDesktop extends LS.Context {
         if(frag)     container.replaceChildren(frag);
         if(menuFrag)      menu.replaceChildren(menuFrag);
 
-        moreButton.style.display = (availableSpace + moreButtonClientWidth) < takenSpace ? "inline-flex" : "none";
+        // moreButton.style.display = (availableSpace + moreButtonClientWidth) < takenSpace ? "inline-flex" : "none";
+        moreButton.style.display = "none";
 
         // Close the toolbar if no items are collapsed and it's currently open
         if (!hasCollapsedItems && this.isToolbarOpen && app.currentToolbar === "more") {

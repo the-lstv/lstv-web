@@ -8,6 +8,59 @@ import { Environment } from "./environment.mjs";
 import { Enums } from "./enums.mjs";
 
 /**
+ * Process class
+ * @see https://github.com/torvalds/linux/blob/master/arch/x86/entry/syscalls/syscall_64.tbl
+ */
+class Process {
+    #uid = null;
+    #gid = null;
+    #pid = null;
+    #fd = [];
+
+    constructor() {
+
+    }
+
+    /**
+     * Read data from a file descriptor.
+     * @param {*} fd The file descriptor to read from.
+     * @param {*} out The buffer to write the data to.
+     * @param {*} nbytes The number of bytes to read.
+     */
+    async read(fd, out, nbytes) {
+        const data = await this.fileSystem.read(fd, 0, nbytes, RootFs.ENCODING.binary);
+
+        // we can't access pointers with JS so we try writing to a typed array
+        if(out && out.set) {
+            out.set(data);
+        }
+    }
+
+    async write(fd, data, nbytes) {
+        // likewise, we can't just read memory so we assume data is a typed array
+        return await this.fileSystem.write(fd, data, 0, nbytes);
+    }
+
+    async open(filename, flags, mode) {
+        return await this.fileSystem.open(filename, flags);
+    }
+
+    uname(utsname = {}) {
+        utsname.sysname  = "LinuxJS";
+        utsname.nodename = "linuxjs";
+        utsname.release  = KERNEL_VERSION + ".lsw13";
+        utsname.version  = "#ls-web Tue Sep 8 08:42:36 UTC 2026";
+        utsname.machine  = "js";
+        return utsname;
+    }
+
+    fork() {}
+
+    execve(path, argv, envp) {}
+}
+
+
+/**
  * Kernel class
  * Main application kernel, handles global state, navigation, authentication, and content contexts.
  */
@@ -15,42 +68,10 @@ const kernel = new class Kernel extends LS.Context {
     isKernel = true;
     version = KERNEL_VERSION;
 
-    fileSystem = new RootFs(true);
+    fileSystem =   new RootFs(true);
 
-    threads =     new Set();
+    threads =      new Set();
     MAX_THREADS = (navigator.hardwareConcurrency || 4) * 2;
-
-    // simulate some syscalls (uh, well, as methods).
-    // these are more of functionality abstractions than something that could be used to emulate syscalls.
-    // these should not be needed much but provide some helpful information.
-    sys = {
-        async read(fd, out, nbytes) {
-            const data = await this.fileSystem.read(fd, 0, nbytes, RootFs.ENCODING.binary);
-
-            // we can't access pointers with JS so we try writing to a typed array
-            if(out && out.set) {
-                out.set(data);
-            }
-        },
-
-        async write(fd, data, nbytes) {
-            // likewise, we can't just read memory so we assume data is a typed array
-            return await this.fileSystem.write(fd, data, 0, nbytes);
-        },
-
-        async open(filename, flags, mode) {
-            return await this.fileSystem.open(filename, flags);
-        },
-
-        uname(utsname = {}) {
-            utsname.sysname  = "LinuxJS";
-            utsname.nodename = "linuxjs";
-            utsname.release  = KERNEL_VERSION + ".lsw13";
-            utsname.version  = "#ls-web Tue Sep 8 08:42:36 UTC 2026";
-            utsname.machine  = "js";
-            return utsname;
-        }
-    }
 
     contexts =     new Map();
     viewports =    new Map();
@@ -64,7 +85,7 @@ const kernel = new class Kernel extends LS.Context {
     /**
      * @type {Environment}
      */
-    environment =  null;
+    env =  null;
 
     queryParams = LS.Util.parseURLParams();
     userFragment = LS.Reactive.wrap("user", {});
@@ -333,7 +354,7 @@ const kernel = new class Kernel extends LS.Context {
 
         this.logger = new LoggerContext("kernel");
 
-        this.environment = new Environment(this);
+        this.env = new Environment(this);
 
         const appElement = LS.SelectOrCreate('#app');
         const vpElement = LS.SelectOrCreate('#viewport');
@@ -424,7 +445,7 @@ const kernel = new class Kernel extends LS.Context {
         });
         
         this.addExternalEventListener(document, 'DOMContentLoaded', () => {
-            this.environment.init();
+            this.env.init();
 
             app.container = this.container = document.getElementById('app');
             app.viewportElement = this.viewportElement = this.viewport.target;

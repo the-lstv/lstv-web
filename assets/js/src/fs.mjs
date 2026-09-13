@@ -471,9 +471,9 @@ class RootFs {
      * @returns {string} Merged path
      * 
      * @example
-     * RootFs.joinSafe("/home/user", "../../dir/../hello.txt"); // -> /home/user/hello.txt
+     * RootFs.resolveSafe("/home/user", "../../dir/../hello.txt"); // -> /home/user/hello.txt
      */
-    static joinSafe(base, ...parts) {
+    static resolveSafe(base, ...parts) {
         // absolute=true
         base = RootFs.normalize(base, true);
 
@@ -1249,6 +1249,76 @@ class IndexedDbFs {
  */
 class NodeFs {
     static fsType = "nodefs";
+
+    constructor(source, options, dump, order) {
+        // super(source, options, dump, order);
+        if(typeof process === "undefined") throw new Error("NodeFs can only be used in Node.js environments");
+    }
+    
+    async init() {
+        this.fs = await import("fs");
+    }
+
+    open(ndir, flags, mode = Enums.S_IFREG | 0o644, extraFlags = 0, extraData = undefined) {
+        const fd = this.fs.openSync(ndir, flags, mode);
+        return {
+            _fs: this,
+            data: { mode },
+            flags,
+            ndir,
+            offset: 0,
+            closed: false,
+            readable: true,
+            writable: true,
+            nodeFd: fd
+        };
+    }
+
+    read(fd, first, nbytes, encoding) {
+        if(nbytes === -1) {
+            nbytes = this.fs.fstatSync(fd.nodeFd).size - first;
+        }
+
+        const buffer = Buffer.alloc(nbytes);
+        const bytesRead = this.fs.readSync(fd.nodeFd, buffer, 0, buffer.length, first);
+        return encoding === RootFs.ENCODING.utf8 ? buffer.toString("utf8", 0, bytesRead) : buffer.slice(0, bytesRead);
+    }
+
+    write(fd, newData, first, nbytes) {
+        const buffer = Buffer.isBuffer(newData) ? newData : Buffer.from(newData);
+        if(nbytes === -1) {
+            nbytes = buffer.length;
+        }
+
+        const bytesWritten = this.fs.writeSync(fd.nodeFd, buffer, 0, nbytes === -1? buffer.length: nbytes, first);
+        return bytesWritten;
+    }
+
+    stat(fd, out, ncheck = false) {
+        if(!ncheck) {
+            if (!fd || !fd._fs || !fd.data || fd.closed) {
+                throw new Error(Enums.errno.EBADF);
+            }
+        }
+
+        const stats = this.fs.fstatSync(fd.nodeFd);
+        out.size = stats.size;
+        out.mode = stats.mode;
+        out.mtimeMs = stats.mtimeMs;
+        out.ctimeMs = stats.ctimeMs;
+        out.atimeMs = stats.atimeMs;
+        out.uid = stats.uid;
+        out.gid = stats.gid;
+        return out;
+    }
+
+    close(fd) {
+        this.fs.closeSync(fd.nodeFd);
+        fd._fs = null;
+        fd.data = null;
+        fd.closed = true;
+        return 0;
+    }
 }
 
 /**
@@ -1334,6 +1404,11 @@ class NullFs {
 for(const fs of [TmpFs, MemFs, NodeFs, LocalStorageFs, RemoteFs, IndexedDbFs, WasmFs, ProcFs, SysFs, NullFs]) {
     if(!fs.fsType) continue;
     RootFs.fsTypes[fs.fsType] = fs;
+}
+
+class RemoteFsServer {
+    constructor(options = {}) {
+    }
 }
 
 export { Stats, RootFs, DEFAULT_FS_DATA, TmpFs, MemFs, NodeFs, LocalStorageFs, RemoteFs, IndexedDbFs, WasmFs, ProcFs, SysFs, NullFs }

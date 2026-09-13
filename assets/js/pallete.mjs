@@ -2010,6 +2010,12 @@ class CommandPalette {
 
 // --- lstv.space specific
 
+/**
+ * Initialize the command palette and terminal.
+ * @param {Kernel} kernel 
+ * @param {LiDesktop} desktop 
+ * @param {LoggerContext} LoggerContext 
+ */
 function init(kernel, desktop, LoggerContext) {
     const topBar = LS.SelectOne("#topOverlay");
 
@@ -2132,7 +2138,7 @@ function init(kernel, desktop, LoggerContext) {
                     style: 'margin:auto;display:flex;justify-content:center;position:relative'
                 }));
 
-                const uname = await kernel.sys.uname();
+                const uname = await kernel.env.proc.uname();
                 const rootMount = kernel?.fileSystem?.lsmount?.()?.at(-1)?.[1];
 
                 const t = (kernel?.fileSystem?.constructor?.toHuman) || (v=>v);
@@ -2426,7 +2432,7 @@ function init(kernel, desktop, LoggerContext) {
             icon: "bi-info-circle",
             description: "Get copyable version information",
             async onCalled() {
-                const uname = await kernel.sys.uname();
+                const uname = await kernel.env.proc.uname();
                 terminalWriter.log(`${uname.sysname} ${uname.release} LS:${LS.version} DE:${app.desktop?.name} (${ckMeta.codename})`);
             }
         },

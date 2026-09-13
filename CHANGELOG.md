@@ -7,6 +7,11 @@
 - Small shader performance & renedring improvements
 - Fixed homepage animations
 - A bunch of bug fixes all over the place
+- Command palette has been changed to use the new bash terminal with new auto-completion features.
+- Added a session/login manager for the desktop
+- Added a new file manager
+- Updated resource monitor
+- Added a filesystem and environment
 
 ## 1.2.6-beta
 - Updated LS v6.0.0-alpha.0 -> v6.0.0-alpha.2
@@ -21,5 +26,7 @@
 ## 1.2.4-beta
 - Updated LS v5.2.8 -> v5.2.9
 - Customizeable corner radius
+- Music player
+- User settings
 
 ...

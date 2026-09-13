@@ -10,3 +10,8 @@ static/simple-uploader.html
 
 # tmp while testing
 wallpapers
+
+test.mjs
+
+assets/audio/music/*thelstv*
+assets/audio/music/*

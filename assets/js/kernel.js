@@ -2579,7 +2579,7 @@ class LiDesktop extends LS.Context {
                 "notification": { src: base + "notification.mp3" },
                 "error":        { src: base + "error.mp3", fallback: ["system:notification"] },
                 "success":      { src: base + "success.mp3" },
-                "startup":      { src: base + "startup_1.wav" },
+                "startup":      { src: base + "startup.ogg" },
                 "timer":        { src: base + "timer.mp3", fallback: ["system:notification"] },
             }
         }, null, "system");
@@ -2596,7 +2596,7 @@ class LiDesktop extends LS.Context {
             this.openToolbar("menu", true);
         });
 
-        kernel.environment.setEnv("XDG_CURRENT_DESKTOP", this.constructor.name);
+        kernel.env.setEnv("XDG_CURRENT_DESKTOP", this.constructor.name);
 
         this.#setupAuth();
 
@@ -2608,11 +2608,23 @@ class LiDesktop extends LS.Context {
         this.menuElement = null;
         this.menuInitialized = false;
 
-        this.initPanel();
+        this.initPanel(options);
     }
 
     setDesktopMode(limited) {
         if(limited) {
+            this.windowManager.topOffset = 50;
+            this.windowManager.bottomOffset = 0;
+
+            this.panelState = [
+                { kind: "website-header" },
+                { kind: "spacer" },
+                { kind: "accounts" },
+                { kind: "apps" },
+                { kind: "theme" },
+                { kind: "commandPalette" },
+            ];
+        } else {
             this.windowManager.topOffset = 0;
             this.windowManager.bottomOffset = 42;
 
@@ -2628,26 +2640,14 @@ class LiDesktop extends LS.Context {
 
             // todo
             this._welcome();
-        } else {
-            this.windowManager.topOffset = 50;
-            this.windowManager.bottomOffset = 0;
-
-            this.panelState = [
-                { kind: "website-header" },
-                { kind: "spacer" },
-                { kind: "accounts" },
-                { kind: "apps" },
-                { kind: "theme" },
-                { kind: "commandPalette" },
-            ];
         }
 
         this.updatePanelLayout();
 
         const switchEl = document.querySelector("#desktopModeSwitch");
         if(switchEl) {
-            switchEl.querySelector("input").checked = limited;
-            if(limited) switchEl.querySelector("ls-box")?.remove?.();
+            switchEl.querySelector("input").checked = !limited;
+            if(!limited) switchEl.querySelector("ls-box")?.remove?.();
         }
     }
 
@@ -2917,7 +2917,7 @@ class LiDesktop extends LS.Context {
         }, 0);
     }
 
-    initPanel() {
+    initPanel(options) {
         const moreButton = LS.SelectOrCreate("#moreButton");
         moreButton.addEventListener("click", () => {
             this.openToolbar("more", true);
@@ -2943,6 +2943,8 @@ class LiDesktop extends LS.Context {
                 app.container.style.display = "flex";
             }
         });
+
+        this.setDesktopMode(options?.limited);
 
         this.frameScheduler.schedule();
 
@@ -3094,7 +3096,8 @@ class LiDesktop extends LS.Context {
         if(frag)     container.replaceChildren(frag);
         if(menuFrag)      menu.replaceChildren(menuFrag);
 
-        moreButton.style.display = (availableSpace + moreButtonClientWidth) < takenSpace ? "inline-flex" : "none";
+        // moreButton.style.display = (availableSpace + moreButtonClientWidth) < takenSpace ? "inline-flex" : "none";
+        moreButton.style.display = "none";
 
         // Close the toolbar if no items are collapsed and it's currently open
         if (!hasCollapsedItems && this.isToolbarOpen && app.currentToolbar === "more") {
@@ -3900,9 +3903,9 @@ class RootFs {
      * @returns {string} Merged path
      * 
      * @example
-     * RootFs.joinSafe("/home/user", "../../dir/../hello.txt"); // -> /home/user/hello.txt
+     * RootFs.resolveSafe("/home/user", "../../dir/../hello.txt"); // -> /home/user/hello.txt
      */
-    static joinSafe(base, ...parts) {
+    static resolveSafe(base, ...parts) {
         // absolute=true
         base = RootFs.normalize(base, true);
 
@@ -4678,6 +4681,76 @@ class IndexedDbFs {
  */
 class NodeFs {
     static fsType = "nodefs";
+
+    constructor(source, options, dump, order) {
+        // super(source, options, dump, order);
+        if(typeof process === "undefined") throw new Error("NodeFs can only be used in Node.js environments");
+    }
+    
+    async init() {
+        this.fs = await import("fs");
+    }
+
+    open(ndir, flags, mode = Enums.S_IFREG | 0o644, extraFlags = 0, extraData = undefined) {
+        const fd = this.fs.openSync(ndir, flags, mode);
+        return {
+            _fs: this,
+            data: { mode },
+            flags,
+            ndir,
+            offset: 0,
+            closed: false,
+            readable: true,
+            writable: true,
+            nodeFd: fd
+        };
+    }
+
+    read(fd, first, nbytes, encoding) {
+        if(nbytes === -1) {
+            nbytes = this.fs.fstatSync(fd.nodeFd).size - first;
+        }
+
+        const buffer = Buffer.alloc(nbytes);
+        const bytesRead = this.fs.readSync(fd.nodeFd, buffer, 0, buffer.length, first);
+        return encoding === RootFs.ENCODING.utf8 ? buffer.toString("utf8", 0, bytesRead) : buffer.slice(0, bytesRead);
+    }
+
+    write(fd, newData, first, nbytes) {
+        const buffer = Buffer.isBuffer(newData) ? newData : Buffer.from(newData);
+        if(nbytes === -1) {
+            nbytes = buffer.length;
+        }
+
+        const bytesWritten = this.fs.writeSync(fd.nodeFd, buffer, 0, nbytes === -1? buffer.length: nbytes, first);
+        return bytesWritten;
+    }
+
+    stat(fd, out, ncheck = false) {
+        if(!ncheck) {
+            if (!fd || !fd._fs || !fd.data || fd.closed) {
+                throw new Error(Enums.errno.EBADF);
+            }
+        }
+
+        const stats = this.fs.fstatSync(fd.nodeFd);
+        out.size = stats.size;
+        out.mode = stats.mode;
+        out.mtimeMs = stats.mtimeMs;
+        out.ctimeMs = stats.ctimeMs;
+        out.atimeMs = stats.atimeMs;
+        out.uid = stats.uid;
+        out.gid = stats.gid;
+        return out;
+    }
+
+    close(fd) {
+        this.fs.closeSync(fd.nodeFd);
+        fd._fs = null;
+        fd.data = null;
+        fd.closed = true;
+        return 0;
+    }
 }
 
 /**
@@ -4763,6 +4836,11 @@ class NullFs {
 for(const fs of [TmpFs, MemFs, NodeFs, LocalStorageFs, RemoteFs, IndexedDbFs, WasmFs, ProcFs, SysFs, NullFs]) {
     if(!fs.fsType) continue;
     RootFs.fsTypes[fs.fsType] = fs;
+}
+
+class RemoteFsServer {
+    constructor(options = {}) {
+    }
 }
 
 /*
@@ -5918,9 +5996,12 @@ class Environment {
             this.destroy();
         });
 
+        // First process (0)
+        this.proc = new Process();
+
         // Export default env variables
         // this.setEnv("SHELL", "/bin/bash"); // based on user
-        this.setEnv("HOSTNAME", k.sys.uname().nodename);
+        this.setEnv("HOSTNAME", this.proc.uname().nodename);
         this.setEnv("PATH", "/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin");
     }
 
@@ -6592,7 +6673,7 @@ const app = {
 
         if(app.desktop) {
             console.log(app.desktop);
-            app.desktop.setDesktopMode(value);
+            app.desktop.setDesktopMode(!value);
         }
     },
 
@@ -6697,6 +6778,59 @@ globalThis.app = app;
 // WARNING: The following imports are just a stub, the actual build system is being worked on.
 
 /**
+ * Process class
+ * @see https://github.com/torvalds/linux/blob/master/arch/x86/entry/syscalls/syscall_64.tbl
+ */
+class Process {
+    #uid = null;
+    #gid = null;
+    #pid = null;
+    #fd = [];
+
+    constructor() {
+
+    }
+
+    /**
+     * Read data from a file descriptor.
+     * @param {*} fd The file descriptor to read from.
+     * @param {*} out The buffer to write the data to.
+     * @param {*} nbytes The number of bytes to read.
+     */
+    async read(fd, out, nbytes) {
+        const data = await this.fileSystem.read(fd, 0, nbytes, RootFs.ENCODING.binary);
+
+        // we can't access pointers with JS so we try writing to a typed array
+        if(out && out.set) {
+            out.set(data);
+        }
+    }
+
+    async write(fd, data, nbytes) {
+        // likewise, we can't just read memory so we assume data is a typed array
+        return await this.fileSystem.write(fd, data, 0, nbytes);
+    }
+
+    async open(filename, flags, mode) {
+        return await this.fileSystem.open(filename, flags);
+    }
+
+    uname(utsname = {}) {
+        utsname.sysname  = "LinuxJS";
+        utsname.nodename = "linuxjs";
+        utsname.release  = KERNEL_VERSION + ".lsw13";
+        utsname.version  = "#ls-web Tue Sep 8 08:42:36 UTC 2026";
+        utsname.machine  = "js";
+        return utsname;
+    }
+
+    fork() {}
+
+    execve(path, argv, envp) {}
+}
+
+
+/**
  * Kernel class
  * Main application kernel, handles global state, navigation, authentication, and content contexts.
  */
@@ -6704,42 +6838,10 @@ const kernel = new class Kernel extends LS.Context {
     isKernel = true;
     version = KERNEL_VERSION;
 
-    fileSystem = new RootFs(true);
+    fileSystem =   new RootFs(true);
 
-    threads =     new Set();
+    threads =      new Set();
     MAX_THREADS = (navigator.hardwareConcurrency || 4) * 2;
-
-    // simulate some syscalls (uh, well, as methods).
-    // these are more of functionality abstractions than something that could be used to emulate syscalls.
-    // these should not be needed much but provide some helpful information.
-    sys = {
-        async read(fd, out, nbytes) {
-            const data = await this.fileSystem.read(fd, 0, nbytes, RootFs.ENCODING.binary);
-
-            // we can't access pointers with JS so we try writing to a typed array
-            if(out && out.set) {
-                out.set(data);
-            }
-        },
-
-        async write(fd, data, nbytes) {
-            // likewise, we can't just read memory so we assume data is a typed array
-            return await this.fileSystem.write(fd, data, 0, nbytes);
-        },
-
-        async open(filename, flags, mode) {
-            return await this.fileSystem.open(filename, flags);
-        },
-
-        uname(utsname = {}) {
-            utsname.sysname  = "LinuxJS";
-            utsname.nodename = "linuxjs";
-            utsname.release  = KERNEL_VERSION + ".lsw13";
-            utsname.version  = "#ls-web Tue Sep 8 08:42:36 UTC 2026";
-            utsname.machine  = "js";
-            return utsname;
-        }
-    }
 
     contexts =     new Map();
     viewports =    new Map();
@@ -6753,7 +6855,7 @@ const kernel = new class Kernel extends LS.Context {
     /**
      * @type {Environment}
      */
-    environment =  null;
+    env =  null;
 
     queryParams = LS.Util.parseURLParams();
     userFragment = LS.Reactive.wrap("user", {});
@@ -7022,7 +7124,7 @@ const kernel = new class Kernel extends LS.Context {
 
         this.logger = new LoggerContext("kernel");
 
-        this.environment = new Environment(this);
+        this.env = new Environment(this);
 
         const appElement = LS.SelectOrCreate('#app');
         const vpElement = LS.SelectOrCreate('#viewport');
@@ -7113,7 +7215,7 @@ const kernel = new class Kernel extends LS.Context {
         });
         
         this.addExternalEventListener(document, 'DOMContentLoaded', () => {
-            this.environment.init();
+            this.env.init();
 
             app.container = this.container = document.getElementById('app');
             app.viewportElement = this.viewportElement = this.viewport.target;

@@ -88,7 +88,7 @@ website.register(document.currentScript, class Chat extends LS.Context {
                 LS.Create("button", {
                     textContent: "Log in",
                     class: "pill",
-                    onclick: () => website.showLoginToolbar()
+                    onclick: () => website.desktop.showLoginToolbar()
                 })
             ]
         }), this.container.querySelector('.loadingContent')], null, {
