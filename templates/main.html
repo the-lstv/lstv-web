@@ -122,192 +122,205 @@
     <div #resizeMessage hidden>Minimum size for this application is 200x100 pixels.</div>
 
     <div #app hidden>
-        <nav #primaryPanel .level-1>
-            <div .headerButtons></div>
-            <button #moreButton ls-tooltip="More options" .pill .elevated aria-label="More options">
-                <i .bi-list />
-            </button>
-        </nav>
+        <ls-tab tab-id="desktop" #environment>
+            <nav #primaryPanel .level-1>
+                <div .headerButtons></div>
+                <button #moreButton ls-tooltip="More options" .pill .elevated aria-label="More options">
+                    <i .bi-list />
+                </button>
+            </nav>
 
-        <div #topOverlay style="display: none"></div>
+            <div #topOverlay style="display: none"></div>
 
-        <div #toolbars .level-1>
-            <div .toolbar .toolbar-styled #toolbarApps style="display: none">
-                <h3>Applications</h3>
-                <!-- <input type="text" .app-search placeholder="Search apps..." aria-label="Search applications"> -->
-                <span style="padding: 0 20px 10px 20px;text-align: center;display: block;color: var(--surface-6);">This is being worked on at the moment! A lot is to come soon!</span>
-                <div .app-list></div>
-            </div>
+            <div #toolbars .level-1>
+                <div .toolbar .toolbar-styled #toolbarMenu style="display: none">
+                    <h3>Applications</h3>
+                    <!-- <input type="text" .app-search placeholder="Search apps..." aria-label="Search applications"> -->
+                    <span style="padding: 0 20px 10px 20px;text-align: center;display: block;color: var(--surface-6);">This is being worked on at the moment! A lot is to come soon!</span>
+                    <div .app-list></div>
+                </div>
 
-            <div .toolbar .toolbar-styled #toolbarTheme style="display: none">
-                <h3>Customize</h3>
-                <ls-box .elevated .inline>
-                    <button .elevated ls-tooltip aria-label="Dark theme" onclick="website.theme = 'dark'"> <i class="bi-moon-stars-fill" /> </button>
-                    <button .elevated ls-tooltip aria-label="Light theme" onclick="website.theme = 'light'"> <i class="bi-sun-fill" /> </button>
-                    <button .elevated ls-tooltip aria-label="Set to system default" onclick='localStorage.removeItem("ls-theme"); LS.Color.setAdaptiveTheme()'> <i class="bi-laptop" /> </button>
-                </ls-box>
+                <div .toolbar .toolbar-styled #toolbarTheme style="display: none">
+                    <h3>Customize</h3>
+                    <ls-box .elevated .inline>
+                        <button .elevated ls-tooltip aria-label="Dark theme" onclick="website.theme = 'dark'"> <i class="bi-moon-stars-fill" /> </button>
+                        <button .elevated ls-tooltip aria-label="Light theme" onclick="website.theme = 'light'"> <i class="bi-sun-fill" /> </button>
+                        <button .elevated ls-tooltip aria-label="Set to system default" onclick='localStorage.removeItem("ls-theme"); LS.Color.setAdaptiveTheme()'> <i class="bi-laptop" /> </button>
+                    </ls-box>
 
-                <br>
+                    <br>
 
-                <ls-box .elevated .inline #accentButtons>
-                    <button .square ls-tooltip aria-label="Custom color" onclick="this.querySelector('input[type=color]').click()">
-                        <input type="color" style="visibility: hidden; position: absolute" value="#ffffff">
-                        <i .bi-eyedropper />
-                    </button>
-                </ls-box>
+                    <ls-box .elevated .inline #accentButtons>
+                        <button .square ls-tooltip aria-label="Custom color" onclick="this.querySelector('input[type=color]').click()">
+                            <input type="color" style="visibility: hidden; position: absolute" value="#ffffff">
+                            <i .bi-eyedropper />
+                        </button>
+                    </ls-box>
 
-                <ls-div>
-                    Rounded corners<br>
-                    <ls-range style="width: 80%" value="1" min="0" max="1.5" step="0.5" onconnected="this.value = localStorage.getItem('ls-border-radius') || this.value" oninput='document.body.style.setProperty("--border-radius-multiplier", this.value);localStorage.setItem("ls-border-radius", this.value)'></ls-range>
-                </ls-div>
+                    <ls-div>
+                        Rounded corners<br>
+                        <ls-range style="width: 80%" value="1" min="0" max="1.5" step="0.5" onconnected="this.value = localStorage.getItem('ls-border-radius') || this.value" oninput='document.body.style.setProperty("--border-radius-multiplier", this.value);localStorage.setItem("ls-border-radius", this.value)'></ls-range>
+                    </ls-div>
 
-                <ls-div>
-                    <label .ls-switch ls-tooltip aria-label="Enable desktop mode" id="desktopModeSwitch">
-                        Desktop mode <ls-box class="inline color level-4">New</ls-box><br>
-                        <input type="checkbox" onchange="website.DESKTOP_MODE = this.checked;">
-                        <span></span>
-                    </label>
-                </ls-div>
+                    <ls-div>
+                        <label .ls-switch ls-tooltip aria-label="Enable desktop mode" id="desktopModeSwitch">
+                            Desktop mode <ls-box class="inline color level-4">New</ls-box><br>
+                            <input type="checkbox" onchange="website.DESKTOP_MODE = this.checked;">
+                            <span></span>
+                        </label>
+                    </ls-div>
 
-                <ls-div .grouped-buttons style="margin: 18px 30px 24px">
-                    <button data-ls-effect="spring">
-                        <i class="bi-pencil-fill"></i><span>Edit panel</span>
-                    </button>
-                </ls-div>
-            </div>
+                    <ls-div .grouped-buttons style="margin: 18px 30px 24px">
+                        <button data-ls-effect="spring">
+                            <i class="bi-pencil-fill"></i><span>Edit panel</span>
+                        </button>
+                    </ls-div>
+                </div>
 
-            <div .toolbar .toolbar-styled #toolbarLogin .level-1 style="display: none">
-                <div .login-toolbar-page tab-id="default" #loginPopup>
-                    <svg width="45" height="37" fill="none"><rect y="17" width="30" height="10" rx="5" fill="#fcc21b"/><rect x="15" width="30" height="10" rx="5" fill="#ed6c30"/><g fill="#40c0e7"><rect width="10" height="10" rx="5"/><rect x="35" y="17" width="10" height="10" rx="5"/></g></svg>
+                <div .toolbar .toolbar-styled #toolbarLogin .level-1 style="display: none">
+                    <div .login-toolbar-page tab-id="default" #loginPopup>
+                        <svg width="45" height="37" fill="none"><rect y="17" width="30" height="10" rx="5" fill="#fcc21b"/><rect x="15" width="30" height="10" rx="5" fill="#ed6c30"/><g fill="#40c0e7"><rect width="10" height="10" rx="5"/><rect x="35" y="17" width="10" height="10" rx="5"/></g></svg>
 
-                    <h2>Log-In!</h2>
+                        <h2>Log-In!</h2>
 
-                    <span style="margin-bottom: 1em; display: block;">
-                        Create an account to get access to all features.
-                    </span>
+                        <span style="margin-bottom: 1em; display: block;">
+                            Create an account to get access to all features.
+                        </span>
 
-                    <div .buttons>
-                        <button onclick="website.loginTabs.set('login')" #login .pill>Log-In</button>
-                        <button onclick="website.loginTabs.set('register')" .pill.elevated>Create account</button>
+                        <div .buttons>
+                            <button onclick="website.loginTabs.set('login')" #login .pill>Log-In</button>
+                            <button onclick="website.loginTabs.set('register')" .pill.elevated>Create account</button>
+                        </div>
+                    </div>
+
+                    <div .login-toolbar-page tab-id="switch">
+                        <h2 .login-popout-title>Switch Account</h2>
+
+                        <div .accounts-list .grouped-buttons></div> <br>
+
+                        <button .pill.elevated onclick="website.loginTabs.set('account')">Back</button>
+                        <button .pill.elevated onclick="website.loginTabs.set('login')"><i .bi-plus-lg></i> Add Account</button>
+                    </div>
+
+                    <div .login-toolbar-page tab-id="login">
+                        <h2 .login-popout-title>Login</h2>
+
+                        <form name="loginForm">
+                            <label for="username">Username or email</label>
+                            <input #username name="username" placeholder="Your username or email" required autocomplete="username email" spellcheck="false">
+                            <label for="password">Password</label>
+                            <input #password type="password" name="password" placeholder="Your password" required autocomplete="current-password" spellcheck="false">
+                            <span .error-message></span>
+                            <button .pill.elevated type="submit">Log in</button>
+                        </form>
+
+                        <span>Don't have one? <a href="#" onclick="website.loginTabs.set('register')">Sign up</a></span>
+                    </div>
+
+                    <div .login-toolbar-page tab-id="register">
+                        <h2 .login-popout-title>Sign Up</h2>
+
+                        <form name="registerForm">
+                            <label for="regEmail">Email</label>
+                            <ls-text-input>
+                                <input #regEmail type="email" name="email" placeholder="Your email" required autocomplete="email" spellcheck="false">
+                            </ls-text-input>
+
+                            <label for="regUsername">Username</label>
+                            <ls-text-input>
+                                <input #regUsername type="text" name="username" placeholder="Your username" required autocomplete="username" spellcheck="false" minlength="2" maxlength="35" autocapitalize="none">
+                                <div .ls-text-input-bar>
+                                    <button .elevated type="button" #randomUsername ls-tooltip aria-label="Random username"><i .bi-dice-5-fill /></button>
+                                </div>
+                            </ls-text-input>
+
+                            <label for="regPassword">Password</label>
+                            <ls-text-input>
+                                <input #regPassword type="password" name="password" placeholder="********" required autocomplete="new-password" spellcheck="false" minlength="8" pattern="^(?=.*[^a-zA-Z]).{8,}$">
+                                <div .ls-text-input-bar>
+                                    <button .elevated type="button" #randomPassword ls-tooltip aria-label="Random password"><i .bi-dice-5-fill /></button>
+                                </div>
+                            </ls-text-input>
+
+                            <span .error-message></span>
+                            <button .pill.elevated type="submit">Continue</button>
+                        </form>
+
+                        <span>Want to log-in? <a href="#" onclick="website.loginTabs.set('login')">Log in</a></span>
+                    </div>
+
+                    <div .login-toolbar-page tab-id="register-step2">
+                        <h2 .login-popout-title>Complete</h2>
+
+                        <form name="registerStep2Form" .margin-h-medium>
+                            <label for="displayname">Display name <ls-box .inline .text-tag>Optional</ls-box></label>
+                            <input #displayname type="text" name="displayname" placeholder="Your display name" autocomplete="nickname name" spellcheck="false" maxlength="45">
+                            <span .error-message></span>
+
+                            <div .margin-top-medium style="text-align: center">
+                                <div .margin-v-medium style="font-size: smaller; color: var(--elevate-3)">
+                                    By signing up, you agree to our <a href="/tos" target="_blank">Terms of Service</a> and <a href="/pp" target="_blank">Privacy Policy</a>. <br>
+                                </div>
+
+                                <button .pill style="box-shadow: 0px 12px 60px 0 var(--accent-mix-80); width: 100%; margin-top: 20px" type="submit">Create account</button>
+                            </div>
+                        </form>
+
+                    </div>
+
+                    <div .login-toolbar-page tab-id="account" .profile style="padding-bottom: 10px">
+                        <div .profile-banner {{ user.banner:ProfileBanner }} />
+                        <div .profile-avatar {{ user.pfp:ProfilePicture(120px) }} />
+
+                        <h2 {{ user.displayname:DisplayName }} style="margin-bottom: 0; font-weight: 700" />
+
+                        <a .ls-button .elevated .circle ls-tooltip aria-label="Edit profile" #editProfileButton href="/home/profile">
+                            <i .bi-pencil-fill />
+                        </a>
+
+                        {{ user.username:ProfileUsername }}
+
+                        <ls-div .profile-buttons .grouped-buttons>
+                            <a .ls-button .elevated href="/home/account" class="profile-link">
+                                <i .bi-gear-fill /><span>Manage</span>
+                            </a>
+                        </ls-div>
+
+                        <ls-div .profile-buttons .grouped-buttons>
+                            <button .elevated onclick="website.loginTabs.set('switch')"><i .bi-arrow-left-right /><span>Switch accounts</span></button>
+                            <button .elevated #logOutButton><i .bi-box-arrow-right /><span>Log out</span></button>
+                        </ls-div>
+
+                        {{ user.profileEffects:ProfileEffects }}
                     </div>
                 </div>
 
-                <div .login-toolbar-page tab-id="switch">
-                    <h2 .login-popout-title>Switch Account</h2>
+                <div .toolbar .left #musicPlayer style="display: none"></div>
 
-                    <div .accounts-list .grouped-buttons></div> <br>
+                <div .toolbar .toolbar-styled #toolbarMore style="display: none"></div>
 
-                    <button .pill.elevated onclick="website.loginTabs.set('account')">Back</button>
-                    <button .pill.elevated onclick="website.loginTabs.set('login')"><i .bi-plus-lg></i> Add Account</button>
-                </div>
+            </div>
 
-                <div .login-toolbar-page tab-id="login">
-                    <h2 .login-popout-title>Login</h2>
-
-                    <form name="loginForm">
-                        <label for="username">Username or email</label>
-                        <input #username name="username" placeholder="Your username or email" required autocomplete="username email" spellcheck="false">
-                        <label for="password">Password</label>
-                        <input #password type="password" name="password" placeholder="Your password" required autocomplete="current-password" spellcheck="false">
-                        <span .error-message></span>
-                        <button .pill.elevated type="submit">Log in</button>
-                    </form>
-
-                    <span>Don't have one? <a href="#" onclick="website.loginTabs.set('register')">Sign up</a></span>
-                </div>
-
-                <div .login-toolbar-page tab-id="register">
-                    <h2 .login-popout-title>Sign Up</h2>
-
-                    <form name="registerForm">
-                        <label for="regEmail">Email</label>
-                        <ls-text-input>
-                            <input #regEmail type="email" name="email" placeholder="Your email" required autocomplete="email" spellcheck="false">
-                        </ls-text-input>
-
-                        <label for="regUsername">Username</label>
-                        <ls-text-input>
-                            <input #regUsername type="text" name="username" placeholder="Your username" required autocomplete="username" spellcheck="false" minlength="2" maxlength="35" autocapitalize="none">
-                            <div .ls-text-input-bar>
-                                <button .elevated type="button" #randomUsername ls-tooltip aria-label="Random username"><i .bi-dice-5-fill /></button>
-                            </div>
-                        </ls-text-input>
-
-                        <label for="regPassword">Password</label>
-                        <ls-text-input>
-                            <input #regPassword type="password" name="password" placeholder="********" required autocomplete="new-password" spellcheck="false" minlength="8" pattern="^(?=.*[^a-zA-Z]).{8,}$">
-                            <div .ls-text-input-bar>
-                                <button .elevated type="button" #randomPassword ls-tooltip aria-label="Random password"><i .bi-dice-5-fill /></button>
-                            </div>
-                        </ls-text-input>
-
-                        <span .error-message></span>
-                        <button .pill.elevated type="submit">Continue</button>
-                    </form>
-
-                    <span>Want to log-in? <a href="#" onclick="website.loginTabs.set('login')">Log in</a></span>
-                </div>
-
-                <div .login-toolbar-page tab-id="register-step2">
-                    <h2 .login-popout-title>Complete</h2>
-
-                    <form name="registerStep2Form" .margin-h-medium>
-                        <label for="displayname">Display name <ls-box .inline .text-tag>Optional</ls-box></label>
-                        <input #displayname type="text" name="displayname" placeholder="Your display name" autocomplete="nickname name" spellcheck="false" maxlength="45">
-                        <span .error-message></span>
-
-                        <div .margin-top-medium style="text-align: center">
-                            <div .margin-v-medium style="font-size: smaller; color: var(--elevate-3)">
-                                By signing up, you agree to our <a href="/tos" target="_blank">Terms of Service</a> and <a href="/pp" target="_blank">Privacy Policy</a>. <br>
-                            </div>
-
-                            <button .pill style="box-shadow: 0px 12px 60px 0 var(--accent-mix-80); width: 100%; margin-top: 20px" type="submit">Create account</button>
-                        </div>
-                    </form>
-
-                </div>
-
-                <div .login-toolbar-page tab-id="account" .profile style="padding-bottom: 10px">
-                    <div .profile-banner {{ user.banner:ProfileBanner }} />
-                    <div .profile-avatar {{ user.pfp:ProfilePicture(120px) }} />
-
-                    <h2 {{ user.displayname:DisplayName }} style="margin-bottom: 0; font-weight: 700" />
-
-                    <a .ls-button .elevated .circle ls-tooltip aria-label="Edit profile" #editProfileButton href="/home/profile">
-                        <i .bi-pencil-fill />
-                    </a>
-
-                    {{ user.username:ProfileUsername }}
-
-                    <ls-div .profile-buttons .grouped-buttons>
-                        <a .ls-button .elevated href="/home/account" class="profile-link">
-                            <i .bi-gear-fill /><span>Manage</span>
-                        </a>
-                    </ls-div>
-
-                    <ls-div .profile-buttons .grouped-buttons>
-                        <button .elevated onclick="website.loginTabs.set('switch')"><i .bi-arrow-left-right /><span>Switch accounts</span></button>
-                        <button .elevated #logOutButton><i .bi-box-arrow-right /><span>Log out</span></button>
-                    </ls-div>
-
-                    {{ user.profileEffects:ProfileEffects }}
+            <div #desktop hidden>
+                <div #wallpaper>
+                    <img src="/assets/image/wallpapers/Dark.svg" alt="Wallpaper">
                 </div>
             </div>
 
-            <div .toolbar .left #musicPlayer style="display: none"></div>
+            <main #viewport>
+                <div><template::content /></div>
+            </main>
+        </ls-tab>
 
-            <div .toolbar .toolbar-styled #toolbarMore style="display: none"></div>
+        <ls-tab tab-id="login" #loginScreen></ls-tab>
 
-        </div>
+        <ls-tab tab-id="lock" #lockScreen>
+            <h1 style="font-size: 4em; font-weight: normal"><ls-time format="HH:mm"></ls-time></h1>
 
-        <div #desktop hidden>
-            <div #wallpaper>
-                <img src="/assets/image/wallpapers/test1.png" alt="Wallpaper">
-            </div>
-        </div>
-
-        <main #viewport>
-            <div><template::content /></div>
-        </main>
+            <ls-group>
+                <!-- <input type="password" #lockPassword placeholder="Enter your password to unlock" autocomplete="current-password" spellcheck="false"> -->
+                <button data-ls-effect="spring:max=16;x;y;|parent-opacity:q=tab-id,push" onclick="app.desktop.unlock()" ls-tooltip="Unlock" #lockUnlockButton .elevated><i .bi-unlock-fill></i></button>
+            </ls-group>
+        </ls-tab>
     </div>
 </body>

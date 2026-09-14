@@ -487,6 +487,7 @@ const kernel = new class Kernel extends LS.Context {
 
             shortcutManager.assign("GLOBAL_OPEN_COMMAND_PALETTE", () => {
                 if(!app.hasCapability("command-palette")) return;
+                if(app.desktop?.screenSwitcher?.activeTab !== "desktop") return;
                 app.desktop.openPalette();
             });
 

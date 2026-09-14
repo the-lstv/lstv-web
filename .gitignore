@@ -8,8 +8,10 @@ static/simple-uploader.html
 
 .well-known
 
-# tmp while testing
-wallpapers
+# temporary while testing
+assets/image/wallpapers/*
+!assets/image/wallpapers/Dark.svg
+!assets/image/wallpapers/Light.svg
 
 test.mjs
 

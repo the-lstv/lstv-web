@@ -238,6 +238,33 @@ class MediaPlayer {
 }
 
 
+
+const updateTimeElements = (element) => {
+    const now = new Date();
+    for(const el of element? [element]: timeElements) {
+        const format = el.getAttribute("format") || "HH:mm:ss"; // todo
+        el.textContent = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: format.includes("ss") ? "2-digit" : undefined });
+    }
+};
+
+const timeElements = new Set();
+customElements.define("ls-time", class TimeElement extends HTMLElement {
+    constructor() {
+        super();
+    }
+
+    connectedCallback() {
+        timeElements.add(this);
+        updateTimeElements(this);
+    }
+
+    disconnectedCallback() {
+        timeElements.delete(this);
+    }
+});
+
+setInterval(updateTimeElements, 1000);
+
 /**
  * Desktop class
  * Represents the virtual desktop environment and its components.
@@ -257,9 +284,11 @@ class LiDesktop extends LS.Context {
     constructor(options) {
         super();
 
-        this.windowManager = new LS.WindowManager({
-            target: LS.SelectOrCreate('#app')
-        });
+        const container = LS.SelectOrCreate('#app');
+        const target = LS.SelectOrCreate('#environment');
+
+        this.windowManager = new LS.WindowManager({ target });
+        this.screenSwitcher = new LS.Tabs(container, { list: false, selector: ":scope > ls-tab", slideAnimation: true });
 
         this.addExternalEventListener(this.windowManager, "window-created", (event) => this.updateTaskbars());
         this.addExternalEventListener(this.windowManager, "window-closed", (event) => this.updateTaskbars());
@@ -269,12 +298,22 @@ class LiDesktop extends LS.Context {
         this.soundBox = new SoundBox({
             volume: 0.5,
             sounds: {
-                "click":        { src: base + "click.mp3" },
-                "notification": { src: base + "notification.mp3" },
-                "error":        { src: base + "error.mp3", fallback: ["system:notification"] },
-                "success":      { src: base + "success.mp3" },
-                "startup":      { src: base + "startup.ogg" },
-                "timer":        { src: base + "timer.mp3", fallback: ["system:notification"] },
+                "click":           { src: base + "click_desk.ogg" },
+                "click_container": { src: base + "click_container.ogg" },
+                "notification":    { src: base + "notification.mp3" },
+                "error":           { src: base + "error.ogg", fallback: ["system:notification", "system:Bruh Sound Effect"] },
+                "success":         { src: base + "export_done.mp3" },
+                "startup":         { src: base + "startup.ogg" },
+                "timer":           { src: base + "timer.ogg", fallback: ["system:notification"] },
+                "shutdown":        { src: base + "shutdown.ogg" },
+                "logoff":          { src: base + "logoff.ogg" },
+                "login":           { src: base + "login.ogg" },
+                "lock":            { src: base + "lock.ogg" },
+                "unlock":          { src: base + "unlock.ogg" },
+
+                "Bruh Sound Effect": { src: base + "BruhSoundEffect.ogg" },
+                "pad0":  { src: base + "pad_0.ogg" },
+                "pluck": { src: base + "pluck.mp3" },
             }
         }, null, "system");
 
@@ -287,7 +326,37 @@ class LiDesktop extends LS.Context {
         this.isToolbarOpen = false;
 
         shortcutManager.assign('GLOBAL_DESKTOP_OPEN_MENU', () => {
+            if(app.desktop?.screenSwitcher?.activeTab !== "desktop") return;
             this.openToolbar("menu", true);
+        });
+
+        shortcutManager.assign('GLOBAL_LOCK_SCREEN', () => {
+            if(app.desktop?.screenSwitcher?.activeTab !== "desktop") return;
+            this.lock();
+        });
+
+        shortcutManager.assign('GLOBAL_LOG_OUT', () => {
+            if(app.desktop?.screenSwitcher?.activeTab !== "desktop") return;
+            this.logout();
+        });
+
+        shortcutManager.assign('GLOBAL_OPEN_TERMINAL', () => {
+            if(app.desktop?.screenSwitcher?.activeTab !== "desktop") return;
+
+            const terminal = kernel.appManifests.get("terminal");
+            if(!terminal) {
+                LS.Modal.alert("No terminal application is available in this environment.");
+                return;
+            }
+
+            kernel.openApplication(terminal, { source: "appMenu" })
+                .done((instance) => {
+                    instance.open?.();
+                })
+                .catch(error => {
+                    LS.Toast.show("Failed to open application: " + error.message, { accent: "red" });
+                    console.error("Failed to open application:", error);
+                });
         });
 
         kernel.env.setEnv("XDG_CURRENT_DESKTOP", this.constructor.name);
@@ -314,7 +383,7 @@ class LiDesktop extends LS.Context {
                 { kind: "website-header" },
                 { kind: "spacer" },
                 { kind: "accounts" },
-                { kind: "apps" },
+                { kind: "menu" },
                 { kind: "theme" },
                 { kind: "commandPalette" },
             ];
@@ -323,7 +392,7 @@ class LiDesktop extends LS.Context {
             this.windowManager.bottomOffset = 42;
 
             this.panelState = [
-                { kind: "apps" },
+                { kind: "menu" },
                 { kind: "accounts" },
                 { kind: "taskbar" },
                 { kind: "spacer" },
@@ -345,6 +414,30 @@ class LiDesktop extends LS.Context {
         }
     }
 
+    setScreen(screen) {
+        this.screenSwitcher.set(screen);
+    }
+
+    lock() {
+        app.desktop.soundBox.play("system:lock");
+        this.setScreen("lock");
+    }
+
+    unlock() {
+        app.desktop.soundBox.play("system:unlock");
+        this.setScreen("desktop");
+    }
+
+    logout() {
+        app.desktop.soundBox.play("system:logoff");
+        this.setScreen("login");
+    }
+
+    login() {
+        app.desktop.soundBox.play("system:login");
+        this.setScreen("desktop");
+    }
+
     /**
      * The state of the desktop's panel.
      * @type {Array}
@@ -355,7 +448,7 @@ class LiDesktop extends LS.Context {
     static panelComponents = new Map([
         ["accounts", { label: "Account", showIcon: false, buttonLabel: { class: "accountsButton", inner: [{ reactive: "user.username ?? 'Log-In'" }, { class: "profile-picture-preview", inner: { tag: "i", class: "bi-person-fill" } }] }, description: "View and edit your profile or log-in", icon: "bi-person-fill", onClick() { this.openToolbar("login") } }],
 
-        ["apps", { label: "Apps", tooltip: "Applications", description: "View applications", icon: "bi-grid-fill", onClick() { this.openToolbar("apps", true) } }],
+        ["menu", { label: "Menu", tooltip: "Menu", description: "View the menu", icon: "bi-grid-fill", onClick() { this.openToolbar("menu", true) } }],
 
         // ["assistant", { showLabel: false, label: "Assistant", description: "Open Assistant", icon: "bi-stars", onClick() {
         //     website.desktop.openToolbar("assistant", true);
@@ -397,24 +490,9 @@ class LiDesktop extends LS.Context {
         }}],
 
         ["clock", {
-            getElement: () => LS.Create(".taskbar-clock{0:00}"),
+            getElement: () => LS.Create("ls-time.taskbar-clock{0:00}"),
             name: "Clock",
-            description: "See the current time",
-
-            onInit(item) {
-                item.__updateInterval = setInterval(invokeAndReturn(() => {
-                    const now = new Date();
-                    const hours = now.getHours().toString().padStart(2, "0");
-                    const minutes = now.getMinutes().toString().padStart(2, "0");
-                    const seconds = now.getSeconds().toString().padStart(2, "0");
-                    item.element && (item.element.textContent = `${hours}:${minutes}:${seconds}`);
-                }), 1000);
-            },
-
-            onDestroy(item) {
-                clearInterval(item.__updateInterval);
-                item.__updateInterval = null;
-            }
+            description: "See the current time"
         }],
 
         ["taskbar", {
@@ -456,10 +534,10 @@ class LiDesktop extends LS.Context {
             }
         }],
 
-        ["apps", {
-            element: LS.SelectOne("#toolbarApps"),
-            name: "Apps",
-            description: "View applications",
+        ["menu", {
+            element: LS.SelectOne("#toolbarMenu"),
+            name: "Menu",
+            description: "View menu",
 
             onOpen() {
                 if(!this.menuInitialized) {
@@ -661,7 +739,7 @@ class LiDesktop extends LS.Context {
     }
 
     initMenu() {
-        const container = this.toolbars.get("apps").element;
+        const container = this.toolbars.get("menu").element;
         this.menuElement = container.querySelector(".app-list");
 
         kernel.on("application-installed", (manifest) => {

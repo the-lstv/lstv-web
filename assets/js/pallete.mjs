@@ -2129,13 +2129,16 @@ function init(kernel, desktop, LoggerContext) {
             description: "Show information about system and environment",
             async onCalled() {
                 terminalOutput.appendChild(LS.Create({
-                    innerHTML: `<img src="/~/assets/image/kernel-icons/${kernel.version.split(".")[0]}x.png" width="180" style="position:absolute;top:20px" data-ls-effect="spring"><svg xmlns="http://www.w3.org/2000/svg" width="200" height="180" viewBox="0 0 200 180" fill="none">
+                    innerHTML: `<img src="/~/assets/image/kernel-icons/${kernel.version.split(".")[0]}x.png" width="180" style="position:absolute;top:20px;pointer-events:none"><svg xmlns="http://www.w3.org/2000/svg" width="200" height="180" viewBox="0 0 200 180" fill="none">
 <rect x="59" y="63" width="82" height="28.9828" fill="black"/>
 <rect x="59" y="91.9828" width="82" height="24.7414" fill="${ckMeta.color}"/>
 <text fill="black" style="white-space: pre" xml:space="preserve" font-family="JetBrains Mono" font-size="16.9655" font-weight="300" letter-spacing="0em"><tspan x="70.0855" y="110.504">v${kernel.version.split("-")[0]}</tspan></text>
 <text fill="${ckMeta.color}" style="white-space: pre" xml:space="preserve" font-family="JetBrains Mono" font-size="22.6207" font-weight="500" letter-spacing="0em"><tspan x="66.0693" y="86.1434">[${ckMeta.codename}]</tspan></text>
 </svg>`,
-                    style: 'margin:auto;display:flex;justify-content:center;position:relative'
+                    style: 'margin:auto;display:flex;justify-content:center;position:relative',
+
+                    effectsVersion: 1,
+                    effects: "spring:x,push",
                 }));
 
                 const uname = await kernel.env.proc.uname();
@@ -2284,6 +2287,16 @@ function init(kernel, desktop, LoggerContext) {
                     } ]
                 },
             ]
+        },
+
+        {
+            name: "lock",
+            icon: "bi-lock",
+            description: "Lock the desktop",
+
+            onCalled() {
+                desktop.lock();
+            }
         },
 
         {
@@ -2451,6 +2464,15 @@ function init(kernel, desktop, LoggerContext) {
             icon: "bi-x-circle",
             description: "Close the command palette",
             onCalled() { desktop.commandPalette.close() }
+        },
+
+        {
+            name: "logout",
+            icon: "bi-box-arrow-right",
+            description: "Log out of the desktop",
+            onCalled() {
+                desktop.logout();
+            }
         }
     ]);
 }

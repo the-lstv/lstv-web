@@ -17,10 +17,32 @@ html, body {
     overflow: hidden;
 }
 
+#environment {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+#lockScreen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    flex-direction: column;
+    background: var(--surface-n3);
+    gap: 18px;
+}
+
 .lsweb-desktop-mode {
     #app {
         --topOffset: 10px;
         --header-height: 42px;
+    }
+
+    #environment {
         flex-direction: column-reverse;
     }
 
@@ -1693,7 +1715,7 @@ ls-text-input.has-textarea {
     font-weight: 400 !important;
 }
 
-#toolbarApps {
+#toolbarMenu {
     width: 350px;
     overflow: hidden;
 
@@ -1914,6 +1936,70 @@ ls-text-input.has-textarea {
 
 .editor-header>div>div:hover, .editor-header>div>div:focus {
     background: var(--elevate)
+}
+
+
+.shiny-outline::before {
+    content: "";
+    position: absolute;
+    inset: -3px;
+
+    background: radial-gradient(circle at 50% 50%, var(--accent-mix-80), transparent 50%, var(--accent-mix-80) 100%);
+
+    background-size: 200% 100%;
+    background-position: 50% 50%;
+
+    z-index: -1;
+    border-radius: inherit;
+
+    transition:
+        background-position 1.2s cubic-bezier(.22, 1, .36, 1),
+        background-size 1.2s cubic-bezier(.22, 1, .36, 1),
+        opacity 0.3s ease-in-out;
+
+    animation: gradient-drift 8s ease-in-out infinite;
+    opacity: 0;
+}
+
+.shiny-outline:focus-within::before {
+    opacity: 0.8;
+    animation:
+        gradient-pulse 1.2s cubic-bezier(.16, 1, .3, 1),
+        gradient-drift 10s ease-in-out 1.2s infinite;
+}
+
+.shiny-outline.active::before {
+    opacity: 1;
+    animation:
+        gradient-drift 5ms ease-in-out 1.2s infinite;
+}
+
+@keyframes gradient-pulse {
+    0% {
+        background-size: 100% 100%;
+        background-position: 50% 50%;
+    }
+
+    45% {
+        background-size: 250% 100%;
+        background-position: 50% 50%;
+    }
+
+    100% {
+        background-size: 200% 100%;
+        background-position: 50% 50%;
+    }
+}
+
+@keyframes gradient-drift {
+    0%,
+    100% {
+        background-position: 15% 45%;
+    }
+
+    50% {
+        background-position: 85% 55%;
+    }
 }
 
 // /*

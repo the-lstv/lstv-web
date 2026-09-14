@@ -699,6 +699,8 @@ website.register(document.currentScript, class extends LS.Context {
 
                         let projectContainer = container.querySelector("#showcase-projects");
 
+                        console.log(container, projectContainer)
+
                         data.projects.forEach((project, index) => {
                             if(project.type === "separator") {
                                 const separator = LS.Create("details", { class: "showcase-separator", inner: [
