@@ -2100,7 +2100,7 @@ function init(kernel, desktop, LoggerContext) {
     };
 
     /**
-     * This should later be inline, so we don't waste client memory & work. 
+     * This should later be inline, so we don't waste client memory & cpu. 
      * That's when we use Glitter<3
      */
 

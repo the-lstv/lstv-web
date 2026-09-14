@@ -53,78 +53,78 @@ const BUILTIN_APPS = [
         "version": "1.0.0",
         "main": "texteditor.mjs?0"
     },
-    {
-        "name": "Store",
-        "id": "store",
-        "icon": "8951e30e03967e75.svg",
-        "description": "Get more apps and extensions!",
-        "version": "1.0.0",
-        "main": "store.mjs"
-    },
-    {
-        "name": "Media Center",
-        "id": "media-center",
-        "icon": "5fe6243a90ae967a.webp",
-        "description": "Your media hub.",
-        "version": "1.0.0",
-        "main": "media-center.mjs"
-    },
-    {
-        "name": "Media Player",
-        "id": "media-player",
-        "icon": "5fe6243a90ae967a.webp",
-        "description": "Play your media.",
-        "version": "1.0.0",
-        "main": "media-player.mjs"
-    },
-    {
-        "name": "Music Player",
-        "id": "music-player",
-        "icon": "901fb7f3abda204f.svg",
-        "description": "Play music, the pretty way!",
-        "version": "1.0.0",
-        "main": "music-player.mjs"
-    },
-    {
-        "name": "File Manager",
-        "id": "file-manager",
-        "icon": "15043b26b7df5e3b.svg",
-        "description": "Manage your files.",
-        "version": "1.0.0",
-        "main": "file-manager.mjs"
-    },
-    {
-        "name": "Terminal",
-        "id": "terminal",
-        "icon": "c4972d221a92772b.svg",
-        "description": "Use the command line & manage things",
-        "version": "1.0.0",
-        "main": "terminal.mjs"
-    },
-    {
-        "name": "Calculator",
-        "id": "calculator",
-        "icon": "f0fb502ae0964022.svg",
-        "description": "Perform various calculations.",
-        "version": "1.0.0",
-        "main": "calculator.mjs"
-    },
-    {
-        "name": "WebView",
-        "id": "webview",
-        "icon": "62eb88beb684d561.svg",
-        "description": "A simple embedded web browser.",
-        "version": "1.0.0",
-        "main": "webview.mjs"
-    },
-    {
-        "name": "Email",
-        "id": "mail-client",
-        "icon": "901fb7f3abda204f.svg",
-        "description": "Manage your emails.",
-        "version": "1.0.0",
-        "main": "mail.mjs"
-    },
+    // {
+    //     "name": "Store",
+    //     "id": "store",
+    //     "icon": "8951e30e03967e75.svg",
+    //     "description": "Get more apps and extensions!",
+    //     "version": "1.0.0",
+    //     "main": "store.mjs"
+    // },
+    // {
+    //     "name": "Media Center",
+    //     "id": "media-center",
+    //     "icon": "5fe6243a90ae967a.webp",
+    //     "description": "Your media hub.",
+    //     "version": "1.0.0",
+    //     "main": "media-center.mjs"
+    // },
+    // {
+    //     "name": "Media Player",
+    //     "id": "media-player",
+    //     "icon": "5fe6243a90ae967a.webp",
+    //     "description": "Play your media.",
+    //     "version": "1.0.0",
+    //     "main": "media-player.mjs"
+    // },
+    // {
+    //     "name": "Music Player",
+    //     "id": "music-player",
+    //     "icon": "901fb7f3abda204f.svg",
+    //     "description": "Play music, the pretty way!",
+    //     "version": "1.0.0",
+    //     "main": "music-player.mjs"
+    // },
+    // {
+    //     "name": "File Manager",
+    //     "id": "file-manager",
+    //     "icon": "15043b26b7df5e3b.svg",
+    //     "description": "Manage your files.",
+    //     "version": "1.0.0",
+    //     "main": "file-manager.mjs"
+    // },
+    // {
+    //     "name": "Terminal",
+    //     "id": "terminal",
+    //     "icon": "c4972d221a92772b.svg",
+    //     "description": "Use the command line & manage things",
+    //     "version": "1.0.0",
+    //     "main": "terminal.mjs"
+    // },
+    // {
+    //     "name": "Calculator",
+    //     "id": "calculator",
+    //     "icon": "f0fb502ae0964022.svg",
+    //     "description": "Perform various calculations.",
+    //     "version": "1.0.0",
+    //     "main": "calculator.mjs"
+    // },
+    // {
+    //     "name": "WebView",
+    //     "id": "webview",
+    //     "icon": "62eb88beb684d561.svg",
+    //     "description": "A simple embedded web browser.",
+    //     "version": "1.0.0",
+    //     "main": "webview.mjs"
+    // },
+    // {
+    //     "name": "Email",
+    //     "id": "mail-client",
+    //     "icon": "901fb7f3abda204f.svg",
+    //     "description": "Manage your emails.",
+    //     "version": "1.0.0",
+    //     "main": "mail.mjs"
+    // },
     {
         "name": "Mind Reader",
         "id": "mind-reader",
