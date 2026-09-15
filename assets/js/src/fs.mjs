@@ -1,8 +1,3 @@
-// WARNING: The following imports are just a stub, the actual build system is being worked on.
-// import { LiDesktop, MediaPlayer } from "./desktop.mjs";
-// import { LoggerContext, AssetManager, ContentContext, Viewport, Thread } from "./commons.mjs";
-// import { app } from "./shared.mjs";
-// import { kernel } from "./kernel.mjs";
 import { Enums } from "./enums.mjs";
 
 /**
@@ -1230,36 +1225,64 @@ class LocalStorageFs extends TmpFs {
 }
 
 /**
- * Remote cloud filesystem.
+ * Remote cloud filesystem over WebSocket & HTTP.
  */
 class RemoteFs {
     static fsType = "remotefs";
-}
-
-/**
- * IndexedDB-based filesystem for local browser storage.
- */
-class IndexedDbFs {
-    static fsType = "indexeddbfs";
-}
-
-/**
- * Node.js-based filesystem for direct host-machine storage.
- */
-class NodeFs {
-    static fsType = "nodefs";
 
     constructor(source, options, dump, order) {
-        // super(source, options, dump, order);
-        if(typeof process === "undefined") throw new Error("NodeFs can only be used in Node.js environments");
-    }
-    
-    async init() {
-        this.fs = await import("fs");
+        this.source = source;
+
+        this.ws = new LS.WebSocket(this.source);
+        this.ws.on('open',    this.wsOpened.bind(this));
+        this.ws.on('message', this.wsMessage.bind(this));
+        this.ws.on('close',   this.wsClosed.bind(this));
     }
 
-    open(ndir, flags, mode = Enums.S_IFREG | 0o644, extraFlags = 0, extraData = undefined) {
-        const fd = this.fs.openSync(ndir, flags, mode);
+    async init() {}
+
+    wsOpened() {
+        console.log('WebSocket opened');
+    }
+
+    wsMessage(event) {
+        console.log('WebSocket message:', event.data);
+    }
+
+    wsClosed() {
+        console.log('WebSocket closed');
+    }
+
+    destroy() {
+        this.ws.destroy();
+    }
+}
+
+/**
+ * Filesystem for acessing files from a HTTP server over the network.
+ * This is a simple implementation that uses the Fetch API to retrieve files from a remote server.
+ * It does not support writing or modifying files, only reading (though perhaps via PATCH or PUT requests?).
+ * 
+ * Reading a file makes a GET request to the server and returns the file's contents.
+ */
+class HttpFs {
+    static fsType = "httpfs";
+
+    constructor(source, options, dump, order) {
+        this.source = source;
+    }
+
+    async init() {
+        if(typeof fetch === "undefined") throw new Error("HttpFs can only be used in environments that support the Fetch API");
+    }
+
+    async open(ndir, flags, mode = Enums.S_IFREG | 0o644, extraFlags = 0, extraData = undefined) {
+        // HttpFs is read-only, so we only support reading files.
+        if(flags & (Enums.O_WRONLY | Enums.O_RDWR | Enums.O_CREAT | Enums.O_TRUNC | Enums.O_APPEND)) {
+            throw new Error(Enums.errno.EROFS);
+        }
+
+        // We just return a file descriptor object.
         return {
             _fs: this,
             data: { mode },
@@ -1268,56 +1291,47 @@ class NodeFs {
             offset: 0,
             closed: false,
             readable: true,
-            writable: true,
-            nodeFd: fd
+            writable: false
         };
     }
 
-    read(fd, first, nbytes, encoding) {
-        if(nbytes === -1) {
-            nbytes = this.fs.fstatSync(fd.nodeFd).size - first;
+    async read(fd, first, nbytes, encoding) {
+        const url = this.source + fd.ndir;
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch ${url}: ${response.status} ${response.statusText}`);
+        }
+        const arrayBuffer = await response.arrayBuffer();
+        const data = new Uint8Array(arrayBuffer);
+
+        if (nbytes === -1) {
+            nbytes = data.length - first;
         }
 
-        const buffer = Buffer.alloc(nbytes);
-        const bytesRead = this.fs.readSync(fd.nodeFd, buffer, 0, buffer.length, first);
-        return encoding === RootFs.ENCODING.utf8 ? buffer.toString("utf8", 0, bytesRead) : buffer.slice(0, bytesRead);
+        const result = data.slice(first, first + nbytes);
+        return encoding === RootFs.ENCODING.utf8 ? new TextDecoder().decode(result) : result;
     }
 
-    write(fd, newData, first, nbytes) {
-        const buffer = Buffer.isBuffer(newData) ? newData : Buffer.from(newData);
-        if(nbytes === -1) {
-            nbytes = buffer.length;
+    async readdir(fd, extraFlags) {
+        const url = this.source + fd.ndir;
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch ${url}: ${response.status} ${response.statusText}`);
         }
 
-        const bytesWritten = this.fs.writeSync(fd.nodeFd, buffer, 0, nbytes === -1? buffer.length: nbytes, first);
-        return bytesWritten;
-    }
+        const text = await response.text();
 
-    stat(fd, out, ncheck = false) {
-        if(!ncheck) {
-            if (!fd || !fd._fs || !fd.data || fd.closed) {
-                throw new Error(Enums.errno.EBADF);
-            }
-        }
-
-        const stats = this.fs.fstatSync(fd.nodeFd);
-        out.size = stats.size;
-        out.mode = stats.mode;
-        out.mtimeMs = stats.mtimeMs;
-        out.ctimeMs = stats.ctimeMs;
-        out.atimeMs = stats.atimeMs;
-        out.uid = stats.uid;
-        out.gid = stats.gid;
-        return out;
+        // Assuming the server returns a newline-separated list of filenames.
+        // Todo: more robust parsing based on server response format (e.g., JSON, HTML, etc.)
+        return text.split('\n').filter(name => name.length > 0);
     }
+}
 
-    close(fd) {
-        this.fs.closeSync(fd.nodeFd);
-        fd._fs = null;
-        fd.data = null;
-        fd.closed = true;
-        return 0;
-    }
+/**
+ * IndexedDB-based filesystem for local browser storage.
+ */
+class IndexedDbFs {
+    static fsType = "indexeddbfs";
 }
 
 /**
@@ -1400,14 +1414,9 @@ class NullFs {
 }
 
 // Register fs types
-for(const fs of [TmpFs, MemFs, NodeFs, LocalStorageFs, RemoteFs, IndexedDbFs, WasmFs, ProcFs, SysFs, NullFs]) {
+for(const fs of [TmpFs, MemFs, LocalStorageFs, RemoteFs, IndexedDbFs, WasmFs, ProcFs, SysFs, NullFs, HttpFs]) {
     if(!fs.fsType) continue;
     RootFs.fsTypes[fs.fsType] = fs;
 }
 
-class RemoteFsServer {
-    constructor(options = {}) {
-    }
-}
-
-export { Stats, RootFs, DEFAULT_FS_DATA, TmpFs, MemFs, NodeFs, LocalStorageFs, RemoteFs, IndexedDbFs, WasmFs, ProcFs, SysFs, NullFs }
+export { Stats, RootFs, DEFAULT_FS_DATA, TmpFs, MemFs, LocalStorageFs, RemoteFs, IndexedDbFs, WasmFs, ProcFs, SysFs, NullFs, HttpFs }

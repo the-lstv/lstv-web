@@ -359,7 +359,7 @@ body {
     display: block;
 }
 
-[data-tab-id] {
+.sidebar-menu [data-tab-id] {
     transition: padding-left 0.2s ease-in-out;
 
     &.active {
@@ -1972,7 +1972,7 @@ ls-text-input.has-textarea {
 .shiny-outline::before {
     content: "";
     position: absolute;
-    inset: -3px;
+    inset: -12px;
 
     background: radial-gradient(circle at 50% 50%, var(--accent-mix-80), transparent 50%, var(--accent-mix-80) 100%);
 
@@ -1980,7 +1980,8 @@ ls-text-input.has-textarea {
     background-position: 50% 50%;
 
     z-index: -1;
-    border-radius: inherit;
+    // border-radius: inherit;
+    border-radius: var(--border-radius-xxlarge);
 
     transition:
         background-position 1.2s cubic-bezier(.22, 1, .36, 1),
@@ -1991,17 +1992,17 @@ ls-text-input.has-textarea {
     opacity: 0;
 }
 
-.shiny-outline:focus-within::before {
+.shiny-outline:focus-within::before, .shiny-outline.working::before {
     opacity: 0.8;
     animation:
-        gradient-pulse 1.2s cubic-bezier(.16, 1, .3, 1),
-        gradient-drift 10s ease-in-out 1.2s infinite;
+        gradient-pulse 0 cubic-bezier(.16, 1, .3, 1),
+        gradient-drift 10s ease-in-out 0 infinite;
 }
 
 .shiny-outline.active::before {
     opacity: 1;
     animation:
-        gradient-drift 5ms ease-in-out 1.2s infinite;
+        gradient-drift 5s ease-in-out 0 infinite;
 }
 
 @keyframes gradient-pulse {

@@ -21,7 +21,7 @@ class ClockApp extends website.ContentContext {
 
         this.worldClockItems = [];
 
-        const icon = (name) => LS.Create({
+        const i = (name) => LS.Create({
             tag: "i",
             class: `${name}`
         });
@@ -45,16 +45,18 @@ class ClockApp extends website.ContentContext {
             class: "clock-app",
             inner: [
                 { class: "tab-bar", inner: [
-                    { tag: "button", class: "clock-tab-button pill",       inner: [icon("bi-clock"), ["Time"]] },
-                    { tag: "button", class: "clock-tab-button pill clear", inner: [icon("bi-stopwatch"), ["Stopwatch"]] },
-                    { tag: "button", class: "clock-tab-button pill clear", inner: [icon("bi-hourglass-split"), ["Timer"]] },
-                    { tag: "button", class: "clock-tab-button pill clear", inner: [icon("bi-globe2"), ["World Clock"]] },
+                    { tag: "button", class: "clock-tab-button pill",       inner: [i("bi-clock"), ["Time"]] },
+                    { tag: "button", class: "clock-tab-button pill clear", inner: [i("bi-stopwatch"), ["Stopwatch"]] },
+                    { tag: "button", class: "clock-tab-button pill clear", inner: [i("bi-hourglass-split"), ["Timer"]] },
+                    { tag: "button", class: "clock-tab-button pill clear", inner: [i("bi-globe2"), ["World Clock"]] },
                 ] },
 
                 {
                     class: "tab",
                     inner: (this.timeElement = LS.Create({
-                        tag: "h1", class: "mono time", inner: "00:00:00"
+                        tag: "h1", class: "mono time", inner: {
+                            tag: "ls-time", text: "00:00:00"
+                        }
                     }))
                 },
 
@@ -73,19 +75,19 @@ class ClockApp extends website.ContentContext {
                                     (this.stopwatchToggleButton = LS.Create({
                                         tag: "button",
                                         class: "pill elevated",
-                                        inner: [icon("bi-play-fill"), "Start"],
+                                        inner: [i("bi-play-fill"), "Start"],
                                         onclick: () => this.#toggleStopwatch()
                                     })),
                                     (this.stopwatchLapButton = LS.Create({
                                         tag: "button",
                                         class: "pill clear",
-                                        inner: [icon("bi-flag-fill"), "Lap"],
+                                        inner: [i("bi-flag-fill"), "Lap"],
                                         onclick: () => this.#addLap()
                                     })),
                                     (this.stopwatchResetButton = LS.Create({
                                         tag: "button",
                                         class: "pill clear",
-                                        inner: [icon("bi-arrow-counterclockwise"), "Reset"],
+                                        inner: [i("bi-arrow-counterclockwise"), "Reset"],
                                         onclick: () => this.#resetStopwatch()
                                     }))
                                 ]
@@ -118,7 +120,7 @@ class ClockApp extends website.ContentContext {
                                             (this.timerMinutesUp = LS.Create({
                                                 tag: "button",
                                                 class: "circle clear",
-                                                inner: icon("bi-plus"),
+                                                inner: i("bi-plus"),
                                                 onclick: () => this.#adjustTimerField("min", 1)
                                             })),
                                             (this.timerMinutesField = LS.Create({
@@ -134,7 +136,7 @@ class ClockApp extends website.ContentContext {
                                             (this.timerMinutesDown = LS.Create({
                                                 tag: "button",
                                                 class: "circle clear",
-                                                inner: icon("bi-dash"),
+                                                inner: i("bi-dash"),
                                                 onclick: () => this.#adjustTimerField("min", -1)
                                             })),
                                             { tag: "span", class: "clock-time-label", inner: "min" }
@@ -147,7 +149,7 @@ class ClockApp extends website.ContentContext {
                                             (this.timerSecondsUp = LS.Create({
                                                 tag: "button",
                                                 class: "circle clear",
-                                                inner: icon("bi-plus"),
+                                                inner: i("bi-plus"),
                                                 onclick: () => this.#adjustTimerField("sec", 1)
                                             })),
                                             (this.timerSecondsField = LS.Create({
@@ -163,7 +165,7 @@ class ClockApp extends website.ContentContext {
                                             (this.timerSecondsDown = LS.Create({
                                                 tag: "button",
                                                 class: "circle clear",
-                                                inner: icon("bi-dash"),
+                                                inner: i("bi-dash"),
                                                 onclick: () => this.#adjustTimerField("sec", -1)
                                             })),
                                             { tag: "span", class: "clock-time-label", inner: "sec" }
@@ -177,13 +179,13 @@ class ClockApp extends website.ContentContext {
                                     (this.timerToggleButton = LS.Create({
                                         tag: "button",
                                         class: "pill elevated",
-                                        inner: [icon("bi-play-fill"), "Start"],
+                                        inner: [i("bi-play-fill"), "Start"],
                                         onclick: () => this.#toggleTimer()
                                     })),
                                     (this.timerResetButton = LS.Create({
                                         tag: "button",
                                         class: "pill clear",
-                                        inner: [icon("bi-arrow-counterclockwise"), "Reset"],
+                                        inner: [i("bi-arrow-counterclockwise"), "Reset"],
                                         onclick: () => this.#resetTimer()
                                     }))
                                 ]
@@ -346,6 +348,12 @@ class ClockApp extends website.ContentContext {
     background: var(--accent-mix-40);
 }
 
+@container ls-view (height < 200px) {
+    .clock-app .tab-bar {
+        display: none;
+    }
+}
+
 @container ls-view (width < 520px) {
     .clock-tab-button div {
         display: none;
@@ -364,14 +372,23 @@ class ClockApp extends website.ContentContext {
             ]
         });
 
+        // todo: use LS.Tabs instead of this manual tab switching logic
+        let lastTabIndex = 0;
+        const setTab = (index, updateLastTabIndex = true) => {
+            element.querySelectorAll("button.clock-tab-button").forEach(btn => btn.classList.add("clear"));
+            element.querySelectorAll("button.clock-tab-button")[index].classList.remove("clear");
+
+            element.querySelectorAll(".tab").forEach(tab => tab.style.display = "none");
+            element.querySelectorAll(".tab")[index].style.display = "flex";
+            if (updateLastTabIndex) {
+                lastTabIndex = index;
+            }
+        };
+
         element.querySelectorAll("button.clock-tab-button").forEach(button => {
             button.addEventListener("click", () => {
-                button.parentElement.querySelectorAll("button").forEach(btn => btn.classList.add("clear"));
-                button.classList.remove("clear");
-
-                const index = [...button.parentElement.children].indexOf(button);
-                element.querySelectorAll(".tab").forEach(tab => tab.style.display = "none");
-                element.querySelectorAll(".tab")[index].style.display = "flex";
+                const index = Array.from(button.parentElement.children).indexOf(button);
+                setTab(index);
             });
         });
 
@@ -397,17 +414,26 @@ class ClockApp extends website.ContentContext {
             transparent: true
         });
 
-        this.setInterval(() => this.#render(), 1000);
-        this.#render();
-    }
-
-    #render() {
-        const now = new Date();
-        const hours = now.getHours().toString().padStart(2, "0");
-        const minutes = now.getMinutes().toString().padStart(2, "0");
-        const seconds = now.getSeconds().toString().padStart(2, "0");
-        this.timeElement.textContent = `${hours}:${minutes}:${seconds}`;
-        this.#updateWorldClock();
+        let headerEnabled = true;
+        this.addExternalEventListener(this.window, "resize", () => {
+            if (this.window.height < 200) {
+                if (headerEnabled) {
+                    this.window.setHeaderEnabled(false);
+                    this.window.windowElement.classList.add("shiny-outline", "working");
+                    LS.Effect.addEffect(this.window.windowElement, "spring");
+                    headerEnabled = false;
+                    setTab(0, false);
+                }
+            } else {
+                if (!headerEnabled) {
+                    this.window.setHeaderEnabled(true);
+                    this.window.windowElement.classList.remove("shiny-outline", "working");
+                    LS.Effect.removeEffect(this.window.windowElement, "spring");
+                    headerEnabled = true;
+                    setTab(lastTabIndex);
+                }
+            }
+        });
     }
 
     #formatStopwatch(ms) {

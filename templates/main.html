@@ -80,7 +80,8 @@
     <!-- <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdn.extragon.cloud https://cdn.extragon.localhost https://fonts.googleapis.com https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.extragon.cloud https://cdn.extragon.localhost https://fonts.googleapis.com; font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net; connect-src 'self' wss://*.lstv.space wss://*.extragon.cloud wss://*.extragon.localhost https://api.extragon.cloud https://api.extragon.localhost;"> -->
 
     <!-- LS, icons, fonts -->
-    @use (ls[flat, color, tooltips, toast, effect, range, tree, spa, menu, reactive, tabs, animation, resize, modal, soundbox, ShortcutManager, WindowManager, CompileTemplate], bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800"]);
+    <!-- This is way too many components preloaded at this point -->
+    @use (ls[flat, color, tooltips, toast, effect, range, tree, spa, menu, reactive, tabs, animation, resize, modal, soundbox, ShortcutManager, Network, WindowManager, CompileTemplate], bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800"]);
 
     <!-- @use (bootstrap-icons, google-fonts["Poppins:wght@400;600;800", "JetBrains Mono:wght@400;600;800"]); -->
 
@@ -303,7 +304,7 @@
 
             <div #desktop hidden>
                 <div #wallpaper>
-                    <img src="/assets/image/wallpapers/Dark.svg" alt="Wallpaper">
+                    <img src="/assets/image/wallpapers/huawei-dark-mode-5800x3200-26686.png" alt="Wallpaper">
                 </div>
             </div>
 

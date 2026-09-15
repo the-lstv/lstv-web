@@ -110,7 +110,7 @@ class CommandPalette {
 
         // Initialize elements in correct order
         this.wrapperElement = this.#options.wrapperElement || null;
-        this.inputElement = this.#options.inputElement || null;
+        this.inputElement   = this.#options.inputElement   || null;
 
         // Create wrapper if not provided but input is
         if (!this.wrapperElement && this.inputElement) {
@@ -559,13 +559,13 @@ class CommandPalette {
 
         const signal = this.#abortController.signal;
         this.inputElement.addEventListener('keydown', (e) => this.#handleKeyDown(e), { signal });
-        this.inputElement.addEventListener('keyup', (e) => this.#handleKeyUp(e), { signal });
-        this.inputElement.addEventListener('input', () => this.#handleInput(), { signal });
-        this.inputElement.addEventListener('focus', () => this.#handleFocus(), { signal });
-        this.inputElement.addEventListener('blur', () => this.#handleBlur(), { signal });
-        this.inputElement.addEventListener('select', () => this.#updateCaretPosition(), { signal });
+        this.inputElement.addEventListener('keyup',   (e) => this.#handleKeyUp(e), { signal });
+        this.inputElement.addEventListener('input',   () => this.#handleInput(), { signal });
+        this.inputElement.addEventListener('focus',   () => this.#handleFocus(), { signal });
+        this.inputElement.addEventListener('blur',    () => this.#handleBlur(), { signal });
+        this.inputElement.addEventListener('select',  () => this.#updateCaretPosition(), { signal });
         this.inputElement.addEventListener('mouseup', () => this.#updateCaretPosition(), { signal });
-        this.inputElement.addEventListener('scroll', () => this.#updateCaretPosition(), { signal });
+        this.inputElement.addEventListener('scroll',  () => this.#updateCaretPosition(), { signal });
 
         // Touch support for mobile
         this.inputElement.addEventListener('touchend', () => {
@@ -2347,12 +2347,20 @@ function init(kernel, desktop, LoggerContext) {
             },
 
             inputs: [
-                { name: "preset", type: "list", list: [ { name: "custom", icon: "bi-palette2", type: "color" }, ...app.ACCENT_COLORS.map(accent => ({
-                    name: accent,
-                    icon: `bi-circle-fill`,
-                    accentColor: accent,
-                    value: accent
-                }))] }
+                { name: "preset", type: "list", list: [
+                    { name: "custom", icon: "bi-palette2", type: "color" },
+
+                    { name: "random", icon: "bi-shuffle", onCalled() {
+                        LS.Color.setAccent(LS.Color.random());
+                    }},
+
+                    ...app.ACCENT_COLORS.map(accent => ({
+                        name: accent,
+                        icon: `bi-circle-fill`,
+                        accentColor: accent,
+                        value: accent
+                    })
+                )] }
             ]
         },
 
