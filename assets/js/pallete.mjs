@@ -1085,7 +1085,7 @@ class CommandPalette {
         if (desc) {
             const descSpan = document.createElement('span');
             descSpan.className = 'completion-description';
-            descSpan.textContent = ` - ${desc}`;
+            descSpan.textContent = "- " + desc;
             item.appendChild(descSpan);
         }
 
@@ -1901,10 +1901,10 @@ class CommandPalette {
         }
     }
 
-    log(...args) {
+    writeLog(level, ...args) {
         if (!this.terminalOutput) return this.#log(...args);
 
-        const line = LS.Create("div", { class: "terminal-line" });
+        const line = LS.Create("div", { class: "terminal-line " + (["level-info", "level-log", "level-warn", "level-error", "level-fatal"][level]) });
 
         // Check if first arg contains styles (%c)
         if (typeof args[0] === "string" && args[0].includes("%c")) {
@@ -1940,6 +1940,26 @@ class CommandPalette {
 
         this.terminalOutput.append(line);
         this.terminalOutput.parentElement.scrollTop = this.terminalOutput.parentElement.scrollHeight;
+    }
+
+    info(...args) {
+        return this.writeLog(0, ...args);
+    }
+
+    log(...args) {
+        return this.writeLog(1, ...args);
+    }
+
+    warn(...args) {
+        return this.writeLog(2, ...args);
+    }
+
+    error(...args) {
+        return this.writeLog(3, ...args);
+    }
+
+    fatal(...args) {
+        return this.writeLog(4, ...args);
     }
 
     #serializeValue(value) {
@@ -2048,6 +2068,7 @@ function init(kernel, desktop, LoggerContext) {
     const terminalOutput = terminalContainer.querySelector(".terminal-output");
 
     const paletteLogger = new LoggerContext("Command Palette");
+
     desktop.commandPalette = new CommandPalette({
         wrapperElement: paletteContainer,
         menuElement: paletteContainer.querySelector(".completion-menu"),
@@ -2089,7 +2110,11 @@ function init(kernel, desktop, LoggerContext) {
     terminalObserver.observe(terminalOutput, { childList: true });
 
     const terminalWriter = {
-        log: desktop.commandPalette.log.bind(desktop.commandPalette)
+        info : (...a) => desktop.commandPalette.info (...a),
+        log  : (...a) => desktop.commandPalette.log  (...a),
+        warn : (...a) => desktop.commandPalette.warn (...a),
+        error: (...a) => desktop.commandPalette.error(...a),
+        fatal: (...a) => desktop.commandPalette.fatal(...a),
     }
 
     kernel.terminalWriter = terminalWriter;
@@ -2119,20 +2144,22 @@ function init(kernel, desktop, LoggerContext) {
         }
     }
 
-    /*comptime*/ const ckMeta = kVersionMeta[kernel.version.split(".")[0]] || { codename: "Unknown", color: "var(--accent)" };
+    const major = LS.Util.fast.sliceUntil(kernel.version, ".");
+
+    /*comptime*/ const ckMeta = kVersionMeta[major] || { codename: "Unknown", color: "var(--accent)" };
 
     desktop.commandPalette.register([
         {
             name: "fetch",
             alias: ["kernel-info", "kernel-version", "version"],
-            icon: 'bi-cpu-fill',
-            description: "Show information about system and environment",
+            icon: 'bi-pc-display-horizontal',
+            description: "Information about system & environment",
             async onCalled() {
                 terminalOutput.appendChild(LS.Create({
-                    innerHTML: `<img src="/~/assets/image/kernel-icons/${kernel.version.split(".")[0]}x.png" width="180" style="position:absolute;top:20px;pointer-events:none"><svg xmlns="http://www.w3.org/2000/svg" width="200" height="180" viewBox="0 0 200 180" fill="none">
+                    innerHTML: `<img src="/~/assets/image/kernel-icons/${major}x.png" width="180" style="position:absolute;top:20px;pointer-events:none"><svg xmlns="http://www.w3.org/2000/svg" width="200" height="180" viewBox="0 0 200 180" fill="none">
 <rect x="59" y="63" width="82" height="28.9828" fill="black"/>
 <rect x="59" y="91.9828" width="82" height="24.7414" fill="${ckMeta.color}"/>
-<text fill="black" style="white-space: pre" xml:space="preserve" font-family="JetBrains Mono" font-size="16.9655" font-weight="300" letter-spacing="0em"><tspan x="70.0855" y="110.504">v${kernel.version.split("-")[0]}</tspan></text>
+<text fill="black" style="white-space: pre" xml:space="preserve" font-family="JetBrains Mono" font-size="16.9655" font-weight="300" letter-spacing="0em"><tspan x="70.0855" y="110.504">v${LS.Util.fast.sliceUntil(kernel.version, "-")}</tspan></text>
 <text fill="${ckMeta.color}" style="white-space: pre" xml:space="preserve" font-family="JetBrains Mono" font-size="22.6207" font-weight="500" letter-spacing="0em"><tspan x="66.0693" y="86.1434">[${ckMeta.codename}]</tspan></text>
 </svg>`,
                     style: 'margin:auto;display:flex;justify-content:center;position:relative',
@@ -2217,26 +2244,31 @@ function init(kernel, desktop, LoggerContext) {
 
         {
             name: "settings",
+            alias: ["config", "configure", "options"],
             icon: "bi-gear",
-            description: "More settings",
+            description: "Configuration",
             children: [
-                // {
-                //     name: "notifications",
-                //     icon: "bi-bell",
-                //     description: "Enable or disable notifications",
-                //     children: [
-                //         {
-                //             name: "enable",
-                //             icon: "bi-bell-fill",
-                //             description: "Enable notifications",
-                //         },
-                //         {
-                //             name: "disable",
-                //             icon: "bi-bell-slash",
-                //             description: "Disable notifications",
-                //         }
-                //     ]
-                // },
+                {
+                    name: "open",
+                    icon: "bi-sliders",
+                    description: "Open settings UI"
+                },
+
+                {
+                    name: "notifications",
+                    icon: "bi-bell",
+                    description: "Enable or disable notifications",
+                    children: [
+                        {
+                            name: "enable",
+                            icon: "bi-bell-fill"
+                        },
+                        {
+                            name: "disable",
+                            icon: "bi-bell-slash"
+                        }
+                    ]
+                },
 
                 {
                     name: "privacy",
@@ -2252,7 +2284,7 @@ function init(kernel, desktop, LoggerContext) {
                                 terminalWriter.log("Statistics sharing " + (enabled ? "enabled - Thank you!" : "disabled - No statistics data will be sent from this browser from now on."));
 
                                 if(!enabled) {
-                                    terminalWriter.log("Warning: This setting is not saved to your account and is specific to this browser. Make sure to update this setting on other devices.");
+                                    terminalWriter.warn("Warning: This setting is not saved to your account and is specific to this browser. Make sure to update this setting on other devices.");
                                 }
                             },
                             inputs: [
@@ -2285,6 +2317,12 @@ function init(kernel, desktop, LoggerContext) {
                             { name: "Low", description: "Disables some visual effects", value: "low" },
                         ]
                     } ]
+                },
+
+                {
+                    name: "desktop.config",
+                    icon: "bi-pencil-square",
+                    description: "Edit desktop config.conf"
                 },
             ]
         },
@@ -2434,7 +2472,7 @@ function init(kernel, desktop, LoggerContext) {
             alias: ["print"],
             icon: "bi-chat",
             description: "Echo input",
-            onCalled(text) { terminalWriter.log(text) },
+            onCalled(text) { terminalWriter.log(text || "") },
             inputs: [
                 { name: "text", type: "string", description: "Text to echo" }
             ]

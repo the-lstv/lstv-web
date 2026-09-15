@@ -13,7 +13,7 @@
 
     <ls-div>
         LS Version:
-        <ls-select .elevated.pill #loader-lsVersion ls-options-values="latest,6.0.0-alpha.2,5.2.9,4.0.2"></ls-select>
+        <ls-select .elevated.pill #loader-lsVersion ls-options-values="latest,6.0.0-alpha.4,6.0.0-alpha.3,6.0.0-alpha.2,5.2.9,4.0.2,3.6.5"></ls-select>
     </ls-div>
 
     <label .ls-checkbox>
@@ -197,7 +197,7 @@
 
     <script>
         const EXTRAGON_CDN = "https://cdn.extragon.cloud";
-        const LATEST = "6.0.0-alpha.2";
+        const LATEST = "6.0.0-alpha.4";
 
         const components = {
             "js": [
@@ -222,23 +222,34 @@
                 "layout",
                 "tabs",
                 "timeline",
+                "timeline-dom",
                 "toast",
                 "tooltips",
                 "tree",
                 "range",
                 "spa",
-                "list"
+                "list",
+                "windowmanager",
+                "soundbox",
+                "effect",
+                "progress"
             ],
             "css": [
                 "flat",
                 "knob",
-                "timeline"
+                "timeline",
+                "timeline-dom",
+                "windowmanager"
             ]
         };
 
         const new_in = {
-            6: ["multipane", "layout", "animation2", "patcher"],
+            6: ["multipane", "layout", "animation2", "patcher", "soundbox", "effect", "windowmanager", "list", "spa"],
             5: ["shortcutmanager", "network", "node", "reactive", "animation", "range", "compiletemplate", "gl", "imagecropper", "menu", "tree"],
+        }
+
+        const removed_in = {
+            5: ["progress"]
         }
 
         const selected_by_default = {
@@ -266,10 +277,16 @@
                 toast: { description: "Component for showing quick transient\nmessages/notifications (LS.Toast.show)." },
                 tooltips: { description: "A component for showing simple tooltips." },
                 range: { description: "This component provides the ls-range\nelement for customizable sliders." },
+                effect: { description: "Add lightweight dynamic effects to elements" },
+                soundbox: { description: "Sound effect utility library" },
+                windowmanager: { description: "Manage windows" },
                 // node: { description: "" },
                 // tabs: { description: "A versatile tab component." },
                 // timeline: { description: "Timeline component." },
+                "timeline-dom": { tags: ["deprecated"] },
+                "progress": { tags: ["deprecated"] },
             },
+
             css: {
                 flat: { description: "The default look and feel of LS." },
                 knob: { description: "Styles for the LS.Knob component." },
@@ -292,6 +309,7 @@
         let latestSnippet = "";
 
         const componentMinVersion = {};
+        const componentMaxVersion = {};
         Object.entries(new_in).forEach(([major, names]) => {
             const majorVersion = Number(major);
             names.forEach(name => {
@@ -301,6 +319,18 @@
                 }
 
                 componentMinVersion[name] = Math.min(componentMinVersion[name], majorVersion);
+            });
+        });
+
+        Object.entries(removed_in).forEach(([major, names]) => {
+            const majorVersion = Number(major);
+            names.forEach(name => {
+                if (!(name in componentMaxVersion)) {
+                    componentMaxVersion[name] = majorVersion;
+                    return;
+                }
+
+                componentMaxVersion[name] = Math.min(componentMaxVersion[name], majorVersion);
             });
         });
 
@@ -520,7 +550,10 @@
             componentsContainer.querySelectorAll("input[data-component]").forEach(input => {
                 const component = input.getAttribute("data-component");
                 const minVersion = component ? (componentMinVersion[component] || 0) : 0;
-                const supported = majorVersion >= minVersion;
+
+                const maxVersion = component ? (componentMaxVersion[component] || Infinity) : Infinity;
+                const supported = majorVersion >= minVersion && majorVersion <= maxVersion;
+            
                 const label = input.closest("label");
 
                 input.disabled = !supported;
@@ -530,8 +563,12 @@
 
                 if (label) {
                     label.classList.toggle("is-unavailable", !supported);
-                    if (minVersion > 0) {
+                    if (majorVersion <= minVersion) {
                         label.setAttribute("title", `Available since LS v${minVersion}`);
+                    } else if(majorVersion >= maxVersion) {
+                        label.setAttribute("title", `Removed since LS v${maxVersion + 1}`);
+                    } else {
+                        label.removeAttribute("title");
                     }
                 }
             });

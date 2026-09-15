@@ -1,6 +1,5 @@
 // WARNING: The following imports are just a stub, the actual build system is being worked on.
 import { TmpFs, RootFs } from "./fs.mjs";
-import { SoundBox } from "./soundbox.mjs";
 import { LiDesktop, MediaPlayer } from "./desktop.mjs";
 import { LoggerContext, AssetManager, ContentContext, Viewport, Thread } from "./commons.mjs";
 import { app } from "./shared.mjs";
@@ -17,8 +16,10 @@ class Process {
     #pid = null;
     #fd = [];
 
-    constructor() {
-
+    constructor(options) {
+        if(options.wrapper) {
+            if(options.wrapper.spawn) options.wrapper.spawn();
+        }
     }
 
     /**
@@ -54,15 +55,21 @@ class Process {
         return utsname;
     }
 
-    fork() {}
+    fork() {
+        return this.createProcess({});
+    }
 
-    execve(path, argv, envp) {}
+    async execve(path, argv, envp) {
+        this.createProcess({ path, argv, envp });
+    }
 }
 
 
 /**
  * Kernel class
  * Main application kernel, handles global state, navigation, authentication, and content contexts.
+ * 
+ * todo: split LinuxJS kernel and website functionality.
  */
 const kernel = new class Kernel extends LS.Context {
     isKernel = true;
@@ -70,16 +77,19 @@ const kernel = new class Kernel extends LS.Context {
 
     fileSystem =   new RootFs(true);
 
+    processes    = [];
     threads =      new Set();
+
+    // todo: configurable
     MAX_THREADS = (navigator.hardwareConcurrency || 4) * 2;
 
-    contexts =     new Map();
-    viewports =    new Map();
+    contexts     = new Map();
+
+    // Website related
+    pageCache    = new Map();
     applications = new Map();
-    pageCache =    new Map();
-
+    viewports    = new Map();
     aliasMap =     new Map();
-
     appManifests = new Map();
 
     /**
@@ -87,15 +97,22 @@ const kernel = new class Kernel extends LS.Context {
      */
     env =  null;
 
-    queryParams = LS.Util.parseURLParams();
+    queryParams  = LS.Util.parseURLParams();
     userFragment = LS.Reactive.wrap("user", {});
 
     SPAExtensions = new LS.SPA.Matcher();
 
-    // scheduler = new class Scheduler {}
+    createProcess(options){
+        const proc = new Process(options);
+        this.processes.push(proc);
+
+        // todo: calculate next free PID & assign UID/GID
+        return proc;
+    }
 
     /**
-     * Auth/user provider
+     * Remote auth/user provider for lstv.space
+     * This is NOT local auth (see shared.mjs for local user (/etc/passwd, /etc/shadow, /etc/group) management)
      */
     auth = new class Auth extends LS.EventEmitter {
         #iframeURL = null;
@@ -324,6 +341,7 @@ const kernel = new class Kernel extends LS.Context {
 
     /**
      * Permission scope
+     * @experimental
      */
     #PermissionScope = class PermissionScope {
         constructor(permissions = []) {
@@ -345,9 +363,9 @@ const kernel = new class Kernel extends LS.Context {
 
         // Create a temporary filesystem
         this.fileSystem.mount(RootFs.PATH_SEPARATOR, (new TmpFs()).setData(DEFAULT_FS_DATA));
-        this.fileSystem.mount("/tmp", new TmpFs());
-        this.fileSystem.mount("/dev", new TmpFs());
-        this.fileSystem.mount("/run", (new TmpFs()).setData([["/lock", {}]]));
+        this.fileSystem.mount("/tmp",  new TmpFs());
+        this.fileSystem.mount("/dev",  new TmpFs());
+        this.fileSystem.mount("/run",  (new TmpFs()).setData([["/lock", {}]]));
         this.fileSystem.mount("/proc", new ProcFs());
         this.fileSystem.mount("/sys",  new SysFs());
         // (root can be then swapped with any other mount)
@@ -681,6 +699,10 @@ const kernel = new class Kernel extends LS.Context {
 
         for(const thread of this.threads.values()) {
             yield thread;
+        }
+
+        for(const process of this.processes) {
+            yield process;
         }
     }
 
@@ -1113,25 +1135,58 @@ const kernel = new class Kernel extends LS.Context {
         return p;
     }
 
+    info()  { this.logger.info(...arguments);  }
     log()   { this.logger.log(...arguments);   }
     warn()  { this.logger.warn(...arguments);  }
     error() { this.logger.error(...arguments); }
+    fatal() { this.logger.fatal(...arguments); }
 
+    /**
+     * Destroy the kernel and all its resources, starting from the top.
+     * The kernel is unusable after this and must not be referenced again.
+     */
     destroy() {
         if(this.destroyed) return;
-        for(const context of this.contexts.values()) {
-            context.destroy();
+
+        if(typeof window.app !== "undefined" && window.app.destroyState) {
+            window.app.destroyState();
         }
 
         for(const thread of this.threads.values()) {
             thread.destroy();
         }
-
-        app.destroyState();
-
-        this.contexts.clear();
         this.threads.clear();
+        this.threads = null;
+
+        // for(const process of this.processes) {
+        //     process.destroy();
+        // }
+        // this.processes = null;
+
+        for(const context of this.contexts.values()) {
+            context.destroy();
+        }
+        this.contexts.clear();
+        this.contexts = null;
+
+        for(const viewport of this.viewports.values()) {
+            viewport.destroy();
+        }
         this.viewports.clear();
+        this.viewports = null;
+
+        this.viewport.destroy();
+        this.viewport = null;
+
+        this.env.destroy();
+        this.env = null;
+
+        this.fileSystem.destroy();
+        this.fileSystem = null;
+
+        this.auth.destroy();
+        this.auth = null;
+
         this.pageCache.clear();
         this.aliasMap.clear();
         this.applications.clear();
@@ -1139,8 +1194,8 @@ const kernel = new class Kernel extends LS.Context {
         this.SPAExtensions.clear();
         this.logger.destroy();
         this.logger = null;
-        this.auth.destroy();
-        this.auth = null;
+        this.userFragment = null;
+        this.queryParams = null;
 
         super.destroy();
     }
@@ -1148,7 +1203,7 @@ const kernel = new class Kernel extends LS.Context {
 
 
 /**
- * Promise helper
+ * Misc promise wrapper helper for application openers
  */
 class OpenerPromise {
     loading(callback)   { if (callback) this._l = callback; return this; }

@@ -2,7 +2,6 @@
 
 // WARNING: The following imports are just a stub, the actual build system is being worked on.
 import { TmpFs, RootFs } from "./fs.mjs";
-import { SoundBox } from "./soundbox.mjs";
 import { LiDesktop, MediaPlayer } from "./desktop.mjs";
 import { LoggerContext, AssetManager, ContentContext, Viewport, Thread } from "./commons.mjs";
 import { app } from "./shared.mjs";
@@ -134,6 +133,7 @@ const BUILTIN_APPS = [
         "main": "mind-reader.mjs"
     },
 ];
+
 // localStorage.getItem("enableExperimentalApps") === "true" && {
 //     "name": "monitors",
 //     "id": "monitors",
@@ -151,51 +151,46 @@ const BUILTIN_APPS = [
 // --- INITIALIZATION STUFF & DEFINITIONS (SKIP THIS PART)
 // If the environment is correct, this file should be wrapped in an IIFE by the build system & not leak.
 
-if(window.__kernelInitialized) {
-    throw new Error("Kernel was already initialized - this is a bug!");
-}
-
-if(globalThis === this) {
-    throw new Error("Kernel was loaded at the top level, this is a bug");
-}
-
-window.__kernelInitialized = true;
-
-// Mtime mapped to kernel.js (This should never fallback)
-window.cacheKey = "?mtime=" + (LS.Util.parseURLParams(document.currentScript?.src, "mtime") || Date.now());
-
-if(!window.LS || typeof LS !== "object" || LS.v < 5) {
-    window.__loadError('<h3 style="margin:40px 20px">The application framework failed to load. Please try again later.</h3>')
-    throw new Error("Fatal error: Missing LS, or it's too old! Make sure it was loaded properly! Aborting.");
-}
-
 // Forward declarations
 const scriptingLoadTime = Date.now();
-const shortcutManager = new LS.ShortcutManager();
-const isDebug = window.location.hostname === "lstv.localhost";
-const isBeta = window.location.hostname.startsWith("beta.lstv.");
-
-shortcutManager.map({
-    "GLOBAL_OPEN_COMMAND_PALETTE": ['ctrl+shift+p', 'ctrl+k'],
-    "GLOBAL_OPEN_MUSIC_PLAYER": ['ctrl+shift+alt+m', 'ctrl+alt+shift+m'],
-    "GLOBAL_DESKTOP_OPEN_MENU": ['ctrl+space', 'ctrl+shift+m', 'ctrl+alt+m'],
-    "GLOBAL_LOCK_SCREEN": ['ctrl+shift+l', 'ctrl+alt+l'],
-    "GLOBAL_LOG_OUT": ['ctrl+shift+q', 'ctrl+alt+q'],
-    "GLOBAL_OPEN_TERMINAL": ['ctrl+shift+t', 'ctrl+alt+t'],
-
-    ...{} // todo: User data
-});
+const isDebug           = window.location.hostname === "lstv.localhost";
+const isBeta            = window.location.hostname.startsWith("beta.lstv.");
 
 // Console welcome message
 if(!isDebug) console.log(
-    '%c LSTV %c\nPlease beware:\n%cIF SOMEONE TOLD YOU TO PASTE SOMETHING HERE,\nTHEY MIGHT BE TRYING TO STEAL PERSONAL INFORMATION OR SCAM YOU.\nDO NOT USE THE CONSOLE IF YOU DON\'T KNOW\nWHAT YOU ARE DOING.\n\n',
+    '\n\n%c LSTV %c\n\nPlease beware:\n%cIF SOMEONE TOLD YOU TO PASTE SOMETHING HERE,\nTHEY MIGHT BE TRYING TO STEAL PERSONAL INFORMATION OR SCAM YOU.\nDO NOT USE THE CONSOLE IF YOU DON\'T KNOW\nWHAT YOU ARE DOING.\n\n',
     'font-size:4em;padding:10px;background:linear-gradient(to bottom,#e74c3c, #e74c3c 33%, #f39c12 33%,#f39c12 66%,#3498db 66%,#3498db);border-radius:1em;color:white;font-weight:900;margin:1em 0',
     'font-size:1.5em;color:#ed6c30;font-weight:bold',
     'font-size:1em;font-weight:400'
 );
 
+if(window.__loaded)     throw new Error("Kernel was already initialized - this is a bug!");
+if(globalThis === this) throw new Error("Kernel was loaded at the top level, this is a bug");
+
+window.__loaded = true;
+
+// Mtime mapped to kernel.js (This should never fallback)
+window.cacheKey = "?mtime=" + (LS.Util.parseURLParams(document.currentScript?.src, "mtime") || Date.now());
+
+if(!window.LS || typeof LS !== "object" || LS.v < 6) {
+    window.__loadError('<h3 style="margin:40px 20px">The application framework failed to load. Please try again later.</h3>')
+    throw new Error("Fatal error: Missing LS, or it's too old (minimum supported version: 6.0.0)! Make sure it was loaded properly! Aborting.");
+}
+
+const shortcutManager = new LS.ShortcutManager();
+shortcutManager.map({
+    "GLOBAL_OPEN_COMMAND_PALETTE": ['ctrl+shift+p', 'ctrl+k'],
+    "GLOBAL_OPEN_MUSIC_PLAYER":    ['ctrl+shift+alt+m', 'ctrl+alt+shift+m'],
+    "GLOBAL_DESKTOP_OPEN_MENU":    ['ctrl+space', 'ctrl+shift+m', 'ctrl+alt+m'],
+    "GLOBAL_LOCK_SCREEN":          ['ctrl+shift+l', 'ctrl+alt+l'],
+    "GLOBAL_LOG_OUT":              ['ctrl+shift+q', 'ctrl+alt+q'],
+    "GLOBAL_OPEN_TERMINAL":        ['ctrl+shift+t', 'ctrl+alt+t'],
+
+    ...{} // todo: User data, maybe read from a file
+});
+
 Document.prototype.write = Document.prototype.writeln = function() {
-    throw new Error("Document.write is disabled for security and performance reasons. You should not use it.");
+    throw new Error("Document.write is disabled for security, stability and performance reasons. You should almost never use it: https://developer.mozilla.org/en-US/docs/Web/API/Document/write.");
 };
 
 // --- MEMORY SAFETY ---
@@ -207,12 +202,51 @@ Document.prototype.write = Document.prototype.writeln = function() {
 // LS.Context.debugEnforceContextSafety();
 // LS.Context.debugWarnContextSafety();
 
-const setTimeout = LS.Context.setTimeout;
-const setInterval = LS.Context.setInterval;
-const clearTimeout = LS.Context.clearTimeout;
-const clearInterval = LS.Context.clearInterval;
+const setTimeout            = LS.Context.setTimeout;
+const setInterval           = LS.Context.setInterval;
+const clearTimeout          = LS.Context.clearTimeout;
+const clearInterval         = LS.Context.clearInterval;
 const requestAnimationFrame = LS.Context.requestAnimationFrame;
-const queueMicrotask = LS.Context.queueMicrotask;
-const fetch = LS.Context.fetch;
+const queueMicrotask        = LS.Context.queueMicrotask;
+const fetch                 = LS.Context.fetch;
 
-function invokeAndReturn(f) { f(); return f }
+// function invokeAndReturn(f) { f(); return f }
+
+
+/**
+ * ls-time element to display time in real time.
+ */
+class TimeElement extends HTMLElement {
+    constructor() {
+        super();
+    }
+
+    static interval = null;
+    static timeElements = new Set();
+
+    static enable () { if(!this.interval) this.interval = setInterval(this.updateTimeElements, 1000); }
+    static disable() { if(this.interval !== null) clearInterval(this.interval); this.interval = null; }
+
+    static {
+        customElements.define("ls-time", this);
+        this.enable();
+    }
+
+    static updateTimeElements(element) {
+        const now = new Date();
+        // todo
+        for(const el of element? [element]: TimeElement.timeElements) {
+            const format = el.getAttribute("format") || "HH:mm:ss";
+            el.textContent = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: format.includes("ss") ? "2-digit" : undefined });
+        }
+    }
+
+    connectedCallback() {
+        TimeElement.timeElements.add(this);
+        TimeElement.updateTimeElements(this);
+    }
+
+    disconnectedCallback() {
+        TimeElement.timeElements.delete(this);
+    }
+};

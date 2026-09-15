@@ -1,6 +1,5 @@
 // WARNING: The following imports are just a stub, the actual build system is being worked on.
 import { TmpFs, RootFs } from "./fs.mjs";
-import { SoundBox } from "./soundbox.mjs";
 import { LiDesktop, MediaPlayer } from "./desktop.mjs";
 import { app } from "./shared.mjs";
 import { kernel } from "./kernel.mjs";
@@ -51,6 +50,10 @@ class LoggerContext {
 
     error(...data) {
         this.writeLog(this.writer.error || this.writer.log, 'color: #e74c3c;', ...data);
+    }
+
+    fatal(...data) {
+        this.writeLog(this.writer.fatal || this.writer.error || this.writer.log, 'color: #e74c3c; font-weight: bold;', ...data);
     }
 
     warn(...data) {

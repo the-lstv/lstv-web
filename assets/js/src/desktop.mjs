@@ -1,6 +1,5 @@
 // WARNING: The following imports are just a stub, the actual build system is being worked on.
 import { TmpFs, RootFs } from "./fs.mjs";
-import { SoundBox } from "./soundbox.mjs";
 import { LoggerContext, AssetManager, ContentContext, Viewport, Thread } from "./commons.mjs";
 import { app } from "./shared.mjs";
 import { kernel } from "./kernel.mjs";
@@ -20,7 +19,7 @@ class MediaPlayer {
 
     create(d){'use strict';var e0=document.createElement("div");e0.setAttribute("class","music-player toolbar-styled");var e1=document.createElement("img");e1.setAttribute("alt","Music cover background");e1.setAttribute("crossorigin","anonymous");e1.setAttribute("class","music-player-cover");e0.appendChild(e1);var e2=document.createElement("img");e2.setAttribute("alt","Music cover art");e2.setAttribute("crossorigin","anonymous");e2.setAttribute("class","music-player-art");e0.appendChild(e2);var e3=document.createElement("div");e3.setAttribute("class","music-player-container");var e4=document.createElement("div");e4.setAttribute("class","music-player-info");var e5=document.createElement("span");e5.setAttribute("class","text-overflow-nowrap music-player-title");var t6=document.createTextNode("Lorem Ipsum");e5.appendChild(t6);e4.appendChild(e5);var e7=document.createElement("span");e7.setAttribute("class","text-overflow-nowrap music-player-artist");var t8=document.createTextNode("Dolor Sit Amet");e7.appendChild(t8);e4.appendChild(e7);e3.appendChild(e4);var e9=document.createElement("div");e9.setAttribute("class","music-player-progress");var e10=document.createElement("div");e10.setAttribute("class","music-player-progress-bar");var e11=document.createElement("div");e11.setAttribute("class","music-player-progress-filled");e10.appendChild(e11);e9.appendChild(e10);e3.appendChild(e9);var e12=document.createElement("div");e12.setAttribute("class","music-player-controls");var e13=document.createElement("button");e13.setAttribute("ls-tooltip","");e13.setAttribute("aria-label","Like");e13.setAttribute("class","circle clear music-player-like");var e14=document.createElement("i");e14.setAttribute("class","bi-hand-thumbs-up");e13.appendChild(e14);e12.appendChild(e13);var e15=document.createElement("button");e15.setAttribute("ls-tooltip","");e15.setAttribute("aria-label","Previous");e15.setAttribute("class","circle clear music-player-prev");var e16=document.createElement("i");e16.setAttribute("class","bi-skip-start-fill");e15.appendChild(e16);e12.appendChild(e15);var e17=document.createElement("button");e17.setAttribute("ls-tooltip","");e17.setAttribute("aria-label","Play/Pause");e17.setAttribute("class","circle clear music-player-play-pause");var e18=document.createElement("i");e18.setAttribute("class","bi-play-fill");e17.appendChild(e18);e12.appendChild(e17);var e19=document.createElement("button");e19.setAttribute("ls-tooltip","");e19.setAttribute("aria-label","Next");e19.setAttribute("class","circle clear music-player-next");var e20=document.createElement("i");e20.setAttribute("class","bi-skip-end-fill");e19.appendChild(e20);e12.appendChild(e19);var e21=document.createElement("button");e21.setAttribute("ls-tooltip","Repeat Off");e21.setAttribute("aria-label","Toggle repeat modes");e21.setAttribute("class","circle clear music-player-repeat");var e22=document.createElement("i");e22.setAttribute("class","bi-arrow-repeat");e21.appendChild(e22);e12.appendChild(e21);e3.appendChild(e12);e0.appendChild(e3);var __rootValue=e0;return{root:__rootValue};}
 
-    init(){
+    async init(){
         if(this.initialized) return;
         this.initialized = true;
 
@@ -237,34 +236,6 @@ class MediaPlayer {
     }
 }
 
-
-
-const updateTimeElements = (element) => {
-    const now = new Date();
-    for(const el of element? [element]: timeElements) {
-        const format = el.getAttribute("format") || "HH:mm:ss"; // todo
-        el.textContent = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: format.includes("ss") ? "2-digit" : undefined });
-    }
-};
-
-const timeElements = new Set();
-customElements.define("ls-time", class TimeElement extends HTMLElement {
-    constructor() {
-        super();
-    }
-
-    connectedCallback() {
-        timeElements.add(this);
-        updateTimeElements(this);
-    }
-
-    disconnectedCallback() {
-        timeElements.delete(this);
-    }
-});
-
-setInterval(updateTimeElements, 1000);
-
 /**
  * Desktop class
  * Represents the virtual desktop environment and its components.
@@ -285,9 +256,21 @@ class LiDesktop extends LS.Context {
         super();
 
         const container = LS.SelectOrCreate('#app');
-        const target = LS.SelectOrCreate('#environment');
+        const target    = LS.SelectOrCreate('#environment', container);
+        const desktop   = LS.SelectOrCreate('#desktop', target);
 
-        this.windowManager = new LS.WindowManager({ target });
+        LS.Menu.addContextMenu(desktop, [
+            { label: "Change wallpaper", icon: "bi-image" },
+            { label: "Open terminal", icon: "bi-terminal" },
+            { type: "separator" },
+            { label: "Add", icon: "bi-plus-circle", items: [
+                { label: "Widget", icon: "bi-app-indicator" },
+            ] },
+            { type: "separator" },
+            { label: "Customization", icon: "bi-pencil-square" },
+        ]);
+
+        this.windowManager  = new LS.WindowManager({ target });
         this.screenSwitcher = new LS.Tabs(container, { list: false, selector: ":scope > ls-tab", slideAnimation: true });
 
         this.addExternalEventListener(this.windowManager, "window-created", (event) => this.updateTaskbars());
@@ -295,8 +278,9 @@ class LiDesktop extends LS.Context {
 
         // System sounds
         const base = "/assets/audio/system/sfx/";
-        this.soundBox = new SoundBox({
+        this.soundBox = new LS.SoundBox({
             volume: 0.5,
+            logger: kernel.logger,
             sounds: {
                 "click":           { src: base + "click_desk.ogg" },
                 "click_container": { src: base + "click_container.ogg" },
@@ -467,6 +451,7 @@ class LiDesktop extends LS.Context {
                         inner: accent === "white" ? LS.Create("i", { class: "bi-x-circle-fill" }) : null,
                         accent,
                         tooltip: accent === "white" ? "Reset": (accent.charAt(0).toUpperCase() + accent.slice(1)),
+                        effects: "spring,push",
                         onclick(){
                             LS.Color.setAccent(accent);
                         }
@@ -1164,6 +1149,7 @@ class LiDesktop extends LS.Context {
     _welcome(){
         this.closeToolbar(true);
         this.soundBox.play("system:startup");
+
         LS.Create("{Welcome to desktop mode}", {
     		style: "position: fixed; top: 50%; left: 50%; translate: -60% -50%; font-size: 4em; text-align: center; pointer-events: none; display: block; background: #0008; border-radius: 16px; padding: 4px 16px",
             parent: "top",
@@ -1194,12 +1180,14 @@ class LiDesktop extends LS.Context {
 
         this.musicPlayer.destroy();
         this.musicPlayer = null;
+
         if(this.frameScheduler) {
             this.frameScheduler.destroy();
             this.frameScheduler = null;
         }
 
         this.toolbars.clear();
+        super.destroy();
     }
 }
 

@@ -140,6 +140,7 @@ const BUILTIN_APPS = [
         "main": "mind-reader.mjs"
     },
 ];
+
 // localStorage.getItem("enableExperimentalApps") === "true" && {
 //     "name": "monitors",
 //     "id": "monitors",
@@ -157,51 +158,46 @@ const BUILTIN_APPS = [
 // --- INITIALIZATION STUFF & DEFINITIONS (SKIP THIS PART)
 // If the environment is correct, this file should be wrapped in an IIFE by the build system & not leak.
 
-if(window.__kernelInitialized) {
-    throw new Error("Kernel was already initialized - this is a bug!");
-}
-
-if(globalThis === this) {
-    throw new Error("Kernel was loaded at the top level, this is a bug");
-}
-
-window.__kernelInitialized = true;
-
-// Mtime mapped to kernel.js (This should never fallback)
-window.cacheKey = "?mtime=" + (LS.Util.parseURLParams(document.currentScript?.src, "mtime") || Date.now());
-
-if(!window.LS || typeof LS !== "object" || LS.v < 5) {
-    window.__loadError('<h3 style="margin:40px 20px">The application framework failed to load. Please try again later.</h3>')
-    throw new Error("Fatal error: Missing LS, or it's too old! Make sure it was loaded properly! Aborting.");
-}
-
 // Forward declarations
 const scriptingLoadTime = Date.now();
-const shortcutManager = new LS.ShortcutManager();
-const isDebug = window.location.hostname === "lstv.localhost";
-const isBeta = window.location.hostname.startsWith("beta.lstv.");
-
-shortcutManager.map({
-    "GLOBAL_OPEN_COMMAND_PALETTE": ['ctrl+shift+p', 'ctrl+k'],
-    "GLOBAL_OPEN_MUSIC_PLAYER": ['ctrl+shift+alt+m', 'ctrl+alt+shift+m'],
-    "GLOBAL_DESKTOP_OPEN_MENU": ['ctrl+space', 'ctrl+shift+m', 'ctrl+alt+m'],
-    "GLOBAL_LOCK_SCREEN": ['ctrl+shift+l', 'ctrl+alt+l'],
-    "GLOBAL_LOG_OUT": ['ctrl+shift+q', 'ctrl+alt+q'],
-    "GLOBAL_OPEN_TERMINAL": ['ctrl+shift+t', 'ctrl+alt+t'],
-
-    ...{} // todo: User data
-});
+const isDebug           = window.location.hostname === "lstv.localhost";
+const isBeta            = window.location.hostname.startsWith("beta.lstv.");
 
 // Console welcome message
 if(!isDebug) console.log(
-    '%c LSTV %c\nPlease beware:\n%cIF SOMEONE TOLD YOU TO PASTE SOMETHING HERE,\nTHEY MIGHT BE TRYING TO STEAL PERSONAL INFORMATION OR SCAM YOU.\nDO NOT USE THE CONSOLE IF YOU DON\'T KNOW\nWHAT YOU ARE DOING.\n\n',
+    '\n\n%c LSTV %c\n\nPlease beware:\n%cIF SOMEONE TOLD YOU TO PASTE SOMETHING HERE,\nTHEY MIGHT BE TRYING TO STEAL PERSONAL INFORMATION OR SCAM YOU.\nDO NOT USE THE CONSOLE IF YOU DON\'T KNOW\nWHAT YOU ARE DOING.\n\n',
     'font-size:4em;padding:10px;background:linear-gradient(to bottom,#e74c3c, #e74c3c 33%, #f39c12 33%,#f39c12 66%,#3498db 66%,#3498db);border-radius:1em;color:white;font-weight:900;margin:1em 0',
     'font-size:1.5em;color:#ed6c30;font-weight:bold',
     'font-size:1em;font-weight:400'
 );
 
+if(window.__loaded)     throw new Error("Kernel was already initialized - this is a bug!");
+if(globalThis === this) throw new Error("Kernel was loaded at the top level, this is a bug");
+
+window.__loaded = true;
+
+// Mtime mapped to kernel.js (This should never fallback)
+window.cacheKey = "?mtime=" + (LS.Util.parseURLParams(document.currentScript?.src, "mtime") || Date.now());
+
+if(!window.LS || typeof LS !== "object" || LS.v < 6) {
+    window.__loadError('<h3 style="margin:40px 20px">The application framework failed to load. Please try again later.</h3>')
+    throw new Error("Fatal error: Missing LS, or it's too old (minimum supported version: 6.0.0)! Make sure it was loaded properly! Aborting.");
+}
+
+const shortcutManager = new LS.ShortcutManager();
+shortcutManager.map({
+    "GLOBAL_OPEN_COMMAND_PALETTE": ['ctrl+shift+p', 'ctrl+k'],
+    "GLOBAL_OPEN_MUSIC_PLAYER":    ['ctrl+shift+alt+m', 'ctrl+alt+shift+m'],
+    "GLOBAL_DESKTOP_OPEN_MENU":    ['ctrl+space', 'ctrl+shift+m', 'ctrl+alt+m'],
+    "GLOBAL_LOCK_SCREEN":          ['ctrl+shift+l', 'ctrl+alt+l'],
+    "GLOBAL_LOG_OUT":              ['ctrl+shift+q', 'ctrl+alt+q'],
+    "GLOBAL_OPEN_TERMINAL":        ['ctrl+shift+t', 'ctrl+alt+t'],
+
+    ...{} // todo: User data, maybe read from a file
+});
+
 Document.prototype.write = Document.prototype.writeln = function() {
-    throw new Error("Document.write is disabled for security and performance reasons. You should not use it.");
+    throw new Error("Document.write is disabled for security, stability and performance reasons. You should almost never use it: https://developer.mozilla.org/en-US/docs/Web/API/Document/write.");
 };
 
 // --- MEMORY SAFETY ---
@@ -213,15 +209,54 @@ Document.prototype.write = Document.prototype.writeln = function() {
 // LS.Context.debugEnforceContextSafety();
 // LS.Context.debugWarnContextSafety();
 
-const setTimeout = LS.Context.setTimeout;
-const setInterval = LS.Context.setInterval;
-const clearTimeout = LS.Context.clearTimeout;
-const clearInterval = LS.Context.clearInterval;
+const setTimeout            = LS.Context.setTimeout;
+const setInterval           = LS.Context.setInterval;
+const clearTimeout          = LS.Context.clearTimeout;
+const clearInterval         = LS.Context.clearInterval;
 const requestAnimationFrame = LS.Context.requestAnimationFrame;
-const queueMicrotask = LS.Context.queueMicrotask;
-const fetch = LS.Context.fetch;
+const queueMicrotask        = LS.Context.queueMicrotask;
+const fetch                 = LS.Context.fetch;
 
-function invokeAndReturn(f) { f(); return f }// WARNING: The following imports are just a stub, the actual build system is being worked on.
+// function invokeAndReturn(f) { f(); return f }
+
+
+/**
+ * ls-time element to display time in real time.
+ */
+class TimeElement extends HTMLElement {
+    constructor() {
+        super();
+    }
+
+    static interval = null;
+    static timeElements = new Set();
+
+    static enable () { if(!this.interval) this.interval = setInterval(this.updateTimeElements, 1000); }
+    static disable() { if(this.interval !== null) clearInterval(this.interval); this.interval = null; }
+
+    static {
+        customElements.define("ls-time", this);
+        this.enable();
+    }
+
+    static updateTimeElements(element) {
+        const now = new Date();
+        // todo
+        for(const el of element? [element]: TimeElement.timeElements) {
+            const format = el.getAttribute("format") || "HH:mm:ss";
+            el.textContent = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: format.includes("ss") ? "2-digit" : undefined });
+        }
+    }
+
+    connectedCallback() {
+        TimeElement.timeElements.add(this);
+        TimeElement.updateTimeElements(this);
+    }
+
+    disconnectedCallback() {
+        TimeElement.timeElements.delete(this);
+    }
+};// WARNING: The following imports are just a stub, the actual build system is being worked on.
 
 // --- COMMON CLASSES
 
@@ -269,6 +304,10 @@ class LoggerContext {
 
     error(...data) {
         this.writeLog(this.writer.error || this.writer.log, 'color: #e74c3c;', ...data);
+    }
+
+    fatal(...data) {
+        this.writeLog(this.writer.fatal || this.writer.error || this.writer.log, 'color: #e74c3c; font-weight: bold;', ...data);
     }
 
     warn(...data) {
@@ -1862,456 +1901,6 @@ class Enums  {
 // WARNING: The following imports are just a stub, the actual build system is being worked on.
 
 /**
- * SoundBox class
- * It is used for playing system sound effects and other simple audio with user-overridable sound packs.
- * A revamped version of my old jukebox.js mini-library.
- * 
- * This functions separetely from the global media player.
- * 
- * @param {Object} options - The options for the SoundBox.
- * @param {number} options.volume - The global volume of the SoundBox.
- * @param {SoundBox} parent - Optional parent SoundBox. Will inherit the sound map but have its own volume and threads for context isolation.
- * @param {string} nameScope - Optional scope for sound names to also isolate created sounds under a namespace.
- */
-class SoundBox {
-    constructor(options = {}, parent = null, nameScope = null) {
-        this.parent = parent;
-        this.nameScope = nameScope;
-
-        this.ctx =      parent? parent.ctx: new (window.AudioContext || window.webkitAudioContext)();
-        this.soundMap = parent? parent.soundMap: new Map();
-        this.threads =  new Set();
-
-        // Global gain node for controlling volume of all sounds played through this SoundBox
-        this.gainNode = this.ctx.createGain();
-        this.gainNode.connect(this.ctx.destination);
-
-        this.setVolume(options.volume ?? 1);
-
-        if(options.sounds) {
-            this.registerMany(options.sounds);
-        }
-    }
-
-    /**
-     * Sets the volume of all sounds played through this SoundBox.
-     * @param {number} volume The volume to set, between 0 and 1.
-     */
-    setVolume(volume = 1) {
-        this.gainNode.gain.value = Math.max(0, Math.min(1, volume));
-    }
-
-    get volume() {
-        return this.gainNode.gain.value;
-    }
-
-    set volume(value) {
-        this.setVolume(value);
-    }
-
-    /**
-     * Creates a new sound thread. Loads the sound if it is not already loaded.
-     * @param {*} soundName The name of the sound to play. Must be registered first.
-     * @param {*} options Options for the sound thread. Can include volume, loop, playbackRate, etc.
-     * @returns {Promise<SoundBoxThread>} A promise that resolves to a SoundBoxThread instance.
-     */
-    async createThread(soundName, options = {}) {
-        let sound = this.soundMap.get(soundName);
-        if(!sound) {
-            kernel.error("Sound not found:", soundName);
-            return null;
-        }
-
-        if(!sound.buffer) {
-            await this.load(soundName);
-            if(!sound.buffer) {
-                return;
-            }
-        }
-
-        const thread = new SoundBoxThread(this, sound, options);
-        return thread;
-    }
-
-    /**
-     * Helper that plays a sound by creating a thread and starting it. It will load the sound if it is not already loaded.
-     * @param {*} soundName The name of the sound to play. Must be registered first.
-     * @param {*} options Options for the sound thread. Can include volume, loop, playbackRate, etc.
-     * @returns {Promise<void>} A promise that resolves when the sound is played.
-     */
-    async play(soundName, options = {}) {
-        options ??= {};
-        options.ephemeral ??= true;
-        options.autoPlay  ??= true;
-
-        const thread = await this.createThread(soundName, options);
-        if(!thread) {
-            kernel.error("Failed to create sound thread for:", soundName);
-            return;
-        }
-        return thread;
-    }
-
-    /**
-     * Registers a sound with the SoundBox.
-     * @param {*} soundName The name of the sound to register.
-     * @param {*} options Options for the sound. Can include src (URL), volume, loop, etc.
-     */
-    register(soundName, options) {
-        if(!soundName || typeof soundName !== "string") {
-            kernel.error("Sound name must be a non-empty string.");
-            return;
-        }
-
-        if(this.nameScope) {
-            soundName = `${this.nameScope}:${soundName}`;
-        }
-
-        if(this.soundMap.has(soundName)) {
-            kernel.warn("Sound already registered:", soundName);
-            return;
-        }
-
-        if(typeof options === "string") {
-            options = { src: options };
-        }
-
-        this.soundMap.set(soundName, options);
-    }
-
-    update(soundName, options) {
-        if(this.nameScope) {
-            soundName = `${this.nameScope}:${soundName}`;
-        }
-
-        const existingOptions = this.soundMap.get(soundName);
-        if(!existingOptions) {
-            kernel.warn("Sound not registered:", soundName);
-            return;
-        }
-
-        Object.assign(existingOptions, options);
-    }
-
-    /**
-     * Registers multiple sounds at once.
-     * @param {Object} sounds - An object where keys are sound names and values are options.
-     */
-    registerMany(sounds) {
-        for(const [soundName, options] of Object.entries(sounds)) {
-            this.register(soundName, options);
-        }
-    }
-
-    unregister(soundName) {
-        if(this.nameScope) {
-            soundName = `${this.nameScope}:${soundName}`;
-        }
-
-        if(!this.soundMap.has(soundName)) {
-            kernel.warn("Sound not registered:", soundName);
-            return;
-        }
-
-        this.soundMap.delete(soundName);
-    }
-
-    /**
-     * Unregisters multiple sounds at once.
-     * @param {string[]} soundNames - An array of sound names to unregister.
-     */
-    unregisterMany(soundNames) {
-        for(const soundName of soundNames) {
-            this.unregister(soundName);
-        }
-    }
-
-    /**
-     * Loads a sound into the SoundBox. If the sound is already loaded, it will not reload it.
-     * @param {*} soundName The name of the sound to load.
-     * @returns {Promise<boolean>} Returns true if the sound is playable, false if something went wrong.
-     */
-    async load(soundName, fallbackIndex = -1) {
-        const sound = this.soundMap.get(soundName);
-
-        if(!sound) {
-            kernel.error("Sound not found:", soundName);
-            return false;
-        }
-
-        if(sound.buffer && sound.__lastSrc === sound.src) return true;
-
-        try {
-            const src = fallbackIndex < 0? sound.src: (this.soundMap.get(sound.fallback[fallbackIndex])?.src);
-            if(!src) throw "No available source";
-
-            const response = await fetch(src);
-            const arrayBuffer = await response.arrayBuffer();
-            sound.buffer = await this.ctx.decodeAudioData(arrayBuffer);
-            sound.__lastSrc = src;
-            return true;
-        } catch (e) {
-            if(Array.isArray(sound.fallback) && sound.fallback.length > (fallbackIndex + 1)) {
-                fallbackIndex ++;
-                kernel.error("Failed to load sound:", soundName, ", trying to fallback to next alternative: ", sound.fallback[fallbackIndex], e);
-                return await this.load(soundName, fallbackIndex);
-            }
-
-            kernel.error("Failed to load sound:", soundName, e);
-            return false;
-        }
-    }
-
-    async loadAll() {
-        const loadPromises = [];
-        for(const [soundName, sound] of this.soundMap.entries()) {
-            loadPromises.push(this.load(soundName));
-        }
-        await Promise.all(loadPromises);
-    }
-
-    stopAll(id = null) {
-        for(const thread of this.threads) {
-            if(id === null || thread.userId === id) {
-                thread.terminate();
-            }
-        }
-        this.threads.clear();
-    }
-
-    pauseAll(id = null) {
-        for(const thread of this.threads) {
-            if(id === null || thread.userId === id) {
-                thread.pause();
-            }
-        }
-    }
-
-    resumeAll(id = null) {
-        for(const thread of this.threads) {
-            if(id === null || thread.userId === id) {
-                thread.resume();
-            }
-        }
-    }
-
-    destroy() {
-        if(this.destroyed) return;
-        this.destroyed = true;
-
-        this.stopAll();
-
-        this.soundMap.clear();
-        this.soundMap = null;
-
-        if(this.ctx) {
-            this.ctx.close();
-            this.ctx = null;
-        }
-    }
-}
-
-/**
- * SoundBoxThread class
- * Represents a single sound thread that can be played, stopped, and controlled.
- * 
- * This class has no awareness of loading or managing media, it simply provides an interface for controlling an existing sound buffer.
- */
-class SoundBoxThread {
-    constructor(parent, sound, options = {}) {
-        if(!(parent instanceof SoundBox) || !sound) {
-            throw new Error("SoundBoxThread requires a parent SoundBox and a source.");
-        }
-
-        this.parent  = parent;
-        this.sound   = sound;
-        this.options = options ?? {};
-        this.parent.threads.add(this);
-
-        this.created = false;
-        this.source  = null;
-        this.destroyed = false;
-
-        this._speed = this.options.speed ?? 1;
-        this._loop = this.options.loop   ?? false;
-        this.volume = this.options.volume ?? 1;
-
-        this.userId = this.options.userId ?? null;
-
-        // this.span = [0, -1];
-
-        if(this.options.autoPlay) {
-            this.play();
-        } else if(this.options.autoCreate) {
-            this.create();
-        }
-    }
-
-    /**
-     * Creates (or reloads) the audio context for the sound thread.
-     */
-    create() {
-        if(this.destroyed) {
-            throw new Error("Cannot initialize a destroyed SoundBoxThread.");
-        }
-
-        this.disposeSource();
-        this.source = this.parent.ctx.createBufferSource();
-        this.source.buffer = this.sound.buffer;
-
-        this.source.connect(this.outputNode);
-
-        this.loop = this._loop;
-        this.speed = this._speed;
-
-        this.created = true;
-    }
-
-    /**
-     * Plays the sound thread from a specific offset and for a specific duration.
-     * Can be called multiple times to play the sound again.
-     * @param {number} offset - The offset in seconds to start playing from.
-     * @param {number} duration - The duration in seconds to play. If negative, plays the entire sound.
-     */
-    play(offset = 0, duration = -1) {
-        if(this.destroyed) {
-            throw new Error("Cannot play a destroyed SoundBoxThread.");
-        }
-
-        // Sadly the API was desgined by a r*tard so we have to recreate the source every time we play a sound.
-        // if(!this.created) this.create();
-        this.create();
-
-        if(duration < 0) {
-            duration = this.duration;
-        }
-
-        this.source.start(0, offset, duration);
-
-        this.completedPromise().then(() => {
-            if(this.options.ephemeral) {
-                // Terminate & delete the thread after the sound has finished playing.
-                this.terminate();
-            } else {
-                // We could reuse the node but we can't.
-                this.source.disconnect();
-                this.source = null;
-            }
-        });
-    }
-
-    completedPromise() {
-        if(!this.source) {
-            return Promise.resolve();
-        }
-
-        return new Promise((resolve) => {
-            this.source.onended = () => {
-                resolve();
-            };
-        });
-    }
-
-    get duration() {
-        if(!this.source) {
-            return 0;
-        }
-        return this.source.buffer?.duration || 0;
-    }
-
-    get volume() {
-        return this.gainNode?.gain.value ?? 1;
-    }
-
-    set volume(value) {
-        value = Math.max(0, Math.min(1, value ?? 1));
-
-        if(this.gainNode) {
-            this.gainNode.gain.value = value;
-            return;
-        }
-
-        if(value === 1) {
-            // We can skip creating a gain node if the volume is 1.
-            this.gainNode = null;
-            this.outputNode = this.parent.gainNode;
-            return;
-        }
-
-        this.gainNode = this.parent.ctx.createGain();
-        this.gainNode.gain.value = value;
-        this.gainNode.connect(this.parent.gainNode);
-        this.outputNode = this.gainNode;
-    }
-
-    get loop() {
-        return this._loop;
-    }
-
-    set loop(value) {
-        this._loop = !!value;
-        if(this.source) {
-            this.source.loop = this._loop;
-        }
-    }
-
-    get speed() {
-        return this._speed;
-    }
-
-    set speed(value) {
-        if(!this.source) return;
-        this.source.playbackRate.value = value;
-        this._speed = this.source.playbackRate.value;
-    }
-
-    pause() {
-        if(!this.source) return;
-        this.source.playbackRate.value = 0;
-    }
-
-    resume() {
-        if(!this.source) return;
-        this.source.playbackRate.value = this._speed;
-    }
-
-    stop() {
-        if(!this.source) return;
-        try {
-            this.source.stop();
-        } catch (e) {
-            console.error("Error stopping audio source:", e);
-        }
-    }
-
-    disposeSource() {
-        this.stop();
-        if(this.source) {
-            this.source.disconnect();
-            this.source = null;
-        }
-    }
-
-    terminate() {
-        this.disposeSource();
-        if(this.gainNode) {
-            this.gainNode.disconnect();
-            this.gainNode = null;
-        }
-        this.parent.threads.delete(this);
-        this.parent = null;
-        this.sound = null;
-        this.options = null;
-        this.created = false;
-        this.source = null;
-        this.outputNode = null;
-        this.destroyed = true;
-    }
-}
-
-// WARNING: The following imports are just a stub, the actual build system is being worked on.
-
-/**
  * Media player class
  */
 class MediaPlayer {
@@ -2326,7 +1915,7 @@ class MediaPlayer {
 
     create(d){'use strict';var e0=document.createElement("div");e0.setAttribute("class","music-player toolbar-styled");var e1=document.createElement("img");e1.setAttribute("alt","Music cover background");e1.setAttribute("crossorigin","anonymous");e1.setAttribute("class","music-player-cover");e0.appendChild(e1);var e2=document.createElement("img");e2.setAttribute("alt","Music cover art");e2.setAttribute("crossorigin","anonymous");e2.setAttribute("class","music-player-art");e0.appendChild(e2);var e3=document.createElement("div");e3.setAttribute("class","music-player-container");var e4=document.createElement("div");e4.setAttribute("class","music-player-info");var e5=document.createElement("span");e5.setAttribute("class","text-overflow-nowrap music-player-title");var t6=document.createTextNode("Lorem Ipsum");e5.appendChild(t6);e4.appendChild(e5);var e7=document.createElement("span");e7.setAttribute("class","text-overflow-nowrap music-player-artist");var t8=document.createTextNode("Dolor Sit Amet");e7.appendChild(t8);e4.appendChild(e7);e3.appendChild(e4);var e9=document.createElement("div");e9.setAttribute("class","music-player-progress");var e10=document.createElement("div");e10.setAttribute("class","music-player-progress-bar");var e11=document.createElement("div");e11.setAttribute("class","music-player-progress-filled");e10.appendChild(e11);e9.appendChild(e10);e3.appendChild(e9);var e12=document.createElement("div");e12.setAttribute("class","music-player-controls");var e13=document.createElement("button");e13.setAttribute("ls-tooltip","");e13.setAttribute("aria-label","Like");e13.setAttribute("class","circle clear music-player-like");var e14=document.createElement("i");e14.setAttribute("class","bi-hand-thumbs-up");e13.appendChild(e14);e12.appendChild(e13);var e15=document.createElement("button");e15.setAttribute("ls-tooltip","");e15.setAttribute("aria-label","Previous");e15.setAttribute("class","circle clear music-player-prev");var e16=document.createElement("i");e16.setAttribute("class","bi-skip-start-fill");e15.appendChild(e16);e12.appendChild(e15);var e17=document.createElement("button");e17.setAttribute("ls-tooltip","");e17.setAttribute("aria-label","Play/Pause");e17.setAttribute("class","circle clear music-player-play-pause");var e18=document.createElement("i");e18.setAttribute("class","bi-play-fill");e17.appendChild(e18);e12.appendChild(e17);var e19=document.createElement("button");e19.setAttribute("ls-tooltip","");e19.setAttribute("aria-label","Next");e19.setAttribute("class","circle clear music-player-next");var e20=document.createElement("i");e20.setAttribute("class","bi-skip-end-fill");e19.appendChild(e20);e12.appendChild(e19);var e21=document.createElement("button");e21.setAttribute("ls-tooltip","Repeat Off");e21.setAttribute("aria-label","Toggle repeat modes");e21.setAttribute("class","circle clear music-player-repeat");var e22=document.createElement("i");e22.setAttribute("class","bi-arrow-repeat");e21.appendChild(e22);e12.appendChild(e21);e3.appendChild(e12);e0.appendChild(e3);var __rootValue=e0;return{root:__rootValue};}
 
-    init(){
+    async init(){
         if(this.initialized) return;
         this.initialized = true;
 
@@ -2543,34 +2132,6 @@ class MediaPlayer {
     }
 }
 
-
-
-const updateTimeElements = (element) => {
-    const now = new Date();
-    for(const el of element? [element]: timeElements) {
-        const format = el.getAttribute("format") || "HH:mm:ss"; // todo
-        el.textContent = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: format.includes("ss") ? "2-digit" : undefined });
-    }
-};
-
-const timeElements = new Set();
-customElements.define("ls-time", class TimeElement extends HTMLElement {
-    constructor() {
-        super();
-    }
-
-    connectedCallback() {
-        timeElements.add(this);
-        updateTimeElements(this);
-    }
-
-    disconnectedCallback() {
-        timeElements.delete(this);
-    }
-});
-
-setInterval(updateTimeElements, 1000);
-
 /**
  * Desktop class
  * Represents the virtual desktop environment and its components.
@@ -2591,9 +2152,21 @@ class LiDesktop extends LS.Context {
         super();
 
         const container = LS.SelectOrCreate('#app');
-        const target = LS.SelectOrCreate('#environment');
+        const target    = LS.SelectOrCreate('#environment', container);
+        const desktop   = LS.SelectOrCreate('#desktop', target);
 
-        this.windowManager = new LS.WindowManager({ target });
+        LS.Menu.addContextMenu(desktop, [
+            { label: "Change wallpaper", icon: "bi-image" },
+            { label: "Open terminal", icon: "bi-terminal" },
+            { type: "separator" },
+            { label: "Add", icon: "bi-plus-circle", items: [
+                { label: "Widget", icon: "bi-app-indicator" },
+            ] },
+            { type: "separator" },
+            { label: "Customization", icon: "bi-pencil-square" },
+        ]);
+
+        this.windowManager  = new LS.WindowManager({ target });
         this.screenSwitcher = new LS.Tabs(container, { list: false, selector: ":scope > ls-tab", slideAnimation: true });
 
         this.addExternalEventListener(this.windowManager, "window-created", (event) => this.updateTaskbars());
@@ -2601,8 +2174,9 @@ class LiDesktop extends LS.Context {
 
         // System sounds
         const base = "/assets/audio/system/sfx/";
-        this.soundBox = new SoundBox({
+        this.soundBox = new LS.SoundBox({
             volume: 0.5,
+            logger: kernel.logger,
             sounds: {
                 "click":           { src: base + "click_desk.ogg" },
                 "click_container": { src: base + "click_container.ogg" },
@@ -2773,6 +2347,7 @@ class LiDesktop extends LS.Context {
                         inner: accent === "white" ? LS.Create("i", { class: "bi-x-circle-fill" }) : null,
                         accent,
                         tooltip: accent === "white" ? "Reset": (accent.charAt(0).toUpperCase() + accent.slice(1)),
+                        effects: "spring,push",
                         onclick(){
                             LS.Color.setAccent(accent);
                         }
@@ -3470,6 +3045,7 @@ class LiDesktop extends LS.Context {
     _welcome(){
         this.closeToolbar(true);
         this.soundBox.play("system:startup");
+
         LS.Create("{Welcome to desktop mode}", {
     		style: "position: fixed; top: 50%; left: 50%; translate: -60% -50%; font-size: 4em; text-align: center; pointer-events: none; display: block; background: #0008; border-radius: 16px; padding: 4px 16px",
             parent: "top",
@@ -3500,17 +3076,18 @@ class LiDesktop extends LS.Context {
 
         this.musicPlayer.destroy();
         this.musicPlayer = null;
+
         if(this.frameScheduler) {
             this.frameScheduler.destroy();
             this.frameScheduler = null;
         }
 
         this.toolbars.clear();
+        super.destroy();
     }
 }
 
 // WARNING: The following imports are just a stub, the actual build system is being worked on.
-// import { SoundBox } from "./soundbox.mjs";
 // import { LiDesktop, MediaPlayer } from "./desktop.mjs";
 // import { LoggerContext, AssetManager, ContentContext, Viewport, Thread } from "./commons.mjs";
 // import { app } from "./shared.mjs";
@@ -6074,8 +5651,15 @@ class Environment {
             this.destroy();
         });
 
-        // First process (0)
-        this.proc = new Process();
+        // First process (0), haha systemd ...
+        this.proc = this.#k.createProcess({
+            wrapper: {
+                spawn() {},
+                terminate: () => {
+                    this.destroy();
+                }
+            }
+        });
 
         // Export default env variables
         // this.setEnv("SHELL", "/bin/bash"); // based on user
@@ -6087,8 +5671,6 @@ class Environment {
         // Mount drives/filesystems in fstab
         await this.initFsTab();
 
-        // // Read configuration files
-        // const cfg    = await this.#k.fileSystem.readFile("/etc/config.conf", "utf8");
 
         // // Parse config
         // const parsed = AtriumParser.parse(cfg, { asLookupTable: true })
@@ -6099,7 +5681,22 @@ class Environment {
         // const hosts  = await this.#k.fileSystem.readFile("/etc/hosts"       , "utf8");
 
         // Initialize desktop
-        app.desktop = new LiDesktop({ limited: !isDesktopModeEnabledAtStartup });
+
+        // Read configuration files
+        const cfg   = await this.#k.fileSystem.readFile("/etc/config.conf", "utf8");
+
+        this.#k.createProcess({
+            name: "LiDE desktop",
+            wrapper: {
+                spawn() {
+                    app.desktop = new LiDesktop({ limited: !isDesktopModeEnabledAtStartup, cfg });
+                },
+
+                terminate() {
+                    app.desktop.destroy();
+                }
+            }
+        });
     }
 
     async getUsers(passwd = null) {
@@ -6800,7 +6397,13 @@ const app = {
 
     // Destroy shared state
     destroyState() {
+        console.log("Destroying shared state");
+
         app.desktop.destroy();
+        app.events.events.clear();
+
+        delete window.app;
+        delete window.website;
     },
 
     /**
@@ -6865,8 +6468,10 @@ class Process {
     #pid = null;
     #fd = [];
 
-    constructor() {
-
+    constructor(options) {
+        if(options.wrapper) {
+            if(options.wrapper.spawn) options.wrapper.spawn();
+        }
     }
 
     /**
@@ -6902,15 +6507,21 @@ class Process {
         return utsname;
     }
 
-    fork() {}
+    fork() {
+        return this.createProcess({});
+    }
 
-    execve(path, argv, envp) {}
+    async execve(path, argv, envp) {
+        this.createProcess({ path, argv, envp });
+    }
 }
 
 
 /**
  * Kernel class
  * Main application kernel, handles global state, navigation, authentication, and content contexts.
+ * 
+ * todo: split LinuxJS kernel and website functionality.
  */
 const kernel = new class Kernel extends LS.Context {
     isKernel = true;
@@ -6918,16 +6529,19 @@ const kernel = new class Kernel extends LS.Context {
 
     fileSystem =   new RootFs(true);
 
+    processes    = [];
     threads =      new Set();
+
+    // todo: configurable
     MAX_THREADS = (navigator.hardwareConcurrency || 4) * 2;
 
-    contexts =     new Map();
-    viewports =    new Map();
+    contexts     = new Map();
+
+    // Website related
+    pageCache    = new Map();
     applications = new Map();
-    pageCache =    new Map();
-
+    viewports    = new Map();
     aliasMap =     new Map();
-
     appManifests = new Map();
 
     /**
@@ -6935,15 +6549,22 @@ const kernel = new class Kernel extends LS.Context {
      */
     env =  null;
 
-    queryParams = LS.Util.parseURLParams();
+    queryParams  = LS.Util.parseURLParams();
     userFragment = LS.Reactive.wrap("user", {});
 
     SPAExtensions = new LS.SPA.Matcher();
 
-    // scheduler = new class Scheduler {}
+    createProcess(options){
+        const proc = new Process(options);
+        this.processes.push(proc);
+
+        // todo: calculate next free PID & assign UID/GID
+        return proc;
+    }
 
     /**
-     * Auth/user provider
+     * Remote auth/user provider for lstv.space
+     * This is NOT local auth (see shared.mjs for local user (/etc/passwd, /etc/shadow, /etc/group) management)
      */
     auth = new class Auth extends LS.EventEmitter {
         #iframeURL = null;
@@ -7172,6 +6793,7 @@ const kernel = new class Kernel extends LS.Context {
 
     /**
      * Permission scope
+     * @experimental
      */
     #PermissionScope = class PermissionScope {
         constructor(permissions = []) {
@@ -7193,9 +6815,9 @@ const kernel = new class Kernel extends LS.Context {
 
         // Create a temporary filesystem
         this.fileSystem.mount(RootFs.PATH_SEPARATOR, (new TmpFs()).setData(DEFAULT_FS_DATA));
-        this.fileSystem.mount("/tmp", new TmpFs());
-        this.fileSystem.mount("/dev", new TmpFs());
-        this.fileSystem.mount("/run", (new TmpFs()).setData([["/lock", {}]]));
+        this.fileSystem.mount("/tmp",  new TmpFs());
+        this.fileSystem.mount("/dev",  new TmpFs());
+        this.fileSystem.mount("/run",  (new TmpFs()).setData([["/lock", {}]]));
         this.fileSystem.mount("/proc", new ProcFs());
         this.fileSystem.mount("/sys",  new SysFs());
         // (root can be then swapped with any other mount)
@@ -7529,6 +7151,10 @@ const kernel = new class Kernel extends LS.Context {
 
         for(const thread of this.threads.values()) {
             yield thread;
+        }
+
+        for(const process of this.processes) {
+            yield process;
         }
     }
 
@@ -7961,25 +7587,58 @@ const kernel = new class Kernel extends LS.Context {
         return p;
     }
 
+    info()  { this.logger.info(...arguments);  }
     log()   { this.logger.log(...arguments);   }
     warn()  { this.logger.warn(...arguments);  }
     error() { this.logger.error(...arguments); }
+    fatal() { this.logger.fatal(...arguments); }
 
+    /**
+     * Destroy the kernel and all its resources, starting from the top.
+     * The kernel is unusable after this and must not be referenced again.
+     */
     destroy() {
         if(this.destroyed) return;
-        for(const context of this.contexts.values()) {
-            context.destroy();
+
+        if(typeof window.app !== "undefined" && window.app.destroyState) {
+            window.app.destroyState();
         }
 
         for(const thread of this.threads.values()) {
             thread.destroy();
         }
-
-        app.destroyState();
-
-        this.contexts.clear();
         this.threads.clear();
+        this.threads = null;
+
+        // for(const process of this.processes) {
+        //     process.destroy();
+        // }
+        // this.processes = null;
+
+        for(const context of this.contexts.values()) {
+            context.destroy();
+        }
+        this.contexts.clear();
+        this.contexts = null;
+
+        for(const viewport of this.viewports.values()) {
+            viewport.destroy();
+        }
         this.viewports.clear();
+        this.viewports = null;
+
+        this.viewport.destroy();
+        this.viewport = null;
+
+        this.env.destroy();
+        this.env = null;
+
+        this.fileSystem.destroy();
+        this.fileSystem = null;
+
+        this.auth.destroy();
+        this.auth = null;
+
         this.pageCache.clear();
         this.aliasMap.clear();
         this.applications.clear();
@@ -7987,8 +7646,8 @@ const kernel = new class Kernel extends LS.Context {
         this.SPAExtensions.clear();
         this.logger.destroy();
         this.logger = null;
-        this.auth.destroy();
-        this.auth = null;
+        this.userFragment = null;
+        this.queryParams = null;
 
         super.destroy();
     }
@@ -7996,7 +7655,7 @@ const kernel = new class Kernel extends LS.Context {
 
 
 /**
- * Promise helper
+ * Misc promise wrapper helper for application openers
  */
 class OpenerPromise {
     loading(callback)   { if (callback) this._l = callback; return this; }

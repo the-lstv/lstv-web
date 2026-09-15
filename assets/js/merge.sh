@@ -6,7 +6,6 @@ FILES="
 src/init.mjs
 src/commons.mjs
 src/enums.mjs
-src/soundbox.mjs
 src/desktop.mjs
 src/fs.mjs
 src/sha512.mjs

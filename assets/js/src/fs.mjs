@@ -1,5 +1,4 @@
 // WARNING: The following imports are just a stub, the actual build system is being worked on.
-// import { SoundBox } from "./soundbox.mjs";
 // import { LiDesktop, MediaPlayer } from "./desktop.mjs";
 // import { LoggerContext, AssetManager, ContentContext, Viewport, Thread } from "./commons.mjs";
 // import { app } from "./shared.mjs";

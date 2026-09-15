@@ -1,6 +1,5 @@
 // WARNING: The following imports are just a stub, the actual build system is being worked on.
 import { TmpFs, RootFs } from "./fs.mjs";
-import { SoundBox } from "./soundbox.mjs";
 import { LiDesktop, MediaPlayer } from "./desktop.mjs";
 import { LoggerContext, AssetManager, ContentContext, Viewport, Thread } from "./commons.mjs";
 import { kernel } from "./kernel.mjs";
@@ -63,8 +62,15 @@ class Environment {
             this.destroy();
         });
 
-        // First process (0)
-        this.proc = new Process();
+        // First process (0), haha systemd ...
+        this.proc = this.#k.createProcess({
+            wrapper: {
+                spawn() {},
+                terminate: () => {
+                    this.destroy();
+                }
+            }
+        });
 
         // Export default env variables
         // this.setEnv("SHELL", "/bin/bash"); // based on user
@@ -76,8 +82,6 @@ class Environment {
         // Mount drives/filesystems in fstab
         await this.initFsTab();
 
-        // // Read configuration files
-        // const cfg    = await this.#k.fileSystem.readFile("/etc/config.conf", "utf8");
 
         // // Parse config
         // const parsed = AtriumParser.parse(cfg, { asLookupTable: true })
@@ -88,7 +92,22 @@ class Environment {
         // const hosts  = await this.#k.fileSystem.readFile("/etc/hosts"       , "utf8");
 
         // Initialize desktop
-        app.desktop = new LiDesktop({ limited: !isDesktopModeEnabledAtStartup });
+
+        // Read configuration files
+        const cfg   = await this.#k.fileSystem.readFile("/etc/config.conf", "utf8");
+
+        this.#k.createProcess({
+            name: "LiDE desktop",
+            wrapper: {
+                spawn() {
+                    app.desktop = new LiDesktop({ limited: !isDesktopModeEnabledAtStartup, cfg });
+                },
+
+                terminate() {
+                    app.desktop.destroy();
+                }
+            }
+        });
     }
 
     async getUsers(passwd = null) {
@@ -789,7 +808,13 @@ const app = {
 
     // Destroy shared state
     destroyState() {
+        console.log("Destroying shared state");
+
         app.desktop.destroy();
+        app.events.events.clear();
+
+        delete window.app;
+        delete window.website;
     },
 
     /**

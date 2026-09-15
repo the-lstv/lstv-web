@@ -52,8 +52,11 @@ html, body {
     }
 
     .toolbar {
-        right: unset;
         bottom: 0;
+    }
+
+    #toolbarMenu, #loginPopup {
+        right: unset;
         left: 0;
     }
 
@@ -88,6 +91,7 @@ body:not(.low-performance-mode).lsweb-desktop-mode {
 
 #wallpaper {
     position: absolute;
+    pointer-events: none;
     inset: 0;
 }
 
@@ -122,6 +126,15 @@ body {
     flex: 1;
     overflow: hidden;
     position: relative;
+    pointer-events: none;
+
+    .page {
+        pointer-events: initial;
+    }
+}
+
+#viewport .page[file-scope="a1ff572d5f613539"] {
+    pointer-events: none !important;
 }
 
 .link-preview-popout {
@@ -994,6 +1007,23 @@ main > div {
     background: var(--elevate-1);
 }
 
+.terminal-line.level-info {
+    color: var(--surface-8);
+}
+
+.terminal-line.level-warn {
+    color: orange;
+}
+
+.terminal-line.level-error {
+    color: rgb(237, 60, 60);
+}
+
+.terminal-line.level-fatal {
+    color: red;
+    font-weight: bold;
+}
+
 #commandPaletteBar {
     display: flex;
     align-items: center;
@@ -1088,7 +1118,7 @@ main > div {
     max-height: 300px;
     overflow: auto;
     padding: 5px;
-    border-radius: var(--border-radius);
+    border-radius: var(--border-radius-medium);
     outline: 1px solid var(--surface-2);
     box-shadow: 0 10px 20px 0 rgba(0, 0, 0, .1333333333);
 }
@@ -1103,7 +1133,7 @@ main > div {
     border: 1px solid transparent;
     display: flex;
     gap: 8px;
-    border-radius: var(--border-radius-small);
+    border-radius: var(--border-radius);
     align-items: center;
     white-space: nowrap;
 }
@@ -1117,7 +1147,7 @@ main > div {
 }
 
 .completion-description {
-    color: gray;
+    color: var(--surface-8);
 }
 
 .completion-item:hover {
@@ -1130,12 +1160,12 @@ main > div {
 
 .completion-item.selected {
     background: var(--surface-4);
-    border: 1px solid var(--accent);
+    // border: 1px solid var(--accent);
 }
 
 [ls-theme=light] .completion-item.selected {
     background: var(--surface-0);
-    border: 1px solid var(--accent-80);
+    // border: 1px solid var(--accent-80);
 }
 
 .command-hint {
