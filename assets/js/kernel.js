@@ -2167,7 +2167,7 @@ class LiDesktop extends LS.Context {
         ]);
 
         this.windowManager  = new LS.WindowManager({ target });
-        this.screenSwitcher = new LS.Tabs(container, { list: false, selector: ":scope > ls-tab", slideAnimation: true });
+        this.screenSwitcher = new LS.Tabs(container, { list: false, selector: ":scope > ls-tab", slideAnimation: false });
 
         this.addExternalEventListener(this.windowManager, "window-created", (event) => this.updateTaskbars());
         this.addExternalEventListener(this.windowManager, "window-closed", (event) => this.updateTaskbars());
@@ -2636,16 +2636,16 @@ class LiDesktop extends LS.Context {
     }
 
     updatePanelLayout() {
-        const navPadding = 28 + 5;
+        // const navPadding = 28 + 5;
         const gap = 10;
 
-        const nav =        LS.SelectOrCreate("#primaryPanel");
+        // const nav =        LS.SelectOrCreate("#primaryPanel");
         const container =  LS.SelectOrCreate(".headerButtons");
         const menu =       LS.SelectOrCreate("#toolbarMore");
         const moreButton = LS.SelectOrCreate("#moreButton");
 
-        const availableSpace = nav.clientWidth - navPadding - gap - moreButton.clientWidth - (nav.firstElementChild?.clientWidth || 0);
-        const moreButtonClientWidth = moreButton.clientWidth;
+        // const availableSpace = nav.clientWidth - navPadding - gap - moreButton.clientWidth - (nav.firstElementChild?.clientWidth || 0);
+        // const moreButtonClientWidth = moreButton.clientWidth;
 
         // Try to batch appends (god i hate the dom api SO much)
         let frag, menuFrag;
@@ -2667,12 +2667,14 @@ class LiDesktop extends LS.Context {
                     if(component.label === "Account") assumedWidth += 46;
                     if(component.showLabel) assumedWidth += (buttonLabel ? (typeof buttonLabel === "string" ? 8 * buttonLabel.length : 16) : 16);
 
-                    item.element = LS.Create("button.toolbar-button.pill.elevated[aria-label='" + component.description + "']", {
+                    item.element = LS.Create("button", {
+                        class: "toolbar-button pill elevated",
+                        attributes: { "aria-label": component.description },
                         tooltip: component.tooltip || component.label,
                         inner: component.showLabel !== false? [icon, { tag: "span", inner: buttonLabel, class: typeof buttonLabel === "string" ? "label" : "" }]: icon,
                         onclick: component.onClick.bind(this) || null
                     });
-                    
+
                     // Browser layout rendering is an absolutely incompetent piece of crap
                     // so we need to guess the width to avoid the render>wait>read>render hell
                     // Of course this opens up a whole bunch of other possible problems
