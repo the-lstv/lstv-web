@@ -7,7 +7,7 @@ import { LoggerContext, AssetManager, ContentContext, Viewport, Thread } from ".
 import { app } from "./shared.mjs";
 import { kernel } from "./kernel.mjs";
 
-const KERNEL_VERSION = (typeof __buildVersion !== "undefined")? __buildVersion: "1.3.0-dev";
+const KERNEL_VERSION = (typeof __buildVersion !== "undefined")? __buildVersion: "1.3.1-dev";
 
 // TODO:
 const BUILTIN_APPS = [

@@ -14,7 +14,7 @@ try {
 
 // WARNING: The following imports are just a stub, the actual build system is being worked on.
 
-const KERNEL_VERSION = (typeof __buildVersion !== "undefined")? __buildVersion: "1.3.0-dev";
+const KERNEL_VERSION = (typeof __buildVersion !== "undefined")? __buildVersion: "1.3.1-dev";
 
 // TODO:
 const BUILTIN_APPS = [
@@ -7354,7 +7354,7 @@ const kernel = new class Kernel extends LS.Context {
 
     async _initializeCommandPalette() {
         if (this._initializingPalette || app.desktop.commandPalette) return;
-        const CommandPaletteExports = (await import("/~/assets/js/pallete2.mjs?1.5"));
+        const CommandPaletteExports = (await import("/~/assets/js/pallete.mjs?2.0"));
         CommandPaletteExports.init(this, app.desktop, LoggerContext);
         console.log("Command palette initialized");
     }
