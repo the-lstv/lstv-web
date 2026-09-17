@@ -52,14 +52,14 @@ const BUILTIN_APPS = [
         "version": "1.0.0",
         "main": "texteditor.mjs?0"
     },
-    // {
-    //     "name": "Store",
-    //     "id": "store",
-    //     "icon": "8951e30e03967e75.svg",
-    //     "description": "Get more apps and extensions!",
-    //     "version": "1.0.0",
-    //     "main": "store.mjs"
-    // },
+    {
+        "name": "Store",
+        "id": "store",
+        "icon": "8951e30e03967e75.svg",
+        "description": "Get more apps and extensions!",
+        "version": "1.0.0",
+        "main": "store.mjs"
+    },
     // {
     //     "name": "Media Center",
     //     "id": "media-center",
@@ -84,14 +84,14 @@ const BUILTIN_APPS = [
     //     "version": "1.0.0",
     //     "main": "music-player.mjs"
     // },
-    // {
-    //     "name": "File Manager",
-    //     "id": "file-manager",
-    //     "icon": "15043b26b7df5e3b.svg",
-    //     "description": "Manage your files.",
-    //     "version": "1.0.0",
-    //     "main": "file-manager.mjs"
-    // },
+    {
+        "name": "File Manager",
+        "id": "file-manager",
+        "icon": "15043b26b7df5e3b.svg",
+        "description": "Manage your files.",
+        "version": "1.0.0",
+        "main": "file-manager.mjs"
+    },
     // {
     //     "name": "Terminal",
     //     "id": "terminal",
@@ -100,14 +100,14 @@ const BUILTIN_APPS = [
     //     "version": "1.0.0",
     //     "main": "terminal.mjs"
     // },
-    // {
-    //     "name": "Calculator",
-    //     "id": "calculator",
-    //     "icon": "f0fb502ae0964022.svg",
-    //     "description": "Perform various calculations.",
-    //     "version": "1.0.0",
-    //     "main": "calculator.mjs"
-    // },
+    {
+        "name": "Calculator",
+        "id": "calculator",
+        "icon": "f0fb502ae0964022.svg",
+        "description": "Perform various calculations.",
+        "version": "1.0.0",
+        "main": "calculator.mjs"
+    },
     // {
     //     "name": "WebView",
     //     "id": "webview",

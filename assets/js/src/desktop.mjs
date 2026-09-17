@@ -1152,19 +1152,19 @@ class LiDesktop extends LS.Context {
         this.closeToolbar(true);
         this.soundBox.play("system:startup");
 
-        LS.Create("{Welcome to desktop mode}", {
-    		style: "position: fixed; top: 50%; left: 50%; translate: -60% -50%; font-size: 4em; text-align: center; pointer-events: none; display: block; background: #0008; border-radius: 16px; padding: 4px 16px",
-            parent: "top",
-            ephemeral: true,
-            animationOptions: { duration: 6000, easing: "ease" },
-            animation: [
-                { opacity: 0, offset: 0, filter: "blur(60px)" },
-                { opacity: 1, offset: 0.25, filter: "blur(5px)" },
-                { opacity: 1, offset: 0.50, filter: "blur(0)" },
-                { opacity: 1, offset: 0.94 },
-                { opacity: 0, translate: "-40% -50%", offset: 1 }
-            ],
-        });
+        // LS.Create("{Welcome to desktop mode}", {
+    	// 	style: "position: fixed; top: 50%; left: 50%; translate: -60% -50%; font-size: 4em; text-align: center; pointer-events: none; display: block; background: #0008; border-radius: 16px; padding: 4px 16px",
+        //     parent: "top",
+        //     ephemeral: true,
+        //     animationOptions: { duration: 6000, easing: "ease" },
+        //     animation: [
+        //         { opacity: 0, offset: 0, filter: "blur(60px)" },
+        //         { opacity: 1, offset: 0.25, filter: "blur(5px)" },
+        //         { opacity: 1, offset: 0.50, filter: "blur(0)" },
+        //         { opacity: 1, offset: 0.94 },
+        //         { opacity: 0, translate: "-40% -50%", offset: 1 }
+        //     ],
+        // });
     }
 
     /**

@@ -1,3 +1,145 @@
+const STYLE = `
+.clock-app {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    background: var(--background);
+}
+.clock-app .tab-bar {
+    display: flex;
+    justify-content: center;
+    padding: 10px 0;
+    gap: 6px;
+}
+.clock-app .tab {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    min-height: 0;
+}
+.clock-app .time {
+    margin: 0;
+    font-size: 4em;
+    font-family: "JetBrains Mono", Poppins, sans-serif;
+}
+.clock-app .clock-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+}
+.clock-app .clock-panel:not(.clock-world) {
+    justify-content: center;
+}
+.clock-app .clock-controls {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.clock-app .clock-time-editor {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.clock-app .clock-time-stepper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+.clock-app .clock-time-value {
+    min-width: 70px;
+    text-align: center;
+    font-family: "JetBrains Mono", Poppins, sans-serif;
+    font-size: 1.4em;
+    padding: 4px 8px;
+    border-radius: var(--border-radius-small);
+    background: var(--surface-2);
+    outline: none;
+}
+.clock-app .clock-time-sep {
+    font-size: 2em;
+    font-family: "JetBrains Mono", Poppins, sans-serif;
+}
+.clock-app .clock-time-label {
+    opacity: 0.7;
+    font-size: 0.9em;
+}
+.clock-app .clock-laps {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    max-width: 360px;
+    padding: 0 8px 10px;
+    max-height: 180px;
+    overflow-y: auto;
+}
+.clock-app .clock-lap-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-radius: var(--border-radius-small);
+    background: var(--surface-2);
+    font-family: "JetBrains Mono", Poppins, sans-serif;
+}
+.clock-app .clock-laps-empty {
+    margin: 0;
+    opacity: 0.7;
+    text-align: center;
+}
+.clock-app .clock-world {
+    padding: 12px 24px;
+    align-items: stretch;
+}
+.clock-app .clock-world-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-bottom: 10px;
+}
+.clock-app .clock-world-row {
+    display: flex;
+    justify-content: space-between;
+}
+.clock-app .clock-world-city {
+    font-weight: 600;
+}
+.clock-app .clock-world-time {
+    font-family: "JetBrains Mono", Poppins, sans-serif;
+    background: var(--accent-mix-40);
+}
+
+@container ls-view (height < 200px) {
+    .clock-app .tab-bar {
+        display: none;
+    }
+}
+
+@container ls-view (width < 520px) {
+    .clock-tab-button div {
+        display: none;
+    }
+
+    .clock-app .time {
+        font-size: 2em;
+    }
+
+    .clock-app {
+        background: color-mix(in oklab, var(--background), transparent 40%);
+        backdrop-filter: blur(8px);
+    }
+}
+`;
+
 class ClockApp extends website.ContentContext {
     constructor() {
         super({
@@ -228,147 +370,7 @@ class ClockApp extends website.ContentContext {
                     }
                 ] },
 
-                { tag: "style", inner: `
-.clock-app {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    height: 100%;
-    background: var(--background);
-}
-.clock-app .tab-bar {
-    display: flex;
-    justify-content: center;
-    padding: 10px 0;
-    gap: 6px;
-}
-.clock-app .tab {
-    display: flex;
-    width: 100%;
-    height: 100%;
-    align-items: center;
-    justify-content: center;
-    min-width: 0;
-    min-height: 0;
-}
-.clock-app .time {
-    margin: 0;
-    font-size: 4em;
-    font-family: "JetBrains Mono", Poppins, sans-serif;
-}
-.clock-app .clock-panel {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-}
-.clock-app .clock-panel:not(.clock-world) {
-    justify-content: center;
-}
-.clock-app .clock-controls {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-.clock-app .clock-time-editor {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-.clock-app .clock-time-stepper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-}
-.clock-app .clock-time-value {
-    min-width: 70px;
-    text-align: center;
-    font-family: "JetBrains Mono", Poppins, sans-serif;
-    font-size: 1.4em;
-    padding: 4px 8px;
-    border-radius: var(--border-radius-small);
-    background: var(--surface-2);
-    outline: none;
-}
-.clock-app .clock-time-sep {
-    font-size: 2em;
-    font-family: "JetBrains Mono", Poppins, sans-serif;
-}
-.clock-app .clock-time-label {
-    opacity: 0.7;
-    font-size: 0.9em;
-}
-.clock-app .clock-laps {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    width: 100%;
-    max-width: 360px;
-    padding: 0 8px 10px;
-    max-height: 180px;
-    overflow-y: auto;
-}
-.clock-app .clock-lap-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 12px;
-    border-radius: var(--border-radius-small);
-    background: var(--surface-2);
-    font-family: "JetBrains Mono", Poppins, sans-serif;
-}
-.clock-app .clock-laps-empty {
-    margin: 0;
-    opacity: 0.7;
-    text-align: center;
-}
-.clock-app .clock-world {
-    padding: 12px 24px;
-    align-items: stretch;
-}
-.clock-app .clock-world-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding-bottom: 10px;
-}
-.clock-app .clock-world-row {
-    display: flex;
-    justify-content: space-between;
-}
-.clock-app .clock-world-city {
-    font-weight: 600;
-}
-.clock-app .clock-world-time {
-    font-family: "JetBrains Mono", Poppins, sans-serif;
-    background: var(--accent-mix-40);
-}
-
-@container ls-view (height < 200px) {
-    .clock-app .tab-bar {
-        display: none;
-    }
-}
-
-@container ls-view (width < 520px) {
-    .clock-tab-button div {
-        display: none;
-    }
-
-    .clock-app .time {
-        font-size: 2em;
-    }
-
-    .clock-app {
-        background: color-mix(in oklab, var(--background), transparent 40%);
-        backdrop-filter: blur(8px);
-    }
-}
-    `           }
+                { tag: "style", inner: STYLE }
             ]
         });
 

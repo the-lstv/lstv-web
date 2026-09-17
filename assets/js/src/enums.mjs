@@ -192,4 +192,6 @@ class Enums  {
     }
 }
 
+globalThis.LJSEnums = Enums;
+
 export { Enums }

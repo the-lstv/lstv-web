@@ -465,13 +465,62 @@ function init(kernel, desktop, LoggerContext) {
         },
 
         {
-            name: "lm",
-            alias: ["assistant"],
-            icon: "bi-robot",
-            description: "Assistant",
-            onCalled(text) { terminalWriter.log(text || "") },
-            inputs: [{ name: "text", type: "string", description: "Text" }]
+            name: "read",
+            icon: "bi-book",
+            description: "Read a file",
+            onCalled(path) {
+                if(!path) {
+                    terminalWriter.error("No path provided");
+                    return;
+                }
+
+                kernel.fileSystem.readFile(path, "utf8")
+                    .then(content => {
+                        terminalWriter.log(content);
+                    })
+                    .catch(err => {
+                        let error = err.message || err;
+                        terminalWriter.error(`Failed to read ${path}: ${error}`);
+                    });
+            },
+            inputs: [
+                { name: "path", type: "path", description: "Path to the file" }
+            ]
         },
+
+        {
+            name: "write",
+            icon: "bi-pencil",
+            description: "Write to a file",
+            onCalled(path, content) {
+                if(!path) {
+                    terminalWriter.error("No path provided");
+                    return;
+                }
+
+                kernel.fileSystem.writeFile(path, content)
+                    .then(() => {
+                        terminalWriter.log(`Successfully wrote to ${path}`);
+                    })
+                    .catch(err => {
+                        let error = err.message || err;
+                        terminalWriter.error(`Failed to write to ${path}: ${error}`);
+                    });
+            },
+            inputs: [
+                { name: "path", type: "path", description: "Path to the file" },
+                { name: "content", type: "string", description: "Content to write" }
+            ]
+        },
+
+        // {
+        //     name: "lm",
+        //     alias: ["assistant"],
+        //     icon: "bi-robot",
+        //     description: "Assistant",
+        //     onCalled(text) { terminalWriter.log(text || "") },
+        //     inputs: [{ name: "text", type: "string", description: "Text" }]
+        // },
 
         {
             name: "clear",

@@ -91,31 +91,33 @@ class Stats {
         return this.mode & Enums.S_IFMT;
     }
 
-    get isFile() {
+    // For whatever reason Node.js uses methods instead of getters
+
+    isFile() {
         return this.type === Enums.S_IFREG;
     }
 
-    get isDirectory() {
+    isDirectory() {
         return this.type === Enums.S_IFDIR;
     }
 
-    get isSymlink() {
+    isSymlink() {
         return this.type === Enums.S_IFLNK;
     }
 
-    get isBlockDevice() {
+    isBlockDevice() {
         return this.type === Enums.S_IFBLK;
     }
 
-    get isCharacterDevice() {
+    isCharacterDevice() {
         return this.type === Enums.S_IFCHR;
     }
 
-    get isFIFO() {
+    isFIFO() {
         return this.type === Enums.S_IFIFO;
     }
 
-    get isSocket() {
+    isSocket() {
         return this.type === Enums.S_IFSOCK;
     }
 
@@ -147,6 +149,27 @@ class Stats {
             setgid:  !!(mode & 0o2000),
             sticky:  !!(mode & 0o1000),
         }
+    }
+}
+
+/**
+ * Dirent
+ * @see https://www.man7.org/linux/man-pages/man3/readdir.3.html
+ */
+class Dirent {
+    // d_ino = 0;    // Inode number (not applicable here)
+    // d_off = 0;    // Offset to the next dirent (not applicable here)
+    // d_reclen = 0; // Length of this record (not applicable here)
+    d_type = 0;   // Type of file (not always supported)
+    d_name = "";  // Name of the entry
+}
+
+class FsError extends Error {
+    code = 0;
+
+    constructor(code, message) {
+        super(message || Enums.errCode(code));
+        this.code = code;
     }
 }
 
@@ -546,7 +569,7 @@ class RootFs {
             try {
                 let stat = await this.stat(mountPoint, Enums.XO_STATONLY | Enums.XO_IGNORE_NO_FS);
                 if(stat !== -1) {
-                    if(stat.isFile) return Enums.errno.ENOTDIR;
+                    if(stat.isFile()) return Enums.errno.ENOTDIR;
                 }
             } catch(e) {
                 console.log(e);
@@ -620,23 +643,32 @@ class RootFs {
             const fs = ent[1];
 
             if(dirWithSep.startsWith(mp)) {
+                if(!fs || typeof fs.open !== "function") {
+                    throw new Error("Invalid filesystem mounted at " + mp);
+                }
+
                 dir = "/" + dir.slice(mp.length); // Remove mountpoint from directory
                 const fd = await fs.open(dir, flags, mode, extraFlags, extraData);
-                if(!fd || typeof fd === "number") throw new Error(Enums.errCode(fd) + " when opening path: " + dir);
+                if(!fd || typeof fd === "number") throw new FsError(fd);
                 return fd;
             }
         }
 
         if(!(extraFlags & Enums.XO_IGNORE_NO_FS))
-            throw new Error("No filesystem available to satisfy request");
+            throw new FsError(Enums.errno.ENOENT, "No filesystem mounted at " + dir + " to satisfy the request");
         else return -1;
     }
 
     async readDir(dir, extraFlags = Enums.XO_READ_DIR, close = true) {
         const fd = await this.open(dir, Enums.O_RDONLY, null, extraFlags);
-        const data = await fd._fs.readDir(fd, extraFlags);
-        if(close) fd._fs.close(fd);
-        return data;
+        try {
+            return await fd._fs.readDir(fd, extraFlags);
+        } catch(e) {
+            console.error("Error reading directory: ", e);
+            throw e;
+        } finally {
+            if(close) fd._fs.close(fd);
+        }
     }
 
     /**
@@ -648,11 +680,16 @@ class RootFs {
      * @param {*} close Whether to close the file descriptor after reading
      * @returns {*} Data read
      */
-    async read(fd, first = 0, nbytes = -1, encoding = RootFs.ENCODING.utf8, close = true) {
-        if(!fd || !fd._fs) throw new Error(Enums.errno.EBADF);
-        const data = await fd._fs.read(fd, first, nbytes, typeof encoding === "string"? RootFs.ENCODING[encoding]: encoding);
-        if(close) fd._fs.close(fd);
-        return data;
+    async read(fd, first = 0, nbytes = -1, encoding = RootFs.ENCODING.binary, close = true) {
+        if(!fd || !fd._fs) throw new FsError(Enums.errno.EBADF);
+        try {
+            return await fd._fs.read(fd, first, nbytes, typeof encoding === "string"? RootFs.ENCODING[encoding]: encoding);
+        } catch(e) {
+            console.error("Error reading from fd: ", e);
+            throw e;
+        } finally {
+            if(close) fd._fs.close(fd);
+        }
     }
 
     /**
@@ -665,10 +702,15 @@ class RootFs {
      * @returns {*} Number of bytes written
      */
     async write(fd, newData, first = 0, nbytes = -1, close = true) {
-        if(!fd || !fd._fs) throw new Error(Enums.errno.EBADF);
-        const nbytesWritten = await fd._fs.write(fd, newData, first, nbytes);
-        if(close) fd._fs.close(fd);
-        return nbytesWritten;
+        if(!fd || !fd._fs) throw new FsError(Enums.errno.EBADF);
+        try {
+            return await fd._fs.write(fd, newData, first, nbytes);
+        } catch(e) {
+            console.error("Error writing to fd: ", e);
+            throw e;
+        } finally {
+            if(close) fd._fs.close(fd);
+        }
     }
 
     /**
@@ -681,7 +723,12 @@ class RootFs {
      */
     async readFile(dir, encoding, options = {}) {
         const fd = await this.open(dir);
-        return await this.read(fd, options.start ?? 0, options.nbytes ?? -1, encoding, options.close ?? true);
+        try {
+            return await this.read(fd, options.start ?? 0, options.nbytes ?? -1, encoding, options.close ?? true);
+        } catch(e) {
+            if(options.close ?? true) await this.close(fd);
+            throw e;
+        }
     }
 
     /**
@@ -702,7 +749,7 @@ class RootFs {
     }
 
     async close(fd) {
-        if(!fd || !fd._fs) throw new Error(Enums.errno.EBADF);
+        if(!fd || !fd._fs) throw new FsError(Enums.errno.EBADF);
         return await fd._fs.close(fd);
     }
 
@@ -725,7 +772,7 @@ class RootFs {
 
         if(fd < 0) {
             if(extraFlags & Enums.XO_IGNORE_NO_FS) return -1;
-            throw new Error(Enums.errno.EBADF);
+            throw new FsError(Enums.errno.EBADF);
         }
 
         if(fd === stat) return stat; // ""fast stat"" via the special flag
@@ -734,6 +781,12 @@ class RootFs {
         return stat;
     }
 
+    /**
+     * Removes a file or directory.
+     * @param {*} dir Path to the file or directory to remove.
+     * @param {*} options More options.
+     * @returns {*} Promise resolving to the result of the operation.
+     */
     async unlink(dir, options = {}) {
         const fd = await this.open(dir, Enums.O_WRONLY);
         const result = await fd._fs.unlink(fd);
@@ -908,18 +961,24 @@ class TmpFs {
      */
     checkFd(fd, kind) {
         if (!fd || !fd._fs || !fd.data || fd.closed) {
-            throw new Error(Enums.errno.EBADF);
+            throw new FsError(Enums.errno.EBADF);
+        }
+
+        if(!fd.data.mode) {
+            // throw new FsError(Enums.errno.EINVAL);
+            // todo: this should be normalized beforehand
+            fd.data.mode = Enums.S_IFDIR | 0o555;
         }
 
         const type = Stats.typeOf(fd.data.mode);
         const isFile = type !== Enums.S_IFDIR;
 
         if (kind === 1 && isFile) {
-            throw new Error(Enums.errno.ENOTDIR);
+            throw new FsError(Enums.errno.ENOTDIR);
         }
 
         if (kind === 0 && !isFile) {
-            throw new Error(Enums.errno.EISDIR);
+            throw new FsError(Enums.errno.EISDIR);
         }
     }
 
@@ -969,13 +1028,13 @@ class TmpFs {
         this.checkFd(fd, 0);
 
         if (!fd.readable) {
-            throw new Error(Enums.errno.EBADF);
+            throw new FsError(Enums.errno.EBADF);
         }
 
         const data = fd.data;
 
         if (first < 0) {
-            throw new Error(Enums.errno.EINVAL);
+            throw new FsError(Enums.errno.EINVAL);
         }
 
         if (first > data.contents.length) {
@@ -1004,9 +1063,25 @@ class TmpFs {
     readDir(fd, extraFlags) {
         this.checkFd(fd, 1);
 
-        const data = fd.data;
-        // idk.
-        return [];
+        const dir = RootFs.ensureTrailing(fd.ndir);
+
+        const entries = [];
+
+        // todo: optimize & make it not O(n)
+
+        for(let [ndir, ent] of this.fs.entries()) {
+            ndir = RootFs.ensureTrailing(ndir);
+
+            if(ndir === dir) continue;
+            if(!ndir.startsWith(dir)) continue;
+
+            const relativePath = ndir.slice(dir.length, ndir.length - 1);
+            if(relativePath.includes(RootFs.PATH_SEPARATOR)) continue;
+
+            entries.push(relativePath);
+        }
+
+        return entries;
     }
 
 
@@ -1028,7 +1103,7 @@ class TmpFs {
         this.checkFd(fd, 0);
 
         if (!fd.writable) {
-            throw new Error(Enums.errno.EBADF);
+            throw new FsError(Enums.errno.EBADF);
         }
 
         const data = fd.data;
@@ -1055,7 +1130,7 @@ class TmpFs {
         }
 
         if (first < 0) {
-            throw new Error(Enums.errno.EINVAL);
+            throw new FsError(Enums.errno.EINVAL);
         }
 
         if (nbytes === -1) {
@@ -1086,7 +1161,7 @@ class TmpFs {
             }
 
             if (!(newData instanceof Uint8Array)) {
-                throw new Error(Enums.errno.EINVAL);
+                throw new FsError(Enums.errno.EINVAL);
             }
 
             const requiredLength = first + actualBytes;
@@ -1141,7 +1216,7 @@ class TmpFs {
             return writeSize;
         }
 
-        throw new Error(Enums.errno.EINVAL);
+        throw new FsError(Enums.errno.EINVAL);
     }
 
 
@@ -1279,7 +1354,7 @@ class HttpFs {
     async open(ndir, flags, mode = Enums.S_IFREG | 0o644, extraFlags = 0, extraData = undefined) {
         // HttpFs is read-only, so we only support reading files.
         if(flags & (Enums.O_WRONLY | Enums.O_RDWR | Enums.O_CREAT | Enums.O_TRUNC | Enums.O_APPEND)) {
-            throw new Error(Enums.errno.EROFS);
+            throw new FsError(Enums.errno.EROFS);
         }
 
         // We just return a file descriptor object.
@@ -1391,7 +1466,7 @@ class NullFs {
     stat(fd, out, ncheck = false) {
         if(!ncheck) {
             if (!fd || !fd._fs || !fd.data || fd.closed) {
-                throw new Error(Enums.errno.EBADF);
+                throw new FsError(Enums.errno.EBADF);
             }
         }
 
@@ -1419,4 +1494,6 @@ for(const fs of [TmpFs, MemFs, LocalStorageFs, RemoteFs, IndexedDbFs, WasmFs, Pr
     RootFs.fsTypes[fs.fsType] = fs;
 }
 
-export { Stats, RootFs, DEFAULT_FS_DATA, TmpFs, MemFs, LocalStorageFs, RemoteFs, IndexedDbFs, WasmFs, ProcFs, SysFs, NullFs, HttpFs }
+globalThis.RootFs = RootFs;
+
+export { Stats, Dirent, FsError, RootFs, DEFAULT_FS_DATA, TmpFs, MemFs, LocalStorageFs, RemoteFs, IndexedDbFs, WasmFs, ProcFs, SysFs, NullFs, HttpFs }
