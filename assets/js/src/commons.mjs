@@ -96,7 +96,7 @@ const AssetManager = new class {
 
             // Yeah, hardcoding is not the best idea
             // But this needs to filter all persistent assets
-            if(asset.classList.contains("whitelist") || key.includes("/ls/") || key.includes("bootstrap-icons") || key.includes("fonts.googleapis.com") || key.includes("/assets/js/kernel.js") || key.includes("/assets/css/main.") || key.includes("/assets/js/pallete.js")) {
+            if(asset.classList.contains("whitelist") || key.includes("/ls/") || key.includes("bootstrap-icons") || key.includes("fonts.googleapis.com") || key.includes("/assets/js/kernel.js") || key.includes("/assets/css/main.") || key.includes("/assets/js/palette.js")) {
                 this.whitelist.add(key);
             } else {
                 if(asset instanceof HTMLLinkElement) {

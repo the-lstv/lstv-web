@@ -16,6 +16,11 @@
     @import("/~/templates/head.css") { as: inline-style; class: "whitelist" }
 
     <script .whitelist>
+        // TEMPORARY client-side redirect
+        if(location.origin === "https://extragon.cloud") {
+            location.replace("https://lstv.space" + location.pathname + location.search + location.hash);
+        }
+
         window.__loadTime = Date.now();
         window.__init = [];
         window.LS_INIT_OPTIONS = {

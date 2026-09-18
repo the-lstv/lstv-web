@@ -37,7 +37,7 @@ class ApplicationsHandler extends LS.Context {
             }
 
             const listElement = this.loadingSwitch.frontElement;
-            listElement.innerHTML = "";
+            listElement.replaceChildren();
 
             for (let app of response) {
                 if(!app.previewElement) app.previewElement = LS.Create("a", {

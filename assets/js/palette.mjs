@@ -7,56 +7,39 @@
 function init(kernel, desktop, LoggerContext) {
     const topBar = LS.SelectOne("#topOverlay");
 
-    topBar.innerHTML = `<div id="commandTerminal" class="level-n3" style="display: none">
-    <div class="terminal-output"></div>
-</div>
-
-<div id="commandPaletteBar" class="level-n3">
-    <div id="commandPalette" onclick="this.querySelector('.command-input').focus()">
-        <div class="completion-menu"></div>
-
-        <i class="bi-terminal command-icon"></i>
-
-        <div class="textContainer">
-            <span class="command-selection"></span>
-            <span class="command-caret"></span>
-            <span class="command-text"></span><span class="command-hint"></span>
-            <input type="text" class="command-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Command palette input">
-        </div>
-    </div>
-
-    <div class="command-palette-buttons">
+    topBar.innerHTML = `<div id="commandTerminal" class="level-n3" style="display: none"><div class="terminal-output"></div></div>
+<div class="ls-command-palette-wrapper level-n3">
+    <div class="ls-command-palette"></div>
+    <div class="ls-command-palette-buttons">
         <button ls-tooltip="Close" class="square clear" aria-label="Close command palette"><i class="bi-x-lg"></i></button>
     </div>
 </div>`;
 
-    const paletteBar = LS.SelectOne("#commandPaletteBar");
-    const paletteContainer = LS.SelectOne("#commandPalette");
+    const paletteBar = LS.SelectOne(".ls-command-palette-wrapper");
     const terminalContainer = LS.SelectOne("#commandTerminal");
-    const terminalOutput = terminalContainer.querySelector(".terminal-output");
 
-    const paletteLogger = new LoggerContext("Command Palette");
+    const paletteContainer = LS.SelectOne(".ls-command-palette");
+
+    const terminalOutput = terminalContainer.querySelector(".terminal-output");
+    const log = {
+        info : (...a) => LS.CommandPalette.writeLogTo(terminalOutput, 0, ...a),
+        log  : (...a) => LS.CommandPalette.writeLogTo(terminalOutput, 1, ...a),
+        warn : (...a) => LS.CommandPalette.writeLogTo(terminalOutput, 2, ...a),
+        error: (...a) => LS.CommandPalette.writeLogTo(terminalOutput, 3, ...a),
+        fatal: (...a) => LS.CommandPalette.writeLogTo(terminalOutput, 4, ...a),
+    }
+
+    kernel.terminalWriter = log;
 
     desktop.commandPalette = new LS.CommandPalette({
-        wrapperElement: paletteContainer,
-        menuElement: paletteContainer.querySelector(".completion-menu"),
-        iconElement: paletteContainer.querySelector(".command-icon"),
-        textDisplayElement: paletteContainer.querySelector(".command-text"),
-        hintElement: paletteContainer.querySelector(".command-hint"),
-        inputElement: paletteContainer.querySelector(".command-input"),
-        terminalOutput: terminalOutput,
-
+        container: paletteContainer,
         fontWidth: 9.6 * 1.2,
 
-        onClose(){
-            LS.Animation.fadeOut(topBar, 300, "down");
-        },
+        onClose(){ LS.Animation.fadeOut(topBar, 300, "down") },
+        onOpen (){ LS.Animation.fadeIn(topBar, 300, "up")    },
 
-        onOpen(){
-            LS.Animation.fadeIn(topBar, 300, "up");
-        },
-
-        logger: paletteLogger
+        // Scoped logs from the palette
+        logger: new LoggerContext("Command Palette", log)
     });
 
     let terminalHidden = true;
@@ -76,17 +59,6 @@ function init(kernel, desktop, LoggerContext) {
     });
 
     terminalObserver.observe(terminalOutput, { childList: true });
-
-    const terminalWriter = {
-        info : (...a) => LS.CommandPalette.writeLogTo(terminalOutput, 0, ...a),
-        log  : (...a) => LS.CommandPalette.writeLogTo(terminalOutput, 1, ...a),
-        warn : (...a) => LS.CommandPalette.writeLogTo(terminalOutput, 2, ...a),
-        error: (...a) => LS.CommandPalette.writeLogTo(terminalOutput, 3, ...a),
-        fatal: (...a) => LS.CommandPalette.writeLogTo(terminalOutput, 4, ...a),
-    }
-
-    kernel.terminalWriter = terminalWriter;
-    paletteLogger.writer = terminalWriter;
 
     paletteBar.querySelector("button").onclick = () => {
         desktop.commandPalette.close();
@@ -141,27 +113,27 @@ function init(kernel, desktop, LoggerContext) {
 
                 const t = (kernel?.fileSystem?.constructor?.toHuman) || (v=>v);
 
-                terminalWriter.log(
+                log.log(
                     `%clstv.space%c kernel`,
                     "color:var(--accent);font-weight:bold;font-size:1.2em",
                     "color:inherit;font-weight:bold;font-size:1.2em"
                 );
-                terminalWriter.log(
+                log.log(
                     `%cKernel:%c ${uname.sysname} ${uname.release} (${ckMeta.codename})`,
                     "color:var(--accent);font-weight:bold", "color:inherit"
                 );
-                terminalWriter.log(
+                log.log(
                     `%cLS version:%c ${LS.version}`,
                     "color:var(--accent);font-weight:bold", "color:inherit"
                 );
                 if(rootMount) {
-                    terminalWriter.log(
+                    log.log(
                         `%cDisk (/):%c ${t(rootMount.used, 1)} / ${t(rootMount.size)} (${Math.round((rootMount.used || -1) / (rootMount.size || 1) * 100)}%) - ${rootMount.type || "Unknown"}`,
                         "color:var(--accent);font-weight:bold", "color:inherit"
                     );
                 }
                 if(app.desktop) {
-                    terminalWriter.log(
+                    log.log(
                         `%cDesktop:%c ${app.desktop.name || "Unknown"} ${app.desktop.version}`,
                         "color:var(--accent);font-weight:bold", "color:inherit"
                     );
@@ -169,28 +141,28 @@ function init(kernel, desktop, LoggerContext) {
                     //     `%cWindow Manager:%c LS.WindowManager`, // well hm
                     //     "color:var(--accent);font-weight:bold", "color:inherit"
                     // );
-                    terminalWriter.log(
+                    log.log(
                         `%cWindows:%c ${app.desktop.windowManager.windows.size}`,
                         "color:var(--accent);font-weight:bold", "color:inherit"
                     );
                 }
-                terminalWriter.log(
+                log.log(
                     `%cViewports:%c ${kernel.viewports.size}`,
                     "color:var(--accent);font-weight:bold", "color:inherit"
                 );
-                terminalWriter.log(
+                log.log(
                     `%cPages:%c ${kernel.pageCache.size} / 20`,
                     "color:var(--accent);font-weight:bold", "color:inherit"
                 );
-                terminalWriter.log(
+                log.log(
                     `%cThreads:%c ${kernel.threads.size + 1} / ${kernel.MAX_THREADS}`, // +1 for main thread
                     "color:var(--accent);font-weight:bold", "color:inherit"
                 );
-                terminalWriter.log(
+                log.log(
                     `%cSigned in:%c ${await kernel.auth.isLoggedIn() ? "Yes" : "No"}`,
                     "color:var(--accent);font-weight:bold", "color:inherit"
                 );
-                terminalWriter.log(
+                log.log(
                     `%cLoadtime:%c ${Math.round(kernel.ttl)}ms (${Math.round(kernel.ttl_scripting)}ms without network)`,
                     "color:var(--accent);font-weight:bold", "color:inherit"
                 );
@@ -203,7 +175,7 @@ function init(kernel, desktop, LoggerContext) {
                     (hours > 0 ? hours + "h " : "") +
                     (minutes > 0 ? minutes + "m " : "") +
                     seconds + "s";
-                terminalWriter.log(
+                log.log(
                     `%cUptime:%c ${prettyUptime}`,
                     "color:var(--accent);font-weight:bold", "color:inherit"
                 );
@@ -249,10 +221,10 @@ function init(kernel, desktop, LoggerContext) {
                             description: "Toggle anonymous statistics sharing",
                             onCalled(enabled) {
                                 localStorage.setItem("DISABLE_STATS", !enabled);
-                                terminalWriter.log("Statistics sharing " + (enabled ? "enabled - Thank you!" : "disabled - No statistics data will be sent from this browser from now on."));
+                                log.log("Statistics sharing " + (enabled ? "enabled - Thank you!" : "disabled - No statistics data will be sent from this browser from now on."));
 
                                 if(!enabled) {
-                                    terminalWriter.warn("Warning: This setting is not saved to your account and is specific to this browser. Make sure to update this setting on other devices.");
+                                    log.warn("Warning: This setting is not saved to your account and is specific to this browser. Make sure to update this setting on other devices.");
                                 }
                             },
                             inputs: [
@@ -274,7 +246,7 @@ function init(kernel, desktop, LoggerContext) {
                     onCalled(value) {
                         window.LOW_PERFORMANCE_MODE = value === "low";
                         localStorage.setItem("LOW_PERFORMANCE_MODE", window.LOW_PERFORMANCE_MODE);
-                        terminalWriter.log("Warning: It is recommended to reload the page for this setting to take effect");
+                        log.log("Warning: It is recommended to reload the page for this setting to take effect");
                     },
 
                     inputs: [ {
@@ -399,7 +371,7 @@ function init(kernel, desktop, LoggerContext) {
                                     desktop.commandPalette.close();
                                 })
                                 .catch(error => {
-                                    terminalWriter.log("Failed to open app: " + (error.message || error.error || "Unknown error"));
+                                    log.log("Failed to open app: " + (error.message || error.error || "Unknown error"));
                                 });
                         }}));
                     }
@@ -448,7 +420,7 @@ function init(kernel, desktop, LoggerContext) {
             alias: ["print"],
             icon: "bi-chat",
             description: "Echo input",
-            onCalled(text) { terminalWriter.log(text || "") },
+            onCalled(text) { log.log(text || "") },
             inputs: [
                 { name: "text", type: "string", description: "Text to echo" }
             ]
@@ -460,7 +432,7 @@ function init(kernel, desktop, LoggerContext) {
             description: "Get copyable version information",
             async onCalled() {
                 const uname = await kernel.env.proc.uname();
-                terminalWriter.log(`${uname.sysname} ${uname.release} LS:${LS.version} DE:${app.desktop?.name} (${ckMeta.codename})`);
+                log.log(`${uname.sysname} ${uname.release} LS:${LS.version} DE:${app.desktop?.name} (${ckMeta.codename})`);
             }
         },
 
@@ -470,17 +442,17 @@ function init(kernel, desktop, LoggerContext) {
             description: "Read a file",
             onCalled(path) {
                 if(!path) {
-                    terminalWriter.error("No path provided");
+                    log.error("No path provided");
                     return;
                 }
 
                 kernel.fileSystem.readFile(path, "utf8")
                     .then(content => {
-                        terminalWriter.log(content);
+                        log.log(content);
                     })
                     .catch(err => {
                         let error = err.message || err;
-                        terminalWriter.error(`Failed to read ${path}: ${error}`);
+                        log.error(`Failed to read ${path}: ${error}`);
                     });
             },
             inputs: [
@@ -494,17 +466,17 @@ function init(kernel, desktop, LoggerContext) {
             description: "Write to a file",
             onCalled(path, content) {
                 if(!path) {
-                    terminalWriter.error("No path provided");
+                    log.error("No path provided");
                     return;
                 }
 
                 kernel.fileSystem.writeFile(path, content)
                     .then(() => {
-                        terminalWriter.log(`Successfully wrote to ${path}`);
+                        log.log(`Successfully wrote to ${path}`);
                     })
                     .catch(err => {
                         let error = err.message || err;
-                        terminalWriter.error(`Failed to write to ${path}: ${error}`);
+                        log.error(`Failed to write to ${path}: ${error}`);
                     });
             },
             inputs: [
@@ -527,7 +499,7 @@ function init(kernel, desktop, LoggerContext) {
             icon: "bi-trash",
             alias: ["clear-terminal", "cls"],
             description: "Clear the terminal output",
-            onCalled() { terminalOutput.innerHTML = "" }
+            onCalled() { terminalOutput.replaceChildren(); }
         },
 
         {

@@ -1,6 +1,3 @@
-// WARNING: The following imports are just a stub, the actual build system is being worked on.
-import { TmpFs, RootFs } from "./fs.mjs";
-import { LoggerContext, AssetManager, ContentContext, Viewport, Thread } from "./commons.mjs";
 import { app } from "./shared.mjs";
 import { kernel } from "./kernel.mjs";
 
@@ -343,6 +340,17 @@ class LiDesktop extends LS.Context {
                 });
         });
 
+        this.settingsModal = null;
+        shortcutManager.assign('GLOBAL_OPEN_SETTINGS', async () => {
+            if(!this.settingsModal) {
+                const module = await import("./settings.mjs");
+                this.settingsModal = module;
+                this.settingsModal.createModal();
+            }
+
+            this.settingsModal.openPage("main");
+        });
+
         kernel.env.setEnv("XDG_CURRENT_DESKTOP", this.constructor.name);
 
         this.#setupAuth();
@@ -430,17 +438,17 @@ class LiDesktop extends LS.Context {
     panelState = []
 
     static panelComponents = new Map([
-        ["accounts", { label: "Account", showIcon: false, buttonLabel: { class: "accountsButton", inner: [{ reactive: "user.username ?? 'Log-In'" }, { class: "profile-picture-preview", inner: { tag: "i", class: "bi-person-fill" } }] }, description: "View and edit your profile or log-in", icon: "bi-person-fill", onClick() { this.openToolbar("login") } }],
+        ["accounts", { label: "Account", showIcon: false, buttonLabel: { class: "accountsButton", inner: [{ reactive: "user.username ?? 'Log-In'" }, { class: "profile-picture-preview", inner: { tag: "i", class: "bi-person-fill" } }] }, description: "View and edit your profile or log-in", icon: "bi-person-fill", onClick() { this.p.openToolbar("login") } }],
 
-        ["menu", { label: "Menu", tooltip: "Menu", description: "View the menu", icon: "bi-grid-fill", onClick() { this.openToolbar("menu", true) } }],
+        ["menu", { label: "Menu", tooltip: "Menu", description: "View the menu", icon: "bi-grid-fill", onClick() { this.p.openToolbar("menu", true) } }],
 
         // ["assistant", { showLabel: false, label: "Assistant", description: "Open Assistant", icon: "bi-stars", onClick() {
-        //     website.desktop.openToolbar("assistant", true);
+        //     this.p.openToolbar("assistant", true);
         // } }],
 
         ["theme", { buttonLabel: { tag: "i", class: "bi-palette-fill" }, label: "Customize", description: "Customize the site appearance", icon: 'bi-' + (LS.Color.theme === "dark" ? "moon-stars" : "sun") + "-fill",
             onClick() {
-                this.openToolbar("theme", true);
+                this.p.openToolbar("theme", true);
             },
 
             onceInit() {
@@ -470,14 +478,26 @@ class LiDesktop extends LS.Context {
                 return;
             }
 
-            this.closeToolbar();
-            this.openPalette();
+            this.p.closeToolbar();
+            this.p.openPalette(this.i.element);
         }}],
 
         ["clock", {
             getElement: () => LS.Create("ls-time.taskbar-clock{0:00}"),
             name: "Clock",
             description: "See the current time"
+        }],
+
+        ["volume", {
+            getElement: () => LS.Create("ls-volume.taskbar-volume"),
+            name: "Volume",
+            description: "Adjust system volume"
+        }],
+
+        ["musicPlayer", {
+            getElement: () => LS.Create("ls-music.taskbar-media-controls"),
+            name: "Music Player",
+            description: "Control music playback"
         }],
 
         ["taskbar", {
@@ -515,6 +535,7 @@ class LiDesktop extends LS.Context {
             name: "Account",
             description: "View and edit your profile or log-in",
             onOpen() {
+                this.loadUserList();
                 app.loginTabs.set(app.isLoggedIn? "account": "default", true);
             }
         }],
@@ -646,14 +667,14 @@ class LiDesktop extends LS.Context {
         LS.Stack.remove(this.ToolbarStackRef);
     }
 
-    async openPalette() {
+    async openPalette(clickedTarget = null) {
         if (app.isEmbedded) return;
 
         if (!this.commandPalette) {
             if(kernel._initializingPalette) {
                 await kernel._initializingPalette;
             } else {
-                kernel._initializingPalette = kernel._initializeCommandPalette();
+                kernel._initializingPalette = kernel._initializeCommandPalette(clickedTarget);
                 await kernel._initializingPalette;
                 kernel._initializingPalette = null;
             }
@@ -776,7 +797,7 @@ class LiDesktop extends LS.Context {
                         attributes: { "aria-label": component.description },
                         tooltip: component.tooltip || component.label,
                         inner: component.showLabel !== false? [icon, { tag: "span", inner: buttonLabel, class: typeof buttonLabel === "string" ? "label" : "" }]: icon,
-                        onclick: component.onClick.bind(this) || null
+                        onclick: component.onClick.bind({ p: this, i: item }) || null
                     });
 
                     // Browser layout rendering is an absolutely incompetent piece of crap
@@ -908,13 +929,12 @@ class LiDesktop extends LS.Context {
         }
     }
 
-    // todo: move to desktop
     async loadUserList() {
         const accounts = await kernel.auth.listAccounts();
         app.accounts = accounts && accounts.accounts || [];
 
         const list = this.toolbars.get("login").element.querySelector(".accounts-list");
-        list.innerHTML = "";
+        list.replaceChildren();
 
         for (const account of app.accounts) {
             const item = LS.Create("button", { class: 'account-item elevated loading-right', tabindex: 0, inner: [

@@ -621,14 +621,14 @@ const kernel = new class Kernel extends LS.Context {
                         previewPopout.style.left = (ww < 300 ? 0 : Math.max(8, Math.min(ww - 308, rect.left + rect.width / 2 - 150))) + "px";
 
                         if(lastLink !== link) {
-                            previewPopout.innerHTML = "";
+                            previewPopout.replaceChildren();
                             previewPopout.setAttribute("state", "loading");
 
                             if(!isLocal) {
                                 fetch(app.api + "/metascraper?url=" + encodeURIComponent(link)).then(response => response.json()).then(data => {
                                     if(lastLink !== link) return;
 
-                                    previewPopout.innerHTML = "";
+                                    previewPopout.replaceChildren();
                                     previewPopout.removeAttribute("state");
                                     externalSitePreview.querySelector(".link-preview-favicon").src = data && data.favicon && (data.favicon.startsWith("https://favicone.com/") ? data.favicon + "?s=48" : data.favicon) || "";
                                     externalSitePreview.querySelector(".link-preview-title").textContent = data && data.title || link;
@@ -891,11 +891,16 @@ const kernel = new class Kernel extends LS.Context {
         return new this.#PermissionScope(permissions);
     }
 
-    async _initializeCommandPalette() {
-        if (this._initializingPalette || app.desktop.commandPalette) return;
-        const CommandPaletteExports = (await import("/~/assets/js/pallete.mjs?2.0"));
+    async _initializeCommandPalette(clickedTarget = null) {
+        if (this.destroyed || this._initializingPalette || app.desktop.commandPalette) return;
+
+        if(clickedTarget) clickedTarget.setAttribute("data-ls-state", "loading");
+        
+        const CommandPaletteExports = (await import("/~/assets/js/palette.mjs?2.0"));
         CommandPaletteExports.init(this, app.desktop, LoggerContext);
         console.log("Command palette initialized");
+
+        if(clickedTarget) clickedTarget.removeAttribute("data-ls-state");
     }
 
     /**
@@ -914,6 +919,8 @@ const kernel = new class Kernel extends LS.Context {
         let current_interval = 15000, first = true;
 
         const sendPing = (beacon = false) => {
+            if(this.destroyed) return;
+
             if (!beacon && (document.hidden || !document.hasFocus())) {
                 setTimeout(() => sendPing(beacon), current_interval);
                 return;
@@ -969,7 +976,8 @@ const kernel = new class Kernel extends LS.Context {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: data
+                body: data,
+                signal: this.abortSignal
             }).then(response => {
                 if(response.ok) {
                     response.json().then(serverData => {

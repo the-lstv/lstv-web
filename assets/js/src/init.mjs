@@ -9,6 +9,14 @@ import { kernel } from "./kernel.mjs";
 
 const KERNEL_VERSION = (typeof __buildVersion !== "undefined")? __buildVersion: "1.3.1-dev";
 
+// --- INITIALIZATION STUFF & DEFINITIONS (SKIP THIS PART)
+// If the environment is correct, this file should be wrapped in an IIFE by the build system & not leak.
+
+// Forward declarations
+const scriptingLoadTime = Date.now();
+const isDebug           = window.location.hostname === "lstv.localhost";
+const isBeta            = window.location.hostname.startsWith("beta.lstv.");
+
 // TODO:
 const BUILTIN_APPS = [
     {
@@ -52,78 +60,93 @@ const BUILTIN_APPS = [
         "version": "1.0.0",
         "main": "texteditor.mjs?0"
     },
-    {
-        "name": "Store",
-        "id": "store",
-        "icon": "8951e30e03967e75.svg",
-        "description": "Get more apps and extensions!",
-        "version": "1.0.0",
-        "main": "store.mjs"
-    },
-    // {
-    //     "name": "Media Center",
-    //     "id": "media-center",
-    //     "icon": "5fe6243a90ae967a.webp",
-    //     "description": "Your media hub.",
-    //     "version": "1.0.0",
-    //     "main": "media-center.mjs"
-    // },
-    // {
-    //     "name": "Media Player",
-    //     "id": "media-player",
-    //     "icon": "5fe6243a90ae967a.webp",
-    //     "description": "Play your media.",
-    //     "version": "1.0.0",
-    //     "main": "media-player.mjs"
-    // },
-    // {
-    //     "name": "Music Player",
-    //     "id": "music-player",
-    //     "icon": "901fb7f3abda204f.svg",
-    //     "description": "Play music, the pretty way!",
-    //     "version": "1.0.0",
-    //     "main": "music-player.mjs"
-    // },
-    {
-        "name": "File Manager",
-        "id": "file-manager",
-        "icon": "15043b26b7df5e3b.svg",
-        "description": "Manage your files.",
-        "version": "1.0.0",
-        "main": "file-manager.mjs"
-    },
-    // {
-    //     "name": "Terminal",
-    //     "id": "terminal",
-    //     "icon": "c4972d221a92772b.svg",
-    //     "description": "Use the command line & manage things",
-    //     "version": "1.0.0",
-    //     "main": "terminal.mjs"
-    // },
-    {
-        "name": "Calculator",
-        "id": "calculator",
-        "icon": "f0fb502ae0964022.svg",
-        "description": "Perform various calculations.",
-        "version": "1.0.0",
-        "main": "calculator.mjs"
-    },
-    // {
-    //     "name": "WebView",
-    //     "id": "webview",
-    //     "icon": "62eb88beb684d561.svg",
-    //     "description": "A simple embedded web browser.",
-    //     "version": "1.0.0",
-    //     "main": "webview.mjs"
-    // },
-    // {
-    //     "name": "Email",
-    //     "id": "mail-client",
-    //     "icon": "901fb7f3abda204f.svg",
-    //     "description": "Manage your emails.",
-    //     "version": "1.0.0",
-    //     "main": "mail.mjs"
-    // },
+    ...isBeta? [
+        {
+            "name": "Store",
+            "id": "store",
+            "icon": "8951e30e03967e75.svg",
+            "description": "Get more apps and extensions!",
+            "version": "1.0.0",
+            "main": "store.mjs"
+        },
+        {
+            "name": "Media Center",
+            "id": "media-center",
+            "icon": "5fe6243a90ae967a.webp",
+            "description": "Your media hub.",
+            "version": "1.0.0",
+            "main": "media-center.mjs"
+        },
+        {
+            "name": "Media Player",
+            "id": "media-player",
+            "icon": "5fe6243a90ae967a.webp",
+            "description": "Play your media.",
+            "version": "1.0.0",
+            "main": "media-player.mjs"
+        },
+        {
+            "name": "Music Player",
+            "id": "music-player",
+            "icon": "901fb7f3abda204f.svg",
+            "description": "Play music, the pretty way!",
+            "version": "1.0.0",
+            "main": "music-player.mjs"
+        },
+        {
+            "name": "File Manager",
+            "id": "file-manager",
+            "icon": "15043b26b7df5e3b.svg",
+            "description": "Manage your files.",
+            "version": "1.0.0",
+            "main": "file-manager.mjs"
+        },
+        {
+            "name": "Terminal",
+            "id": "terminal",
+            "icon": "c4972d221a92772b.svg",
+            "description": "Use the command line & manage things",
+            "version": "1.0.0",
+            "main": "terminal.mjs"
+        },
+        {
+            "name": "Calculator",
+            "id": "calculator",
+            "icon": "f0fb502ae0964022.svg",
+            "description": "Perform various calculations.",
+            "version": "1.0.0",
+            "main": "calculator.mjs"
+        },
+        {
+            "name": "WebView",
+            "id": "webview",
+            "icon": "62eb88beb684d561.svg",
+            "description": "A simple embedded web browser.",
+            "version": "1.0.0",
+            "main": "webview.mjs"
+        },
+        {
+            "name": "Email",
+            "id": "mail-client",
+            "icon": "901fb7f3abda204f.svg",
+            "description": "Manage your emails.",
+            "version": "1.0.0",
+            "main": "mail.mjs"
+        },
+        {
+            "name": "monitors",
+            "id": "monitors",
+            "icon": "866c8c15f1ff50f1.svg",
+            "description": "",
+            "version": "1.0.0",
+            "main": "https://google.com",
+
+            windowOptions: {
+                width: 800,
+                height: 600
+            }
+        }
+    ]: [],
     {
         "name": "Mind Reader",
         "id": "mind-reader",
@@ -147,14 +170,6 @@ const BUILTIN_APPS = [
 //         height: 600
 //     }
 // }
-
-// --- INITIALIZATION STUFF & DEFINITIONS (SKIP THIS PART)
-// If the environment is correct, this file should be wrapped in an IIFE by the build system & not leak.
-
-// Forward declarations
-const scriptingLoadTime = Date.now();
-const isDebug           = window.location.hostname === "lstv.localhost";
-const isBeta            = window.location.hostname.startsWith("beta.lstv.");
 
 // Console welcome message
 if(!isDebug) console.log(
@@ -185,6 +200,8 @@ shortcutManager.map({
     "GLOBAL_LOCK_SCREEN":          ['ctrl+shift+l', 'ctrl+alt+l'],
     "GLOBAL_LOG_OUT":              ['ctrl+shift+q', 'ctrl+alt+q'],
     "GLOBAL_OPEN_TERMINAL":        ['ctrl+shift+t', 'ctrl+alt+t'],
+    "GLOBAL_OPEN_FILE_MANAGER":    ['ctrl+shift+f', 'ctrl+alt+f'],
+    "GLOBAL_OPEN_SETTINGS":        ['ctrl+,'],
 
     ...{} // todo: User data, maybe read from a file
 });

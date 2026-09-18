@@ -16,6 +16,14 @@ try {
 
 const KERNEL_VERSION = (typeof __buildVersion !== "undefined")? __buildVersion: "1.3.1-dev";
 
+// --- INITIALIZATION STUFF & DEFINITIONS (SKIP THIS PART)
+// If the environment is correct, this file should be wrapped in an IIFE by the build system & not leak.
+
+// Forward declarations
+const scriptingLoadTime = Date.now();
+const isDebug           = window.location.hostname === "lstv.localhost";
+const isBeta            = window.location.hostname.startsWith("beta.lstv.");
+
 // TODO:
 const BUILTIN_APPS = [
     {
@@ -59,78 +67,93 @@ const BUILTIN_APPS = [
         "version": "1.0.0",
         "main": "texteditor.mjs?0"
     },
-    {
-        "name": "Store",
-        "id": "store",
-        "icon": "8951e30e03967e75.svg",
-        "description": "Get more apps and extensions!",
-        "version": "1.0.0",
-        "main": "store.mjs"
-    },
-    // {
-    //     "name": "Media Center",
-    //     "id": "media-center",
-    //     "icon": "5fe6243a90ae967a.webp",
-    //     "description": "Your media hub.",
-    //     "version": "1.0.0",
-    //     "main": "media-center.mjs"
-    // },
-    // {
-    //     "name": "Media Player",
-    //     "id": "media-player",
-    //     "icon": "5fe6243a90ae967a.webp",
-    //     "description": "Play your media.",
-    //     "version": "1.0.0",
-    //     "main": "media-player.mjs"
-    // },
-    // {
-    //     "name": "Music Player",
-    //     "id": "music-player",
-    //     "icon": "901fb7f3abda204f.svg",
-    //     "description": "Play music, the pretty way!",
-    //     "version": "1.0.0",
-    //     "main": "music-player.mjs"
-    // },
-    {
-        "name": "File Manager",
-        "id": "file-manager",
-        "icon": "15043b26b7df5e3b.svg",
-        "description": "Manage your files.",
-        "version": "1.0.0",
-        "main": "file-manager.mjs"
-    },
-    // {
-    //     "name": "Terminal",
-    //     "id": "terminal",
-    //     "icon": "c4972d221a92772b.svg",
-    //     "description": "Use the command line & manage things",
-    //     "version": "1.0.0",
-    //     "main": "terminal.mjs"
-    // },
-    {
-        "name": "Calculator",
-        "id": "calculator",
-        "icon": "f0fb502ae0964022.svg",
-        "description": "Perform various calculations.",
-        "version": "1.0.0",
-        "main": "calculator.mjs"
-    },
-    // {
-    //     "name": "WebView",
-    //     "id": "webview",
-    //     "icon": "62eb88beb684d561.svg",
-    //     "description": "A simple embedded web browser.",
-    //     "version": "1.0.0",
-    //     "main": "webview.mjs"
-    // },
-    // {
-    //     "name": "Email",
-    //     "id": "mail-client",
-    //     "icon": "901fb7f3abda204f.svg",
-    //     "description": "Manage your emails.",
-    //     "version": "1.0.0",
-    //     "main": "mail.mjs"
-    // },
+    ...isBeta? [
+        {
+            "name": "Store",
+            "id": "store",
+            "icon": "8951e30e03967e75.svg",
+            "description": "Get more apps and extensions!",
+            "version": "1.0.0",
+            "main": "store.mjs"
+        },
+        {
+            "name": "Media Center",
+            "id": "media-center",
+            "icon": "5fe6243a90ae967a.webp",
+            "description": "Your media hub.",
+            "version": "1.0.0",
+            "main": "media-center.mjs"
+        },
+        {
+            "name": "Media Player",
+            "id": "media-player",
+            "icon": "5fe6243a90ae967a.webp",
+            "description": "Play your media.",
+            "version": "1.0.0",
+            "main": "media-player.mjs"
+        },
+        {
+            "name": "Music Player",
+            "id": "music-player",
+            "icon": "901fb7f3abda204f.svg",
+            "description": "Play music, the pretty way!",
+            "version": "1.0.0",
+            "main": "music-player.mjs"
+        },
+        {
+            "name": "File Manager",
+            "id": "file-manager",
+            "icon": "15043b26b7df5e3b.svg",
+            "description": "Manage your files.",
+            "version": "1.0.0",
+            "main": "file-manager.mjs"
+        },
+        {
+            "name": "Terminal",
+            "id": "terminal",
+            "icon": "c4972d221a92772b.svg",
+            "description": "Use the command line & manage things",
+            "version": "1.0.0",
+            "main": "terminal.mjs"
+        },
+        {
+            "name": "Calculator",
+            "id": "calculator",
+            "icon": "f0fb502ae0964022.svg",
+            "description": "Perform various calculations.",
+            "version": "1.0.0",
+            "main": "calculator.mjs"
+        },
+        {
+            "name": "WebView",
+            "id": "webview",
+            "icon": "62eb88beb684d561.svg",
+            "description": "A simple embedded web browser.",
+            "version": "1.0.0",
+            "main": "webview.mjs"
+        },
+        {
+            "name": "Email",
+            "id": "mail-client",
+            "icon": "901fb7f3abda204f.svg",
+            "description": "Manage your emails.",
+            "version": "1.0.0",
+            "main": "mail.mjs"
+        },
+        {
+            "name": "monitors",
+            "id": "monitors",
+            "icon": "866c8c15f1ff50f1.svg",
+            "description": "",
+            "version": "1.0.0",
+            "main": "https://google.com",
+
+            windowOptions: {
+                width: 800,
+                height: 600
+            }
+        }
+    ]: [],
     {
         "name": "Mind Reader",
         "id": "mind-reader",
@@ -154,14 +177,6 @@ const BUILTIN_APPS = [
 //         height: 600
 //     }
 // }
-
-// --- INITIALIZATION STUFF & DEFINITIONS (SKIP THIS PART)
-// If the environment is correct, this file should be wrapped in an IIFE by the build system & not leak.
-
-// Forward declarations
-const scriptingLoadTime = Date.now();
-const isDebug           = window.location.hostname === "lstv.localhost";
-const isBeta            = window.location.hostname.startsWith("beta.lstv.");
 
 // Console welcome message
 if(!isDebug) console.log(
@@ -192,6 +207,8 @@ shortcutManager.map({
     "GLOBAL_LOCK_SCREEN":          ['ctrl+shift+l', 'ctrl+alt+l'],
     "GLOBAL_LOG_OUT":              ['ctrl+shift+q', 'ctrl+alt+q'],
     "GLOBAL_OPEN_TERMINAL":        ['ctrl+shift+t', 'ctrl+alt+t'],
+    "GLOBAL_OPEN_FILE_MANAGER":    ['ctrl+shift+f', 'ctrl+alt+f'],
+    "GLOBAL_OPEN_SETTINGS":        ['ctrl+,'],
 
     ...{} // todo: User data, maybe read from a file
 });
@@ -350,7 +367,7 @@ const AssetManager = new class {
 
             // Yeah, hardcoding is not the best idea
             // But this needs to filter all persistent assets
-            if(asset.classList.contains("whitelist") || key.includes("/ls/") || key.includes("bootstrap-icons") || key.includes("fonts.googleapis.com") || key.includes("/assets/js/kernel.js") || key.includes("/assets/css/main.") || key.includes("/assets/js/pallete.js")) {
+            if(asset.classList.contains("whitelist") || key.includes("/ls/") || key.includes("bootstrap-icons") || key.includes("fonts.googleapis.com") || key.includes("/assets/js/kernel.js") || key.includes("/assets/css/main.") || key.includes("/assets/js/palette.js")) {
                 this.whitelist.add(key);
             } else {
                 if(asset instanceof HTMLLinkElement) {
@@ -1900,7 +1917,6 @@ class Enums  {
 
 globalThis.LJSEnums = Enums;
 
-// WARNING: The following imports are just a stub, the actual build system is being worked on.
 
 /**
  * Media player class
@@ -2241,6 +2257,17 @@ class LiDesktop extends LS.Context {
                 });
         });
 
+        this.settingsModal = null;
+        shortcutManager.assign('GLOBAL_OPEN_SETTINGS', async () => {
+            if(!this.settingsModal) {
+                const module = await import("./settings.mjs");
+                this.settingsModal = module;
+                this.settingsModal.createModal();
+            }
+
+            this.settingsModal.openPage("main");
+        });
+
         kernel.env.setEnv("XDG_CURRENT_DESKTOP", this.constructor.name);
 
         this.#setupAuth();
@@ -2328,17 +2355,17 @@ class LiDesktop extends LS.Context {
     panelState = []
 
     static panelComponents = new Map([
-        ["accounts", { label: "Account", showIcon: false, buttonLabel: { class: "accountsButton", inner: [{ reactive: "user.username ?? 'Log-In'" }, { class: "profile-picture-preview", inner: { tag: "i", class: "bi-person-fill" } }] }, description: "View and edit your profile or log-in", icon: "bi-person-fill", onClick() { this.openToolbar("login") } }],
+        ["accounts", { label: "Account", showIcon: false, buttonLabel: { class: "accountsButton", inner: [{ reactive: "user.username ?? 'Log-In'" }, { class: "profile-picture-preview", inner: { tag: "i", class: "bi-person-fill" } }] }, description: "View and edit your profile or log-in", icon: "bi-person-fill", onClick() { this.p.openToolbar("login") } }],
 
-        ["menu", { label: "Menu", tooltip: "Menu", description: "View the menu", icon: "bi-grid-fill", onClick() { this.openToolbar("menu", true) } }],
+        ["menu", { label: "Menu", tooltip: "Menu", description: "View the menu", icon: "bi-grid-fill", onClick() { this.p.openToolbar("menu", true) } }],
 
         // ["assistant", { showLabel: false, label: "Assistant", description: "Open Assistant", icon: "bi-stars", onClick() {
-        //     website.desktop.openToolbar("assistant", true);
+        //     this.p.openToolbar("assistant", true);
         // } }],
 
         ["theme", { buttonLabel: { tag: "i", class: "bi-palette-fill" }, label: "Customize", description: "Customize the site appearance", icon: 'bi-' + (LS.Color.theme === "dark" ? "moon-stars" : "sun") + "-fill",
             onClick() {
-                this.openToolbar("theme", true);
+                this.p.openToolbar("theme", true);
             },
 
             onceInit() {
@@ -2368,14 +2395,26 @@ class LiDesktop extends LS.Context {
                 return;
             }
 
-            this.closeToolbar();
-            this.openPalette();
+            this.p.closeToolbar();
+            this.p.openPalette(this.i.element);
         }}],
 
         ["clock", {
             getElement: () => LS.Create("ls-time.taskbar-clock{0:00}"),
             name: "Clock",
             description: "See the current time"
+        }],
+
+        ["volume", {
+            getElement: () => LS.Create("ls-volume.taskbar-volume"),
+            name: "Volume",
+            description: "Adjust system volume"
+        }],
+
+        ["musicPlayer", {
+            getElement: () => LS.Create("ls-music.taskbar-media-controls"),
+            name: "Music Player",
+            description: "Control music playback"
         }],
 
         ["taskbar", {
@@ -2413,6 +2452,7 @@ class LiDesktop extends LS.Context {
             name: "Account",
             description: "View and edit your profile or log-in",
             onOpen() {
+                this.loadUserList();
                 app.loginTabs.set(app.isLoggedIn? "account": "default", true);
             }
         }],
@@ -2544,14 +2584,14 @@ class LiDesktop extends LS.Context {
         LS.Stack.remove(this.ToolbarStackRef);
     }
 
-    async openPalette() {
+    async openPalette(clickedTarget = null) {
         if (app.isEmbedded) return;
 
         if (!this.commandPalette) {
             if(kernel._initializingPalette) {
                 await kernel._initializingPalette;
             } else {
-                kernel._initializingPalette = kernel._initializeCommandPalette();
+                kernel._initializingPalette = kernel._initializeCommandPalette(clickedTarget);
                 await kernel._initializingPalette;
                 kernel._initializingPalette = null;
             }
@@ -2674,7 +2714,7 @@ class LiDesktop extends LS.Context {
                         attributes: { "aria-label": component.description },
                         tooltip: component.tooltip || component.label,
                         inner: component.showLabel !== false? [icon, { tag: "span", inner: buttonLabel, class: typeof buttonLabel === "string" ? "label" : "" }]: icon,
-                        onclick: component.onClick.bind(this) || null
+                        onclick: component.onClick.bind({ p: this, i: item }) || null
                     });
 
                     // Browser layout rendering is an absolutely incompetent piece of crap
@@ -2806,13 +2846,12 @@ class LiDesktop extends LS.Context {
         }
     }
 
-    // todo: move to desktop
     async loadUserList() {
         const accounts = await kernel.auth.listAccounts();
         app.accounts = accounts && accounts.accounts || [];
 
         const list = this.toolbars.get("login").element.querySelector(".accounts-list");
-        list.innerHTML = "";
+        list.replaceChildren();
 
         for (const account of app.accounts) {
             const item = LS.Create("button", { class: 'account-item elevated loading-right', tabindex: 0, inner: [
@@ -7163,14 +7202,14 @@ const kernel = new class Kernel extends LS.Context {
                         previewPopout.style.left = (ww < 300 ? 0 : Math.max(8, Math.min(ww - 308, rect.left + rect.width / 2 - 150))) + "px";
 
                         if(lastLink !== link) {
-                            previewPopout.innerHTML = "";
+                            previewPopout.replaceChildren();
                             previewPopout.setAttribute("state", "loading");
 
                             if(!isLocal) {
                                 fetch(app.api + "/metascraper?url=" + encodeURIComponent(link)).then(response => response.json()).then(data => {
                                     if(lastLink !== link) return;
 
-                                    previewPopout.innerHTML = "";
+                                    previewPopout.replaceChildren();
                                     previewPopout.removeAttribute("state");
                                     externalSitePreview.querySelector(".link-preview-favicon").src = data && data.favicon && (data.favicon.startsWith("https://favicone.com/") ? data.favicon + "?s=48" : data.favicon) || "";
                                     externalSitePreview.querySelector(".link-preview-title").textContent = data && data.title || link;
@@ -7433,11 +7472,16 @@ const kernel = new class Kernel extends LS.Context {
         return new this.#PermissionScope(permissions);
     }
 
-    async _initializeCommandPalette() {
-        if (this._initializingPalette || app.desktop.commandPalette) return;
-        const CommandPaletteExports = (await import("/~/assets/js/pallete.mjs?2.0"));
+    async _initializeCommandPalette(clickedTarget = null) {
+        if (this.destroyed || this._initializingPalette || app.desktop.commandPalette) return;
+
+        if(clickedTarget) clickedTarget.setAttribute("data-ls-state", "loading");
+        
+        const CommandPaletteExports = (await import("/~/assets/js/palette.mjs?2.0"));
         CommandPaletteExports.init(this, app.desktop, LoggerContext);
         console.log("Command palette initialized");
+
+        if(clickedTarget) clickedTarget.removeAttribute("data-ls-state");
     }
 
     /**
@@ -7456,6 +7500,8 @@ const kernel = new class Kernel extends LS.Context {
         let current_interval = 15000, first = true;
 
         const sendPing = (beacon = false) => {
+            if(this.destroyed) return;
+
             if (!beacon && (document.hidden || !document.hasFocus())) {
                 setTimeout(() => sendPing(beacon), current_interval);
                 return;
@@ -7511,7 +7557,8 @@ const kernel = new class Kernel extends LS.Context {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: data
+                body: data,
+                signal: this.abortSignal
             }).then(response => {
                 if(response.ok) {
                     response.json().then(serverData => {
