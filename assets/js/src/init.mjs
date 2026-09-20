@@ -60,7 +60,7 @@ const BUILTIN_APPS = [
         "version": "1.0.0",
         "main": "texteditor.mjs?0"
     },
-    ...isBeta? [
+    ...(isBeta || isDebug)? [
         {
             "name": "Store",
             "id": "store",

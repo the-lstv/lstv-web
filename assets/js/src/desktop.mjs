@@ -23,9 +23,9 @@ class MediaPlayer {
         this.toolbarElement.appendChild(this.create().root);
 
         this.audio = new Audio();
-        this.titleElement = this.toolbarElement.querySelector(".music-player-title");
-        this.artistElement = this.toolbarElement.querySelector(".music-player-artist");
-        this.coverElement = this.toolbarElement.querySelector(".music-player-cover");
+        this.titleElement    = this.toolbarElement.querySelector(".music-player-title");
+        this.artistElement   = this.toolbarElement.querySelector(".music-player-artist");
+        this.coverElement    = this.toolbarElement.querySelector(".music-player-cover");
         this.coverArtElement = this.toolbarElement.querySelector(".music-player-art");
 
         this.menuContainer = this.toolbarElement.querySelector(".music-menu");
@@ -279,24 +279,33 @@ class LiDesktop extends LS.Context {
             volume: 0.5,
             logger: kernel.logger,
             sounds: {
-                "click":           { src: base + "click_desk.ogg" },
-                "click_container": { src: base + "click_container.ogg" },
-                "notification":    { src: base + "notification.mp3" },
-                "error":           { src: base + "error.ogg", fallback: ["system:notification", "system:Bruh Sound Effect"] },
-                "success":         { src: base + "export_done.mp3" },
-                "startup":         { src: base + "startup.ogg" },
-                "timer":           { src: base + "timer.ogg", fallback: ["system:notification"] },
-                "shutdown":        { src: base + "shutdown.ogg" },
-                "logoff":          { src: base + "logoff.ogg" },
-                "login":           { src: base + "login.ogg" },
-                "lock":            { src: base + "lock.ogg" },
-                "unlock":          { src: base + "unlock.ogg" },
+                // System
+                "system:blip":            { src: base + "blip.ogg" },
+                "system:notification":    { src: base + "notification.mp3" },
+                "system:click":           { src: base + "click_desk.ogg" },
+                "system:click_container": { src: base + "click_container.ogg" },
+                "system:error":           { src: base + "error.ogg", fallback: ["system:notification", "system:Bruh Sound Effect"] },
+                "system:success":         { src: base + "export_done.mp3" },
+                "system:startup":         { src: base + "startup.ogg" },
+                "system:timer":           { src: base + "timer.ogg", fallback: ["system:notification"] },
+                "system:shutdown":        { src: base + "shutdown.ogg", fallback: ["system:logoff"] },
+                "system:logoff":          { src: base + "logoff.ogg" },
+                "system:login":           { src: base + "login.ogg" },
+                "system:lock":            { src: base + "lock.ogg" },
+                "system:unlock":          { src: base + "unlock.ogg" },
 
-                "Bruh Sound Effect": { src: base + "BruhSoundEffect.ogg" },
-                "pad0":  { src: base + "pad_0.ogg" },
-                "pluck": { src: base + "pluck.mp3" },
+                // Misc
+                "system:Bruh Sound Effect": { src: base + "BruhSoundEffect.ogg" },
+                "system:pluck":  { src: base + "pluck.mp3" },
+                "system:dialup": { src: base + "dial_up.mp3" },
+
+                // Ambient
+                "ambient:thunder":      { src: base + "distant_thunder.mp3" },
+                "ambient:distant_dark": { src: base + "../ambiance/distant_dark.mp3" },
+                "ambient:wind":         { src: base + "wind0.ogg" },
+                "ambient:pad0":         { src: base + "pad_0.ogg" },
             }
-        }, null, "system");
+        });
 
         // Enables closing toolbars via esc
         this.ToolbarStackRef = { close() { this.closeToolbar() } };
@@ -307,23 +316,18 @@ class LiDesktop extends LS.Context {
         this.isToolbarOpen = false;
 
         shortcutManager.assign('GLOBAL_DESKTOP_OPEN_MENU', () => {
-            if(app.desktop?.screenSwitcher?.activeTab !== "desktop") return;
             this.openToolbar("menu", true);
         });
 
         shortcutManager.assign('GLOBAL_LOCK_SCREEN', () => {
-            if(app.desktop?.screenSwitcher?.activeTab !== "desktop") return;
             this.lock();
         });
 
         shortcutManager.assign('GLOBAL_LOG_OUT', () => {
-            if(app.desktop?.screenSwitcher?.activeTab !== "desktop") return;
             this.logout();
         });
 
         shortcutManager.assign('GLOBAL_OPEN_TERMINAL', () => {
-            if(app.desktop?.screenSwitcher?.activeTab !== "desktop") return;
-
             const terminal = kernel.appManifests.get("terminal");
             if(!terminal) {
                 LS.Modal.alert("No terminal application is available in this environment.");
@@ -407,6 +411,7 @@ class LiDesktop extends LS.Context {
     }
 
     setScreen(screen) {
+        shortcutManager.blockInput = screen !== "desktop";
         this.screenSwitcher.set(screen);
     }
 

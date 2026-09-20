@@ -93,12 +93,12 @@ body:not(.low-performance-mode).lsweb-desktop-mode {
     position: absolute;
     pointer-events: none;
     inset: 0;
-}
 
-#wallpaper img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    img, video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
 }
 
 .taskbar-clock {
