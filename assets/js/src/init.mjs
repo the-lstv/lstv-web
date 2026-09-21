@@ -17,6 +17,8 @@ const scriptingLoadTime = Date.now();
 const isDebug           = window.location.hostname === "lstv.localhost";
 const isBeta            = window.location.hostname.startsWith("beta.lstv.");
 
+globalThis.isBeta = isBeta;
+
 // TODO:
 const BUILTIN_APPS = [
     {

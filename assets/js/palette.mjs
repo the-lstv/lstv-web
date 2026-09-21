@@ -420,7 +420,9 @@ function init(kernel, desktop, LoggerContext) {
             alias: ["print"],
             icon: "bi-chat",
             description: "Echo input",
-            onCalled(text) { log.log(text || "") },
+
+            onCalled() { log.log(...arguments) },
+
             inputs: [
                 { name: "text", type: "string", description: "Text to echo" }
             ]
@@ -430,9 +432,49 @@ function init(kernel, desktop, LoggerContext) {
             name: "version-info",
             icon: "bi-info-circle",
             description: "Get copyable version information",
+
             async onCalled() {
                 const uname = await kernel.env.proc.uname();
-                log.log(`${uname.sysname} ${uname.release} LS:${LS.version} DE:${app.desktop?.name} (${ckMeta.codename})`);
+                const string = `${uname.sysname} ${uname.release} LS:${LS.version} DE:${app.desktop?.name} (${ckMeta.codename})`;
+
+                log.log(string);
+                return string;
+            }
+        },
+
+        // {
+        //     name: "help",
+        //     icon: "bi-question-circle",
+        //     description: "How do I use this command palette?",
+
+        //     data() {
+        //         return "Command 'help' requires to be run as interactive";
+        //     },
+
+        //     onCalled() {
+        //         LS.Create({
+        //             html: `Command Palette Help<br><br>Syntax:<br><code>command [arg1] [arg2] ...</code><br>Commands can be nested.<br><br>Arguments can use strings & substitution:, eg.:<br><code>echo "Time is $(time), $USER"</code>`,
+        //             parent: terminalOutput
+        //         });
+        //     }
+        // },
+
+        {
+            name: "time",
+            icon: "bi-clock",
+            description: "Show the current time",
+
+            data() {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString();
+                const dateString = now.toLocaleDateString();
+                return `${dateString} ${timeString}`;
+            },
+
+            onCalled() {
+                LS.Create("div>ls-time{0:00}", {
+                    parent: terminalOutput
+                });
             }
         },
 
@@ -440,21 +482,23 @@ function init(kernel, desktop, LoggerContext) {
             name: "read",
             icon: "bi-book",
             description: "Read a file",
-            onCalled(path) {
+
+            async onCalled(path) {
                 if(!path) {
                     log.error("No path provided");
                     return;
                 }
 
-                kernel.fileSystem.readFile(path, "utf8")
-                    .then(content => {
-                        log.log(content);
-                    })
-                    .catch(err => {
-                        let error = err.message || err;
-                        log.error(`Failed to read ${path}: ${error}`);
-                    });
+                try {
+                    const content = await kernel.fileSystem.readFile(path, "utf8");
+                    log.log(content);
+                    return content;
+                } catch (err) {
+                    let error = err.message || err;
+                    log.error(`Failed to read ${path}: ${error}`);
+                }
             },
+
             inputs: [
                 { name: "path", type: "path", description: "Path to the file" }
             ]
@@ -464,21 +508,23 @@ function init(kernel, desktop, LoggerContext) {
             name: "write",
             icon: "bi-pencil",
             description: "Write to a file",
-            onCalled(path, content) {
+
+            async onCalled(path, content) {
                 if(!path) {
                     log.error("No path provided");
                     return;
                 }
 
-                kernel.fileSystem.writeFile(path, content)
-                    .then(() => {
-                        log.log(`Successfully wrote to ${path}`);
-                    })
-                    .catch(err => {
-                        let error = err.message || err;
-                        log.error(`Failed to write to ${path}: ${error}`);
-                    });
+                try {
+                    await kernel.fileSystem.writeFile(path, content);
+                    log.log(`Successfully wrote to ${path}`);
+                    return true;
+                } catch (err) {
+                    let error = err.message || err;
+                    log.error(`Failed to write to ${path}: ${error}`);
+                }
             },
+
             inputs: [
                 { name: "path", type: "path", description: "Path to the file" },
                 { name: "content", type: "string", description: "Content to write" }

@@ -71,7 +71,7 @@ class Process {
  * 
  * todo: split LinuxJS kernel and website functionality.
  */
-const kernel = new class Kernel extends LS.Context {
+class Kernel extends LS.Context {
     isKernel = true;
     version = KERNEL_VERSION;
 
@@ -508,10 +508,6 @@ const kernel = new class Kernel extends LS.Context {
                 
                 app.desktop.openPalette();
             });
-
-            if(isBeta) {
-                LS.Toast.show("You are using a beta version of lstv.space. Some features may be unstable or incomplete.", { accent: "orange", timeout: 60000 });
-            }
         });
 
         // Event listener for back/forward buttons (for single-page app behavior)
@@ -1205,6 +1201,9 @@ const kernel = new class Kernel extends LS.Context {
         this.userFragment = null;
         this.queryParams = null;
 
+        if(LS.Tooltips) LS.Tooltips.resetGlobalInstance();
+        if(LS.Toast)    LS.Toast.closeAll();
+
         super.destroy();
     }
 }
@@ -1240,6 +1239,11 @@ class OpenerPromise {
     }
 }
 
-if(isBeta) window.kernel = kernel // Debug only!
+function boot() {
+    const kernel = new Kernel();
+    if(isBeta) window.kernel = kernel // Debug only!
+    return kernel;
+}
 
-export { kernel };
+const kernel = boot();
+export { kernel }; // ?

@@ -1135,6 +1135,8 @@ class LiDesktop extends LS.Context {
         const appButton = LS.Create({
             class: "app-list-item",
 
+            effects: "spring,push",
+
             inner: [
                 app.views.getAppIconView(manifest, [64]),
                 LS.Create('span', { class: 'app-name text-overflow-nowrap', textContent: manifest.name || appId })

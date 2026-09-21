@@ -24,6 +24,8 @@ const scriptingLoadTime = Date.now();
 const isDebug           = window.location.hostname === "lstv.localhost";
 const isBeta            = window.location.hostname.startsWith("beta.lstv.");
 
+globalThis.isBeta = isBeta;
+
 // TODO:
 const BUILTIN_APPS = [
     {
@@ -2205,7 +2207,7 @@ class LiDesktop extends LS.Context {
                 "system:success":         { src: base + "export_done.mp3" },
                 "system:startup":         { src: base + "startup.ogg" },
                 "system:timer":           { src: base + "timer.ogg", fallback: ["system:notification"] },
-                "system:shutdown":        { src: base + "shutdown.ogg" },
+                "system:shutdown":        { src: base + "shutdown.ogg", fallback: ["system:logoff"] },
                 "system:logoff":          { src: base + "logoff.ogg" },
                 "system:login":           { src: base + "login.ogg" },
                 "system:lock":            { src: base + "lock.ogg" },
@@ -2213,14 +2215,14 @@ class LiDesktop extends LS.Context {
 
                 // Misc
                 "system:Bruh Sound Effect": { src: base + "BruhSoundEffect.ogg" },
-                "system:pluck": { src: base + "pluck.mp3" },
+                "system:pluck":  { src: base + "pluck.mp3" },
                 "system:dialup": { src: base + "dial_up.mp3" },
 
                 // Ambient
                 "ambient:thunder":      { src: base + "distant_thunder.mp3" },
                 "ambient:distant_dark": { src: base + "../ambiance/distant_dark.mp3" },
                 "ambient:wind":         { src: base + "wind0.ogg" },
-                "ambient:pad0":  { src: base + "pad_0.ogg" },
+                "ambient:pad0":         { src: base + "pad_0.ogg" },
             }
         });
 
@@ -2233,23 +2235,18 @@ class LiDesktop extends LS.Context {
         this.isToolbarOpen = false;
 
         shortcutManager.assign('GLOBAL_DESKTOP_OPEN_MENU', () => {
-            if(app.desktop?.screenSwitcher?.activeTab !== "desktop") return;
             this.openToolbar("menu", true);
         });
 
         shortcutManager.assign('GLOBAL_LOCK_SCREEN', () => {
-            if(app.desktop?.screenSwitcher?.activeTab !== "desktop") return;
             this.lock();
         });
 
         shortcutManager.assign('GLOBAL_LOG_OUT', () => {
-            if(app.desktop?.screenSwitcher?.activeTab !== "desktop") return;
             this.logout();
         });
 
         shortcutManager.assign('GLOBAL_OPEN_TERMINAL', () => {
-            if(app.desktop?.screenSwitcher?.activeTab !== "desktop") return;
-
             const terminal = kernel.appManifests.get("terminal");
             if(!terminal) {
                 LS.Modal.alert("No terminal application is available in this environment.");
@@ -2333,6 +2330,7 @@ class LiDesktop extends LS.Context {
     }
 
     setScreen(screen) {
+        shortcutManager.blockInput = screen !== "desktop";
         this.screenSwitcher.set(screen);
     }
 
@@ -3055,6 +3053,8 @@ class LiDesktop extends LS.Context {
 
         const appButton = LS.Create({
             class: "app-list-item",
+
+            effects: "spring,push",
 
             inner: [
                 app.views.getAppIconView(manifest, [64]),
@@ -6661,7 +6661,7 @@ class Process {
  * 
  * todo: split LinuxJS kernel and website functionality.
  */
-const kernel = new class Kernel extends LS.Context {
+class Kernel extends LS.Context {
     isKernel = true;
     version = KERNEL_VERSION;
 
@@ -7095,13 +7095,9 @@ const kernel = new class Kernel extends LS.Context {
 
             shortcutManager.assign("GLOBAL_OPEN_COMMAND_PALETTE", () => {
                 if(!app.hasCapability("command-palette")) return;
-                if(app.desktop?.screenSwitcher?.activeTab !== "desktop") return;
+                
                 app.desktop.openPalette();
             });
-
-            if(isBeta) {
-                LS.Toast.show("You are using a beta version of lstv.space. Some features may be unstable or incomplete.", { accent: "orange", timeout: 60000 });
-            }
         });
 
         // Event listener for back/forward buttons (for single-page app behavior)
@@ -7795,6 +7791,9 @@ const kernel = new class Kernel extends LS.Context {
         this.userFragment = null;
         this.queryParams = null;
 
+        if(LS.Tooltips) LS.Tooltips.resetGlobalInstance();
+        if(LS.Toast)    LS.Toast.closeAll();
+
         super.destroy();
     }
 }
@@ -7830,7 +7829,12 @@ class OpenerPromise {
     }
 }
 
-if(isBeta) window.kernel = kernel // Debug only!
+function boot() {
+    const kernel = new Kernel();
+    if(isBeta) window.kernel = kernel // Debug only!
+    return kernel;
+}
 
+const kernel = boot();
 
 } catch (e) { console.error("Fatal error during app initialization:", e); globalThis.__loadError() }

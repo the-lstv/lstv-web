@@ -79,6 +79,23 @@
             }
 
             window.LOW_PERFORMANCE_MODE = localStorage.getItem("LOW_PERFORMANCE_MODE") === "true";
+
+            if(isBeta) {
+                const betaButton = document.querySelector("#betaVersionButton");
+                if(betaButton) {
+                    betaButton.remove();
+                }
+
+                LS.Toast.show("You are using a beta version of lstv.space. Some features may be unstable or incomplete.", { accent: "orange", timeout: 60000, id: "beta-warning", once: true });
+
+                if(localStorage.getItem("ls-beta-acknowledged") === "true") {
+                    return;
+                }
+
+                LS.Modal.alert("Hello! You are trying the beta version of lstv.space.<br><br>This version gets new features faster, but can contain bugs, change at any time, or be straight up broken sometimes, and may have worse performance & load times.<br><br>Your login is separate between the beta and stable but you can login to the same accounts.", {
+                    title: "Beta"
+                });
+            }
         });
     </script>
 
@@ -141,10 +158,24 @@
 
             <div #toolbars .level-1>
                 <div .toolbar .toolbar-styled #toolbarMenu style="display: none">
-                    <h3>Applications</h3>
+                    <h3>Menu</h3>
                     <!-- <input type="text" .app-search placeholder="Search apps..." aria-label="Search applications"> -->
-                    <span style="padding: 0 20px 10px 20px;text-align: center;display: block;color: var(--surface-6);">This is being worked on at the moment! A lot is to come soon!</span>
+                    <!-- <span style="padding: 0 20px 10px 20px;text-align: center;display: block;color: var(--surface-6);">This is being worked on at the moment! A lot is to come soon!</span> -->
                     <div .app-list></div>
+                    <hr>
+                    <div .menu-footer style="padding: 0 16px; padding-bottom: 16px; display: flex; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; flex: 1; gap: 10px">
+                            <div {{ user.pfp:ProfilePicture(32px) }} />
+                            {{ user.username:ProfileUsername }}
+                        </div>
+                        <div>
+                            <button ls-tooltip="Log out of desktop" onclick="app.desktop.logout()" .square .clear> <i .bi-door-open /> </button>
+                            <button ls-tooltip="Lock" onclick="app.desktop.lock()" .square .clear> <i .bi-lock /> </button>
+                            <button ls-tooltip="Settings" onclick="app.desktop.openSettings()" .square .clear> <i .bi-sliders /> </button>
+                            <button ls-tooltip="Switch account" onclick="" .square .clear> <i .bi-person-circle /> </button>
+                            <!-- <button ls-tooltip="Shutdown" onclick="kernel.destroy()" .square .clear> <i .bi-power /> </button> -->
+                        </div>
+                    </div>
                 </div>
 
                 <div .toolbar .toolbar-styled #toolbarTheme style="display: none">
@@ -181,6 +212,12 @@
                         <button data-ls-effect="spring">
                             <i class="bi-pencil-fill"></i><span>Edit panel</span>
                         </button>
+                    </ls-div>
+
+                    <ls-div .grouped-buttons style="margin: -12px 30px 24px" #betaVersionButton>
+                        <a .ls-button data-ls-effect="spring" .elevated href="https://beta.lstv.space" target="_blank">
+                            <i class="bi-hexagon-fill"></i><span>Try the beta version</span>
+                        </a>
                     </ls-div>
                 </div>
 
@@ -310,8 +347,8 @@
 
             <div #desktop hidden>
                 <div #wallpaper>
-                    <!-- <img src="http://localhost:8080/huawei-nova-16-5800x3200-26688.jpg" alt="Wallpaper"> -->
-                    <img src="/assets/image/wallpapers/slovenia-hilltop-3840x2559-23639.jpg" alt="Wallpaper">
+                    <img src="http://localhost:8080/media/wallpapers/huawei-nova-16-5800x3200-26688.jpg" alt="Wallpaper">
+                    <!-- <img src="/assets/image/wallpapers/slovenia-hilltop-3840x2559-23639.jpg" alt="Wallpaper"> -->
                     <!-- <video autoplay muted loop playsinline>
                         <source src="/assets/image/wallpapers/7.mp4" type="video/mp4">
                     </video> -->

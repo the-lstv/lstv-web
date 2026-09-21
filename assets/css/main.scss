@@ -11,6 +11,7 @@ html, body {
 #app {
     --header-height: 50px;
     --topOffset: calc(var(--header-height, 50px) + 10px);
+
     flex-direction: column;
     width: 100%;
     height: 100%;
@@ -36,10 +37,15 @@ html, body {
     gap: 18px;
 }
 
+// Desktop mode
 .lsweb-desktop-mode {
     #app {
         --topOffset: 10px;
         --header-height: 42px;
+    }
+
+    .ls-toast-layer {
+        bottom: var(--header-height, 42px);
     }
 
     #environment {
@@ -48,7 +54,7 @@ html, body {
 
     #toolbars {
         top: unset;
-        bottom: calc(var(--header-height, 50px) + 10px);
+        bottom: calc(var(--header-height, 42px) + 10px);
     }
 
     .toolbar {
@@ -78,7 +84,7 @@ html, body {
 
 body:not(.low-performance-mode).lsweb-desktop-mode {
     #primaryPanel {
-        background: color-mix(in oklab, var(--background), transparent 20%);
+        background: color-mix(in oklab, var(--background), transparent 34%);
         backdrop-filter: blur(16px);
     }
 }
@@ -1526,15 +1532,17 @@ ls-text-input.has-textarea {
 }
 
 #toolbarMenu {
-    width: 350px;
+    width: 380px;
     overflow: hidden;
 
     .app-list {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        padding: 16px;
-        padding-top: 0;
+        padding: 0 16px;
         gap: 4px;
+        max-height: 300px;
+        overflow-y: auto;
+        overflow-x: hidden;
 
         .app-list-item {
             border-radius: var(--border-radius-large);
