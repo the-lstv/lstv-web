@@ -1,0 +1,12 @@
+<body>
+    <style> :root { background: #111 } </style>
+    <script>
+        if(!window.opener) {
+            close();
+            throw new Error("This page is meant to be opened in a popup window from the main site. Please close this window and try again.");
+        }
+        window.opener.postMessage({ type: "discord-login", access_token: location.hash.slice(1) }, "*");
+        close();
+    </script>
+    You can close this window now.
+</body>

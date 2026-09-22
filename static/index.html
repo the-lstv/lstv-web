@@ -893,6 +893,9 @@ website.register(document.currentScript, class extends LS.Context {
                     if(!this.gallery_loaded) {
                         this.gallery_loaded = true;
 
+                        const button = document.querySelector('[data-tab-id="showcase-gallery"]');
+                        button.setAttribute("data-ls-state", "loading");
+                        
                         website.fetch("/showcase/list?type=1&limit=100", { auth: website.isLoggedIn }).then(data => {
                             container.querySelector("#showcase-gallery").appendChild(LS.Create("h3", { text: "This is a rough collection of some of my designs and illustrations that I may update over time (sometimes)." }));
 
@@ -905,6 +908,9 @@ website.register(document.currentScript, class extends LS.Context {
                         }).catch(err => {
                             context.logContext.error(err);
                             container.querySelector("#showcase-gallery").appendChild(LS.Create("h3", { text: "An error occurred while loading artworks." }));
+                            this.gallery_loaded = false;
+                        }).finally(() => {
+                            button.removeAttribute("data-ls-state");
                         });
                     }
                     break;

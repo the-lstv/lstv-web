@@ -952,10 +952,18 @@ class LiDesktop extends LS.Context {
             }
 
             item.onclick = () => {
-                item.setAttribute("state", "loading");
+                item.setAttribute("data-ls-state", "loading");
+                item.setAttribute("disabled", "true");
+                item.setAttribute("aria-busy", "true");
+
                 kernel.auth.switchAccount(account.id).then(() => {
-                    this.loadUser().then(() => {
-                        item.removeAttribute("state");
+                    kernel.loadUser().then(() => {
+                        item.removeAttribute("data-ls-state");
+                        item.removeAttribute("disabled");
+                        item.removeAttribute("aria-busy");
+                        
+                        list.querySelectorAll(".account-item.active").forEach(i => i.classList.remove("active"));
+                        item.classList.add("active");
                     });
                 }).catch(error => {
                     if(error.code === 401) {
@@ -980,17 +988,118 @@ class LiDesktop extends LS.Context {
 
     // todo: move to desktop
     #setupAuth() {
-        LS.SelectOrCreate("#logOutButton").addEventListener("click", () => {
-            kernel.auth.logout(() => {
-                LS.Toast.show("Logged out successfully.", {
-                    timeout: 2000
-                });
+        const loginForm = document.forms["loginForm"];
+        const registerForm = document.forms["registerForm"];
+        const registerStep2Form = document.forms["registerStep2Form"];
 
-                this.closeToolbar();
-                kernel.loadUser();
-                app.loginTabs.set("default");
-            });
-        });
+        const effectOptions = {
+            dieWith: this
+        };
+
+        LS.Effect.register("logout", {
+            click: () => {
+                kernel.auth.logout(() => {
+                    LS.Toast.show("Logged out successfully.", {
+                        timeout: 2000
+                    });
+
+                    this.closeToolbar();
+                    kernel.loadUser();
+                    app.loginTabs.set("default");
+                });
+            }
+        }, effectOptions);
+
+        LS.Effect.register("switch-account", {
+            click: () => {
+                this.openToolbar("login");
+                app.loginTabs.set("switch");
+            }
+        }, effectOptions);
+
+        let google_spyware_loaded = false;
+        LS.Effect.register("web-login-google", {
+            async click(event, data) {
+                // todo: find a way to implement google login without using google spyware
+                if(!google_spyware_loaded && !await LS.Modal.confirm("Using 'login with Google' will load proprietary 3rd party code that likely has tracking/data collection and may slow down the website. The code will remain loaded until you manually reload.<br><br>I recommend reloading the website once you complete your login to clean it up.<br><br>Want to continue?", { title: "Privacy notice" })) return;
+
+                this.setAttribute("data-ls-state", "loading");
+                this.setAttribute("disabled", "true");
+
+                try {
+                    if(!google_spyware_loaded) await new Promise((resolve, reject) => {
+                        if (window.google?.accounts?.oauth2) {
+                            resolve();
+                            return;
+                        }
+    
+                        const script = document.createElement('script');
+                        script.src = 'https://accounts.google.com/gsi/client';
+                        script.async = true;
+                        script.defer = true;
+    
+                        script.onload = () => {
+                            google_spyware_loaded = true;
+                            resolve();
+                        };
+                        script.onerror = () => reject(new Error('Failed to load Google Identity Services'));
+    
+                        document.head.appendChild(script);
+                    });
+
+                    const client = google.accounts.oauth2.initTokenClient({
+                        client_id: '528990165486-kf8hn4fijqpprslu0smih61q5uli4an8.apps.googleusercontent.com',
+                        scope: 'openid email profile',
+                        callback: async (response) => {
+                            try {
+                                await kernel.auth.registerExternal({ provider: "google", token: response.access_token });
+                            } catch (e) { console.error(e) }
+                        },
+                    });
+
+                    client.requestAccessToken();
+                } catch(e) {
+                    console.error(e);
+                    LS.Toast.show("Failed to load Google Identity Services. Please try again later.", { accent: "red" });
+                } finally {
+                    this.removeAttribute("data-ls-state");
+                    this.removeAttribute("disabled");
+                }
+            },
+        }, effectOptions);
+
+        LS.Effect.register("web-login-discord", {
+            async click() {
+                this.setAttribute("data-ls-state", "loading");
+                this.setAttribute("disabled", "true");
+
+                try {
+                    // Open login window
+                    const win = window.open(`https://discord.com/oauth2/authorize?client_id=786648927642189865&response_type=token&redirect_uri=https%3A%2F%2F${window.isBeta? "beta.": ""}lstv.space%2Fauth%2Fdiscord&scope=identify+email+openid`, "discord-login", "width=500,height=600");
+
+                    const listener = async (event) => {
+                        if(event.data.type === "discord-login") {
+                            window.removeEventListener("message", listener);
+                            win.close();
+
+                            await kernel.auth.registerExternal({ provider: "discord", token: event.data.access_token });
+                        }
+                    };
+
+                    // Listen for incomming messages
+                    window.addEventListener("message", listener);
+                } catch(e) {
+                    console.log(e);
+                } finally {
+                    this.removeAttribute("data-ls-state");
+                    this.removeAttribute("disabled");
+                }
+            }
+        }, effectOptions);
+
+        LS.Effect.register("web-login-github", {
+
+        }, effectOptions);
 
         function clearLoginError() {
             const view = app.loginTabs.currentElement();
@@ -1031,18 +1140,25 @@ class LiDesktop extends LS.Context {
             });
         }
 
-        document.forms["loginForm"].addEventListener("submit", (event) => {
+        loginForm.addEventListener("submit", (event) => {
             event.preventDefault();
             clearLoginError();
-            const username = LS.SelectOne("#username").value;
-            const password = LS.SelectOne("#password").value;
+            const username = loginForm.username.value;
+            const password = loginForm.password.value;
 
             if (!username || !password) {
                 displayLoginError("Username and password are required", LS.SelectOne(!username? "#username" : "#password"));
                 return;
             }
 
+            const submitButton = loginForm.querySelector("[type=submit]");
+            submitButton.setAttribute("disabled", "true");
+            submitButton.setAttribute("data-ls-state", "loading");
+
             kernel.auth.login(username, password, (error, result) => {
+                submitButton.removeAttribute("disabled");
+                submitButton.removeAttribute("data-ls-state");
+
                 if (error) {
                     displayLoginError(error.message || error.error || "An error occurred while logging in");
                     return;
@@ -1054,21 +1170,21 @@ class LiDesktop extends LS.Context {
             return false;
         });
 
-        document.forms["registerForm"].addEventListener("submit", (event) => {
+        registerForm.addEventListener("submit", (event) => {
             event.preventDefault();
             clearLoginError();
-            document.forms["registerStep2Form"].querySelector("input").focus();
+            registerStep2Form.querySelector("input").focus();
             app.loginTabs.set('register-step2');
 
             return false;
         });
 
-        document.forms["registerStep2Form"].addEventListener("submit", (event) => {
+        registerStep2Form.addEventListener("submit", (event) => {
             event.preventDefault();
             clearLoginError();
-            const email = LS.SelectOne("#regEmail").value;
-            const username = LS.SelectOne("#regUsername").value.toLowerCase();
-            const password = LS.SelectOne("#regPassword").value;
+            const email       = registerForm.email.value;
+            const username    = registerForm.username.value.toLowerCase();
+            const password    = registerForm.password.value;
             const displayName = event.target.querySelector("input[name='displayname']").value;
 
             if (!email || !username || !password) {
@@ -1077,7 +1193,14 @@ class LiDesktop extends LS.Context {
                 return;
             }
 
+            const submitButton = registerStep2Form.querySelector("[type=submit]");
+            submitButton.setAttribute("disabled", "true");
+            submitButton.setAttribute("data-ls-state", "loading");
+
             kernel.auth.register({ email, username, password, displayname: displayName || null }, (error, result) => {
+                submitButton.removeAttribute("disabled");
+                submitButton.removeAttribute("data-ls-state");
+
                 if (error) {
                     app.loginTabs.set('register');
                     console.log(error, (error.code === 4 || error.code === 5)? LS.SelectOne("#regEmail"): (error.code === 3 || error.code === 6)? LS.SelectOne("#regUsername"): error.code === 7? LS.SelectOne("#regPassword"): null);
@@ -1107,20 +1230,30 @@ class LiDesktop extends LS.Context {
             });
         });
 
-        app.loginTabs.set(location.pathname.startsWith("/login") ? "login" : location.pathname.startsWith("/sign-up") ?  "register" : "default");
+        app.loginTabs.set(location.pathname.startsWith("/login")? "login": location.pathname.startsWith("/sign-up")?  "register": "default");
 
         LS.SelectOne("#randomPassword").addEventListener("click", function (){
-            const password = app.utils.generateSecurePassword(12);
-            LS.SelectOne("#regPassword").value = password;
-            LS.SelectOne("#regPassword").dispatchEvent(new Event("input"));
-            alert("Your generated password: " + password);
+            const length = 16;
+            const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?";
+
+            const array = new Uint32Array(length);
+            window.crypto.getRandomValues(array);
+
+            let password = "";
+            for (let i = 0; i < length; i++) {
+                password += charset[array[i] % charset.length];
+            }
+
+            registerForm.password.value = password;
+            registerForm.password.dispatchEvent(new Event("input"));
+            alert("Your generated password: " + password + "\n\nMake sure to save it somewhere safe.");
         });
 
         LS.SelectOne("#randomUsername").addEventListener("click", function (){
             const username = app.utils.generateUsername();
-            LS.SelectOne("#regUsername").value = username.toLowerCase();
-            LS.SelectOne("#regUsername").dispatchEvent(new Event("input"));
-            LS.SelectOne("#displayname").value = username;
+            registerForm.username.value = username.toLowerCase();
+            registerForm.username.dispatchEvent(new Event("input"));
+            registerStep2Form.displayname.value = username;
         });
     }
 

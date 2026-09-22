@@ -664,7 +664,13 @@ const app = {
                 "Mega", "Giga", "Omega", "Rapid", "Frozen", "Burning", "Radiant", "Dark",
                 "Void", "Spectral", "Phase", "Echoing", "Warped", "Distorted", "Jagged",
                 "Sharp", "Blazing", "Icy", "Molten", "Toxic", "Viral", "Encrypted",
-                "Obsidian", "Aurora", "Shiny", "Cursed", "Blessed", "Chaotic", "Lucid"
+                "Obsidian", "Aurora", "Shiny", "Cursed", "Blessed", "Chaotic", "Lucid",
+                "Mystic", "Phantom", "Ethereal", "Celestial", "Galactic", "Stellar",
+                "Cosmic", "Astral", "Temporal", "Spatial", "Dimensional", "Virtual",
+                "Augmented", "Synthetic", "Organic", "Mechanical", "Robotic", "Alien",
+                "Mutant", "Hybrid", "Sentient", "Artificial", "Digital", "Analog",
+                "Retro", "Futuristic", "Postmodern", "Minimalist", "Maximalist",
+                "Abstract", "Concrete", "Surreal", "Realistic"
             ];
 
             const nouns = [
@@ -677,7 +683,13 @@ const app = {
                 "Pulsewave", "Overdrive", "Underflow", "Overflow", "Crash", "Stack",
                 "Buffer", "Kernel", "Thread", "Process", "Cluster", "Shard", "Crystal",
                 "Prism", "Mirror", "Lens", "Scope", "Ray", "Beam", "Flash", "Spark",
-                "Bolt", "Storm", "Tempest", "Cyclone", "Vortex", "Tornado", "Quake"
+                "Bolt", "Storm", "Tempest", "Cyclone", "Vortex", "Tornado", "Quake",
+                "Tremor", "Rift", "Abyss", "Void", "Eclipse", "Aurora", "Comet",
+                "Meteor", "Asteroid", "Planet", "Star", "Galaxy", "Universe", "Dimension",
+                "Reality", "Dream", "Nightmare", "Vision", "Illusion", "Phantom",
+                "Specter", "Wraith", "Shade", "Spirit", "Soul", "Entity", "Being",
+                "Creature", "Monster", "Beast", "Dragon", "Phoenix", "Griffin",
+                "Unicorn", "Pegasus", "Centaur", "Minotaur", "Sphinx"
             ];
 
             return (
@@ -685,17 +697,6 @@ const app = {
                 nouns[Math.floor(Math.random() * nouns.length)] +
                 Math.floor(Math.random() * 1000)
             );
-        },
-
-        generateSecurePassword(length = 12) {
-            const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?";
-            const array = new Uint32Array(length);
-            window.crypto.getRandomValues(array);
-            let password = "";
-            for (let i = 0; i < length; i++) {
-                password += charset[array[i] % charset.length];
-            }
-            return password;
         },
 
         generateInsecurePassword() {

@@ -169,10 +169,10 @@
                             {{ user.username:ProfileUsername }}
                         </div>
                         <div>
-                            <button ls-tooltip="Log out of desktop" onclick="app.desktop.logout()" .square .clear> <i .bi-door-open /> </button>
+                            <button ls-tooltip="Log out of desktop" data-ls-effect="logout" .square .clear> <i .bi-door-open /> </button>
                             <button ls-tooltip="Lock" onclick="app.desktop.lock()" .square .clear> <i .bi-lock /> </button>
                             <button ls-tooltip="Settings" onclick="app.desktop.openSettings()" .square .clear> <i .bi-sliders /> </button>
-                            <button ls-tooltip="Switch account" onclick="" .square .clear> <i .bi-person-circle /> </button>
+                            <button ls-tooltip="Switch account" data-ls-effect="switch-account" .square .clear> <i .bi-person-circle /> </button>
                             <!-- <button ls-tooltip="Shutdown" onclick="kernel.destroy()" .square .clear> <i .bi-power /> </button> -->
                         </div>
                     </div>
@@ -235,6 +235,12 @@
                             <button onclick="website.loginTabs.set('login')" #login .pill>Log-In</button>
                             <button onclick="website.loginTabs.set('register')" .pill.elevated>Create account</button>
                         </div>
+
+                        <div .login-buttons style="display: flex; gap: 10px; justify-content: center; margin-top: 20px">
+                            <button data-ls-effect="web-login-google"  .circle.elevated ls-tooltip="Login with Google"><i .bi-google></i></button>
+                            <button data-ls-effect="web-login-discord" .circle.elevated ls-tooltip="Login with Discord"><i .bi-discord></i></button>
+                            <!-- <button data-ls-effect="web-login-github"  .circle.elevated ls-tooltip="Login with GitHub"><i .bi-github></i></button> -->
+                        </div>
                     </div>
 
                     <div .login-toolbar-page tab-id="switch">
@@ -257,8 +263,14 @@
                             <span .error-message></span>
                             <button .pill.elevated type="submit">Log in</button>
                         </form>
+                        
+                        <span>Want a new account? <a href="#" onclick="website.loginTabs.set('register')">Sign up</a></span>
 
-                        <span>Don't have one? <a href="#" onclick="website.loginTabs.set('register')">Sign up</a></span>
+                        <div .login-buttons style="display: flex; gap: 10px; justify-content: center; margin-top: 20px">
+                            <button data-ls-effect="web-login-google" .circle.elevated ls-tooltip="Login with Google"><i .bi-google></i></button>
+                            <button data-ls-effect="web-login-discord" .circle.elevated ls-tooltip="Login with Discord"><i .bi-discord></i></button>
+                            <!-- <button data-ls-effect="web-login-github" .circle.elevated ls-tooltip="Login with GitHub"><i .bi-github></i></button> -->
+                        </div>
                     </div>
 
                     <div .login-toolbar-page tab-id="register">
@@ -291,6 +303,12 @@
                         </form>
 
                         <span>Want to log-in? <a href="#" onclick="website.loginTabs.set('login')">Log in</a></span>
+
+                        <div .login-buttons style="display: flex; gap: 10px; justify-content: center; margin-top: 20px">
+                            <button data-ls-effect="web-login-google" .circle.elevated ls-tooltip="Login with Google"><i .bi-google></i></button>
+                            <button data-ls-effect="web-login-discord" .circle.elevated ls-tooltip="Login with Discord"><i .bi-discord></i></button>
+                            <!-- <button data-ls-effect="web-login-github" .circle.elevated ls-tooltip="Login with GitHub"><i .bi-github></i></button> -->
+                        </div>
                     </div>
 
                     <div .login-toolbar-page tab-id="register-step2">
@@ -331,8 +349,8 @@
                         </ls-div>
 
                         <ls-div .profile-buttons .grouped-buttons>
-                            <button .elevated onclick="website.loginTabs.set('switch')"><i .bi-arrow-left-right /><span>Switch accounts</span></button>
-                            <button .elevated #logOutButton><i .bi-box-arrow-right /><span>Log out</span></button>
+                            <button .elevated data-ls-effect="switch-account"><i .bi-arrow-left-right /><span>Switch accounts</span></button>
+                            <button .elevated data-ls-effect="logout"><i .bi-box-arrow-right /><span>Log out</span></button>
                         </ls-div>
 
                         {{ user.profileEffects:ProfileEffects }}

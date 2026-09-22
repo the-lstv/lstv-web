@@ -273,6 +273,14 @@ class Kernel extends LS.Context {
             return this.postMessage('login', { username, password }, callback);
         }
 
+        loginExternal(data, callback) {
+            return this.postMessage('login', { externalLogin: data }, callback);
+        }
+
+        registerExternal(data, callback) {
+            return this.postMessage('register', { externalLogin: data }, callback);
+        }
+
         register(user, callback) {
             return this.postMessage('register', { user }, callback);
         }
@@ -923,6 +931,9 @@ class Kernel extends LS.Context {
             }
 
             const STATS_DISABLED = localStorage.getItem("DISABLE_STATS") === "true";
+
+            // Temporary
+            if(STATS_DISABLED) return setTimeout(sendPing, current_interval);
 
             const data = JSON.stringify(!STATS_DISABLED? {
                 sessionID: SESSION_ID,
