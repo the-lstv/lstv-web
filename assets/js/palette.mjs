@@ -422,6 +422,7 @@ function init(kernel, desktop, LoggerContext) {
             description: "Echo input",
 
             onCalled() { log.log(...arguments) },
+            data() { return [...arguments].join(" ") },
 
             inputs: [
                 { name: "text", type: "string", description: "Text to echo" }

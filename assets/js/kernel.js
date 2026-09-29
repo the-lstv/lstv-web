@@ -42,8 +42,14 @@ const BUILTIN_APPS = [
         "icon": "32c0975799f31fc3.svg",
         "description": "A full-featured, simple but professional video editor",
         "version": "1.0.0",
-        "external": true,
-        "link": "/editor"
+        "main": "https://editor.lstv.space",
+        windowOptions: {
+            width: 800,
+            height: 600,
+            frame: false,
+            header: false,
+            transparent: true,
+        }
     },
     {
         "name": "Resources",
