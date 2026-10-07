@@ -7,7 +7,6 @@ import { Enums } from "./enums.mjs";
 
 // Misc constants
 const DEFAULT_PROFILE = "/~/assets/image/default.svg";
-const isDesktopModeEnabledAtStartup = localStorage.getItem("desktopMode") === "true";
 
 const isNode = typeof module !== "undefined";
 
@@ -94,20 +93,7 @@ class Environment {
         // Initialize desktop
 
         // Read configuration files
-        const cfg   = await this.#k.fileSystem.readFile("/etc/config.conf", "utf8");
-
-        this.#k.createProcess({
-            name: "LiDE desktop",
-            wrapper: {
-                spawn() {
-                    app.desktop = new LiDesktop({ limited: !isDesktopModeEnabledAtStartup, cfg });
-                },
-
-                terminate() {
-                    app.desktop.destroy();
-                }
-            }
-        });
+        // const cfg   = await this.#k.fileSystem.readFile("/etc/config.conf", "utf8");
     }
 
     async getUsers(passwd = null) {
@@ -332,6 +318,8 @@ const app = {
     Viewport,
     Thread,
     Window: LS.Window,
+
+    viewport: null,
 
     // Create new instance of the desktop env.
     // If desktop mode is disabled, the desktop can skip some features, things like the login prompt, and run in a website-only mode.

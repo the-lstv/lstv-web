@@ -256,6 +256,62 @@ class LiDesktop extends LS.Context {
         const target    = LS.SelectOrCreate('#environment', container);
         const desktop   = LS.SelectOrCreate('#desktop', target);
 
+        // Register reactive types
+        LS.Reactive.registerType("ProfilePicture", app.views.getProfilePictureView);
+        LS.Reactive.registerType("ProfileBadges", app.views.getProfileBadgesView);
+        LS.Reactive.registerType("ProfileBanner", app.views.getBannerView);
+        LS.Reactive.registerType("ProfileLinks", app.views.getLinksView);
+        LS.Reactive.registerType("ProfileBio", app.views.getBioView);
+        LS.Reactive.registerType("DisplayName", (value, args, element, user) => {
+            return value || user.displayname || user.username || "Anonymous";
+        });
+
+        LS.Reactive.registerType("ProfileUsername", (value, args, element, user) => {
+            if(value === "admin") {
+                const profile = element.closest(".profile");
+
+                if(profile) {
+                    profile.classList.add("admin");
+                }
+            }
+
+            element.classList.add("profile-username");
+            return "@" + (value || (user && user.username) || "anonymous");
+        });
+
+        LS.Reactive.registerType("ProfileEffects", (value, args, element, user) => {
+            const profile = element.closest(".profile");
+            if(!profile) return null;
+
+            const effects = user.profileEffects || {};
+
+            if(effects?.avatar?.id) {
+                profile.setAttribute("avatar-effect", effects.avatar.id);
+                profile.style.setProperty("--glow-primary", effects.avatar.primary || "var(--accent)");
+                profile.style.setProperty("--glow-secondary", effects.avatar.secondary || "var(--accent-80)");
+            } else {
+                profile.removeAttribute("avatar-effect");
+                profile.style.removeProperty("--glow-primary");
+                profile.style.removeProperty("--glow-secondary");
+            }
+
+            if(effects?.style?.id) {
+                profile.setAttribute("profile-style", effects.style.id);
+            } else {
+                profile.removeAttribute("profile-style");
+            }
+
+            if(effects?.style?.accent) {
+                profile.setAttribute("ls-accent", effects.style.accent);
+            } else {
+                profile.removeAttribute("ls-accent");
+            }
+
+            profile.classList.toggle("fullscreen-banner", !!effects?.banner?.fullscreen);
+
+            return null;
+        });
+
         LS.Menu.addContextMenu(desktop, [
             { label: "Change wallpaper", icon: "bi-image" },
             { label: "Open terminal", icon: "bi-terminal" },
@@ -266,6 +322,19 @@ class LiDesktop extends LS.Context {
             { type: "separator" },
             { label: "Customization", icon: "bi-pencil-square" },
         ]);
+
+        LS.Color.on("theme-changed", () => {
+            for(const item of this.panelState) {
+                if(item.kind === "themeButton" && item.element) {
+                    item.element.querySelector("i").className = 'bi-' + (app.theme === "dark" ? "moon-stars" : "sun") + "-fill";
+                }
+            }
+        });
+
+        shortcutManager.assign("GLOBAL_OPEN_COMMAND_PALETTE", () => {
+            if(!app.hasCapability("command-palette")) return;
+            app.desktop.openPalette();
+        });
 
         this.windowManager  = new LS.WindowManager({ target });
         this.screenSwitcher = new LS.Tabs(container, { list: false, selector: ":scope > ls-tab", slideAnimation: false });

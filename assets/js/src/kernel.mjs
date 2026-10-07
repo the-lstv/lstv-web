@@ -3,7 +3,7 @@ import { TmpFs, RootFs } from "./fs.mjs";
 import { LiDesktop, MediaPlayer } from "./desktop.mjs";
 import { LoggerContext, AssetManager, ContentContext, Viewport, Thread } from "./commons.mjs";
 import { app } from "./shared.mjs";
-import { Environment } from "./environment.mjs";
+import { Environment } from "./shared.mjs";
 import { Enums } from "./enums.mjs";
 
 /**
@@ -352,13 +352,16 @@ class Kernel extends LS.Context {
      * @experimental
      */
     #PermissionScope = class PermissionScope {
-        constructor(permissions = []) {
-            this.permissions = Object.freeze(permissions);
+        #permissions = [];
+
+        constructor() {
+            this.#permissions = Object.freeze(kernel.__gp);
+            delete kernel.__gp;
             Object.freeze(this);
         }
 
         get auth() {
-            if (!this.permissions.includes("auth")) throw new Error("This scope is not authorized to access authentication features.");
+            if (!this.#permissions.includes("auth")) throw new Error("This scope is not authorized to access authentication features.");
             return kernel.auth;
         }
     }
@@ -382,12 +385,7 @@ class Kernel extends LS.Context {
 
         this.env = new Environment(this);
 
-        const appElement = LS.SelectOrCreate('#app');
-        const vpElement = LS.SelectOrCreate('#viewport');
-
-        app.viewport = this.viewport = new Viewport('main', vpElement, {
-            kernel: this
-        });
+        app.viewport = this.viewport = new Viewport('main', LS.SelectOrCreate('#viewport'), { kernel: this });
 
         for(const manifest of BUILTIN_APPS) {
             this.appManifests.set(manifest.id, manifest);
@@ -396,87 +394,35 @@ class Kernel extends LS.Context {
         this.ttl = Date.now() - window.__loadTime;
         this.log('Kernel initialized, version %c' + this.version + '%c, time since first load: ' + this.ttl + 'ms', 'font-weight:bold', 'font-weight:normal');
 
-        // Register reactive types
-        LS.Reactive.registerType("ProfilePicture", app.views.getProfilePictureView);
-        LS.Reactive.registerType("ProfileBadges", app.views.getProfileBadgesView);
-        LS.Reactive.registerType("ProfileBanner", app.views.getBannerView);
-        LS.Reactive.registerType("ProfileLinks", app.views.getLinksView);
-        LS.Reactive.registerType("ProfileBio", app.views.getBioView);
-        LS.Reactive.registerType("DisplayName", (value, args, element, user) => {
-            return value || user.displayname || user.username || "Anonymous";
-        });
-
-        LS.Reactive.registerType("ProfileUsername", (value, args, element, user) => {
-            if(value === "admin") {
-                const profile = element.closest(".profile");
-
-                if(profile) {
-                    profile.classList.add("admin");
-                }
-            }
-
-            element.classList.add("profile-username");
-            return "@" + (value || (user && user.username) || "anonymous");
-        });
-
-        LS.Reactive.registerType("ProfileEffects", (value, args, element, user) => {
-            const profile = element.closest(".profile");
-            if(!profile) return null;
-
-            const effects = user.profileEffects || {};
-
-            if(effects?.avatar?.id) {
-                profile.setAttribute("avatar-effect", effects.avatar.id);
-                profile.style.setProperty("--glow-primary", effects.avatar.primary || "var(--accent)");
-                profile.style.setProperty("--glow-secondary", effects.avatar.secondary || "var(--accent-80)");
-            } else {
-                profile.removeAttribute("avatar-effect");
-                profile.style.removeProperty("--glow-primary");
-                profile.style.removeProperty("--glow-secondary");
-            }
-
-            if(effects?.style?.id) {
-                profile.setAttribute("profile-style", effects.style.id);
-            } else {
-                profile.removeAttribute("profile-style");
-            }
-
-            if(effects?.style?.accent) {
-                profile.setAttribute("ls-accent", effects.style.accent);
-            } else {
-                profile.removeAttribute("ls-accent");
-            }
-
-            profile.classList.toggle("fullscreen-banner", !!effects?.banner?.fullscreen);
-
-            return null;
-        });
-
-        LS.Color.on("theme-changed", () => {
-            for(const item of app.desktop.panelState) {
-                if(item.kind === "themeButton" && item.element) {
-                    item.element.querySelector("i").className = 'bi-' + (app.theme === "dark" ? "moon-stars" : "sun") + "-fill";
-                }
-            }
-        });
-
         this.auth.on("user-updated", (patch) => {
             if (patch) {
                 Object.assign(this.userFragment, patch);
             }
         });
 
-        this.auth.on("account-switched", (reason, from, to) => {
+        // this.auth.on("account-switched", (reason, from, to) => { });
 
-        });
-        
+        this.env.init();
+
+        const isDesktopModeEnabledAtStartup = localStorage.getItem("desktopMode") === "true";
+
         this.addExternalEventListener(document, 'DOMContentLoaded', () => {
-            this.env.init();
+            this.createProcess({
+                name: "LiDE desktop",
+                wrapper: {
+                    spawn() {
+                        app.desktop = new LiDesktop({ limited: !isDesktopModeEnabledAtStartup });
+                    },
 
+                    terminate() {
+                        app.desktop.destroy();
+                    }
+                }
+            });
+
+            app.DESKTOP_MODE = isDesktopModeEnabledAtStartup;
             app.container = this.container = document.getElementById('app');
             app.viewportElement = this.viewportElement = this.viewport.target;
-
-            app.DESKTOP_MODE = localStorage.getItem("desktopMode") === "true";
 
             const scopeKey = document.querySelector("#scope-key")?.textContent || null;
             const context = this.registerPage(location.pathname, {
@@ -509,178 +455,120 @@ class Kernel extends LS.Context {
             // Display content
             document.querySelector(".loaderContainer").style.display = "none";
             app.container.style.display = "flex";
-            app.emit("dom-ready");
 
-            shortcutManager.assign("GLOBAL_OPEN_COMMAND_PALETTE", () => {
-                if(!app.hasCapability("command-palette")) return;
-                
-                app.desktop.openPalette();
-            });
-        });
-
-        // Event listener for back/forward buttons (for single-page app behavior)
-        const originalState = location.pathname;
-        window.addEventListener('popstate', (event) => {
-            if(isDebug) this.log("Popstate event:", event);
-            const href = event.state?.path ?? (location.pathname + location.hash);
-            kernel.viewport.navigate(href, { pushState: false });
-        });
-
-        window.addEventListener('click', (event) => {
-            const targetElement = event.target.closest("a");
-
-            if (targetElement) {
-                if(targetElement.hasAttribute("target")) return;
-
-                const rawHref = targetElement.getAttribute('href');
-                if(!rawHref) return;
-                if(rawHref === "#") return event.preventDefault();
-
-                const link = targetElement.href;
-                let href = rawHref;
-
-                if(link.startsWith(location.origin) && !link.endsWith("?") && !link.startsWith(location.origin + ":")){
-                    try {
-                        const parsed = new URL(link, location.href);
-                        href = parsed.pathname + parsed.search + parsed.hash;
-                    } catch (e) {
-                        if(href.startsWith(location.origin)) href = href.substring(location.origin.length);
-                    }
-
-                    if(href.startsWith("#")) {
-                        href = location.pathname + href;
-                    }
-
-                    const viewportElement = targetElement.closest(".viewport") || kernel.viewport.target;
-                    if (viewportElement) {
-                        const viewport = viewportElement.viewportInstance || [...kernel.viewports.values()].find(v => v.target === viewportElement);
-                        if (viewport) {
-                            event.preventDefault();
-                            viewport.navigate(href, { targetElement });
-                            return;
-                        } else {
-                            kernel.error("No viewport found for element", viewportElement);
-                        }
-                    } else {
-                        kernel.error("No viewport element found", viewportElement);
-                    }
-                } else {
-                    // TODO: Display confirm dialog
-                    event.preventDefault();
-                    window.open(link, '_blank', 'noopener');
-                }
-            }
-        });
-
-        const previewPopoutAnimationDuration = 350;
-
-        const previewPopout = LS.Create("ls-box", {
-            class: "link-preview-popout elevated",
-            style: "display: none",
-        }).addTo(LS._topLayer);
-
-        const externalSitePreview = LS.Create([
-            { tag: "ls-box", class: "link-preview-site contained", inner: [
-                { class: "link-preview-favicon", tag: "img" },
-                [
-                    { class: "link-preview-domain text-overflow-nowrap" },
-                    { class: "link-preview-title text-overflow-nowrap" },
-                ]
-            ] },
-            { class: "link-preview-description" }
-        ]);
-
-        let popoutTimeout = null, lastLink = null, lastTarget = null;
-        window.addEventListener("pointerover", (event) => {
-            const targetElement = event.target.closest("a");
-            if(targetElement && lastTarget !== targetElement) {
-                if(targetElement.href.endsWith("#")) return;
-
-                const link = targetElement.href;
-                let href = targetElement.getAttribute('href');
-
-                const isLocal = link.startsWith(origin);
-
-                // For now
-                if(isLocal) return;
-
-                if(!link.endsWith("?") && !link.startsWith(origin + ":")){
-                    if(href.startsWith(origin)) href = href.substring(origin.length);
-                    lastTarget = targetElement;
-
-                    clearTimeout(popoutTimeout);
-                    let ct = popoutTimeout = setTimeout(() => {
-                        const rect = targetElement.getBoundingClientRect();
-                        const ww = window.innerWidth;
-                        const wh = window.innerHeight;
-                        
-                        if(rect.top <= 300) {
-                            previewPopout.style.top = (rect.bottom + 8) + "px";
-                            previewPopout.style.bottom = "auto";
-                        } else {
-                            previewPopout.style.top = "auto";
-                            previewPopout.style.bottom = (wh - rect.top + 8) + "px";
-                        }
-                        
-                        previewPopout.style.left = (ww < 300 ? 0 : Math.max(8, Math.min(ww - 308, rect.left + rect.width / 2 - 150))) + "px";
-
-                        if(lastLink !== link) {
-                            previewPopout.replaceChildren();
-                            previewPopout.setAttribute("state", "loading");
-
-                            if(!isLocal) {
-                                fetch(app.api + "/metascraper?url=" + encodeURIComponent(link)).then(response => response.json()).then(data => {
-                                    if(lastLink !== link) return;
-
+            // -- Link preview
+            ;{
+                const previewPopoutAnimationDuration = 350;
+        
+                const previewPopout = LS.Create("ls-box", {
+                    class: "link-preview-popout elevated",
+                    style: "display: none",
+                }).addTo(LS._topLayer);
+        
+                const externalSitePreview = LS.Create([
+                    { tag: "ls-box", class: "link-preview-site contained", inner: [
+                        { class: "link-preview-favicon", tag: "img" },
+                        [
+                            { class: "link-preview-domain text-overflow-nowrap" },
+                            { class: "link-preview-title text-overflow-nowrap" },
+                        ]
+                    ] },
+                    { class: "link-preview-description" }
+                ]);
+        
+                let popoutTimeout = null, lastLink = null, lastTarget = null;
+                window.addEventListener("pointerover", (event) => {
+                    const targetElement = event.target.closest("a");
+                    if(targetElement && lastTarget !== targetElement) {
+                        if(targetElement.href.endsWith("#")) return;
+        
+                        const link = targetElement.href;
+                        let href = targetElement.getAttribute('href');
+        
+                        const isLocal = link.startsWith(origin);
+        
+                        // For now
+                        if(isLocal) return;
+        
+                        if(!link.endsWith("?") && !link.startsWith(origin + ":")){
+                            if(href.startsWith(origin)) href = href.substring(origin.length);
+                            lastTarget = targetElement;
+        
+                            clearTimeout(popoutTimeout);
+                            let ct = popoutTimeout = setTimeout(() => {
+                                const rect = targetElement.getBoundingClientRect();
+                                const ww = window.innerWidth;
+                                const wh = window.innerHeight;
+                                
+                                if(rect.top <= 300) {
+                                    previewPopout.style.top = (rect.bottom + 8) + "px";
+                                    previewPopout.style.bottom = "auto";
+                                } else {
+                                    previewPopout.style.top = "auto";
+                                    previewPopout.style.bottom = (wh - rect.top + 8) + "px";
+                                }
+                                
+                                previewPopout.style.left = (ww < 300 ? 0 : Math.max(8, Math.min(ww - 308, rect.left + rect.width / 2 - 150))) + "px";
+        
+                                if(lastLink !== link) {
                                     previewPopout.replaceChildren();
-                                    previewPopout.removeAttribute("state");
-                                    externalSitePreview.querySelector(".link-preview-favicon").src = data && data.favicon && (data.favicon.startsWith("https://favicone.com/") ? data.favicon + "?s=48" : data.favicon) || "";
-                                    externalSitePreview.querySelector(".link-preview-title").textContent = data && data.title || link;
-                                    
-                                    const description = data && data.description || "", descriptionContainer = externalSitePreview.querySelector(".link-preview-description"), siteBox = externalSitePreview.querySelector(".link-preview-site");
-                                    if(description) {
-                                        descriptionContainer.textContent = description;
-                                        descriptionContainer.style.display = "block";
-                                        siteBox.classList.remove("compact");
-                                    } else {
-                                        descriptionContainer.style.display = "none";
-                                        siteBox.classList.add("compact");
+                                    previewPopout.setAttribute("state", "loading");
+        
+                                    if(!isLocal) {
+                                        fetch(app.api + "/metascraper?url=" + encodeURIComponent(link)).then(response => response.json()).then(data => {
+                                            if(lastLink !== link) return;
+        
+                                            previewPopout.replaceChildren();
+                                            previewPopout.removeAttribute("state");
+                                            externalSitePreview.querySelector(".link-preview-favicon").src = data && data.favicon && (data.favicon.startsWith("https://favicone.com/") ? data.favicon + "?s=48" : data.favicon) || "";
+                                            externalSitePreview.querySelector(".link-preview-title").textContent = data && data.title || link;
+                                            
+                                            const description = data && data.description || "", descriptionContainer = externalSitePreview.querySelector(".link-preview-description"), siteBox = externalSitePreview.querySelector(".link-preview-site");
+                                            if(description) {
+                                                descriptionContainer.textContent = description;
+                                                descriptionContainer.style.display = "block";
+                                                siteBox.classList.remove("compact");
+                                            } else {
+                                                descriptionContainer.style.display = "none";
+                                                siteBox.classList.add("compact");
+                                            }
+        
+                                            let domain = "";
+                                            try {
+                                                const urlObj = new URL(link);
+                                                domain = urlObj.hostname.replace("www.", "");
+                                            } catch(e) {
+                                                domain = link;
+                                            }
+        
+                                            externalSitePreview.querySelector(".link-preview-domain").textContent = domain;
+                                            previewPopout.appendChild(externalSitePreview);
+                                        });
                                     }
-
-                                    let domain = "";
-                                    try {
-                                        const urlObj = new URL(link);
-                                        domain = urlObj.hostname.replace("www.", "");
-                                    } catch(e) {
-                                        domain = link;
-                                    }
-
-                                    externalSitePreview.querySelector(".link-preview-domain").textContent = domain;
-                                    previewPopout.appendChild(externalSitePreview);
-                                });
-                            }
-                        } else {
-
+                                } else {
+        
+                                }
+        
+                                lastLink = link;
+                                LS.Animation.fadeIn(previewPopout, previewPopoutAnimationDuration, "up");
+                            }, previewPopoutAnimationDuration);
+        
+                            targetElement.addEventListener("pointerout", () => {
+                                if(!popoutTimeout || popoutTimeout !== ct) return;
+                                clearTimeout(popoutTimeout);
+                                lastTarget = null;
+                                LS.Animation.fadeOut(previewPopout, previewPopoutAnimationDuration, "up");
+                            }, { once: true });
                         }
-
-                        lastLink = link;
-                        LS.Animation.fadeIn(previewPopout, previewPopoutAnimationDuration, "up");
-                    }, previewPopoutAnimationDuration);
-
-                    targetElement.addEventListener("pointerout", () => {
-                        if(!popoutTimeout || popoutTimeout !== ct) return;
-                        clearTimeout(popoutTimeout);
-                        lastTarget = null;
-                        LS.Animation.fadeOut(previewPopout, previewPopoutAnimationDuration, "up");
-                    }, { once: true });
-                }
+                    }
+                });
+        
+                this.on("context-updated", () => {
+                    LS.Animation.fadeOut(previewPopout, previewPopoutAnimationDuration, "up");
+                    lastTarget = null;
+                });
             }
         });
-
-        this.on("context-updated", () => {
-            LS.Animation.fadeOut(previewPopout, previewPopoutAnimationDuration, "up");
-            lastTarget = null;
-        })
 
         // --- Debug ONLY ---
         if (isDebug) {
@@ -691,7 +579,6 @@ class Kernel extends LS.Context {
 
         // TODO:FIXME: This should only allow non-authenticated access
         app.fetch = this.auth.fetch.bind(this.auth);
-        app.emit("ready");
 
         this.ttl_scripting = Date.now() - scriptingLoadTime;
     }
@@ -890,9 +777,12 @@ class Kernel extends LS.Context {
         handler(extendedPath, targetElement);
     }
 
-    requestPermission(scope, permissions = []) {
+    async requestPermission(scope, permissions = []) {
         // For now, all scopes are granted without prompt (TEMPORARY)
-        return new this.#PermissionScope(permissions);
+        this.__gp = permissions;
+        const scope = new this.#PermissionScope();
+        this.__gp = null;
+        return scope;
     }
 
     async _initializeCommandPalette(clickedTarget = null) {
